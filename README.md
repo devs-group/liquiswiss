@@ -23,6 +23,10 @@ npm run dev
 
 or
 
+npm run dev-host (to expose host and be able to connect from another device)
+
+or
+
 docker compose up -d (if you have docker)
 ```
 

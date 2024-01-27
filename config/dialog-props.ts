@@ -1,6 +1,10 @@
+import type {DialogProps} from "primevue/dialog";
+
 export const ModalConfig = {
     closable: true,
     closeOnEscape: true,
+    blockScroll: true,
+    keepInViewPort: true,
     style: {
         width: '50vw',
     },
@@ -10,4 +14,4 @@ export const ModalConfig = {
     },
     modal: true,
     draggable: false,
-}
+} as DialogProps
