@@ -1,0 +1,17 @@
+version: '3.9'
+
+services:
+  nuxt:
+    build:
+      dockerfile: .deploy/nuxt/Dockerfile
+      context: .
+      target: dev
+    ports:
+      - '3000:3000'
+      - '24678:24678'
+    environment:
+      # This is great for testing with different timezones. Leave empty for UTC
+      - TZ=Europe/Berlin
+    volumes:
+      - ./:/app
+      - /app/node_modules

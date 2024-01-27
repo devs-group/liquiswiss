@@ -1,12 +1,19 @@
 // https://nuxt.com/docs/api/configuration/nuxt-config
 export default defineNuxtConfig({
+    devtools: {
+        enabled: false,
+    },
+    build: {
+        transpile: ["primevue"],
+    },
     modules: [
-        'nuxt-primevue'
+        'nuxt-primevue',
+        '@nuxtjs/tailwindcss',
     ],
     primevue: {
         options: {
             ripple: true,
-            inputStyle: 'filled'
+            inputStyle: 'filled',
         },
         cssLayerOrder: 'tailwind-base, primevue, tailwind-utilities',
     },
@@ -14,5 +21,4 @@ export default defineNuxtConfig({
         'primevue/resources/themes/aura-light-green/theme.css',
         'primeicons/primeicons.css',
     ],
-    devtools: {enabled: true}
 })

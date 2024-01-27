@@ -1,0 +1,34 @@
+image: docker:git
+
+services:
+  - docker:dind
+
+stages:
+  - build
+  - deploy
+
+before_script:
+  - if [ -z "${REGISTRY_USER_NAME}" ]; then REGISTRY_USER_NAME=gitlab-ci-token; fi
+  - if [ -z "${REGISTRY_SECRET}" ]; then REGISTRY_SECRET=${CI_JOB_TOKEN}; fi
+  - docker login -u ${REGISTRY_USER_NAME} -p ${REGISTRY_SECRET} ${CI_REGISTRY}
+
+build-nuxt:
+  stage: build
+  variables:
+    IMAGE: ${CI_REGISTRY}/${CI_PROJECT_PATH}/nuxt:master
+  script:
+    - docker build -f ./.deploy/nuxt/Dockerfile -t ${IMAGE} ./
+    - docker push ${IMAGE}
+
+deploy:
+  stage: deploy
+  image: alpine:latest
+  environment:
+    name: prod
+    url: https://liquiswiss.devs-group.ch/
+  before_script:
+    - apk add curl
+  script:
+    - sh ./.deploy/deploy.sh
+  only:
+    - main
