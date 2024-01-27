@@ -13,5 +13,5 @@ services:
       # This is great for testing with different timezones. Leave empty for UTC
       - TZ=Europe/Berlin
     volumes:
-      - ./:/app
+      - ./frontend:/app
       - /app/node_modules

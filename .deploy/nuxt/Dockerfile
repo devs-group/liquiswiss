@@ -1,7 +1,7 @@
 FROM node:20.3.1 as dev
 
 WORKDIR /app
-COPY ./ /app
+COPY ./frontend /app
 RUN npm install
 
 CMD ["npm", "run", "dev"]
