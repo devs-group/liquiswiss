@@ -2,9 +2,10 @@
   <div class="flex flex-col gap-4">
     <Button @click="addEmployee" class="self-end" label="Mitarbeiter hinzufügen" icon="pi pi-user"/>
 
-    <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
+    <div v-if="people.length" class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
       <PersonCard @on-edit="onEdit" v-for="person in people" :person="person"/>
     </div>
+    <p v-else>Es gibt noch keine Mitarbeiter</p>
   </div>
 </template>
 
@@ -12,29 +13,12 @@
 import type {Person} from "~/models/person";
 import {ModalConfig} from "~/config/dialog-props";
 import PersonDialog from "~/components/dialogs/PersonDialog.vue";
+import {Config} from "~/config/config";
 
 const dialog = useDialog();
+const toast = useToast()
 
-const people = ref<Person[]>([
-  {
-    id: 1,
-    name: "John Doe",
-    hoursPerMonth: 160,
-    vacationDaysPerYear: 25,
-  },
-  {
-    id: 2,
-    name: "Jane Doe",
-    hoursPerMonth: 160,
-    vacationDaysPerYear: 25,
-  },
-  {
-    id: 3,
-    name: "Michael Doe",
-    hoursPerMonth: 120,
-    vacationDaysPerYear: 25,
-  }
-]);
+const {data: people} = await useFetch('/api/team')
 
 const onEdit = (person: Person) => {
   dialog.open(PersonDialog, {
@@ -50,9 +34,18 @@ const onEdit = (person: Person) => {
         // TODO: Handle error?
         return
       }
-      const person = opt.data as Person
-      // TODO: Update Person
-      console.log(person)
+      const payload = opt.data as Person
+      $fetch('/api/team', {
+        method: 'post',
+        body: payload,
+      }).then(() => {
+        toast.add({
+          summary: 'Erfolg',
+          detail: `Mitarbeiter wurde aktualisiert`,
+          severity: 'success',
+          life: Config.TOAST_LIFE_TIME,
+        })
+      })
     }
   })
 }
@@ -68,9 +61,18 @@ const addEmployee = () => {
         // TODO: Handle error?
         return
       }
-      const person = opt.data as Person
-      // TODO: Create Person
-      console.log(person)
+      const payload = opt.data as Person
+      $fetch('/api/team', {
+        method: 'post',
+        body: payload,
+      }).then((resp) => {
+        toast.add({
+          summary: 'Erfolg',
+          detail: `Mitarbeiter "${resp.name}" wurde angelegt`,
+          severity: 'success',
+          life: Config.TOAST_LIFE_TIME,
+        })
+      })
     }
   })
 }

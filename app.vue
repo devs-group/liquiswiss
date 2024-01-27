@@ -6,10 +6,11 @@
     </div>
   </div>
   <DynamicDialog/>
+  <Toast position="bottom-right"/>
 </template>
 
 <script setup lang="ts">
 useHead({
-  title: 'Liquiswiss'
+  title: 'LiquiSwiss'
 })
 </script>
