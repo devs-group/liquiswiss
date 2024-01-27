@@ -18,19 +18,19 @@ const dialog = useDialog();
 const people = ref<Person[]>([
   {
     id: 1,
-    name: "Ralph Segi",
+    name: "John Doe",
     hoursPerMonth: 160,
     vacationDaysPerYear: 25,
   },
   {
     id: 2,
-    name: "Robert Pupel",
+    name: "Jane Doe",
     hoursPerMonth: 160,
     vacationDaysPerYear: 25,
   },
   {
     id: 3,
-    name: "Matthias Hillert-Wernicke",
+    name: "Michael Doe",
     hoursPerMonth: 120,
     vacationDaysPerYear: 25,
   }
