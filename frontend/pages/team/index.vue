@@ -10,7 +10,7 @@
 </template>
 
 <script setup lang="ts">
-import type {Person} from "~/models/person";
+import type {StrapiPerson} from "~/models/person";
 import {ModalConfig} from "~/config/dialog-props";
 import PersonDialog from "~/components/dialogs/PersonDialog.vue";
 import {Config} from "~/config/config";
@@ -20,7 +20,7 @@ const toast = useToast()
 
 const {data: people} = await useFetch('/api/team')
 
-const onEdit = (person: Person) => {
+const onEdit = (person: StrapiPerson) => {
   dialog.open(PersonDialog, {
     data: {
       person: person,
@@ -30,11 +30,11 @@ const onEdit = (person: Person) => {
       ...ModalConfig,
     },
     onClose: (opt) => {
-      if (!opt) {
+      if (!opt?.data) {
         // TODO: Handle error?
         return
       }
-      const payload = opt.data as Person
+      const payload = opt.data as StrapiPerson
       $fetch('/api/team', {
         method: 'post',
         body: payload,
@@ -57,18 +57,18 @@ const addEmployee = () => {
       ...ModalConfig,
     },
     onClose: (opt) => {
-      if (!opt) {
+      if (!opt?.data) {
         // TODO: Handle error?
         return
       }
-      const payload = opt.data as Person
+      const payload = opt.data as StrapiPerson
       $fetch('/api/team', {
         method: 'post',
         body: payload,
       }).then((resp) => {
         toast.add({
           summary: 'Erfolg',
-          detail: `Mitarbeiter "${resp.name}" wurde angelegt`,
+          detail: `Mitarbeiter "${resp.attributes.name}" wurde angelegt`,
           severity: 'success',
           life: Config.TOAST_LIFE_TIME,
         })

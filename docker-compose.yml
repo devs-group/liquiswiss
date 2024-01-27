@@ -6,6 +6,9 @@ services:
       dockerfile: .deploy/nuxt/Dockerfile
       context: .
       target: dev
+    restart: always
+    links:
+      - strapi
     ports:
       - '3000:3000'
       - '24678:24678'
@@ -15,3 +18,30 @@ services:
     volumes:
       - ./frontend:/app
       - /app/node_modules
+
+  strapi:
+    build:
+      dockerfile: .deploy/strapi/Dockerfile
+      context: .
+      target: dev
+    restart: always
+    links:
+      - database
+    ports:
+      - '1337:1337'
+    volumes:
+      - ./backend:/app
+      - /app/node_modules
+
+  database:
+    image: mariadb:10.6.16
+    restart: always
+    ports:
+      - '3306:3306'
+    environment:
+      MARIADB_ROOT_PASSWORD: password
+      MARIADB_USER: ls_user
+      MARIADB_PASSWORD: password
+      MARIADB_DATABASE: liquiswiss
+    volumes:
+      - ./db_data:/var/lib/mysql

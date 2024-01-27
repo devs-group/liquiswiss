@@ -20,6 +20,14 @@ build-nuxt:
     - docker build -f ./.deploy/nuxt/Dockerfile -t ${IMAGE} ./
     - docker push ${IMAGE}
 
+build-strapi:
+  stage: build
+  variables:
+    IMAGE: ${CI_REGISTRY}/${CI_PROJECT_PATH}/strapi:master
+  script:
+    - docker build -f ./.deploy/strapi/Dockerfile -t ${IMAGE} ./
+    - docker push ${IMAGE}
+
 deploy:
   stage: deploy
   image: alpine:latest

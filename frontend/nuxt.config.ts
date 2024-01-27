@@ -6,6 +6,10 @@ export default defineNuxtConfig({
     build: {
         transpile: ["primevue"],
     },
+    runtimeConfig: {
+        strapiApiKey: '',
+        strapiApiUrl: '',
+    },
     modules: [
         'nuxt-primevue',
         '@nuxtjs/tailwindcss',

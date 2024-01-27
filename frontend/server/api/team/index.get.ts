@@ -1,31 +1,12 @@
-import {Person} from "~/models/person";
+import {type Strapi_ListResponse_Person, StrapiPerson} from "~/models/person";
 
 export default defineEventHandler(async () => {
-    // TODO: Fetch from database
-    return [
-        {
-            id: 1,
-            name: "John Doe",
-            hoursPerMonth: 160,
-            vacationDaysPerYear: 25,
-        },
-        {
-            id: 2,
-            name: "Jane Doe",
-            hoursPerMonth: 160,
-            vacationDaysPerYear: 25,
-        },
-        {
-            id: 2,
-            name: "Michelle Doe",
-            hoursPerMonth: 160,
-            vacationDaysPerYear: 25,
-        },
-        {
-            id: 3,
-            name: "Michael Doe",
-            hoursPerMonth: 120,
-            vacationDaysPerYear: 25,
+    const config = useRuntimeConfig()
+    const resp = await $fetch<Strapi_ListResponse_Person>('/employees', {
+        baseURL: config.strapiApiUrl,
+        headers: {
+            'Authorization': `Bearer ${config.strapiApiKey}`
         }
-    ] as Person[]
+    })
+    return resp.data as StrapiPerson[]
 })

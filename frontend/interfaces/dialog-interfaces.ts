@@ -1,11 +1,11 @@
-import type {Person} from "~/models/person";
+import type {StrapiPerson} from "~/models/person";
 
 export interface IPersonFormDialog {
     close: () => {},
     value: {
-        close: (person: Person) => any,
+        close: (person: StrapiPerson) => any,
         data: {
-            person?: Person
+            person?: StrapiPerson
         }
     }
 }

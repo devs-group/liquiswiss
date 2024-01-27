@@ -2,7 +2,7 @@
   <Card>
     <template #title>
       <div class="flex items-center justify-between">
-        <p class="truncate text-base">{{person.name}}</p>
+        <p class="truncate text-base">{{person.attributes.name}}</p>
         <div class="flex justify-end">
           <Button @click="$emit('onEdit', person)" icon="pi pi-pencil" outlined rounded />
         </div>
@@ -11,10 +11,10 @@
     <template #content>
       <div class="flex flex-col gap-2 text-sm">
         <p>
-          {{person.hoursPerMonth}} Stunden pro Monat
+          {{person.attributes.hoursPerMonth}} Stunden pro Monat
         </p>
         <p>
-          {{person.vacationDaysPerYear}} Urlaubstage im Jahr
+          {{person.attributes.vacationDaysPerYear}} Urlaubstage im Jahr
         </p>
       </div>
     </template>
@@ -22,16 +22,17 @@
 </template>
 
 <script setup lang="ts">
-import type {Person} from "~/models/person";
+
+import type {StrapiPerson} from "~/models/person";
 
 defineProps({
   person: {
-    type: Object as PropType<Person>,
+    type: Object as PropType<StrapiPerson>,
     required: true,
   }
 })
 
 defineEmits<{
-  'onEdit': [person: Person]
+  'onEdit': [person: StrapiPerson]
 }>()
 </script>

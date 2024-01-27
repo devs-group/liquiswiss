@@ -1,0 +1,30 @@
+{
+  "kind": "collectionType",
+  "collectionName": "employees",
+  "info": {
+    "singularName": "employee",
+    "pluralName": "employees",
+    "displayName": "Employee",
+    "description": ""
+  },
+  "options": {
+    "draftAndPublish": true
+  },
+  "pluginOptions": {},
+  "attributes": {
+    "name": {
+      "type": "string",
+      "required": true
+    },
+    "hoursPerMonth": {
+      "type": "integer",
+      "required": true,
+      "min": 0
+    },
+    "vacationDaysPerYear": {
+      "type": "integer",
+      "required": true,
+      "min": 0
+    }
+  }
+}
