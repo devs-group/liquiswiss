@@ -1,30 +1,30 @@
 <template>
   <form @keyup.enter="onSubmit" class="grid grid-cols-2 gap-2">
-    <span class="col-span-2 flex flex-col gap-2">
+    <div class="col-span-2 flex flex-col gap-2">
       <label class="text-sm font-bold" for="name">Name*</label>
       <InputText v-model="name" v-bind="nameProps"
                  :class="{'p-invalid': errors['attributes.name']?.length}"
                  id="name" type="text" autofocus/>
       <small class="text-red-400">{{errors["attributes.name"] || '&nbsp;'}}</small>
-    </span>
+    </div>
 
-    <span class="flex flex-col gap-2 col-span-full md:col-span-1">
+    <div class="flex flex-col gap-2 col-span-full md:col-span-1">
       <label class="text-sm font-bold" for="hours-per-month">Max. Stunden pro Monat*</label>
       <InputText v-model.number="hoursPerMonth" v-bind="hoursPerMonthProps"
                  :class="{'p-invalid': errors['attributes.hoursPerMonth']?.length}"
                  id="hours-per-month" type="number" min="0"/>
       <small class="text-red-400">{{errors["attributes.hoursPerMonth"] || '&nbsp;'}}</small>
-    </span>
+    </div>
 
-    <span class="flex flex-col gap-2 col-span-full md:col-span-1">
+    <div class="flex flex-col gap-2 col-span-full md:col-span-1">
       <label class="text-sm font-bold" for="vacation-days-per-year">Urlaubstage pro Jahr*</label>
       <InputText v-model.number="vacationDaysPerYear" v-bind="vacationDaysPerYearProps"
                  :class="{'p-invalid': errors['attributes.vacationDaysPerYear']?.length}"
                  id="vacation-days-per-year" type="number" min="0"/>
       <small class="text-red-400">{{errors["attributes.vacationDaysPerYear"] || '&nbsp;'}}</small>
-    </span>
+    </div>
 
-    <span class="flex flex-col gap-2 col-span-full md:col-span-1">
+    <div class="flex flex-col gap-2 col-span-full md:col-span-1">
       <div class="flex items-center gap-2">
         <label class="text-sm font-bold" for="vacation-days-per-year">Eintritt</label>
         <i class="pi pi-info-circle" v-tooltip="'Wann der Mitarbeiter ins Unternehmen eingetreten ist'"></i>
@@ -32,9 +32,9 @@
       <Calendar v-model="entry" v-bind="entryProps" date-format="dd.mm.yy" showIcon showButtonBar
                 :class="{'p-invalid': errors['attributes.entry']?.length}"/>
       <small class="text-red-400">{{errors["attributes.entry"] || '&nbsp;'}}</small>
-    </span>
+    </div>
 
-    <span class="flex flex-col gap-2 col-span-full md:col-span-1">
+    <div class="flex flex-col gap-2 col-span-full md:col-span-1">
       <div class="flex items-center gap-2">
         <label class="text-sm font-bold" for="vacation-days-per-year">Austritt</label>
         <i class="pi pi-info-circle" v-tooltip="'Falls der Mitarbeiter aus dem Unternehmen austritt'"></i>
@@ -42,7 +42,7 @@
       <Calendar v-model="exit" v-bind="exitProps" date-format="dd.mm.yy" showIcon showButtonBar
                 :class="{'p-invalid': errors['attributes.exit']?.length}"/>
       <small class="text-red-400">{{errors["attributes.exit"] || '&nbsp;'}}</small>
-    </span>
+    </div>
 
     <div v-if="person?.id" class="flex justify-end col-span-full">
       <Button @click="onDelete" label="Löschen" severity="danger" size="small"/>
@@ -116,7 +116,7 @@ const onDelete = (event: PointerEvent) => {
     rejectLabel: 'Nein',
     acceptLabel: 'Ja',
     accept: () => {
-      $fetch('/api/team', {
+      $fetch('/api/employees', {
         method: 'delete',
         body: person,
       }).then(async () => {

@@ -29,9 +29,9 @@
 
 <script setup lang="ts">
 import type {StrapiPerson} from "~/models/person";
-import {DateStringToFormattedDate} from "~/utils/date-helper";
+import {DateStringToFormattedDate} from "~/utils/format-helper";
 
-const props = defineProps({
+defineProps({
   person: {
     type: Object as PropType<StrapiPerson>,
     required: true,

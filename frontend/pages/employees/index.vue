@@ -18,7 +18,7 @@ import {Config} from "~/config/config";
 const dialog = useDialog();
 const toast = useToast()
 
-const {data: people} = await useFetch('/api/team')
+const {data: people} = await useFetch('/api/employees')
 
 const onEdit = (person: StrapiPerson) => {
   dialog.open(PersonDialog, {
@@ -37,7 +37,7 @@ const onEdit = (person: StrapiPerson) => {
       const payload = opt.data as StrapiPerson|'deleted'
 
       if (payload == 'deleted') {
-        people.value = await $fetch('/api/team')
+        people.value = await $fetch('/api/employees')
         toast.add({
           summary: 'Erfolg',
           detail: `Mitarbeiter "${person.attributes.name}" wurde gelöscht`,
@@ -47,11 +47,11 @@ const onEdit = (person: StrapiPerson) => {
         return
       }
 
-      $fetch('/api/team', {
+      $fetch('/api/employees', {
         method: 'put',
         body: payload,
       }).then(async () => {
-        people.value = await $fetch('/api/team')
+        people.value = await $fetch('/api/employees')
         toast.add({
           summary: 'Erfolg',
           detail: `Mitarbeiter wurde aktualisiert`,
@@ -75,11 +75,11 @@ const addEmployee = () => {
         return
       }
       const payload = opt.data as StrapiPerson
-      $fetch('/api/team', {
+      $fetch('/api/employees', {
         method: 'post',
         body: payload,
       }).then(async (resp) => {
-        people.value = await $fetch('/api/team')
+        people.value = await $fetch('/api/employees')
         toast.add({
           summary: 'Erfolg',
           detail: `Mitarbeiter "${resp.data.attributes.name}" wurde angelegt`,

@@ -1,6 +1,6 @@
 export const Routes = {
     HOME: '/',
-    TEAM: '/team',
+    EMPLOYEES: '/employees',
     REVENUE: '/revenue',
     EXPENSES: '/expenses',
 }

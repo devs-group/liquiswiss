@@ -22,7 +22,8 @@ import {Routes} from "~/config/routes";
 
 const items = ref([
   { label: 'Übersicht', icon: 'pi pi-home', route: Routes.HOME },
-  { label: 'Mitarbeitende', icon: 'pi pi-user', route: Routes.TEAM },
+  { label: 'Mitarbeitende', icon: 'pi pi-user', route: Routes.EMPLOYEES },
+  { label: 'Einnahmen', icon: 'pi pi-angle-double-up', route: Routes.REVENUE },
   { label: 'Abmelden', icon: 'pi pi-sign-out', command: () => {alert("logout")} },
 ]);
 </script>
