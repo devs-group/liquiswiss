@@ -17,10 +17,10 @@
           {{person.attributes.vacationDaysPerYear}} Urlaubstage im Jahr
         </p>
         <p v-if="person.attributes.entry">
-          Zugehörig seit {{new Date(person.attributes.entry).toLocaleDateString()}}
+          Zugehörig seit {{DateStringToFormattedDate(person.attributes.entry)}}
         </p>
         <p v-if="person.attributes.exit">
-          Austritt am {{new Date(person.attributes.exit).toLocaleDateString()}}
+          Austritt am {{DateStringToFormattedDate(person.attributes.exit)}}
         </p>
       </div>
     </template>
@@ -28,10 +28,10 @@
 </template>
 
 <script setup lang="ts">
-
 import type {StrapiPerson} from "~/models/person";
+import {DateStringToFormattedDate} from "~/utils/date-helper";
 
-defineProps({
+const props = defineProps({
   person: {
     type: Object as PropType<StrapiPerson>,
     required: true,
