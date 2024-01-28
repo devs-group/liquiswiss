@@ -4,9 +4,9 @@ export default defineEventHandler(async (event) => {
     const body = await readBody<StrapiPerson>(event)
 
     const config = useRuntimeConfig()
-    return await $fetch<Strapi_PostResponse_Person>('/employees', {
+    return await $fetch<Strapi_PostResponse_Person>(`/employees/${body.id}`, {
         baseURL: config.strapiApiUrl,
-        method: 'post',
+        method: 'put',
         body: {
             data: body.attributes
         },

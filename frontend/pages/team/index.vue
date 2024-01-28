@@ -29,16 +29,29 @@ const onEdit = (person: StrapiPerson) => {
       header: 'Mitarbeiter bearbeiten',
       ...ModalConfig,
     },
-    onClose: (opt) => {
+    onClose: async (opt) => {
       if (!opt?.data) {
         // TODO: Handle error?
         return
       }
-      const payload = opt.data as StrapiPerson
+      const payload = opt.data as StrapiPerson|'deleted'
+
+      if (payload == 'deleted') {
+        people.value = await $fetch('/api/team')
+        toast.add({
+          summary: 'Erfolg',
+          detail: `Mitarbeiter "${person.attributes.name}" wurde gelöscht`,
+          severity: 'success',
+          life: Config.TOAST_LIFE_TIME,
+        })
+        return
+      }
+
       $fetch('/api/team', {
-        method: 'post',
+        method: 'put',
         body: payload,
-      }).then(() => {
+      }).then(async () => {
+        people.value = await $fetch('/api/team')
         toast.add({
           summary: 'Erfolg',
           detail: `Mitarbeiter wurde aktualisiert`,
@@ -65,10 +78,11 @@ const addEmployee = () => {
       $fetch('/api/team', {
         method: 'post',
         body: payload,
-      }).then((resp) => {
+      }).then(async (resp) => {
+        people.value = await $fetch('/api/team')
         toast.add({
           summary: 'Erfolg',
-          detail: `Mitarbeiter "${resp.attributes.name}" wurde angelegt`,
+          detail: `Mitarbeiter "${resp.data.attributes.name}" wurde angelegt`,
           severity: 'success',
           life: Config.TOAST_LIFE_TIME,
         })

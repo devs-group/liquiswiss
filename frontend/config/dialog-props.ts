@@ -5,6 +5,7 @@ export const ModalConfig = {
     closeOnEscape: true,
     blockScroll: true,
     keepInViewPort: true,
+    maximizable: true,
     style: {
         width: '50vw',
     },

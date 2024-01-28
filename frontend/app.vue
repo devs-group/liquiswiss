@@ -6,6 +6,7 @@
     </div>
   </div>
   <DynamicDialog/>
+  <ConfirmPopup/>
   <Toast position="bottom-right"/>
 </template>
 

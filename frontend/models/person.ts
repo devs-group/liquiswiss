@@ -1,4 +1,4 @@
-import type {Strapi_ListResponse} from "~/interfaces/strapi-interfaces";
+import type {Strapi_Meta} from "~/interfaces/strapi-interfaces";
 
 export interface StrapiPerson {
     id?: number;
@@ -6,12 +6,18 @@ export interface StrapiPerson {
         name: string;
         hoursPerMonth: number;
         vacationDaysPerYear: number;
+        entry: Date|string;
+        exit: Date|string;
         createdAt: string;
         updatedAt: string;
         publishedAt: string;
     }
 }
 
-export interface Strapi_ListResponse_Person extends Strapi_ListResponse {
+export interface Strapi_ListResponse_Person extends Strapi_Meta {
     data: StrapiPerson[]
+}
+
+export interface Strapi_PostResponse_Person extends Strapi_Meta {
+    data: StrapiPerson
 }

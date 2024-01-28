@@ -1,5 +1,4 @@
-export interface Strapi_ListResponse {
-    data: any[]
+export interface Strapi_Meta {
     meta: {
         pagination: {
             page: number;

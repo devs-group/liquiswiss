@@ -25,6 +25,12 @@
       "type": "integer",
       "required": true,
       "min": 0
+    },
+    "entry": {
+      "type": "date"
+    },
+    "exit": {
+      "type": "date"
     }
   }
 }
