@@ -31,6 +31,7 @@ services:
       - '1337:1337'
     volumes:
       - ./backend:/app
+      - ./backend/types:/app/types
       - /app/node_modules
 
   database:

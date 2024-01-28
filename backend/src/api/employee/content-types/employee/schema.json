@@ -18,13 +18,11 @@
     },
     "hoursPerMonth": {
       "type": "integer",
-      "required": true,
-      "min": 0
+      "required": true
     },
     "vacationDaysPerYear": {
       "type": "integer",
-      "required": true,
-      "min": 0
+      "required": true
     },
     "entry": {
       "type": "date"
