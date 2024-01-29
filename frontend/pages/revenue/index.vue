@@ -58,6 +58,7 @@ const months = ref([
 const getMonthlyEntries = computed(() => {
   return (revenues.value as StrapiRevenue[]).map(revenue => {
     const start = new Date(revenue.attributes.start)
+    const end = revenue.attributes.end ? new Date(revenue.attributes.end) : null
     if (revenue.attributes.type === RevenueType.Single) {
       return {
         revenue: revenue,
@@ -66,7 +67,7 @@ const getMonthlyEntries = computed(() => {
     }
     return {
       revenue: revenue,
-      months: revenue.attributes.cycle === CycleType.Monthly ? range(0, 12) : []
+      months: revenue.attributes.cycle === CycleType.Monthly ? range(start.getMonth(), end?.getMonth() + 1 ?? 12) : []
     }
   })
 })

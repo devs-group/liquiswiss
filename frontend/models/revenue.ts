@@ -13,7 +13,7 @@ export interface StrapiRevenue {
         amount: number,
         cycle?: CycleType,
         start: Date|string,
-        end: Date|string,
+        end?: Date|string,
         createdAt: string;
         updatedAt: string;
         publishedAt: string;
