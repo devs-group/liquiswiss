@@ -17,12 +17,18 @@
       </div>
     </TabPanel>
     <TabPanel header="Kalender">
-      <DataTable :value="[]" tableStyle="min-width: 50rem">
-        <Column field="code" header="Code"></Column>
-        <Column field="name" header="Name"></Column>
-        <Column field="category" header="Category"></Column>
-        <Column field="quantity" header="Quantity"></Column>
-      </DataTable>
+      <div class="flex flex-col gap-4 overflow-x-auto pb-4">
+        <div class="flex">
+          <div class="flex flex-col flex-1 min-w-28 border-l border-t border-b last:border-r text-center" v-for="(month, i) of months">
+            <p class="p-2 font-bold bg-gray-100">{{month.substring(0, 3)}}</p>
+            <p class="border-t border-1 p-2 text-xs hover:bg-green-300 cursor-pointer"
+               v-tooltip="`${entry.revenue.attributes.amount} ${getCurrencyCodeFromId(entry.revenue.attributes.currency as number)}`"
+               v-for="entry of getMonthlyEntries.filter(value => value.months.includes(i))">
+              {{entry.revenue.attributes.name}}
+            </p>
+          </div>
+        </div>
+      </div>
     </TabPanel>
   </TabView>
 </template>
@@ -33,17 +39,37 @@ import {Config} from "~/config/config";
 import RevenueDialog from "~/components/dialogs/RevenueDialog.vue";
 import useGlobalData from "~/composables/useGlobalData";
 import type {StrapiRevenue} from "~/models/revenue";
+import {CycleType, RevenueType} from "~/config/enums";
+import {range} from "@antfu/utils";
 
 const dialog = useDialog();
 const toast = useToast()
-const {fetchCategories, fetchCurrencies} = useGlobalData()
+const {fetchCategories, fetchCurrencies, getCurrencyCodeFromId} = useGlobalData()
 
 await fetchCategories()
 await fetchCurrencies()
 const {data: revenues} = await useFetch('/api/revenue')
 
 const searchText = ref('')
-const currentDay = ref(new Date())
+const months = ref([
+    'Januar', 'Februar', 'März', 'April', 'Mai', 'Juni', 'Juli', 'August', 'September', 'Oktober', 'November', 'Dezember'
+])
+
+const getMonthlyEntries = computed(() => {
+  return (revenues.value as StrapiRevenue[]).map(revenue => {
+    const start = new Date(revenue.attributes.start)
+    if (revenue.attributes.type === RevenueType.Single) {
+      return {
+        revenue: revenue,
+        months: [start.getMonth()],
+      }
+    }
+    return {
+      revenue: revenue,
+      months: revenue.attributes.cycle === CycleType.Monthly ? range(0, 12) : []
+    }
+  })
+})
 
 const onEdit = (revenue: StrapiRevenue) => {
   dialog.open(RevenueDialog, {
