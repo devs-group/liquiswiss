@@ -1,6 +1,8 @@
 export const Routes = {
     HOME: '/',
     EMPLOYEES: '/employees',
-    REVENUE: '/revenue',
+    REVENUE: '/transactions',
     EXPENSES: '/expenses',
+    LOGIN: '/auth',
+    REGISTER: '/auth/register',
 }

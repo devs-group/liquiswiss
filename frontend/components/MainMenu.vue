@@ -19,11 +19,17 @@
 
 <script setup lang="ts">
 import {Routes} from "~/config/routes";
+import useAuth from "~/composables/useAuth";
+
+const {logout} = useAuth()
 
 const items = ref([
   { label: 'Übersicht', icon: 'pi pi-home', route: Routes.HOME },
   { label: 'Mitarbeitende', icon: 'pi pi-user', route: Routes.EMPLOYEES },
-  { label: 'Einnahmen', icon: 'pi pi-angle-double-up', route: Routes.REVENUE },
-  { label: 'Abmelden', icon: 'pi pi-sign-out', command: () => {alert("logout")} },
+  { label: 'Transaktionen', icon: 'pi pi-angle-double-up', route: Routes.REVENUE },
+  { label: 'Abmelden', icon: 'pi pi-sign-out', command: async () => {
+      await logout();
+      reloadNuxtApp({force: true})
+    }},
 ]);
 </script>

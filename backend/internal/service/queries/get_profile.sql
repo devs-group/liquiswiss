@@ -1,0 +1,1 @@
+SELECT id, name, email FROM go_users WHERE id = ?

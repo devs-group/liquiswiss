@@ -7,8 +7,7 @@ export default defineNuxtConfig({
         transpile: ["primevue"],
     },
     runtimeConfig: {
-        strapiApiKey: '',
-        strapiApiUrl: '',
+        apiHost: '',
     },
     modules: [
         'nuxt-primevue',
@@ -25,4 +24,5 @@ export default defineNuxtConfig({
         'primevue/resources/themes/aura-light-green/theme.css',
         'primeicons/primeicons.css',
     ],
+    compatibilityDate: '2024-07-16',
 })

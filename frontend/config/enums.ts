@@ -1,4 +1,4 @@
-export enum RevenueType {
+export enum TransactionType {
     Single = 'single',
     Repeating = 'repeating',
 }

@@ -1,38 +1,38 @@
-version: '3.9'
+#version: '3.9'
 
 services:
-  nuxt:
-    build:
-      dockerfile: .deploy/nuxt/Dockerfile
-      context: .
-      target: dev
-    restart: always
-    links:
-      - strapi
-    ports:
-      - '3000:3000'
-      - '24678:24678'
-    environment:
-      # This is great for testing with different timezones. Leave empty for UTC
-      - TZ=Europe/Berlin
-    volumes:
-      - ./frontend:/app
-      - /app/node_modules
-
-  strapi:
-    build:
-      dockerfile: .deploy/strapi/Dockerfile
-      context: .
-      target: dev
-    restart: always
-    links:
-      - database
-    ports:
-      - '1337:1337'
-    volumes:
-      - ./backend:/app
-      - ./backend/types:/app/types
-      - /app/node_modules
+#  nuxt:
+#    build:
+#      dockerfile: .deploy/nuxt/Dockerfile
+#      context: .
+#      target: dev
+#    restart: always
+#    links:
+#      - strapi
+#    ports:
+#      - '3000:3000'
+#      - '24678:24678'
+#    environment:
+#      # This is great for testing with different timezones. Leave empty for UTC
+#      - TZ=Europe/Berlin
+#    volumes:
+#      - ./frontend:/app
+#      - /app/node_modules
+#
+#  strapi:
+#    build:
+#      dockerfile: .deploy/strapi/Dockerfile
+#      context: .
+#      target: dev
+#    restart: always
+#    links:
+#      - database
+#    ports:
+#      - '1337:1337'
+#    volumes:
+#      - ./backend:/app
+#      - ./backend/types:/app/types
+#      - /app/node_modules
 
   database:
     image: mariadb:10.6.16

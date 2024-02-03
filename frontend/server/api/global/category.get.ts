@@ -4,7 +4,7 @@ export default defineEventHandler(async () => {
     const config = useRuntimeConfig()
     const locale = 'de'
     const resp = await $fetch<Strapi_ListResponse_Category>(`/categories?locale=${locale}`, {
-        baseURL: config.strapiApiUrl,
+        baseURL: config.apiHost,
         headers: {
             'Authorization': `Bearer ${config.strapiApiKey}`
         }

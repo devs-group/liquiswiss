@@ -20,12 +20,12 @@ build-nuxt:
     - docker build -f ./.deploy/nuxt/Dockerfile -t ${IMAGE} ./
     - docker push ${IMAGE}
 
-build-strapi:
+build-backend:
   stage: build
   variables:
-    IMAGE: ${CI_REGISTRY}/${CI_PROJECT_PATH}/strapi:master
+    IMAGE: ${CI_REGISTRY}/${CI_PROJECT_PATH}/backend:master
   script:
-    - docker build -f ./.deploy/strapi/Dockerfile -t ${IMAGE} ./
+    - docker build -f ./.deploy/backend/Dockerfile -t ${IMAGE} ./
     - docker push ${IMAGE}
 
 deploy:

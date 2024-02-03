@@ -1,4 +1,4 @@
-import {CycleType, RevenueType} from "~/config/enums";
+import {CycleType, TransactionType} from "~/config/enums";
 
 export const CycleTypeToOptions = () => {
     return [
@@ -29,15 +29,15 @@ export const CycleTypeToOptions = () => {
     ]
 }
 
-export const RevenueTypeToOptions = () => {
+export const TransactionTypeToOptions = () => {
     return [
         {
             name: 'Einmalige Fälligkeit',
-            value: RevenueType.Single,
+            value: TransactionType.Single,
         },
         {
             name: 'Wiederkehrende Zahlung',
-            value: RevenueType.Repeating,
+            value: TransactionType.Repeating,
         },
     ]
 }

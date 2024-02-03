@@ -2,28 +2,41 @@
   <div class="flex flex-col gap-4">
     <Button @click="addEmployee" class="self-end" label="Mitarbeiter hinzufügen" icon="pi pi-user"/>
 
-    <div v-if="people.length" class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
-      <PersonCard @on-edit="onEdit" v-for="person in people" :person="person"/>
+    <div v-if="employees?.data.length" class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
+      <EmployeeCard @on-edit="onEdit" v-for="employee in employees.data" :employee="employee"/>
     </div>
     <p v-else>Es gibt noch keine Mitarbeiter</p>
+
+    <div v-if="employees?.data.length" class="self-center">
+      <Button v-if="!noMoreData" severity="info" label="Mehr anzeigen" @click="onLoadMore" :loading="isLoadingMore"/>
+      <p v-else class="text-xs opacity-60">Keine weiteren Mitarbeiter ...</p>
+    </div>
   </div>
 </template>
 
 <script setup lang="ts">
-import type {StrapiPerson} from "~/models/person";
 import {ModalConfig} from "~/config/dialog-props";
-import PersonDialog from "~/components/dialogs/PersonDialog.vue";
 import {Config} from "~/config/config";
+import EmployeeDialog from "~/components/dialogs/EmployeeDialog.vue";
+import type {EmployeeFormData, EmployeeResponse} from "~/models/employee";
 
+const {employees, noMoreData, page, getEmployees, getEmployeesPagination, createEmployee, updateEmployee} = useEmployees()
 const dialog = useDialog();
 const toast = useToast()
+const isLoadingMore = ref(false)
 
-const {data: people} = await useFetch('/api/employees')
+await getEmployees(false)
 
-const onEdit = (person: StrapiPerson) => {
-  dialog.open(PersonDialog, {
+const onLoadMore = async (event: MouseEvent) => {
+  isLoadingMore.value = true
+  page.value += 1
+  await getEmployees(false)
+  isLoadingMore.value = false
+}
+const onEdit = (employee: EmployeeResponse) => {
+  dialog.open(EmployeeDialog, {
     data: {
-      person: person,
+      employee,
     },
     props: {
       header: 'Mitarbeiter bearbeiten',
@@ -34,37 +47,34 @@ const onEdit = (person: StrapiPerson) => {
         // TODO: Handle error?
         return
       }
-      const payload = opt.data as StrapiPerson|'deleted'
+      const payload = opt.data as EmployeeFormData|'deleted'
 
       if (payload == 'deleted') {
-        people.value = await $fetch('/api/employees')
+        await getEmployeesPagination()
         toast.add({
           summary: 'Erfolg',
-          detail: `Mitarbeiter "${person.attributes.name}" wurde gelöscht`,
+          detail: `Mitarbeiter "${employee.name}" wurde gelöscht`,
           severity: 'success',
           life: Config.TOAST_LIFE_TIME,
         })
         return
       }
 
-      $fetch('/api/employees', {
-        method: 'put',
-        body: payload,
-      }).then(async () => {
-        people.value = await $fetch('/api/employees')
-        toast.add({
-          summary: 'Erfolg',
-          detail: `Mitarbeiter wurde aktualisiert`,
-          severity: 'success',
-          life: Config.TOAST_LIFE_TIME,
-        })
-      })
+      updateEmployee(payload)
+          .then(async () => {
+            toast.add({
+              summary: 'Erfolg',
+              detail: `Mitarbeiter "${employee.name}" wurde aktualisiert`,
+              severity: 'success',
+              life: Config.TOAST_LIFE_TIME,
+            })
+          })
     }
   })
 }
 
 const addEmployee = () => {
-  dialog.open(PersonDialog, {
+  dialog.open(EmployeeDialog, {
     props: {
       header: 'Neuen Mitarbeiter anlegen',
       ...ModalConfig,
@@ -74,19 +84,16 @@ const addEmployee = () => {
         // TODO: Handle error?
         return
       }
-      const payload = opt.data as StrapiPerson
-      $fetch('/api/employees', {
-        method: 'post',
-        body: payload,
-      }).then(async (resp) => {
-        people.value = await $fetch('/api/employees')
-        toast.add({
-          summary: 'Erfolg',
-          detail: `Mitarbeiter "${resp.data.attributes.name}" wurde angelegt`,
-          severity: 'success',
-          life: Config.TOAST_LIFE_TIME,
-        })
-      })
+      const payload = opt.data as EmployeeFormData
+      createEmployee(payload)
+          .then(async () => {
+            toast.add({
+              summary: 'Erfolg',
+              detail: `Mitarbeiter "${payload.name}" wurde angelegt`,
+              severity: 'success',
+              life: Config.TOAST_LIFE_TIME,
+            })
+          })
     }
   })
 }

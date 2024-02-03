@@ -1,6 +1,6 @@
 #!/bin/sh
 
-SUCCEEDED=$(curl -X GET "${DEPLOY_URL}" -H "X-Access-Token: ${DEPLOY_TOKEN}" | grep "upn" | wc -l)
+SUCCEEDED=$(curl -X GET "${DEPLOY_URL}" -H "X-Access-Token: ${DEPLOY_TOKEN}" | grep "Done" | wc -l)
 
 if [ "${SUCCEEDED}" != 1 ] ; then
   echo "Deployment failed!"

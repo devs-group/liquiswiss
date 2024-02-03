@@ -1,22 +1,22 @@
-import type {StrapiPerson} from "~/models/person";
-import type {StrapiRevenue} from "~/models/revenue";
+import type {StrapiTransaction} from "~/models/transaction";
+import type {EmployeeFormData, EmployeeResponse} from "~/models/employee";
 
-export interface IPersonFormDialog {
+export interface IEmployeeFormDialog {
     close: () => {},
     value: {
-        close: (person: StrapiPerson|'deleted') => any,
+        close: (employee: EmployeeFormData|'deleted') => any,
         data: {
-            person?: StrapiPerson
+            employee?: EmployeeResponse
         }
     }
 }
 
-export interface IRevenueFormDialog {
+export interface ITransactionFormDialog {
     close: () => {},
     value: {
-        close: (person: StrapiRevenue|'deleted') => any,
+        close: (person: StrapiTransaction|'deleted') => any,
         data: {
-            revenue?: StrapiRevenue
+            transaction?: StrapiTransaction
         }
     }
 }

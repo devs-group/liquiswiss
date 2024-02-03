@@ -1,0 +1,1 @@
+SELECT 1 FROM go_users WHERE id = ?
