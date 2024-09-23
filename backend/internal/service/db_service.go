@@ -4,9 +4,11 @@ package service
 import (
 	"database/sql"
 	"embed"
+	"io/fs"
 	"liquiswiss/pkg/logger"
 	"liquiswiss/pkg/models"
 	"liquiswiss/pkg/types"
+	"path/filepath"
 	"strings"
 	"time"
 )
@@ -14,7 +16,12 @@ import (
 //go:embed queries/*.sql
 var sqlQueries embed.FS
 
+//go:embed mocks/*.sql
+var sqlMocks embed.FS
+
 type IDatabaseService interface {
+	ApplyMocks() error
+
 	RegisterUser(email, password string) (int64, error)
 	GetUserPasswordByEMail(email string) (*models.Login, error)
 	GetProfile(id string) (*models.User, error)
@@ -54,15 +61,34 @@ type IDatabaseService interface {
 }
 
 type DatabaseService struct {
-	db  *sql.DB
-	log logger.Logger
+	db *sql.DB
 }
 
-func NewDatabaseService(db *sql.DB, log logger.Logger) IDatabaseService {
+func NewDatabaseService(db *sql.DB) IDatabaseService {
 	return &DatabaseService{
-		db:  db,
-		log: log,
+		db: db,
 	}
+}
+
+func (s *DatabaseService) ApplyMocks() error {
+	return fs.WalkDir(sqlMocks, ".", func(path string, d fs.DirEntry, err error) error {
+		if err != nil {
+			return err
+		}
+		if filepath.Ext(path) == ".sql" {
+			query, err := sqlMocks.ReadFile(path)
+			if err != nil {
+				logger.Logger.Errorf("Could not read %s: %v", path, err)
+			}
+			_, err = s.db.Exec(string(query))
+			if err != nil {
+				logger.Logger.Warnf("Failed to apply %s to DB: %s", path, err)
+			} else {
+				logger.Logger.Infof("Applied %s to DB", path)
+			}
+		}
+		return nil
+	})
 }
 
 func (s *DatabaseService) RegisterUser(email string, password string) (int64, error) {

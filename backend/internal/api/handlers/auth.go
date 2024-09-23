@@ -150,7 +150,7 @@ func clearRefreshTokenFromDatabase(dbService service.IDatabaseService, c *gin.Co
 			// Delete the refresh token from the database
 			err2 = dbService.DeleteRefreshToken(refreshClaims.ID, refreshClaims.UserID)
 			if err2 != nil {
-				logger.NewZapLogger().Error("Failed to delete refresh token", err2)
+				logger.Logger.Error("Failed to delete refresh token", err2)
 			}
 		}
 	}

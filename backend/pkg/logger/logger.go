@@ -6,34 +6,15 @@ import (
 	"go.uber.org/zap"
 )
 
-type Logger interface {
-	Debug(msg string, keysAndValues ...interface{})
-	Info(msg string, keysAndValues ...interface{})
-	Error(msg string, keysAndValues ...interface{})
-}
+var Logger *zap.SugaredLogger
 
-type zapLogger struct {
-	*zap.SugaredLogger
-}
-
-func (zl *zapLogger) Info(msg string, keysAndValues ...interface{}) {
-	zl.SugaredLogger.Infow(msg, keysAndValues...)
-}
-
-func (zl *zapLogger) Error(msg string, keysAndValues ...interface{}) {
-	zl.SugaredLogger.Errorw(msg, keysAndValues...)
-}
-
-func (zl *zapLogger) Debug(msg string, keysAndValues ...interface{}) {
-	zl.SugaredLogger.Debugw(msg, keysAndValues...)
-}
-
-func NewZapLogger() Logger {
-	var logger *zap.Logger
+func NewZapLogger() *zap.SugaredLogger {
+	var l *zap.Logger
 	if utils.IsProduction() {
-		logger, _ = zap.NewProduction()
+		l, _ = zap.NewProduction()
 	} else {
-		logger, _ = zap.NewDevelopment()
+		l, _ = zap.NewDevelopment()
 	}
-	return &zapLogger{logger.Sugar()}
+	Logger = l.Sugar()
+	return Logger
 }

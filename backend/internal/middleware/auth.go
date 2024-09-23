@@ -71,7 +71,7 @@ func AuthMiddleware(c *gin.Context) {
 	if err != nil {
 		auth.ClearAuthCookies(c)
 		// TODO: Report as exception to Sentry
-		logger.NewZapLogger().Error("Error checking user existence", err)
+		logger.Logger.Error("Error checking user existence", err)
 		c.AbortWithStatusJSON(http.StatusNotFound, gin.H{"error": "Fehler beim Überprüfen der Benutzerexistenz", "logout": true})
 		return
 	}

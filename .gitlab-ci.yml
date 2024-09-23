@@ -19,6 +19,9 @@ build-nuxt:
   script:
     - docker build -f ./.deploy/nuxt/Dockerfile -t ${IMAGE} ./
     - docker push ${IMAGE}
+  rules:
+    - changes:
+      - frontend/**/*
 
 build-backend:
   stage: build
@@ -27,6 +30,9 @@ build-backend:
   script:
     - docker build -f ./.deploy/backend/Dockerfile -t ${IMAGE} ./
     - docker push ${IMAGE}
+  rules:
+    - changes:
+      - backend/**/*
 
 deploy:
   stage: deploy
