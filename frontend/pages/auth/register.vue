@@ -16,8 +16,8 @@ import {Routes} from "~/config/routes";
 const {register} = useAuth()
 const toast = useToast()
 
-const email = ref('segiralph1@gmail.com')
-const password = ref('qwer1234')
+const email = ref('')
+const password = ref('')
 const isLoading = ref(false)
 
 const onRegister = async () => {
