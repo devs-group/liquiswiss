@@ -58,7 +58,7 @@ func main() {
 	middleware.InjectUserService(dbService)
 	apiHandler := api.NewAPI(dbService)
 
-	// TODO: REMOVE ME
+	// TODO: REMOVE ME BEFORE RELEASE
 	err = dbService.ApplyMocks()
 	if err != nil {
 		logger.Logger.Warnf("Failed to apply mocks: %v", err)
