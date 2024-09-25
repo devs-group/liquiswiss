@@ -82,7 +82,7 @@ func GenerateCookie(name, token string, expiration time.Time) http.Cookie {
 		HttpOnly: true,
 		Path:     "/",
 		Secure:   utils.IsProduction(),
-		SameSite: http.SameSiteStrictMode,
+		SameSite: http.SameSiteNoneMode,
 	}
 }
 
@@ -95,7 +95,7 @@ func GenerateDeleteCookie(name string) http.Cookie {
 		HttpOnly: true,
 		Path:     "/",
 		Secure:   utils.IsProduction(),
-		SameSite: http.SameSiteStrictMode,
+		SameSite: http.SameSiteNoneMode,
 	}
 }
 
