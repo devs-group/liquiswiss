@@ -45,7 +45,7 @@ func main() {
 	}
 
 	if err := goose.Up(gooseConn, "internal/db/migrations"); err != nil {
-		logger.Logger.Errorf("Failed to apply migrations: %v", err)
+		logger.Logger.Errorf("Failed to apply migrations: %v", err.Error())
 		panic(err)
 	}
 	err = gooseConn.Close()

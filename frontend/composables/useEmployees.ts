@@ -1,20 +1,21 @@
 import { ref } from 'vue';
-import type {EmployeeFormData, EmployeeResponse, ListEmployeeResponse} from "~/models/employee";
+import type {
+    EmployeeFormData,
+    EmployeeHistoryFormData, EmployeeHistoryResponse,
+    EmployeeResponse, ListEmployeeHistoryResponse,
+    ListEmployeeResponse
+} from "~/models/employee";
 import type {PaginationResponse} from "~/models/pagination";
-import {DateToApiFormat} from "~/utils/format-helper";
+import {DefaultListResponse} from "~/models/classes";
 
-const limit = ref(20)
-const page = ref(1)
-const noMoreData = ref(false)
-const employees = ref<ListEmployeeResponse>({
-    data: [],
-    pagination: {
-        currentPage: 1,
-        totalCount: 0,
-        totalPages: 0,
-        totalRemaining: 0,
-    }
-});
+const limitEmployees = ref(20)
+const pageEmployees = ref(1)
+const noMoreDataEmployees = ref(false)
+const limitEmployeeHistories = ref(20)
+const pageEmployeeHistories = ref(1)
+const noMoreDataEmployeeHistories = ref(false)
+const employees = ref<ListEmployeeResponse>(new DefaultListResponse());
+const employeeHistories = ref<ListEmployeeHistoryResponse>(new DefaultListResponse())
 
 export default function useEmployees() {
     const getEmployees = async (append: boolean)  => {
@@ -22,8 +23,8 @@ export default function useEmployees() {
             const {data} = await useFetch<ListEmployeeResponse>('/api/employees', {
                 method: 'GET',
                 query: {
-                    page: page.value,
-                    limit: limit.value,
+                    page: pageEmployees.value,
+                    limit: limitEmployees.value,
                 }
             });
             if (data.value) {
@@ -33,7 +34,7 @@ export default function useEmployees() {
                 } else {
                     employees.value = data.value
                 }
-                noMoreData.value = employees.value.pagination.totalRemaining == 0
+                noMoreDataEmployees.value = employees.value.pagination.totalRemaining == 0
             }
         } catch (error) {
             console.error('Error listing employees:', error);
@@ -47,7 +48,7 @@ export default function useEmployees() {
                 query: {
                     // Can always be one
                     page: 1,
-                    limit: limit.value,
+                    limit: limitEmployees.value,
                 }
             });
             if (data.value) {
@@ -58,47 +59,81 @@ export default function useEmployees() {
         }
     }
 
-    const getEmployee = async (id: string) => {
+    const getEmployee = async (id: number) => {
         try {
-            const {data} = await useFetch(`/api/employees/${id}`, {
+            const {data} = await useFetch<EmployeeResponse>(`/api/employees/${id}`, {
                 method: 'GET',
             });
             return data.value
         } catch (error) {
             console.error('Error getting employee:', error);
         }
+        return null
+    }
+
+    const getEmployeeHistory = async (employeeID: number) => {
+        try {
+            const {data} = await useFetch<ListEmployeeHistoryResponse>(`/api/employees/${employeeID}/history`, {
+                method: 'GET',
+                query: {
+                    page: pageEmployeeHistories.value,
+                    limit: limitEmployeeHistories.value,
+                }
+            });
+            if (data.value) {
+                employeeHistories.value = data.value
+            } else {
+                employeeHistories.value = new DefaultListResponse()
+            }
+            noMoreDataEmployeeHistories.value = employeeHistories.value.pagination.totalRemaining == 0
+        } catch (error) {
+            console.error('Error getting employee:', error);
+        }
     }
 
     const createEmployee = async (payload: EmployeeFormData) => {
+        let id = 0
         try {
             const {data} = await useFetch<EmployeeResponse>(`/api/employees`, {
                 method: 'POST',
-                body: {
-                    ...payload,
-                    entryDate: DateToApiFormat(payload.entryDate),
-                    exitDate: payload.exitDate ? DateToApiFormat(payload.exitDate) : undefined,
-                },
+                body: payload,
             });
             // Update data list in frontend
             if (data.value) {
                 employees.value!.data.push(data.value)
+                id = data.value.id
             }
             // Update Pagination from backend
             await getEmployeesPagination()
         } catch (error) {
             console.error('Error creating employee:', error);
         }
+        return id
+    }
+
+    const createEmployeeHistory = async (employeeID: number, payload: EmployeeHistoryFormData) => {
+        try {
+            await useFetch<EmployeeHistoryResponse>(`/api/employees/${employeeID}/history`, {
+                method: 'POST',
+                body: {
+                    ...payload,
+                    salaryPerMonth: payload.salaryPerMonth * 100,
+                    fromDate: DateToApiFormat(payload.fromDate),
+                    toDate: payload.toDate ? DateToApiFormat(payload.toDate) : undefined,
+                },
+            });
+            await getEmployeeHistory(employeeID)
+        } catch (error) {
+            console.error('Error creating employee:', error);
+        }
+        return []
     }
 
     const updateEmployee = async (payload: EmployeeFormData) => {
         try {
             const {data} = await useFetch<EmployeeResponse>(`/api/employees/${payload.id}`, {
                 method: 'PATCH',
-                body: {
-                    ...payload,
-                    entryDate: DateToApiFormat(payload.entryDate),
-                    exitDate: payload.exitDate ? DateToApiFormat(payload.exitDate) : undefined,
-                },
+                body: payload,
             });
             // Update data list in frontend
             if (data.value) {
@@ -110,6 +145,23 @@ export default function useEmployees() {
             await getEmployeesPagination()
         } catch (error) {
             console.error('Error updating employee:', error);
+        }
+    }
+
+    const updateEmployeeHistory = async (employeeID: number, payload: EmployeeHistoryFormData) => {
+        try {
+            await useFetch<EmployeeHistoryResponse>(`/api/employees/history/${payload.id}`, {
+                method: 'PATCH',
+                body: {
+                    ...payload,
+                    salaryPerMonth: payload.salaryPerMonth * 100,
+                    fromDate: DateToApiFormat(payload.fromDate),
+                    toDate: payload.toDate ? DateToApiFormat(payload.toDate) : undefined,
+                },
+            });
+            await getEmployeeHistory(employeeID)
+        } catch (error) {
+            console.error('Error updating employee history:', error);
         }
     }
 
@@ -127,16 +179,35 @@ export default function useEmployees() {
         }
     }
 
+    const deleteEmployeeHistory = async (employeeID: number, id: number) => {
+        try {
+            await useFetch(`/api/employees/history/${id}`, {
+                method: 'DELETE',
+            });
+            await getEmployeeHistory(employeeID)
+        } catch (error) {
+            console.error('Error deleting employee history:', error);
+        }
+    }
+
     return {
         employees,
-        limit,
-        page,
-        noMoreData,
+        limitEmployees,
+        pageEmployees,
+        noMoreDataEmployees,
+        employeeHistories,
+        limitEmployeeHistories,
+        pageEmployeeHistories,
+        noMoreDataEmployeeHistories,
         getEmployees,
         getEmployeesPagination,
         getEmployee,
+        getEmployeeHistory,
         createEmployee,
+        createEmployeeHistory,
         updateEmployee,
+        updateEmployeeHistory,
         deleteEmployee,
+        deleteEmployeeHistory,
     };
 }

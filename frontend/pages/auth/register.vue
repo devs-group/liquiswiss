@@ -3,8 +3,8 @@
   <form @submit.prevent class="flex flex-col items-center justify-center gap-2">
     <InputText placeholder="E-Mail" v-model.trim="email" :disabled="isLoading"/>
     <InputText placeholder="Passwort" v-model="password" :disabled="isLoading"/>
-    <p class="text-sm">Konto vorhanden? Jetzt <NuxtLink :to="Routes.LOGIN" class="underline">einloggen</NuxtLink></p>
-    <Button label="Konto erstellen" @click="onRegister" :loading="isLoading" type="submit"/>
+    <p class="text-sm">Konto vorhanden? Jetzt <NuxtLink :to="{name: Routes.LOGIN}" class="underline">einloggen</NuxtLink></p>
+    <Button label="Konto erstellen" @click="onRegister" :disabled="isLoading" :loading="isLoading" type="submit"/>
   </form>
 </template>
 

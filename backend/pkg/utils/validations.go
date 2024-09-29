@@ -13,7 +13,7 @@ func InitValidator() {
 	// Register any custom validations here
 	validate.RegisterValidation("cycleRequiredIfRepeating", cycleRequiredIfRepeating)
 	validate.RegisterValidation("endDateGTEStartDate", validateEndDate)
-	validate.RegisterValidation("exitDateGTEEntryDate", validateExitDate)
+	validate.RegisterValidation("fromDateGTEToDate", validateToDate)
 	validate.RegisterAlias("allowedCycles", `oneof='daily' 'weekly' 'monthly' 'quarterly' 'biannually' 'yearly'`)
 }
 
@@ -80,48 +80,48 @@ func validateEndDate(fl validator.FieldLevel) bool {
 	return endDate.After(startDate) || endDate.Equal(startDate)
 }
 
-func validateExitDate(fl validator.FieldLevel) bool {
-	entryDateField := fl.Parent().FieldByName("EntryDate")
-	// exitDateStr is always a pointer
-	exitDateStr := fl.Field().String()
+func validateToDate(fl validator.FieldLevel) bool {
+	fromDateField := fl.Parent().FieldByName("FromDate")
+	// toDateStr is always a pointer
+	toDateStr := fl.Field().String()
 
-	// entryDateField can be a pointer or not so it needs special treatment
-	var entryDateStr string
-	if entryDateField.Kind() == reflect.Ptr {
+	// fromDateField can be a pointer or not so it needs special treatment
+	var fromDateStr string
+	if fromDateField.Kind() == reflect.Ptr {
 		// If it's a pointer, check if it's nil
-		if entryDateField.IsNil() {
-			// If EntryDate is not provided, ExitDate can't be correct
+		if fromDateField.IsNil() {
+			// If FromDate is not provided, ToDate can't be correct
 			return false
 		}
 		// Dereference the pointer to get the actual value
-		entryDateStr = entryDateField.Elem().String()
+		fromDateStr = fromDateField.Elem().String()
 	} else {
 		// If it's not a pointer, get the value directly
-		entryDateStr = entryDateField.String()
+		fromDateStr = fromDateField.String()
 	}
 
-	if entryDateStr == "" && exitDateStr == "" {
+	if fromDateStr == "" && toDateStr == "" {
 		return true
-	} else if entryDateStr == "" && exitDateStr != "" {
+	} else if fromDateStr == "" && toDateStr != "" {
 		return false
 	}
 
 	// Parse start and end dates
 	layout := "2006-01-02" // Assuming the date format is YYYY-MM-DD
-	entryDate, err := time.Parse(layout, entryDateStr)
+	fromDate, err := time.Parse(layout, fromDateStr)
 	if err != nil {
 		return false // Invalid start date format
 	}
 
-	if exitDateStr == "" {
-		return true // If ExitDate is empty, we allow this as it's omitempty
+	if toDateStr == "" {
+		return true // If ToDate is empty, we allow this as it's omitempty
 	}
 
-	exitDate, err := time.Parse(layout, exitDateStr)
+	toDate, err := time.Parse(layout, toDateStr)
 	if err != nil {
 		return false // Invalid end date format
 	}
 
-	// Check if ExitDate is after or equal to EntryDate
-	return exitDate.After(entryDate) || exitDate.Equal(entryDate)
+	// Check if ToDate is after or equal to FromDate
+	return toDate.After(fromDate) || toDate.Equal(fromDate)
 }

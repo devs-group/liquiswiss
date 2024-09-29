@@ -9,29 +9,34 @@
       </div>
     </template>
     <template #content>
-      <div class="flex flex-col gap-2 text-sm">
-        <p>
-          {{employee.hoursPerMonth}} max. Stunden pro Monat
+      <div v-if="employee.hoursPerMonth !== null" class="flex flex-col gap-2 text-sm">
+        <p class="font-bold">Aktuelle Daten:</p>
+        <p>{{employee.hoursPerMonth}} Arbeitsstunden / Monat</p>
+        <p v-if="employee.salaryPerMonth && employee.salaryCurrency">
+          {{salaryFormatted}} {{employee.salaryCurrency.code}} / Monat
         </p>
-        <p>
-          {{employee.vacationDaysPerYear}} Urlaubstage im Jahr
+        <p v-if="employee.vacationDaysPerYear">
+          {{employee.vacationDaysPerYear}} Urlaubstage / Jahr
         </p>
-        <p v-if="employee.entryDate">
-          Zugehörig seit {{DateStringToFormattedDate(employee.entryDate)}}
+        <p v-if="employee.fromDate">
+          Gültig seit {{DateStringToFormattedDate(employee.fromDate)}}
         </p>
-        <p v-if="employee.exitDate">
-          Austritt am {{DateStringToFormattedDate(employee.exitDate)}}
+        <p v-if="employee.toDate">
+          Gültig bis {{DateStringToFormattedDate(employee.toDate)}}
         </p>
+      </div>
+      <div v-else class="flex flex-col gap-2 text-sm">
+        <p class="text-sm text-red-400">Der Mitarbeiter hat noch keine Daten</p>
       </div>
     </template>
   </Card>
 </template>
 
 <script setup lang="ts">
-import {DateStringToFormattedDate} from "~/utils/format-helper";
+import {DateStringToFormattedDate, NumberToFormattedCurrency} from "~/utils/format-helper";
 import type {EmployeeResponse} from "~/models/employee";
 
-defineProps({
+const props = defineProps({
   employee: {
     type: Object as PropType<EmployeeResponse>,
     required: true,
@@ -41,4 +46,6 @@ defineProps({
 defineEmits<{
   'onEdit': [employee: EmployeeResponse]
 }>()
+
+const salaryFormatted = computed(() => NumberToFormattedCurrency(AmountToFloat(props.employee!.salaryPerMonth), props.employee.salaryCurrency!.localeCode))
 </script>

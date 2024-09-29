@@ -1,5 +1,7 @@
 import {CycleType, TransactionType} from "~/config/enums";
 
+export type CycleTypeToStringDefinition = CycleType.Daily|CycleType.Weekly|CycleType.Monthly|CycleType.Quarterly|CycleType.Biannually|CycleType.Yearly
+
 export const CycleTypeToOptions = () => {
     return [
         {
@@ -28,6 +30,8 @@ export const CycleTypeToOptions = () => {
         },
     ]
 }
+
+export type TransactionTypeToStringDefinition = TransactionType.Single|TransactionType.Repeating
 
 export const TransactionTypeToOptions = () => {
     return [

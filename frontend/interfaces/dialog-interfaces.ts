@@ -1,12 +1,26 @@
-import type {StrapiTransaction} from "~/models/transaction";
-import type {EmployeeFormData, EmployeeResponse} from "~/models/employee";
+import type {StrapiTransaction, TransactionResponse} from "~/models/transaction";
+import type {
+    EmployeeHistoryResponse,
+    EmployeeResponse
+} from "~/models/employee";
 
 export interface IEmployeeFormDialog {
     close: () => {},
     value: {
-        close: (employee: EmployeeFormData|'deleted') => any,
+        close: () => any,
         data: {
             employee?: EmployeeResponse
+        }
+    }
+}
+
+export interface IHistoryFormDialog {
+    close: () => {},
+    value: {
+        close: () => any,
+        data: {
+            employeeID: number
+            employeeHistory?: EmployeeHistoryResponse
         }
     }
 }
@@ -14,9 +28,10 @@ export interface IEmployeeFormDialog {
 export interface ITransactionFormDialog {
     close: () => {},
     value: {
-        close: (person: StrapiTransaction|'deleted') => any,
+        close: () => any,
         data: {
-            transaction?: StrapiTransaction
+            transactionID: number
+            transaction?: TransactionResponse
         }
     }
 }

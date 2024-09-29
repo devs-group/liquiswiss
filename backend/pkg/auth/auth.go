@@ -75,6 +75,10 @@ func VerifyToken(tokenString string) (*Claims, error) {
 }
 
 func GenerateCookie(name, token string, expiration time.Time) http.Cookie {
+	sameSite := http.SameSiteLaxMode
+	if utils.IsProduction() {
+		sameSite = http.SameSiteNoneMode
+	}
 	return http.Cookie{
 		Name:     name,
 		Value:    token,
@@ -82,11 +86,15 @@ func GenerateCookie(name, token string, expiration time.Time) http.Cookie {
 		HttpOnly: true,
 		Path:     "/",
 		Secure:   utils.IsProduction(),
-		SameSite: http.SameSiteNoneMode,
+		SameSite: sameSite,
 	}
 }
 
 func GenerateDeleteCookie(name string) http.Cookie {
+	sameSite := http.SameSiteLaxMode
+	if utils.IsProduction() {
+		sameSite = http.SameSiteNoneMode
+	}
 	return http.Cookie{
 		Name:     name,
 		Value:    "",
@@ -95,7 +103,7 @@ func GenerateDeleteCookie(name string) http.Cookie {
 		HttpOnly: true,
 		Path:     "/",
 		Secure:   utils.IsProduction(),
-		SameSite: http.SameSiteNoneMode,
+		SameSite: sameSite,
 	}
 }
 

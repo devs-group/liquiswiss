@@ -1,10 +1,10 @@
 package models
 
 type Currency struct {
-	ID          int64  `db:"id" json:"id"`
-	Code        string `db:"code" json:"code"`
-	Description string `db:"description" json:"description"`
-	LocaleCode  string `db:"locale_code" json:"localeCode"`
+	ID          *int64  `db:"id" json:"id"`
+	Code        *string `db:"code" json:"code"`
+	Description *string `db:"description" json:"description"`
+	LocaleCode  *string `db:"locale_code" json:"localeCode"`
 }
 
 type CreateCurrency struct {

@@ -1,4 +1,6 @@
 import type {Strapi_Meta} from "~/interfaces/strapi-interfaces";
+import type {PaginationResponse} from "~/models/pagination";
+import type {EmployeeResponse} from "~/models/employee";
 
 export interface StrapiCurrency {
     id?: number;
@@ -22,4 +24,16 @@ export interface Strapi_ListResponse_Currency extends Strapi_Meta {
 
 export interface Strapi_PostResponse_Currency extends Strapi_Meta {
     data: StrapiCurrency
+}
+
+export interface CurrencyResponse {
+    id: number;
+    code: string;
+    description: string;
+    localeCode: string;
+}
+
+export interface ListCurrencyResponse {
+    data: CurrencyResponse[];
+    pagination: PaginationResponse;
 }

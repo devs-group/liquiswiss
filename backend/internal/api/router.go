@@ -64,33 +64,51 @@ func (api *API) setupRouter() {
 			protected.GET("/transactions", func(ctx *gin.Context) {
 				handlers.ListTransactions(api.DBService, ctx)
 			})
-			protected.GET("/transactions/:id", func(ctx *gin.Context) {
+			protected.GET("/transactions/:transactionID", func(ctx *gin.Context) {
 				handlers.GetTransaction(api.DBService, ctx)
 			})
 			protected.POST("/transactions", func(ctx *gin.Context) {
 				handlers.CreateTransaction(api.DBService, ctx)
 			})
-			protected.PATCH("/transactions/:id", func(ctx *gin.Context) {
+			protected.PATCH("/transactions/:transactionID", func(ctx *gin.Context) {
 				handlers.UpdateTransaction(api.DBService, ctx)
+			})
+			protected.DELETE("/transactions/:transactionID", func(ctx *gin.Context) {
+				handlers.DeleteTransaction(api.DBService, ctx)
 			})
 
 			protected.GET("/employees", func(ctx *gin.Context) {
 				handlers.ListEmployees(api.DBService, ctx)
 			})
+			protected.GET("/employees/:employeeID/history", func(ctx *gin.Context) {
+				handlers.ListEmployeeHistory(api.DBService, ctx)
+			})
 			protected.GET("/employees/pagination", func(ctx *gin.Context) {
 				handlers.GetEmployeesPagination(api.DBService, ctx)
 			})
-			protected.GET("/employees/:id", func(ctx *gin.Context) {
+			protected.GET("/employees/:employeeID", func(ctx *gin.Context) {
 				handlers.GetEmployee(api.DBService, ctx)
+			})
+			protected.GET("/employees/history/:historyID", func(ctx *gin.Context) {
+				handlers.GetEmployeeHistory(api.DBService, ctx)
 			})
 			protected.POST("/employees", func(ctx *gin.Context) {
 				handlers.CreateEmployee(api.DBService, ctx)
 			})
-			protected.PATCH("/employees/:id", func(ctx *gin.Context) {
+			protected.POST("/employees/:employeeID/history", func(ctx *gin.Context) {
+				handlers.CreateEmployeeHistory(api.DBService, ctx)
+			})
+			protected.PATCH("/employees/:employeeID", func(ctx *gin.Context) {
 				handlers.UpdateEmployee(api.DBService, ctx)
 			})
-			protected.DELETE("/employees/:id", func(ctx *gin.Context) {
+			protected.PATCH("/employees/history/:historyID", func(ctx *gin.Context) {
+				handlers.UpdateEmployeeHistory(api.DBService, ctx)
+			})
+			protected.DELETE("/employees/:employeeID", func(ctx *gin.Context) {
 				handlers.DeleteEmployee(api.DBService, ctx)
+			})
+			protected.DELETE("/employees/history/:historyID", func(ctx *gin.Context) {
+				handlers.DeleteEmployeeHistory(api.DBService, ctx)
 			})
 
 			protected.GET("/categories", func(ctx *gin.Context) {

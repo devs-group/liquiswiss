@@ -4,6 +4,7 @@ package service
 import (
 	"database/sql"
 	"embed"
+	"errors"
 	"io/fs"
 	"liquiswiss/pkg/logger"
 	"liquiswiss/pkg/models"
@@ -28,9 +29,10 @@ type IDatabaseService interface {
 	CheckUserExistance(id int64) (bool, error)
 
 	ListTransactions(userID int64, page int64, limit int64) ([]models.Transaction, int64, error)
-	GetTransaction(userID int64, id string) (*models.Transaction, error)
+	GetTransaction(userID int64, transactionID string) (*models.Transaction, error)
 	CreateTransaction(payload models.CreateTransaction, userID int64) (int64, error)
 	UpdateTransaction(payload models.UpdateTransaction, userID int64, transactionID string) error
+	DeleteTransaction(userID int64, transactionID string) error
 
 	ListOrganisations(userID int64, page int64, limit int64) ([]models.Organisation, int64, error)
 	GetOrganisation(userID int64, id string) (*models.Organisation, error)
@@ -39,11 +41,16 @@ type IDatabaseService interface {
 	AssignUserToOrganisation(userID int64, organisationID int64, role string) error
 
 	ListEmployees(userID int64, page int64, limit int64) ([]models.Employee, int64, error)
+	ListEmployeeHistory(userID int64, employeeID string, page int64, limit int64) ([]models.EmployeeHistory, int64, error)
 	CountEmployees(userID int64, page int64, limit int64) (int64, error)
 	GetEmployee(userID int64, id string) (*models.Employee, error)
+	GetEmployeeHistory(userID int64, historyID string) (*models.EmployeeHistory, error)
 	CreateEmployee(payload models.CreateEmployee, userID int64) (int64, error)
+	CreateEmployeeHistory(payload models.CreateEmployeeHistory, userID int64, employeeID string) (int64, error)
 	UpdateEmployee(payload models.UpdateEmployee, userID int64, employeeID string) error
+	UpdateEmployeeHistory(payload models.UpdateEmployeeHistory, userID int64, historyID string) error
 	DeleteEmployee(employeeID int64, userID int64) error
+	DeleteEmployeeHistory(historyID int64, userID int64) error
 
 	ListCategories(page int64, limit int64) ([]models.Category, int64, error)
 	GetCategory(id string) (*models.Category, error)
@@ -58,6 +65,8 @@ type IDatabaseService interface {
 	StoreRefreshTokenID(userID int64, tokenId string, expirationTime time.Time, deviceName string) error
 	CheckRefreshToken(tokenID string, userID int64) (bool, error)
 	DeleteRefreshToken(tokenID string, userID int64) error
+
+	IsOwnerOfEmployee(employeeID string, userID int64) (bool, error)
 }
 
 type DatabaseService struct {
@@ -82,7 +91,7 @@ func (s *DatabaseService) ApplyMocks() error {
 			}
 			_, err = s.db.Exec(string(query))
 			if err != nil {
-				logger.Logger.Warnf("Failed to apply %s to DB: %s", path, err)
+				logger.Logger.Infof("Failed to apply %s to DB: %s", path, err.Error())
 			} else {
 				logger.Logger.Infof("Applied %s to DB", path)
 			}
@@ -228,7 +237,11 @@ func (s *DatabaseService) UpdateTransaction(payload models.UpdateTransaction, us
 	// Always consider EndDate in case it is set back to null
 	queryBuild = append(queryBuild, "end_date = ?")
 	if payload.EndDate != nil {
-		args = append(args, *payload.EndDate)
+		endDate, err := time.Parse("2006-01-02", *payload.EndDate)
+		if err != nil {
+			return err
+		}
+		args = append(args, endDate)
 	} else {
 		args = append(args, nil)
 	}
@@ -253,6 +266,31 @@ func (s *DatabaseService) UpdateTransaction(payload models.UpdateTransaction, us
 	defer stmt.Close()
 
 	_, err = stmt.Exec(args...)
+	if err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (s *DatabaseService) DeleteTransaction(userID int64, transactionID string) error {
+	query, err := sqlQueries.ReadFile("queries/delete_transaction.sql")
+	if err != nil {
+		return err
+	}
+
+	stmt, err := s.db.Prepare(string(query))
+	if err != nil {
+		return err
+	}
+	defer stmt.Close()
+
+	res, err := stmt.Exec(transactionID, userID)
+	if err != nil {
+		return err
+	}
+
+	_, err = res.RowsAffected()
 	if err != nil {
 		return err
 	}
@@ -304,7 +342,7 @@ func (s *DatabaseService) ListTransactions(userID int64, page int64, limit int64
 	return transactions, totalCount, nil
 }
 
-func (s *DatabaseService) GetTransaction(userID int64, id string) (*models.Transaction, error) {
+func (s *DatabaseService) GetTransaction(userID int64, transactionID string) (*models.Transaction, error) {
 	var transaction models.Transaction
 	// These are required for proper date convertion afterwards
 	var startDate time.Time
@@ -315,7 +353,7 @@ func (s *DatabaseService) GetTransaction(userID int64, id string) (*models.Trans
 		return nil, err
 	}
 
-	err = s.db.QueryRow(string(query), id, userID).Scan(
+	err = s.db.QueryRow(string(query), transactionID, userID).Scan(
 		&transaction.ID, &transaction.Name, &transaction.Amount, &transaction.Cycle, &transaction.Type, &startDate, &endDate,
 		&transaction.Category.ID, &transaction.Category.Name,
 		&transaction.Currency.ID, &transaction.Currency.Code, &transaction.Currency.Description, &transaction.Currency.LocaleCode,
@@ -480,25 +518,81 @@ func (s *DatabaseService) ListEmployees(userID int64, page int64, limit int64) (
 
 	for rows.Next() {
 		var employee models.Employee
-		var entryDate time.Time
-		var exitDate sql.NullTime
+		var fromDate sql.NullTime
+		var toDate sql.NullTime
 
-		err := rows.Scan(&employee.ID, &employee.Name, &employee.HoursPerMonth, &employee.VacationDaysPerYear, &entryDate, &exitDate, &totalCount)
+		employee.SalaryCurrency = &models.Currency{}
+
+		err := rows.Scan(
+			&employee.ID, &employee.Name, &employee.HoursPerMonth, &employee.SalaryPerMonth,
+			&employee.SalaryCurrency.ID, &employee.SalaryCurrency.LocaleCode, &employee.SalaryCurrency.Description,
+			&employee.SalaryCurrency.Code, &employee.VacationDaysPerYear, &fromDate, &toDate, &totalCount,
+		)
 		if err != nil {
 			return nil, 0, err
 		}
 
-		employee.EntryDate = types.AsDate(entryDate)
-
-		if exitDate.Valid {
-			convertedDate := types.AsDate(exitDate.Time)
-			employee.ExitDate = &convertedDate
+		if fromDate.Valid {
+			convertedDate := types.AsDate(fromDate.Time)
+			employee.FromDate = &convertedDate
+		}
+		if toDate.Valid {
+			convertedDate := types.AsDate(toDate.Time)
+			employee.ToDate = &convertedDate
 		}
 
 		employees = append(employees, employee)
 	}
 
 	return employees, totalCount, nil
+}
+
+// ListEmployeeHistory implements listing the history of an employee
+func (s *DatabaseService) ListEmployeeHistory(userID int64, employeeID string, page int64, limit int64) ([]models.EmployeeHistory, int64, error) {
+	employeeHistories := make([]models.EmployeeHistory, 0)
+	var totalCount int64
+
+	query, err := sqlQueries.ReadFile("queries/list_employee_history.sql")
+	if err != nil {
+		return nil, 0, err
+	}
+
+	rows, err := s.db.Query(string(query), employeeID, userID, (page)*limit, 0)
+	if err != nil {
+		return nil, 0, err
+	}
+	defer rows.Close()
+
+	for rows.Next() {
+		var employeeHistory models.EmployeeHistory
+		var fromDate sql.NullTime
+		var toDate sql.NullTime
+
+		employeeHistory.SalaryCurrency = models.Currency{}
+
+		err := rows.Scan(
+			&employeeHistory.ID, &employeeHistory.EmployeeID, &employeeHistory.HoursPerMonth, &employeeHistory.SalaryPerMonth,
+			&employeeHistory.SalaryCurrency.ID, &employeeHistory.SalaryCurrency.LocaleCode, &employeeHistory.SalaryCurrency.Description,
+			&employeeHistory.SalaryCurrency.Code,
+			&employeeHistory.VacationDaysPerYear, &fromDate, &toDate, &totalCount,
+		)
+		if err != nil {
+			return nil, 0, err
+		}
+
+		if fromDate.Valid {
+			convertedDate := types.AsDate(fromDate.Time)
+			employeeHistory.FromDate = convertedDate
+		}
+		if toDate.Valid {
+			convertedDate := types.AsDate(toDate.Time)
+			employeeHistory.ToDate = &convertedDate
+		}
+
+		employeeHistories = append(employeeHistories, employeeHistory)
+	}
+
+	return employeeHistories, totalCount, nil
 }
 
 // CountEmployees implements employee listing with pagination
@@ -530,8 +624,10 @@ func (s *DatabaseService) CountEmployees(userID int64, page int64, limit int64) 
 // GetEmployee implements fetching an employee by ID
 func (s *DatabaseService) GetEmployee(userID int64, id string) (*models.Employee, error) {
 	var employee models.Employee
-	var entryDate time.Time
-	var exitDate sql.NullTime
+	var fromDate sql.NullTime
+	var toDate sql.NullTime
+
+	employee.SalaryCurrency = &models.Currency{}
 
 	query, err := sqlQueries.ReadFile("queries/get_employee.sql")
 	if err != nil {
@@ -539,21 +635,56 @@ func (s *DatabaseService) GetEmployee(userID int64, id string) (*models.Employee
 	}
 
 	err = s.db.QueryRow(string(query), id, userID).Scan(
-		&employee.ID, &employee.Name, &employee.HoursPerMonth, &employee.VacationDaysPerYear,
-		&entryDate, &exitDate,
+		&employee.ID, &employee.Name, &employee.HoursPerMonth, &employee.SalaryPerMonth,
+		&employee.SalaryCurrency.ID, &employee.SalaryCurrency.LocaleCode, &employee.SalaryCurrency.Description,
+		&employee.SalaryCurrency.Code, &employee.VacationDaysPerYear, &fromDate, &toDate,
 	)
 	if err != nil {
 		return nil, err
 	}
 
-	employee.EntryDate = types.AsDate(entryDate)
-
-	if exitDate.Valid {
-		convertedDate := types.AsDate(exitDate.Time)
-		employee.ExitDate = &convertedDate
+	if fromDate.Valid {
+		convertedDate := types.AsDate(fromDate.Time)
+		employee.FromDate = &convertedDate
+	}
+	if toDate.Valid {
+		convertedDate := types.AsDate(toDate.Time)
+		employee.ToDate = &convertedDate
 	}
 
 	return &employee, nil
+}
+
+// GetEmployeeHistory implements fetching an employees history by ID
+func (s *DatabaseService) GetEmployeeHistory(userID int64, historyID string) (*models.EmployeeHistory, error) {
+	var employeeHistory models.EmployeeHistory
+	var fromDate time.Time
+	var toDate sql.NullTime
+
+	employeeHistory.SalaryCurrency = models.Currency{}
+
+	query, err := sqlQueries.ReadFile("queries/get_employee_history.sql")
+	if err != nil {
+		return nil, err
+	}
+
+	err = s.db.QueryRow(string(query), historyID, userID).Scan(
+		&employeeHistory.ID, &employeeHistory.EmployeeID, &employeeHistory.HoursPerMonth, &employeeHistory.SalaryPerMonth,
+		&employeeHistory.SalaryCurrency.ID, &employeeHistory.SalaryCurrency.LocaleCode, &employeeHistory.SalaryCurrency.Description,
+		&employeeHistory.SalaryCurrency.Code, &employeeHistory.VacationDaysPerYear, &fromDate, &toDate,
+	)
+	if err != nil {
+		return nil, err
+	}
+
+	employeeHistory.FromDate = types.AsDate(fromDate)
+
+	if toDate.Valid {
+		convertedDate := types.AsDate(toDate.Time)
+		employeeHistory.ToDate = &convertedDate
+	}
+
+	return &employeeHistory, nil
 }
 
 // CreateEmployee implements the creation of a new employee
@@ -569,25 +700,8 @@ func (s *DatabaseService) CreateEmployee(payload models.CreateEmployee, userID i
 	}
 	defer stmt.Close()
 
-	// Prepare entry and exit date
-	entryDate, err := time.Parse("2006-01-02", payload.EntryDate)
-	if err != nil {
-		return 0, err
-	}
-
-	var exitDate sql.NullTime
-	if payload.ExitDate != nil {
-		parsedExitDate, err := time.Parse("2006-01-02", *payload.ExitDate)
-		if err != nil {
-			return 0, err
-		}
-		exitDate = sql.NullTime{Time: parsedExitDate, Valid: true}
-	} else {
-		exitDate = sql.NullTime{Valid: false}
-	}
-
 	res, err := stmt.Exec(
-		payload.Name, payload.HoursPerMonth, payload.VacationDaysPerYear, entryDate, exitDate, userID,
+		payload.Name, userID,
 	)
 	if err != nil {
 		return 0, err
@@ -597,6 +711,56 @@ func (s *DatabaseService) CreateEmployee(payload models.CreateEmployee, userID i
 	id, err := res.LastInsertId()
 	if err != nil {
 		return 0, err
+	}
+
+	return id, nil
+}
+
+// CreateEmployeeHistory implements the creation of a new employee
+func (s *DatabaseService) CreateEmployeeHistory(payload models.CreateEmployeeHistory, userID int64, employeeID string) (int64, error) {
+	query, err := sqlQueries.ReadFile("queries/create_employee_history.sql")
+	if err != nil {
+		return 0, err
+	}
+
+	stmt, err := s.db.Prepare(string(query))
+	if err != nil {
+		return 0, err
+	}
+	defer stmt.Close()
+
+	// Prepare entry and exit date
+	fromDate, err := time.Parse("2006-01-02", payload.FromDate)
+	if err != nil {
+		return 0, err
+	}
+
+	var toDate sql.NullTime
+	if payload.ToDate != nil {
+		parsedToDate, err := time.Parse("2006-01-02", *payload.ToDate)
+		if err != nil {
+			return 0, err
+		}
+		toDate = sql.NullTime{Time: parsedToDate, Valid: true}
+	} else {
+		toDate = sql.NullTime{Valid: false}
+	}
+
+	res, err := stmt.Exec(
+		employeeID, payload.HoursPerMonth, payload.SalaryPerMonth, payload.SalaryCurrency, payload.VacationDaysPerYear,
+		fromDate, toDate, employeeID, userID,
+	)
+	if err != nil {
+		return 0, err
+	}
+
+	// Get the ID of the newly inserted history
+	id, err := res.LastInsertId()
+	if err != nil {
+		return 0, err
+	}
+	if id == 0 {
+		return 0, sql.ErrNoRows
 	}
 
 	return id, nil
@@ -614,26 +778,62 @@ func (s *DatabaseService) UpdateEmployee(payload models.UpdateEmployee, userID i
 		queryBuild = append(queryBuild, "name = ?")
 		args = append(args, *payload.Name)
 	}
+
+	// Add WHERE clause
+	query += strings.Join(queryBuild, ", ")
+	query += " WHERE id = ?"
+	args = append(args, employeeID)
+
+	stmt, err := s.db.Prepare(query)
+	if err != nil {
+		return err
+	}
+	defer stmt.Close()
+
+	_, err = stmt.Exec(args...)
+	if err != nil {
+		return err
+	}
+
+	return nil
+}
+
+// UpdateEmployeeHistory implements updating employee history details
+func (s *DatabaseService) UpdateEmployeeHistory(payload models.UpdateEmployeeHistory, userID int64, historyID string) error {
+	// Base query
+	query := "UPDATE go_employee_history SET "
+	queryBuild := []string{}
+	args := []interface{}{}
+
+	// Dynamically add fields that are not nil
 	if payload.HoursPerMonth != nil {
 		queryBuild = append(queryBuild, "hours_per_month = ?")
 		args = append(args, *payload.HoursPerMonth)
+	}
+	if payload.SalaryPerMonth != nil {
+		queryBuild = append(queryBuild, "salary_per_month = ?")
+		args = append(args, *payload.SalaryPerMonth)
+	}
+	if payload.SalaryCurrency != nil {
+		queryBuild = append(queryBuild, "salary_currency = ?")
+		args = append(args, *payload.SalaryCurrency)
 	}
 	if payload.VacationDaysPerYear != nil {
 		queryBuild = append(queryBuild, "vacation_days_per_year = ?")
 		args = append(args, *payload.VacationDaysPerYear)
 	}
-	if payload.EntryDate != nil {
-		queryBuild = append(queryBuild, "entry_date = ?")
-		entryDate, err := time.Parse("2006-01-02", *payload.EntryDate)
+	if payload.FromDate != nil {
+		queryBuild = append(queryBuild, "from_date = ?")
+		entryDate, err := time.Parse("2006-01-02", *payload.FromDate)
 		if err != nil {
 			return err
 		}
 		args = append(args, entryDate)
 	}
-	// Always consider ExitDate in case it is set back to null
-	queryBuild = append(queryBuild, "exit_date = ?")
-	if payload.ExitDate != nil {
-		exitDate, err := time.Parse("2006-01-02", *payload.ExitDate)
+	// Always consider ToDate in case it is set back to null
+	queryBuild = append(queryBuild, "to_date = ?")
+	if payload.ToDate != nil {
+		exitDate, err := time.Parse("2006-01-02", *payload.ToDate)
 		if err != nil {
 			return err
 		}
@@ -645,7 +845,7 @@ func (s *DatabaseService) UpdateEmployee(payload models.UpdateEmployee, userID i
 	// Add WHERE clause
 	query += strings.Join(queryBuild, ", ")
 	query += " WHERE id = ?"
-	args = append(args, employeeID)
+	args = append(args, historyID)
 
 	stmt, err := s.db.Prepare(query)
 	if err != nil {
@@ -675,6 +875,32 @@ func (s *DatabaseService) DeleteEmployee(employeeID int64, userID int64) error {
 	defer stmt.Close()
 
 	res, err := stmt.Exec(employeeID, userID)
+	if err != nil {
+		return err
+	}
+
+	_, err = res.RowsAffected()
+	if err != nil {
+		return err
+	}
+
+	return nil
+}
+
+// DeleteEmployeeHistory implements deleting an employee history entry
+func (s *DatabaseService) DeleteEmployeeHistory(historyID int64, userID int64) error {
+	query, err := sqlQueries.ReadFile("queries/delete_employee_history.sql")
+	if err != nil {
+		return err
+	}
+
+	stmt, err := s.db.Prepare(string(query))
+	if err != nil {
+		return err
+	}
+	defer stmt.Close()
+
+	res, err := stmt.Exec(historyID, userID)
 	if err != nil {
 		return err
 	}
@@ -946,4 +1172,16 @@ func (s *DatabaseService) DeleteRefreshToken(tokenID string, userID int64) error
 	_, err = s.db.Exec(string(query), tokenID, userID)
 
 	return err
+}
+
+func (s *DatabaseService) IsOwnerOfEmployee(employeeID string, userID int64) (bool, error) {
+	var ownerID int64
+	err := s.db.QueryRow("SELECT owner FROM go_employees WHERE id = ?", employeeID).Scan(&ownerID)
+	if err != nil {
+		if errors.Is(err, sql.ErrNoRows) {
+			return false, nil
+		}
+		return false, err
+	}
+	return ownerID == userID, nil
 }

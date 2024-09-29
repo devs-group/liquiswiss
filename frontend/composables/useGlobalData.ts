@@ -1,15 +1,21 @@
-import { ref } from 'vue';
-import type {StrapiCategory} from "~/models/category";
-import type {StrapiCurrency} from "~/models/currency";
+import {ref} from 'vue';
+import type {CategoryResponse, ListCategoryResponse} from "~/models/category";
+import type {CurrencyResponse, ListCurrencyResponse} from "~/models/currency";
 
-const categories = ref<StrapiCategory[]>([]);
-const currencies = ref<StrapiCurrency[]>([]);
+const categories = ref<CategoryResponse[]>([]);
+const currencies = ref<CurrencyResponse[]>([]);
 
 export default function useGlobalData() {
     const fetchCategories = async () => {
         try {
-            const {data} = await useFetch('/api/global/category');
-            categories.value = data.value ?? [];
+            const {data} = await useFetch<ListCategoryResponse>('/api/categories', {
+                method: 'GET',
+                query: {
+                    page: 1,
+                    limit: 100,
+                }
+            })
+            categories.value = data.value?.data ?? [];
         } catch (error) {
             console.error('Error fetching global data:', error);
         }
@@ -17,32 +23,24 @@ export default function useGlobalData() {
 
     const fetchCurrencies = async () => {
         try {
-            const {data} = await useFetch('/api/global/currency');
-            currencies.value = data.value ?? [];
+            const {data} = await useFetch<ListCurrencyResponse>('/api/currencies', {
+                method: 'GET',
+                query: {
+                    page: 1,
+                    limit: 100,
+                }
+            })
+            currencies.value = data.value?.data ?? [];
         } catch (error) {
             console.error('Error fetching global data:', error);
         }
     }
 
-    const getCategoryNameFromId = (id: number) => {
-        return categories.value.find((category) => category.id === id)?.attributes.name ?? ''
-    }
-
-    const getCurrencyCodeFromId = (id: number) => {
-        return currencies.value.find((currency) => currency.id === id)?.attributes.code ?? ''
-    }
-
-    const getCurrencyLocaleCodeFromId = (id: number) => {
-        return currencies.value.find((currency) => currency.id === id)?.attributes.localeCode ?? ''
-    }
 
     return {
         categories,
         fetchCategories,
-        getCategoryNameFromId,
         currencies,
         fetchCurrencies,
-        getCurrencyCodeFromId,
-        getCurrencyLocaleCodeFromId,
     };
 }

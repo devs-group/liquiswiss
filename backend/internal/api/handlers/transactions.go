@@ -54,13 +54,13 @@ func UpdateTransaction(dbService service.IDatabaseService, c *gin.Context) {
 		return
 	}
 
-	id := c.Param("id")
-	if id == "" {
+	transactionID := c.Param("transactionID")
+	if transactionID == "" {
 		c.JSON(http.StatusBadRequest, gin.H{"error": "Es fehlt die ID"})
 		return
 	}
 
-	existingTransaction, err := dbService.GetTransaction(userID, id)
+	existingTransaction, err := dbService.GetTransaction(userID, transactionID)
 	if err != nil {
 		c.JSON(http.StatusNotFound, gin.H{"error": err.Error()})
 		return
@@ -77,16 +77,6 @@ func UpdateTransaction(dbService service.IDatabaseService, c *gin.Context) {
 		startDate := existingTransaction.StartDate.ToString()
 		payload.StartDate = &startDate
 	}
-
-	if payload.EndDate == nil {
-		if existingTransaction.EndDate != nil {
-			endDate := existingTransaction.EndDate.ToString()
-			payload.EndDate = &endDate
-		}
-	} else if *payload.EndDate == "" {
-		payload.EndDate = nil
-	}
-
 	if payload.Cycle == nil {
 		if existingTransaction.Cycle != nil {
 			cycle := *existingTransaction.Cycle
@@ -103,19 +93,47 @@ func UpdateTransaction(dbService service.IDatabaseService, c *gin.Context) {
 		return
 	}
 
-	err = dbService.UpdateTransaction(payload, userID, id)
+	err = dbService.UpdateTransaction(payload, userID, transactionID)
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 		return
 	}
 
-	transaction, err := dbService.GetTransaction(userID, id)
+	transaction, err := dbService.GetTransaction(userID, transactionID)
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 		return
 	}
 
 	c.JSON(http.StatusOK, transaction)
+}
+
+func DeleteTransaction(dbService service.IDatabaseService, c *gin.Context) {
+	userID := c.GetInt64("userID")
+	if userID == 0 {
+		c.JSON(http.StatusUnauthorized, gin.H{"error": "Ungültiger Benutzer"})
+		return
+	}
+
+	transactionID := c.Param("transactionID")
+	if transactionID == "" {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "Es fehlt die ID"})
+		return
+	}
+
+	_, err := dbService.GetTransaction(userID, transactionID)
+	if err != nil {
+		c.Status(http.StatusNotFound)
+		return
+	}
+
+	err = dbService.DeleteTransaction(userID, transactionID)
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		return
+	}
+
+	c.Status(http.StatusNoContent)
 }
 
 func GetTransaction(dbService service.IDatabaseService, c *gin.Context) {
@@ -125,17 +143,17 @@ func GetTransaction(dbService service.IDatabaseService, c *gin.Context) {
 		return
 	}
 
-	id := c.Param("id")
-	if id == "" {
+	transactionID := c.Param("transactionID")
+	if transactionID == "" {
 		c.JSON(http.StatusBadRequest, gin.H{"error": "Es fehlt die ID"})
 		return
 	}
 
-	transaction, err := dbService.GetTransaction(userID, id)
+	transaction, err := dbService.GetTransaction(userID, transactionID)
 	if err != nil {
 		switch err {
 		case sql.ErrNoRows:
-			c.JSON(http.StatusNotFound, gin.H{"error": fmt.Sprintf("Keine Einnahme gefunden mit ID: %s", id)})
+			c.JSON(http.StatusNotFound, gin.H{"error": fmt.Sprintf("Keine Transaktion gefunden mit ID: %s", transactionID)})
 			return
 		default:
 			c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
