@@ -1,5 +1,3 @@
-import {da} from "cronstrue/dist/i18n/locales/da";
-
 export const DateStringToFormattedDate = (date: string|Date) => {
     const fmt = Intl.DateTimeFormat('de-CH', {day: '2-digit', month: '2-digit', year: 'numeric', timeZone: 'UTC'})
     return fmt.format(date instanceof Date ? date : new Date(date))
@@ -21,6 +19,6 @@ export const DateToApiFormat = (date: string | Date) => {
 };
 
 export const NumberToFormattedCurrency = (amount: number, locale: string) => {
-    const fmt = Intl.NumberFormat(locale)
+    const fmt = Intl.NumberFormat(locale, {maximumFractionDigits: 2, minimumFractionDigits: 2})
     return fmt.format(amount)
 }

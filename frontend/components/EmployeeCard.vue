@@ -33,7 +33,6 @@
 </template>
 
 <script setup lang="ts">
-import {DateStringToFormattedDate, NumberToFormattedCurrency} from "~/utils/format-helper";
 import type {EmployeeResponse} from "~/models/employee";
 
 const props = defineProps({

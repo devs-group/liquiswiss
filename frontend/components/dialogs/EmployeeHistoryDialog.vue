@@ -83,9 +83,6 @@ import {useForm} from "vee-validate";
 import * as yup from 'yup';
 import {Config} from "~/config/config";
 import type {EmployeeHistoryFormData} from "~/models/employee";
-import {DateToUTCDate} from "~/utils/format-helper";
-import useGlobalData from "~/composables/useGlobalData";
-import {scrollToParentBottom} from "~/utils/element-helper";
 
 const dialogRef = inject<IHistoryFormDialog>('dialogRef')!;
 

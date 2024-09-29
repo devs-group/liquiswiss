@@ -3,7 +3,6 @@ import type {CycleType, TransactionType} from "~/config/enums";
 import type {CategoryResponse, Strapi_RelationResponse_Category} from "~/models/category";
 import type {CurrencyResponse, Strapi_RelationResponse_Currency} from "~/models/currency";
 import type {PaginationResponse} from "~/models/pagination";
-import type {CycleTypeToStringDefinition, TransactionTypeToStringDefinition} from "~/utils/enum-helper";
 
 export interface StrapiTransaction {
     id?: number;

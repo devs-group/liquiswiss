@@ -102,12 +102,7 @@ import {useForm} from "vee-validate";
 import * as yup from 'yup';
 import {Config} from "~/config/config";
 import {type TransactionFormData} from "~/models/transaction";
-import useGlobalData from "~/composables/useGlobalData";
 import {CycleType, TransactionType} from "~/config/enums";
-import {CycleTypeToOptions, TransactionTypeToOptions} from "~/utils/enum-helper";
-import {DateToUTCDate} from "~/utils/format-helper";
-import {AmountToInteger} from "~/utils/number-helper";
-import {scrollToParentBottom} from "~/utils/element-helper";
 
 const dialogRef = inject<ITransactionFormDialog>('dialogRef')!;
 
