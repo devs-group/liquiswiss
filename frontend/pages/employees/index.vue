@@ -2,7 +2,8 @@
   <div class="flex flex-col gap-4">
     <Button @click="onCreateEmployee" class="self-end" label="Mitarbeiter hinzufügen" icon="pi pi-user"/>
 
-    <div v-if="employees?.data.length" class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
+    <Message v-if="employeesErrorMessage.length" severity="error" :closable="false" class="col-span-full">{{employeesErrorMessage}}</Message>
+    <div v-else-if="employees?.data.length" class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
       <EmployeeCard @on-edit="onEditEmployee" v-for="employee in employees.data" :employee="employee"/>
     </div>
     <p v-else>Es gibt noch keine Mitarbeiter</p>
@@ -22,9 +23,14 @@ import {Routes} from "~/config/routes";
 
 const {employees, noMoreDataEmployees, pageEmployees, getEmployees} = useEmployees()
 const dialog = useDialog();
+
 const isLoadingMore = ref(false)
+const employeesErrorMessage = ref('')
 
 await getEmployees(false)
+    .catch(() => {
+      employeesErrorMessage.value = 'Mitarbeiter konnten nicht geladen werden'
+    })
 
 const onCreateEmployee = () => {
   dialog.open(EmployeeDialog, {

@@ -1,7 +1,7 @@
 <template>
   <form @submit.prevent class="flex flex-col items-center justify-center gap-2">
-    <InputText placeholder="E-Mail" v-model.trim="email" :disabled="isLoading"/>
-    <InputText placeholder="Passwort" v-model="password" :disabled="isLoading"/>
+    <InputText placeholder="E-Mail" type="email" name="email" autocomplete="email" v-model.trim="email" :disabled="isLoading"/>
+    <InputText placeholder="Passwort" type="password" name="password" autocomplete="current-password" v-model="password" :disabled="isLoading"/>
     <p class="text-sm">Kein Konto? Jetzt <NuxtLink :to="{name: Routes.REGISTER}" class="underline">registrieren</NuxtLink></p>
     <Button label="Login" @click="onLogin" :disabled="isLoading" :loading="isLoading" type="submit"/>
 

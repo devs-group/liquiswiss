@@ -1,5 +1,5 @@
 <template>
-  <form @submit.prevent class="grid grid-cols-2 gap-2">
+  <form @submit.prevent id="transaction-form" class="grid grid-cols-2 gap-2">
     <div class="flex flex-col gap-2 col-span-full">
       <label class="text-sm font-bold" for="name">Name *</label>
       <InputText v-model="name" v-bind="nameProps"
@@ -87,6 +87,8 @@
 
     <hr class="my-4 col-span-full"/>
 
+    <Message v-if="errorMessage.length" severity="error" :closable="false" class="col-span-full">{{errorMessage}}</Message>
+
     <div class="flex justify-end gap-2 col-span-full">
       <Button @click="onSubmit" :disabled="!meta.valid || isLoading" :loading="isLoading" label="Speichern" type="submit"/>
       <Button @click="dialogRef?.close()" :loading="isLoading" label="Abbrechen" severity="secondary"/>
@@ -105,6 +107,7 @@ import {CycleType, TransactionType} from "~/config/enums";
 import {CycleTypeToOptions, TransactionTypeToOptions} from "~/utils/enum-helper";
 import {DateToUTCDate} from "~/utils/format-helper";
 import {AmountToInteger} from "~/utils/number-helper";
+import {scrollToParentBottom} from "~/utils/element-helper";
 
 const dialogRef = inject<ITransactionFormDialog>('dialogRef')!;
 
@@ -117,6 +120,7 @@ const toast = useToast()
 const isLoading = ref(false)
 const transaction = dialogRef.value.data?.transaction
 const isCreate = !transaction?.id
+const errorMessage = ref('')
 
 const { defineField, errors, handleSubmit, meta } = useForm({
   validationSchema: yup.object({
@@ -156,6 +160,7 @@ const [endDate, endDateProps] = defineField('endDate')
 
 const onSubmit = handleSubmit((values) => {
   isLoading.value = true
+  errorMessage.value = ''
   values.startDate.setMinutes(values.startDate.getMinutes() - values.startDate.getTimezoneOffset())
   if (values.type == TransactionType.Single) {
     values.endDate = undefined
@@ -175,6 +180,12 @@ const onSubmit = handleSubmit((values) => {
             life: Config.TOAST_LIFE_TIME,
           })
         })
+        .catch(() => {
+          errorMessage.value = 'Transaktion konnte nicht angelegt werden'
+          nextTick(() => {
+            scrollToParentBottom('transaction-form')
+          });
+        })
         .finally(() => {
           isLoading.value = false
         })
@@ -188,6 +199,12 @@ const onSubmit = handleSubmit((values) => {
             severity: 'success',
             life: Config.TOAST_LIFE_TIME,
           })
+        })
+        .catch(() => {
+          errorMessage.value = 'Transaktion konnte nicht bearbeitet werden'
+          nextTick(() => {
+            scrollToParentBottom('transaction-form')
+          });
         })
         .finally(() => {
           isLoading.value = false
@@ -216,12 +233,10 @@ const onDeleteTransaction = (event: MouseEvent) => {
               dialogRef.value.close()
             })
             .catch(() => {
-              toast.add({
-                summary: 'Fehler',
-                detail: `Transaktion konnte nicht gelöscht werden`,
-                severity: 'error',
-                life: Config.TOAST_LIFE_TIME,
-              })
+              errorMessage.value = 'Transaktion konnte nicht gelöscht werden'
+              nextTick(() => {
+                scrollToParentBottom('transaction-form')
+              });
             })
             .finally(() => {
               isLoading.value = false

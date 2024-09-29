@@ -2,7 +2,8 @@
   <div class="flex flex-col gap-4">
     <Button @click="onCreateTransaction" class="self-end" label="Transaktion hinzufügen" icon="pi pi-money-bill"/>
 
-    <div v-if="transactions?.data.length" class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
+    <Message v-if="transactionsErrorMessage.length" severity="error" :closable="false" class="col-span-full">{{transactionsErrorMessage}}</Message>
+    <div v-else-if="transactions?.data.length" class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
       <TransactionCard @on-edit="onEditTransaction" v-for="transaction in transactions.data" :transaction="transaction"/>
     </div>
     <p v-else>Es gibt noch keine Transaktionen</p>
@@ -16,21 +17,20 @@
 
 <script setup lang="ts">
 import {ModalConfig} from "~/config/dialog-props";
-import {Config} from "~/config/config";
 import TransactionDialog from "~/components/dialogs/TransactionDialog.vue";
-import useGlobalData from "~/composables/useGlobalData";
-import type {StrapiTransaction} from "~/models/transaction";
-import {CycleType, TransactionType} from "~/config/enums";
-import {range} from "@antfu/utils";
+import type {TransactionResponse} from "~/models/transaction";
 import TransactionCard from "~/components/TransactionCard.vue";
 
 const dialog = useDialog();
-const toast = useToast()
 const {transactions, noMoreDataTransactions, pageTransactions, listTransactions} = useTransactions()
 
 const isLoadingMore = ref(false)
+const transactionsErrorMessage = ref('')
 
 await listTransactions(false)
+    .catch(() => {
+      transactionsErrorMessage.value = 'Transaktionen konnten nicht geladen werden'
+    })
 
 const onCreateTransaction = () => {
   dialog.open(TransactionDialog, {
@@ -41,7 +41,7 @@ const onCreateTransaction = () => {
   })
 }
 
-const onEditTransaction = (transaction: StrapiTransaction) => {
+const onEditTransaction = (transaction: TransactionResponse) => {
   dialog.open(TransactionDialog, {
     data: {
       transaction: transaction,

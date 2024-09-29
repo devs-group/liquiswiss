@@ -9,14 +9,17 @@ const transactions = ref<ListTransactionResponse>(new DefaultListResponse());
 
 export default function useTransactions() {
     const listTransactions = async (append: boolean)  => {
-        try {
-            const {data} = await useFetch<ListTransactionResponse>('/api/transactions', {
-                method: 'GET',
-                query: {
-                    page: pageTransactions.value,
-                    limit: limitTransactions.value,
-                }
-            });
+        const {data, status} = await useFetch<ListTransactionResponse>('/api/transactions', {
+            method: 'GET',
+            query: {
+                page: pageTransactions.value,
+                limit: limitTransactions.value,
+            }
+        });
+
+        if (status.value === 'error') {
+            return Promise.reject('Fehler beim Laden der Historie')
+        } else {
             if (data.value) {
                 if (append) {
                     transactions.value!.data = transactions.value!.data.concat(data.value?.data ?? [])
@@ -25,10 +28,11 @@ export default function useTransactions() {
                     transactions.value = data.value
                 }
                 noMoreDataTransactions.value = transactions.value.pagination.totalRemaining == 0
+            } else {
+                transactions.value = new DefaultListResponse()
             }
-        } catch (error) {
-            console.error('Error listing transactions:', error);
         }
+        return Promise.resolve()
     }
 
     // const getTransactionPagination = async ()  => {
@@ -50,72 +54,71 @@ export default function useTransactions() {
     // }
 
     const getTransaction = async (transactionID: number) => {
-        try {
-            const {data} = await useFetch<TransactionResponse>(`/api/transactions/${transactionID}`, {
-                method: 'GET',
-            });
-            return data.value
-        } catch (error) {
-            console.error('Error getting transaction:', error);
+        const {data, status} = await useFetch<TransactionResponse>(`/api/transactions/${transactionID}`, {
+            method: 'GET',
+        });
+
+        if (status.value === 'error') {
+            return Promise.reject('Fehler beim Laden der Transaktion')
+        } else {
         }
-        return null
+        return Promise.resolve(data.value)
     }
 
     const createTransaction = async (payload: TransactionFormData) => {
         let id = 0
-        try {
-            const {data} = await useFetch<TransactionResponse>(`/api/transactions`, {
-                method: 'POST',
-                body: {
-                    ...payload,
-                    amount: AmountToInteger(payload.amount),
-                    startDate: DateToApiFormat(payload.startDate),
-                    endDate: payload.endDate ? DateToApiFormat(payload.endDate) : null,
-                },
-            });
+
+        const {data, status} = await useFetch<TransactionResponse>(`/api/transactions`, {
+            method: 'POST',
+            body: {
+                ...payload,
+                amount: AmountToInteger(payload.amount),
+                startDate: DateToApiFormat(payload.startDate),
+                endDate: payload.endDate ? DateToApiFormat(payload.endDate) : null,
+            },
+        });
+
+        if (status.value === 'error') {
+            return Promise.reject('Fehler beim Erstellen der Transaktion')
+        } else {
             await listTransactions(false)
-            // Update data list in frontend
             if (data.value) {
                 id = data.value.id
             }
-            // Update Pagination from backend
-            // await getEmployeesPagination()
-        } catch (error) {
-            console.error('Error creating transaction:', error);
         }
-        return id
+        return Promise.resolve(id)
     }
 
     const updateTransaction = async (payload: TransactionFormData) => {
-        try {
-            const {data} = await useFetch<TransactionResponse>(`/api/transactions/${payload.id}`, {
-                method: 'PATCH',
-                body: {
-                    ...payload,
-                    amount: AmountToInteger(payload.amount),
-                    startDate: DateToApiFormat(payload.startDate),
-                    endDate: payload.endDate ? DateToApiFormat(payload.endDate) : null,
-                },
-            });
+        const {status} = await useFetch<TransactionResponse>(`/api/transactions/${payload.id}`, {
+            method: 'PATCH',
+            body: {
+                ...payload,
+                amount: AmountToInteger(payload.amount),
+                startDate: DateToApiFormat(payload.startDate),
+                endDate: payload.endDate ? DateToApiFormat(payload.endDate) : null,
+            },
+        });
+
+        if (status.value === 'error') {
+            return Promise.reject('Fehler beim Aktualisieren der Transaktion')
+        } else {
             await listTransactions(false)
-            // Update Pagination from backend
-            // await getEmployeesPagination()
-        } catch (error) {
-            console.error('Error updating transaction:', error);
         }
+        return Promise.resolve()
     }
 
     const deleteTransaction = async (transactionID: number) => {
-        try {
-            const {data} = await useFetch(`/api/transactions/${transactionID}`, {
-                method: 'DELETE',
-            });
+        const {status} = await useFetch(`/api/transactions/${transactionID}`, {
+            method: 'DELETE',
+        });
+
+        if (status.value === 'error') {
+            return Promise.reject('Fehler beim Aktualisieren der Transaktion')
+        } else {
             await listTransactions(false)
-            // Update Pagination from backend
-            // await getEmployeesPagination()
-        } catch (error) {
-            console.error('Error deleting employee:', error);
         }
+        return Promise.resolve()
     }
 
     return {

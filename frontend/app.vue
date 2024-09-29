@@ -8,7 +8,7 @@
   <DynamicDialog/>
   <ConfirmPopup/>
   <ConfirmDialog group="dialog" :draggable="false"/>
-  <Toast position="bottom-right"/>
+  <Toast position="bottom-center"/>
   <NuxtLoadingIndicator :height="4" :throttle="1000" color="#10B981" />
 </template>
 

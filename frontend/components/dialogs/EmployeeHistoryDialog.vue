@@ -1,5 +1,5 @@
 <template>
-  <form @submit.prevent class="grid grid-cols-2 gap-2">
+  <form @submit.prevent id="employee-history-form" class="grid grid-cols-2 gap-2">
     <div class="flex flex-col gap-2 col-span-full md:col-span-1">
       <label class="text-sm font-bold" for="hours-per-month">Arbeitsstunden pro Monat*</label>
       <InputText v-model.number="hoursPerMonth" v-bind="hoursPerMonthProps"
@@ -21,7 +21,7 @@
     <div class="flex flex-col gap-2 col-span-full md:col-span-1">
       <div class="flex items-center gap-2">
         <label class="text-sm font-bold" for="salary-per-month">Lohnkosten pro Monat*</label>
-        <i class="pi pi-info-circle" v-tooltip="'Bruttolohn + Arbeitgeberkosten'"></i>
+        <i class="pi pi-info-circle" v-tooltip="'Nettolohn + Arbeitgeberkosten'"></i>
       </div>
       <InputText v-model.number="salaryPerMonth" v-bind="salaryPerMonthProps"
                  :class="{'p-invalid': errors['salaryPerMonth']?.length}"
@@ -68,6 +68,8 @@
 
     <hr class="my-4 col-span-full"/>
 
+    <Message v-if="errorMessage.length" severity="error" :closable="false" class="col-span-full">{{errorMessage}}</Message>
+
     <div class="flex justify-end gap-2 col-span-full">
       <Button @click="onSubmit" severity="info" :disabled="!meta.valid || isLoading" :loading="isLoading" label="Speichern" icon="pi pi-save" type="submit"/>
       <Button @click="dialogRef.close()" :disabled="isLoading" label="Abbrechen" severity="secondary"/>
@@ -83,6 +85,7 @@ import {Config} from "~/config/config";
 import type {EmployeeHistoryFormData} from "~/models/employee";
 import {DateToUTCDate} from "~/utils/format-helper";
 import useGlobalData from "~/composables/useGlobalData";
+import {scrollToParentBottom} from "~/utils/element-helper";
 
 const dialogRef = inject<IHistoryFormDialog>('dialogRef')!;
 
@@ -96,6 +99,7 @@ const isLoading = ref(false)
 const employeeID = dialogRef.value.data!.employeeID
 const employeeHistory = dialogRef.value.data!.employeeHistory
 const isCreate = !employeeHistory?.id
+const errorMessage = ref('')
 
 const { defineField, errors, handleSubmit, meta } = useForm({
   validationSchema: yup.object({
@@ -126,6 +130,7 @@ const [toDate, toDateProps] = defineField('toDate')
 
 const onSubmit = handleSubmit((values) => {
   isLoading.value = true
+  errorMessage.value = ''
   values.fromDate.setMinutes(values.fromDate.getMinutes() - values.fromDate.getTimezoneOffset())
   if (values.toDate instanceof Date) {
     values.toDate.setMinutes(values.toDate.getMinutes() - values.toDate.getTimezoneOffset())
@@ -142,6 +147,12 @@ const onSubmit = handleSubmit((values) => {
             life: Config.TOAST_LIFE_TIME,
           })
         })
+        .catch(() => {
+          errorMessage.value = `Historie konnte nicht angelegt werden`
+          nextTick(() => {
+            scrollToParentBottom('employee-history-form')
+          });
+        })
         .finally(() => {
           isLoading.value = false
         })
@@ -155,6 +166,12 @@ const onSubmit = handleSubmit((values) => {
             severity: 'success',
             life: Config.TOAST_LIFE_TIME,
           })
+        })
+        .catch(() => {
+          errorMessage.value = `Historie konnte nicht bearbeitet werden`
+          nextTick(() => {
+            scrollToParentBottom('employee-history-form')
+          });
         })
         .finally(() => {
           isLoading.value = false
@@ -183,12 +200,10 @@ const onDeleteEmployeeHistory = (event: MouseEvent) => {
               dialogRef.value.close()
             })
             .catch(() => {
-              toast.add({
-                summary: 'Fehler',
-                detail: `Historie konnte nicht gelöscht werden`,
-                severity: 'error',
-                life: Config.TOAST_LIFE_TIME,
-              })
+              errorMessage.value = `Historie konnte nicht gelöscht werden`
+              nextTick(() => {
+                scrollToParentBottom('employee-history-form')
+              });
             })
             .finally(() => {
               isLoading.value = false
