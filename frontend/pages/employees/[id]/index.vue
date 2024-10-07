@@ -1,10 +1,11 @@
 <template>
-  <div v-if="!employeeErrorMessage.length" class="flex flex-col gap-4">
-    <div class="flex justify-end gap-2 col-span-full">
-      <Button @click="onDeleteEmployee" :loading="isSubmitting" label="Mitarbeiter Löschen" icon="pi pi-trash" severity="danger" size="small"/>
+  <div v-if="!employeeLoadErrorMessage.length" class="flex flex-col gap-4">
+    <div class="flex justify-between gap-2 col-span-full">
+      <Button @click="onGoBack" icon="pi pi-arrow-left" label="Zurück"/>
+      <Button @click="onDeleteEmployee" :loading="isSubmitting" label="Löschen" icon="pi pi-trash" severity="danger" size="small"/>
     </div>
 
-    <Message v-if="employeeDeleteErrorMessage.length" severity="error" :closable="false" class="col-span-full">{{employeeDeleteErrorMessage}}</Message>
+    <Message v-if="employeeDeleteErrorMessage.length" severity="error" :life="Config.MESSAGE_LIFE_TIME" :sticky="false" :closable="false" class="col-span-full">{{employeeDeleteErrorMessage}}</Message>
 
     <div class="flex justify-between items-center gap-2">
       <hr class="h-0.5 bg-black flex-1"/>
@@ -20,7 +21,8 @@
         <small class="text-red-400">{{errors["name"] || '&nbsp;'}}</small>
       </div>
 
-      <Message v-if="employeeUpdateErrorMessage.length" severity="error" :closable="false" class="col-span-full">{{employeeUpdateErrorMessage}}</Message>
+      <Message v-if="employeeUpdateMessage.length" severity="success" :life="Config.MESSAGE_LIFE_TIME" :sticky="false" :closable="false" class="col-span-full">{{employeeUpdateMessage}}</Message>
+      <Message v-if="employeeUpdateErrorMessage.length" severity="error" :life="Config.MESSAGE_LIFE_TIME" :sticky="false" :closable="false" class="col-span-full">{{employeeUpdateErrorMessage}}</Message>
 
       <div class="flex justify-end gap-2 col-span-full">
         <Button @click="onUpdateEmployee" severity="info" :disabled="!meta.valid || (meta.valid && !meta.dirty) || isSubmitting" :loading="isSubmitting" label="Speichern" icon="pi pi-save" type="submit"/>
@@ -43,10 +45,12 @@
       <Button v-if="!noMoreDataEmployeeHistories" severity="info" label="Mehr anzeigen" @click="onLoadMoreEmployeeHistory" :loading="isLoadingMore"/>
       <p v-else class="text-xs opacity-60">Keine weiteren Historien ...</p>
     </div>
+    <p v-else class="text-xs opacity-60">Mitarbeiter hat noch keine Historien. Erstelle die <a @click="onCreateEmployeeHistory" class="underline cursor-pointer font-bold">erste Historie</a>!</p>
+
   </div>
 
   <div v-else class="flex flex-col gap-2 items-start bg-red-100 border border-red-200 p-4">
-    <span>{{employeeErrorMessage}}</span>
+    <span>{{ employeeLoadErrorMessage }}</span>
     <NuxtLink :to="{name: Routes.EMPLOYEES, replace: true}">
       <Button label="Zurück zur Übersicht"/>
     </NuxtLink>
@@ -73,19 +77,20 @@ const isSubmitting = ref(false)
 const isLoadingMore = ref(false)
 const employeeID = Number(route.params.id);
 const employee = ref<EmployeeResponse|null>()
-const employeeErrorMessage = ref('')
+const employeeLoadErrorMessage = ref('')
+const employeeUpdateMessage = ref('')
 const employeeUpdateErrorMessage = ref('')
 const employeeDeleteErrorMessage = ref('')
 const historyErrorMessage = ref('')
 
 
 if (route.params.id && !Number.isNaN(employeeID) && Number.isInteger(employeeID)) {
-   await getEmployee(employeeID)
+  await getEmployee(employeeID)
       .then((payload) => {
         employee.value = payload
       })
       .catch(() => {
-        employeeErrorMessage.value = `Mitarbeiter mit der ID "${route.params.id}" wurde nicht gefunden`
+        employeeLoadErrorMessage.value = `Mitarbeiter mit der ID "${route.params.id}" wurde nicht gefunden`
       })
 }
 
@@ -106,18 +111,19 @@ const { defineField, errors, handleSubmit, meta, resetForm } = useForm({
 
 const [name, nameProps] = defineField('name')
 
+const onGoBack = () => {
+  navigateTo({name: Routes.EMPLOYEES, replace: true})
+}
+
 const onUpdateEmployee = handleSubmit((values) => {
+  employeeUpdateErrorMessage.value = ''
+  employeeUpdateMessage.value = ''
   isSubmitting.value = true
   updateEmployee(values)
       .then(async (updatedEmployee) => {
         employee.value = updatedEmployee
         resetForm({values: values})
-        toast.add({
-          summary: 'Erfolg',
-          detail: `Mitarbeiter wurde bearbeitet`,
-          severity: 'success',
-          life: Config.TOAST_LIFE_TIME,
-        })
+        employeeUpdateMessage.value = 'Mitarbeiter wurde bearbeitet'
       })
       .catch(() => {
         employeeUpdateErrorMessage.value = 'Mitarbeiter konnte nicht bearbeitet werden'
@@ -136,6 +142,7 @@ const onDeleteEmployee = (payload: MouseEvent) => {
     acceptLabel: 'Ja',
     accept: () => {
       if (employee.value) {
+        employeeDeleteErrorMessage.value = ''
         isSubmitting.value = true
         deleteEmployee(employeeID)
             .then(() => {
