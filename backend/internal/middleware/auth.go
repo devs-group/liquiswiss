@@ -5,6 +5,7 @@ import (
 	"liquiswiss/pkg/auth"
 	"liquiswiss/pkg/logger"
 	"liquiswiss/pkg/models"
+	"liquiswiss/pkg/utils"
 	"net/http"
 
 	"github.com/gin-gonic/gin"
@@ -16,7 +17,7 @@ func AuthMiddleware(c *gin.Context) {
 	var accessClaims *auth.Claims
 
 	// Get AccessToken and if possible verify it
-	accessToken, err := c.Cookie("access-token")
+	accessToken, err := c.Cookie(utils.AccessTokenName)
 	if err == nil {
 		accessClaims, err = auth.VerifyToken(accessToken)
 		if err != nil {
@@ -26,7 +27,7 @@ func AuthMiddleware(c *gin.Context) {
 
 	if accessClaims == nil {
 		// If access token is invalid, check if a refresh token exists
-		refreshToken, err := c.Cookie("refresh-token")
+		refreshToken, err := c.Cookie(utils.RefreshTokenName)
 		if err != nil || refreshToken == "" {
 			// Delete both tokens and abort
 			auth.ClearAuthCookies(c)
@@ -60,7 +61,7 @@ func AuthMiddleware(c *gin.Context) {
 		}
 
 		// Set the new access token as cookie
-		cookie := auth.GenerateCookie("access-token", newAccessToken, accessExpirationTime)
+		cookie := auth.GenerateCookie(utils.AccessTokenName, newAccessToken, accessExpirationTime)
 		http.SetCookie(c.Writer, &cookie)
 
 		// Proceed with the refreshed access token's claims

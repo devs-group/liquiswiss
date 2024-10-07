@@ -108,8 +108,8 @@ func GenerateDeleteCookie(name string) http.Cookie {
 }
 
 func ClearAuthCookies(c *gin.Context) {
-	accessCookie := GenerateDeleteCookie("access-token")
-	refreshCookie := GenerateDeleteCookie("refresh-token")
+	accessCookie := GenerateDeleteCookie(utils.AccessTokenName)
+	refreshCookie := GenerateDeleteCookie(utils.RefreshTokenName)
 	http.SetCookie(c.Writer, &accessCookie)
 	http.SetCookie(c.Writer, &refreshCookie)
 }

@@ -8,4 +8,7 @@ const (
 
 	RefreshTokenValidity = 90 * 24 * time.Hour // 3 months validity
 	//RefreshTokenValidity = 3 * time.Second
+
+	AccessTokenName  = "liq-access-token"
+	RefreshTokenName = "liq-refresh-token"
 )

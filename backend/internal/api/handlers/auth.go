@@ -64,9 +64,9 @@ func Register(dbService service.IDatabaseService, c *gin.Context) {
 		return
 	}
 
-	accessTokenCookie := auth.GenerateCookie("access-token", accessToken, accessExpirationTime)
+	accessTokenCookie := auth.GenerateCookie(utils.AccessTokenName, accessToken, accessExpirationTime)
 	http.SetCookie(c.Writer, &accessTokenCookie)
-	refreshTokenCookie := auth.GenerateCookie("refresh-token", refreshToken, refreshExpirationTime)
+	refreshTokenCookie := auth.GenerateCookie(utils.RefreshTokenName, refreshToken, refreshExpirationTime)
 	http.SetCookie(c.Writer, &refreshTokenCookie)
 
 	c.JSON(http.StatusOK, user)
@@ -127,9 +127,9 @@ func Login(dbService service.IDatabaseService, c *gin.Context) {
 		return
 	}
 
-	accessTokenCookie := auth.GenerateCookie("access-token", accessToken, accessExpirationTime)
+	accessTokenCookie := auth.GenerateCookie(utils.AccessTokenName, accessToken, accessExpirationTime)
 	http.SetCookie(c.Writer, &accessTokenCookie)
-	refreshTokenCookie := auth.GenerateCookie("refresh-token", refreshToken, refreshExpirationTime)
+	refreshTokenCookie := auth.GenerateCookie(utils.RefreshTokenName, refreshToken, refreshExpirationTime)
 	http.SetCookie(c.Writer, &refreshTokenCookie)
 
 	c.JSON(http.StatusOK, user)
@@ -142,7 +142,7 @@ func Logout(dbService service.IDatabaseService, c *gin.Context) {
 }
 
 func clearRefreshTokenFromDatabase(dbService service.IDatabaseService, c *gin.Context) {
-	refreshToken, err := c.Cookie("refresh-token")
+	refreshToken, err := c.Cookie(utils.RefreshTokenName)
 	if err == nil && refreshToken != "" {
 		// Verify the refresh token to get its claims (e.g., the tokenID and userID)
 		refreshClaims, err2 := auth.VerifyToken(refreshToken)
