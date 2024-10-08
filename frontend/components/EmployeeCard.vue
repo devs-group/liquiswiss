@@ -4,7 +4,7 @@
       <div class="flex items-center justify-between">
         <p class="truncate text-base">{{employee.name}}</p>
         <div class="flex justify-end">
-          <Button @click="$emit('onEdit', employee)" icon="pi pi-pencil" outlined rounded />
+          <Button @click="$emit('onEdit', employee)" icon="pi pi-cog" outlined rounded />
         </div>
       </div>
     </template>
@@ -26,7 +26,7 @@
         </p>
       </div>
       <div v-else class="flex flex-col gap-2 text-sm">
-        <p class="text-sm text-red-400">Der Mitarbeiter hat noch keine Daten</p>
+        <p class="text-sm text-red-400">Der Mitarbeiter hat aktuell keine Daten</p>
       </div>
     </template>
   </Card>

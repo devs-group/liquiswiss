@@ -33,7 +33,6 @@ const items = ref([
   { label: 'Prognose', icon: 'pi pi-chart-line', name: Routes.FORECASTS },
   { label: 'Abmelden', icon: 'pi pi-sign-out', command: async (event: MenuItemCommandEvent) => {
       confirm.require({
-        group: 'dialog',
         header: 'Abmelden',
         message: 'Möchtest du dich wirklich abmelden?',
         icon: 'pi pi-exclamation-triangle',

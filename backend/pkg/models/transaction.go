@@ -5,15 +5,21 @@ import (
 )
 
 type Transaction struct {
-	ID        int64         `db:"id" json:"id"`
-	Name      string        `db:"name" json:"name"`
-	Amount    int64         `db:"amount" json:"amount"`
-	Cycle     *string       `db:"cycle" json:"cycle"`
-	Type      string        `db:"type" json:"type"`
-	StartDate types.AsDate  `db:"start_date" json:"startDate"`
-	EndDate   *types.AsDate `db:"end_date" json:"endDate"`
-	Category  Category      `json:"category"`
-	Currency  Currency      `json:"currency"`
+	ID        int64                `db:"id" json:"id"`
+	Name      string               `db:"name" json:"name"`
+	Amount    int64                `db:"amount" json:"amount"`
+	Cycle     *string              `db:"cycle" json:"cycle"`
+	Type      string               `db:"type" json:"type"`
+	StartDate types.AsDate         `db:"start_date" json:"startDate"`
+	EndDate   *types.AsDate        `db:"end_date" json:"endDate"`
+	Category  Category             `json:"category"`
+	Currency  Currency             `json:"currency"`
+	Employee  *TransactionEmployee `json:"employee"`
+}
+
+type TransactionEmployee struct {
+	ID   int64  `json:"id"`
+	Name string `json:"name"`
 }
 
 type CreateTransaction struct {
@@ -25,6 +31,7 @@ type CreateTransaction struct {
 	EndDate   *string `json:"endDate" validate:"omitempty,endDateGTEStartDate"`
 	Category  int64   `json:"category" validate:"required"`
 	Currency  int64   `json:"currency" validate:"required"`
+	Employee  *int64  `json:"employee" validate:"omitempty"`
 }
 
 type UpdateTransaction struct {
@@ -36,4 +43,5 @@ type UpdateTransaction struct {
 	EndDate   *string `json:"endDate" validate:"omitempty,endDateGTEStartDate"`
 	Category  *int64  `json:"category" validate:"omitempty"`
 	Currency  *int64  `json:"currency" validate:"omitempty"`
+	Employee  *int64  `json:"employee" validate:"omitempty"`
 }

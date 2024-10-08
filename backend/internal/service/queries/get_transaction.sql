@@ -11,11 +11,14 @@ SELECT
     cur.id,
     cur.code,
     cur.description,
-    cur.locale_code
+    cur.locale_code,
+    emp.id,
+    emp.name
 FROM
     go_transactions r
     INNER JOIN go_categories c ON r.category = c.id
     INNER JOIN go_currencies cur ON r.currency = cur.id
+    LEFT JOIN go_employees emp ON r.employee = emp.id
 WHERE
     r.id = ?
     AND r.owner = ?

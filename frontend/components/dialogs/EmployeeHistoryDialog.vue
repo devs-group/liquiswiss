@@ -178,7 +178,7 @@ const onSubmit = handleSubmit((values) => {
 
 const onDeleteEmployeeHistory = (event: MouseEvent) => {
   confirm.require({
-    target: event.currentTarget as HTMLElement,
+    header: 'Löschen',
     message: 'Historie vollständig löschen?',
     icon: 'pi pi-exclamation-triangle',
     rejectLabel: 'Nein',

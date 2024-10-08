@@ -27,7 +27,7 @@ export default function useEmployees() {
         });
 
         if (status.value === 'error') {
-            return Promise.reject('Fehler beim Laden der Historie')
+            return Promise.reject('Fehler beim Laden der Mitarbeiter')
         } else {
             if (data.value) {
                 if (append) {

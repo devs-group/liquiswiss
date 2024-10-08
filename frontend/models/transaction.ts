@@ -1,4 +1,3 @@
-import type {Strapi_Meta} from "~/interfaces/strapi-interfaces";
 import type {CycleType, TransactionType} from "~/config/enums";
 import type {CategoryResponse, Strapi_RelationResponse_Category} from "~/models/category";
 import type {CurrencyResponse, Strapi_RelationResponse_Currency} from "~/models/currency";
@@ -21,14 +20,6 @@ export interface StrapiTransaction {
     }
 }
 
-export interface Strapi_ListResponse_Transaction extends Strapi_Meta {
-    data: StrapiTransaction[]
-}
-
-export interface Strapi_PostResponse_Transaction extends Strapi_Meta {
-    data: StrapiTransaction
-}
-
 export interface TransactionResponse {
     id: number;
     name: string;
@@ -39,6 +30,12 @@ export interface TransactionResponse {
     endDate: string | null;
     category: CategoryResponse;
     currency: CurrencyResponse;
+    employee: TransactionEmployeeResponse | null;
+}
+
+export interface TransactionEmployeeResponse {
+    id: number;
+    name: string;
 }
 
 export interface ListTransactionResponse {
@@ -56,4 +53,5 @@ export interface TransactionFormData {
     endDate?: Date;
     category: number;
     currency: number;
+    employee: number;
 }

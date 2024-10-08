@@ -135,8 +135,8 @@ const onUpdateEmployee = handleSubmit((values) => {
 
 const onDeleteEmployee = (payload: MouseEvent) => {
   confirm.require({
-    target: payload.currentTarget as HTMLElement,
-    message: 'Mitarbeiter vollständig löschen?',
+    header: 'Löschen',
+    message: `Mitarbeiter "${employee.value!.name}" vollständig löschen?`,
     icon: 'pi pi-exclamation-triangle',
     rejectLabel: 'Nein',
     acceptLabel: 'Ja',

@@ -9,8 +9,8 @@
     <p v-else>Es gibt noch keine Transaktionen</p>
 
     <div v-if="transactions?.data.length" class="self-center">
-      <Button v-if="!noMoreDataTransactions" severity="info" label="Mehr anzeigen" @click="onLoadMoreEmployees" :loading="isLoadingMore"/>
-      <p v-else class="text-xs opacity-60">Keine weiteren Mitarbeiter ...</p>
+      <Button v-if="!noMoreDataTransactions" severity="info" label="Mehr anzeigen" @click="onLoadMoreTransactions" :loading="isLoadingMore"/>
+      <p v-else class="text-xs opacity-60">Keine weiteren Transaktionen ...</p>
     </div>
   </div>
 </template>
@@ -53,7 +53,7 @@ const onEditTransaction = (transaction: TransactionResponse) => {
   })
 }
 
-const onLoadMoreEmployees = async (event: MouseEvent) => {
+const onLoadMoreTransactions = async (event: MouseEvent) => {
   isLoadingMore.value = true
   pageTransactions.value += 1
   await listTransactions(false)

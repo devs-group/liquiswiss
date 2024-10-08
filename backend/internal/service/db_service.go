@@ -189,7 +189,7 @@ func (s *DatabaseService) CreateTransaction(payload models.CreateTransaction, us
 
 	res, err := stmt.Exec(
 		payload.Name, payload.Amount, payload.Cycle, payload.Type, payload.StartDate, payload.EndDate,
-		payload.Category, payload.Currency, userID, nil,
+		payload.Category, payload.Currency, payload.Employee, userID, nil,
 	)
 	if err != nil {
 		return 0, err
@@ -252,6 +252,12 @@ func (s *DatabaseService) UpdateTransaction(payload models.UpdateTransaction, us
 	if payload.Currency != nil {
 		queryBuild = append(queryBuild, "currency = ?")
 		args = append(args, *payload.Currency)
+	}
+	queryBuild = append(queryBuild, "employee = ?")
+	if payload.Employee != nil {
+		args = append(args, *payload.Employee)
+	} else {
+		args = append(args, nil)
 	}
 
 	// Add WHERE clause
@@ -318,11 +324,14 @@ func (s *DatabaseService) ListTransactions(userID int64, page int64, limit int64
 		// These are required for proper date convertion afterwards
 		var startDate time.Time
 		var endDate sql.NullTime
+		var transactionEmployeeID sql.NullInt64
+		var transactionEmployeeName sql.NullString
 
 		err := rows.Scan(
 			&transaction.ID, &transaction.Name, &transaction.Amount, &transaction.Cycle, &transaction.Type, &startDate, &endDate,
 			&transaction.Category.ID, &transaction.Category.Name,
 			&transaction.Currency.ID, &transaction.Currency.Code, &transaction.Currency.Description, &transaction.Currency.LocaleCode,
+			&transactionEmployeeID, &transactionEmployeeName,
 			&totalCount,
 		)
 		if err != nil {
@@ -336,6 +345,13 @@ func (s *DatabaseService) ListTransactions(userID int64, page int64, limit int64
 			transaction.EndDate = &convertedDate
 		}
 
+		if transactionEmployeeID.Valid {
+			transaction.Employee = &models.TransactionEmployee{
+				ID:   transactionEmployeeID.Int64,
+				Name: transactionEmployeeName.String,
+			}
+		}
+
 		transactions = append(transactions, transaction)
 	}
 
@@ -347,6 +363,8 @@ func (s *DatabaseService) GetTransaction(userID int64, transactionID string) (*m
 	// These are required for proper date convertion afterwards
 	var startDate time.Time
 	var endDate sql.NullTime
+	var transactionEmployeeID sql.NullInt64
+	var transactionEmployeeName sql.NullString
 
 	query, err := sqlQueries.ReadFile("queries/get_transaction.sql")
 	if err != nil {
@@ -357,6 +375,7 @@ func (s *DatabaseService) GetTransaction(userID int64, transactionID string) (*m
 		&transaction.ID, &transaction.Name, &transaction.Amount, &transaction.Cycle, &transaction.Type, &startDate, &endDate,
 		&transaction.Category.ID, &transaction.Category.Name,
 		&transaction.Currency.ID, &transaction.Currency.Code, &transaction.Currency.Description, &transaction.Currency.LocaleCode,
+		&transactionEmployeeID, &transactionEmployeeName,
 	)
 	if err != nil {
 		return nil, err
@@ -367,6 +386,13 @@ func (s *DatabaseService) GetTransaction(userID int64, transactionID string) (*m
 	if endDate.Valid {
 		convertedDate := types.AsDate(endDate.Time)
 		transaction.EndDate = &convertedDate
+	}
+
+	if transactionEmployeeID.Valid {
+		transaction.Employee = &models.TransactionEmployee{
+			ID:   transactionEmployeeID.Int64,
+			Name: transactionEmployeeName.String,
+		}
 	}
 
 	return &transaction, nil

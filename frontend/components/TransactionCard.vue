@@ -18,6 +18,7 @@
         <p v-if="isRepeating">Wiederkehrend: {{cycle}}</p>
         <p v-else>Einmalig</p>
         <p class="truncate">Kategorie: {{transaction.category.name}}</p>
+        <p v-if="transaction.employee">Mitarbeiter: {{transaction.employee.name}}</p>
       </div>
     </template>
   </Card>

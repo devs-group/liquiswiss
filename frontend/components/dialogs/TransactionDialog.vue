@@ -8,9 +8,9 @@
       <small class="text-red-400">{{errors["name"] || '&nbsp;'}}</small>
     </div>
 
-    <div class="flex flex-col gap-2 col-span-full">
+    <div class="flex flex-col gap-2 col-span-full md:col-span-1">
       <label class="text-sm font-bold" for="name">Kategorie *</label>
-      <Dropdown v-model="category" v-bind="categoryProps" editable empty-message="Keine Kategorien gefunden"
+      <Dropdown v-model="category" v-bind="categoryProps" empty-message="Keine Kategorien gefunden"
                 :options="categories" option-label="name" option-value="id"
                 placeholder="Bitte wählen"
                 :class="{'p-invalid': errors['category']?.length}"
@@ -19,8 +19,24 @@
     </div>
 
     <div class="flex flex-col gap-2 col-span-full md:col-span-1">
+      <div class="flex items-center gap-2">
+        <label class="text-sm font-bold" for="name">Mitarbeiter</label>
+        <i class="pi pi-info-circle text-blue-600" v-tooltip="'Optionale Assoziation'"></i>
+      </div>
+      <Dropdown v-model="employee" v-bind="employeeProps" empty-message="Keine Mitarbeiter gefunden"
+                :options="employees.data" option-label="name" option-value="id"
+                placeholder="Bitte wählen"
+                showClear
+                :loading="isLoadingEmployees"
+                :disabled="isLoadingEmployees"
+                :class="{'p-invalid': errors['employee']?.length}"
+                id="name" type="text"/>
+      <small class="text-red-400">{{errors["employee"] || employeesErrorMessage || '&nbsp;'}}</small>
+    </div>
+
+    <div class="flex flex-col gap-2 col-span-full md:col-span-1">
       <label class="text-sm font-bold" for="name">Währung *</label>
-      <Dropdown v-model="currency" v-bind="currencyProps" editable empty-message="Keine Währungen gefunden"
+      <Dropdown v-model="currency" v-bind="currencyProps" empty-message="Keine Währungen gefunden"
                 :options="currencies" option-label="code" option-value="id"
                 placeholder="Bitte wählen"
                 :class="{'p-invalid': errors['currency']?.length}"
@@ -31,7 +47,7 @@
     <div class="flex flex-col gap-2 col-span-full md:col-span-1">
       <div class="flex items-center gap-2">
         <label class="text-sm font-bold" for="name">Betrag *</label>
-        <i class="pi pi-info-circle text-red-600" v-tooltip="'Negatives Vorzeichen = Ausgabe'"></i>
+        <i class="pi pi-info-circle text-blue-600" v-tooltip="'Negatives Vorzeichen = Ausgabe'"></i>
       </div>
       <InputText v-model="amount" v-bind="amountProps"
                  :class="{'p-invalid': errors['amount']?.length}"
@@ -41,7 +57,7 @@
 
     <div class="flex flex-col gap-2 col-span-full md:col-span-1">
       <label class="text-sm font-bold" for="name">Zahlungstyp</label>
-      <Dropdown v-model="type" v-bind="typeProps" editable empty-message="Keine Typen gefunden"
+      <Dropdown v-model="type" v-bind="typeProps" empty-message="Keine Typen gefunden"
                 :options="TransactionTypeToOptions()" option-label="name" option-value="value"
                 placeholder="Bitte wählen"
                 :class="{'p-invalid': errors['type']?.length}"
@@ -51,7 +67,7 @@
 
     <div v-if="isRepeatingTransaction" class="flex flex-col gap-2 col-span-full md:col-span-1">
       <label class="text-sm font-bold" for="name">Zahlungszyklus</label>
-      <Dropdown v-model="cycle" v-bind="cycleProps" editable empty-message="Keine Zyklen gefunden"
+      <Dropdown v-model="cycle" v-bind="cycleProps" empty-message="Keine Zyklen gefunden"
                 :options="CycleTypeToOptions()" option-label="name" option-value="value"
                 placeholder="Bitte wählen"
                 :class="{'p-invalid': errors['cycle']?.length}"
@@ -82,7 +98,7 @@
     <span v-else class="hidden md:block"></span>
 
     <div v-if="transaction?.id" class="flex justify-end col-span-full">
-      <Button @click="onDeleteTransaction" :loading="isLoading" label="Löschen" severity="danger" size="small"/>
+      <Button @click="onDeleteTransaction" :loading="isLoading" label="Löschen" icon="pi pi-trash" severity="danger" size="small"/>
     </div>
 
     <hr class="my-4 col-span-full"/>
@@ -90,7 +106,7 @@
     <Message v-if="errorMessage.length" severity="error" :closable="false" class="col-span-full">{{errorMessage}}</Message>
 
     <div class="flex justify-end gap-2 col-span-full">
-      <Button @click="onSubmit" :disabled="!meta.valid || isLoading" :loading="isLoading" label="Speichern" type="submit"/>
+      <Button @click="onSubmit" :disabled="!meta.valid || isLoading" :loading="isLoading" label="Speichern" icon="pi pi-save" type="submit"/>
       <Button @click="dialogRef?.close()" :loading="isLoading" label="Abbrechen" severity="secondary"/>
     </div>
   </form>
@@ -107,15 +123,26 @@ import {CycleType, TransactionType} from "~/config/enums";
 const dialogRef = inject<ITransactionFormDialog>('dialogRef')!;
 
 const {createTransaction, updateTransaction, deleteTransaction} = useTransactions()
+const {employees, getEmployees} = useEmployees()
 const {categories, currencies} = useGlobalData()
 const confirm = useConfirm()
 const toast = useToast()
 
 // Data
 const isLoading = ref(false)
+const isLoadingEmployees = ref(true)
 const transaction = dialogRef.value.data?.transaction
 const isCreate = !transaction?.id
 const errorMessage = ref('')
+const employeesErrorMessage = ref('')
+
+getEmployees(false)
+    .catch(() => {
+      employeesErrorMessage.value = 'Mitarbeiter konnten nicht geladen werden'
+    })
+    .finally(() => {
+      isLoadingEmployees.value = false
+    })
 
 const { defineField, errors, handleSubmit, meta } = useForm({
   validationSchema: yup.object({
@@ -130,6 +157,7 @@ const { defineField, errors, handleSubmit, meta } = useForm({
     endDate: yup.date().nullable().typeError('Bitte Datum eingeben'),
     category: yup.number().required('Kategorie wird benötigt').typeError('Ungültige Kategorie'),
     currency: yup.number().required('Währung wird benötigt').typeError('Ungültige Währung'),
+    employee: yup.number().nullable().typeError('Ungültiger Mitarbeiter'),
   }),
   initialValues: {
     id: transaction?.id ?? undefined,
@@ -141,6 +169,7 @@ const { defineField, errors, handleSubmit, meta } = useForm({
     endDate: transaction?.endDate ? DateToUTCDate(transaction?.endDate) : undefined,
     category: transaction?.category.id ?? null,
     currency: transaction?.currency.id ?? null,
+    employee: transaction?.employee?.id ?? null,
   } as TransactionFormData
 });
 
@@ -148,10 +177,11 @@ const [name, nameProps] = defineField('name')
 const [amount, amountProps] = defineField('amount')
 const [cycle, cycleProps] = defineField('cycle')
 const [type, typeProps] = defineField('type')
-const [category, categoryProps] = defineField('category')
-const [currency, currencyProps] = defineField('currency')
 const [startDate, startDateProps] = defineField('startDate')
 const [endDate, endDateProps] = defineField('endDate')
+const [category, categoryProps] = defineField('category')
+const [currency, currencyProps] = defineField('currency')
+const [employee, employeeProps] = defineField('employee')
 
 const onSubmit = handleSubmit((values) => {
   isLoading.value = true
@@ -209,7 +239,7 @@ const onSubmit = handleSubmit((values) => {
 
 const onDeleteTransaction = (event: MouseEvent) => {
   confirm.require({
-    target: event.currentTarget as HTMLElement,
+    header: 'Löschen',
     message: 'Transaktion vollständig löschen?',
     icon: 'pi pi-exclamation-triangle',
     rejectLabel: 'Nein',
