@@ -3,9 +3,6 @@ export default defineNuxtConfig({
     devtools: {
         enabled: false,
     },
-    build: {
-        transpile: ["primevue"],
-    },
     runtimeConfig: {
         apiHost: '',
     },
