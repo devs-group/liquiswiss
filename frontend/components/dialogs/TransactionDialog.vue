@@ -4,7 +4,7 @@
       <label class="text-sm font-bold" for="name">Name *</label>
       <InputText v-model="name" v-bind="nameProps"
                  :class="{'p-invalid': errors['name']?.length}"
-                 id="name" type="text" autofocus/>
+                 id="name" type="text"/>
       <small class="text-red-400">{{errors["name"] || '&nbsp;'}}</small>
     </div>
 
@@ -14,7 +14,7 @@
                 :options="categories" option-label="name" option-value="id"
                 placeholder="Bitte wählen"
                 :class="{'p-invalid': errors['category']?.length}"
-                id="name" type="text" autofocus/>
+                id="name" type="text"/>
       <small class="text-red-400">{{errors["category"] || '&nbsp;'}}</small>
     </div>
 
@@ -24,7 +24,7 @@
                 :options="currencies" option-label="code" option-value="id"
                 placeholder="Bitte wählen"
                 :class="{'p-invalid': errors['currency']?.length}"
-                id="name" type="text" autofocus/>
+                id="name" type="text"/>
       <small class="text-red-400">{{errors["currency"] || '&nbsp;'}}</small>
     </div>
 
@@ -35,7 +35,7 @@
       </div>
       <InputText v-model="amount" v-bind="amountProps"
                  :class="{'p-invalid': errors['amount']?.length}"
-                 id="name" type="text" autofocus/>
+                 id="name" type="text"/>
       <small class="text-red-400">{{errors["amount"] || '&nbsp;'}}</small>
     </div>
 
@@ -45,7 +45,7 @@
                 :options="TransactionTypeToOptions()" option-label="name" option-value="value"
                 placeholder="Bitte wählen"
                 :class="{'p-invalid': errors['type']?.length}"
-                id="name" type="text" autofocus/>
+                id="name" type="text"/>
       <small class="text-red-400">{{errors["type"] || '&nbsp;'}}</small>
     </div>
 
@@ -55,7 +55,7 @@
                 :options="CycleTypeToOptions()" option-label="name" option-value="value"
                 placeholder="Bitte wählen"
                 :class="{'p-invalid': errors['cycle']?.length}"
-                id="name" type="text" autofocus/>
+                id="name" type="text"/>
       <small class="text-red-400">{{errors["cycle"] || '&nbsp;'}}</small>
     </div>
     <span v-else class="hidden md:block"></span>

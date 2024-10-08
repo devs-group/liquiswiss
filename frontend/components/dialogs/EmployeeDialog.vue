@@ -4,7 +4,7 @@
       <label class="text-sm font-bold" for="name">Name*</label>
       <InputText v-model="name" v-bind="nameProps"
                  :class="{'p-invalid': errors['name']?.length}"
-                 id="name" type="text" autofocus/>
+                 id="name" type="text"/>
       <small class="text-red-400">{{errors["name"] || '&nbsp;'}}</small>
     </div>
 
