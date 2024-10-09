@@ -281,6 +281,8 @@ func CreateEmployeeHistory(dbService service.IDatabaseService, c *gin.Context) {
 		return
 	}
 
+	go CalculateForecasts(dbService, c)
+
 	c.JSON(http.StatusCreated, employeeHistory)
 }
 
@@ -399,6 +401,8 @@ func UpdateEmployeeHistory(dbService service.IDatabaseService, c *gin.Context) {
 		return
 	}
 
+	go CalculateForecasts(dbService, c)
+
 	c.JSON(http.StatusOK, employee)
 }
 
@@ -454,6 +458,8 @@ func DeleteEmployeeHistory(dbService service.IDatabaseService, c *gin.Context) {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 		return
 	}
+
+	go CalculateForecasts(dbService, c)
 
 	c.Status(http.StatusNoContent)
 }
