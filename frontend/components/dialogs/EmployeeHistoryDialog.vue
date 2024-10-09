@@ -62,7 +62,7 @@
       <small class="text-red-400">{{errors["toDate"] || '&nbsp;'}}</small>
     </div>
 
-    <div v-if="employeeHistory?.id" class="flex justify-end col-span-full">
+    <div v-if="!isClone && !isCreate" class="flex justify-end col-span-full">
       <Button @click="onDeleteEmployeeHistory" :disabled="isLoading" label="Löschen" severity="danger" size="small" icon="pi pi-trash"/>
     </div>
 
@@ -95,7 +95,8 @@ const toast = useToast()
 const isLoading = ref(false)
 const employeeID = dialogRef.value.data!.employeeID
 const employeeHistory = dialogRef.value.data!.employeeHistory
-const isCreate = !employeeHistory?.id
+const isClone = dialogRef.value.data?.isClone
+const isCreate = isClone || !employeeHistory?.id
 const errorMessage = ref('')
 
 const { defineField, errors, handleSubmit, meta } = useForm({
@@ -108,7 +109,7 @@ const { defineField, errors, handleSubmit, meta } = useForm({
     toDate: yup.date().nullable().typeError('Bitte Datum eingeben'),
   }),
   initialValues: {
-    id: employeeHistory?.id ?? undefined,
+    id: isClone ? undefined : employeeHistory?.id ?? undefined,
     hoursPerMonth: employeeHistory?.hoursPerMonth ?? 0,
     salaryPerMonth: employeeHistory?.salaryPerMonth ? AmountToFloat(employeeHistory.salaryPerMonth) : 0,
     salaryCurrency: employeeHistory?.salaryCurrency.id ?? null,

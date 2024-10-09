@@ -36,7 +36,7 @@
     </div>
     <Button @click="onCreateEmployeeHistory" class="self-end" :loading="isSubmitting" label="Historie hinzufügen" icon="pi pi-history"/>
     <div v-if="employeeHistories?.data.length" class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
-      <EmployeeHistoryCard @on-edit="onUpdateEmployeeHistory" v-for="employeeHistory in employeeHistories.data" :employee-history="employeeHistory"/>
+      <EmployeeHistoryCard @on-edit="onUpdateEmployeeHistory" @on-clone="onCloneEmployeeHistory" v-for="employeeHistory in employeeHistories.data" :employee-history="employeeHistory"/>
     </div>
 
     <Message v-if="historyErrorMessage.length" severity="error" :closable="false" class="col-span-full">{{historyErrorMessage}}</Message>
@@ -191,6 +191,21 @@ const onUpdateEmployeeHistory = (employeeHistory: EmployeeHistoryResponse) => {
     },
   })
 }
+
+const onCloneEmployeeHistory = (employeeHistory: EmployeeHistoryResponse) => {
+  dialog.open(EmployeeHistoryDialog, {
+    data: {
+      employeeID,
+      employeeHistory,
+      isClone: true,
+    },
+    props: {
+      header: 'Historie klonen',
+      ...ModalConfig,
+    },
+  })
+}
+
 const onLoadMoreEmployeeHistory = async (event: MouseEvent) => {
   isLoadingMore.value = true
   pageEmployeeHistories.value += 1

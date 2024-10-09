@@ -20,6 +20,7 @@ export interface IHistoryFormDialog {
     value: {
         close: () => any,
         data: {
+            isClone: boolean
             employeeID: number
             employeeHistory?: EmployeeHistoryResponse
         }

@@ -3,7 +3,8 @@
     <template #title>
       <div class="flex items-center justify-between">
         <p class="truncate text-base">Von {{fromDateFormatted}}</p>
-        <div class="flex justify-end">
+        <div class="flex gap-2 justify-end">
+          <Button @click="$emit('onClone', employeeHistory)" severity="help" icon="pi pi-copy" outlined rounded />
           <Button @click="$emit('onEdit', employeeHistory)" icon="pi pi-pencil" outlined rounded />
         </div>
       </div>
@@ -31,6 +32,7 @@ const props = defineProps({
 
 defineEmits<{
   'onEdit': [employeeHistory: EmployeeHistoryResponse]
+  'onClone': [employeeHistory: EmployeeHistoryResponse]
 }>()
 
 const salaryFormatted = computed(() => NumberToFormattedCurrency(AmountToFloat(props.employeeHistory!.salaryPerMonth), props.employeeHistory.salaryCurrency!.localeCode))
