@@ -111,6 +111,29 @@ func (api *API) setupRouter() {
 				handlers.DeleteEmployeeHistory(api.DBService, ctx)
 			})
 
+			protected.GET("/forecasts", func(ctx *gin.Context) {
+				handlers.ListForecasts(api.DBService, ctx)
+			})
+			protected.GET("/forecasts/calculate", func(ctx *gin.Context) {
+				handlers.CalculateForecasts(api.DBService, ctx)
+			})
+
+			protected.GET("/bank-accounts", func(ctx *gin.Context) {
+				handlers.ListBankAccounts(api.DBService, ctx)
+			})
+			protected.GET("/bank-accounts/:bankAccountID", func(ctx *gin.Context) {
+				handlers.GetBankAccount(api.DBService, ctx)
+			})
+			protected.POST("/bank-accounts", func(ctx *gin.Context) {
+				handlers.CreateBankAccount(api.DBService, ctx)
+			})
+			protected.PATCH("/bank-accounts/:bankAccountID", func(ctx *gin.Context) {
+				handlers.UpdateBankAccount(api.DBService, ctx)
+			})
+			protected.DELETE("/bank-accounts/:bankAccountID", func(ctx *gin.Context) {
+				handlers.DeleteBankAccount(api.DBService, ctx)
+			})
+
 			protected.GET("/categories", func(ctx *gin.Context) {
 				handlers.ListCategories(api.DBService, ctx)
 			})

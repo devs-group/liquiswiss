@@ -31,6 +31,7 @@ const items = ref([
   { label: 'Mitarbeitende', icon: 'pi pi-user', name: Routes.EMPLOYEES },
   { label: 'Transaktionen', icon: 'pi pi-money-bill', name: Routes.TRANSACTIONS },
   { label: 'Prognose', icon: 'pi pi-chart-line', name: Routes.FORECASTS },
+  { label: 'Bankkonten', icon: 'pi pi-building', name: Routes.BANK_ACCOUNTS },
   { label: 'Abmelden', icon: 'pi pi-sign-out', command: async (event: MenuItemCommandEvent) => {
       confirm.require({
         header: 'Abmelden',

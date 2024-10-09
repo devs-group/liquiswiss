@@ -3,13 +3,12 @@ package handlers
 import (
 	"database/sql"
 	"fmt"
+	"github.com/gin-gonic/gin"
 	"liquiswiss/internal/service"
 	"liquiswiss/pkg/models"
 	"liquiswiss/pkg/utils"
 	"net/http"
 	"strconv"
-
-	"github.com/gin-gonic/gin"
 )
 
 func CreateTransaction(dbService service.IDatabaseService, c *gin.Context) {

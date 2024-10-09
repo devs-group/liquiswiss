@@ -33,7 +33,7 @@
     <div class="flex flex-col gap-2 col-span-full md:col-span-1">
       <label class="text-sm font-bold" for="salary-currency">Währung des Lohns*</label>
       <Dropdown v-model="salaryCurrency" v-bind="salaryCurrencyProps"
-                editable empty-message="Keine Währungen gefunden"
+                empty-message="Keine Währungen gefunden"
                 :disabled="isLoading"
                 :class="{'p-invalid': errors['salaryCurrency']?.length}"
                 :options="currencies" option-label="code" option-value="id"

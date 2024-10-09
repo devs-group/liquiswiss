@@ -3,6 +3,7 @@ import type {
     EmployeeHistoryResponse,
     EmployeeResponse
 } from "~/models/employee";
+import type {BankAccountResponse} from "~/models/bank-account";
 
 export interface IEmployeeFormDialog {
     close: () => {},
@@ -30,8 +31,18 @@ export interface ITransactionFormDialog {
     value: {
         close: () => any,
         data: {
-            transactionID: number
+            isClone: boolean
             transaction?: TransactionResponse
+        }
+    }
+}
+export interface IBankAccountFormDialog {
+    close: () => {},
+    value: {
+        close: () => any,
+        data: {
+            bankAccountID: number
+            bankAccount?: BankAccountResponse
         }
     }
 }

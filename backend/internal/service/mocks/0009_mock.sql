@@ -1,0 +1,1 @@
+INSERT INTO liquiswiss.go_employees (id, name, owner) VALUES (1, 'Ralph Segi', 1);

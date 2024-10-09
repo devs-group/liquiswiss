@@ -97,7 +97,7 @@
     </div>
     <span v-else class="hidden md:block"></span>
 
-    <div v-if="transaction?.id" class="flex justify-end col-span-full">
+    <div v-if="!isClone && !isCreate" class="flex justify-end col-span-full">
       <Button @click="onDeleteTransaction" :loading="isLoading" label="Löschen" icon="pi pi-trash" severity="danger" size="small"/>
     </div>
 
@@ -132,7 +132,8 @@ const toast = useToast()
 const isLoading = ref(false)
 const isLoadingEmployees = ref(true)
 const transaction = dialogRef.value.data?.transaction
-const isCreate = !transaction?.id
+const isClone = dialogRef.value.data?.isClone
+const isCreate = isClone || !transaction?.id
 const errorMessage = ref('')
 const employeesErrorMessage = ref('')
 
@@ -160,7 +161,7 @@ const { defineField, errors, handleSubmit, meta } = useForm({
     employee: yup.number().nullable().typeError('Ungültiger Mitarbeiter'),
   }),
   initialValues: {
-    id: transaction?.id ?? undefined,
+    id: isClone ? undefined : transaction?.id ?? undefined,
     name: transaction?.name ?? '',
     amount: transaction?.amount ? AmountToFloat(transaction.amount) : '',
     cycle: transaction?.cycle ?? CycleType.Monthly,

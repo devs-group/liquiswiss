@@ -52,6 +52,16 @@ type IDatabaseService interface {
 	DeleteEmployee(employeeID int64, userID int64) error
 	DeleteEmployeeHistory(historyID int64, userID int64) error
 
+	ListForecasts(userID int64, limit int64) ([]models.Forecast, error)
+	UpsertForecast(payload models.CreateForecast, userID int64) (int64, error)
+	ClearForecasts(userID int64) (int64, error)
+
+	ListBankAccounts(userID int64) ([]models.BankAccount, error)
+	GetBankAccount(userID int64, bankAccountID string) (*models.BankAccount, error)
+	CreateBankAccount(payload models.CreateBankAccount, userID int64) (int64, error)
+	UpdateBankAccount(payload models.UpdateBankAccount, userID int64, bankAccountID string) error
+	DeleteBankAccount(userID int64, bankAccountID string) error
+
 	ListCategories(page int64, limit int64) ([]models.Category, int64, error)
 	GetCategory(id string) (*models.Category, error)
 	CreateCategory(payload models.CreateCategory) (int64, error)
@@ -313,7 +323,7 @@ func (s *DatabaseService) ListTransactions(userID int64, page int64, limit int64
 		return nil, 0, err
 	}
 
-	rows, err := s.db.Query(string(query), userID, limit, (page-1)*limit)
+	rows, err := s.db.Query(string(query), userID, (page)*limit, 0)
 	if err != nil {
 		return nil, 0, err
 	}
@@ -927,6 +937,236 @@ func (s *DatabaseService) DeleteEmployeeHistory(historyID int64, userID int64) e
 	defer stmt.Close()
 
 	res, err := stmt.Exec(historyID, userID)
+	if err != nil {
+		return err
+	}
+
+	_, err = res.RowsAffected()
+	if err != nil {
+		return err
+	}
+
+	return nil
+}
+
+// ListForecasts lists all forecasts
+func (s *DatabaseService) ListForecasts(userID int64, limit int64) ([]models.Forecast, error) {
+	forecasts := make([]models.Forecast, 0)
+
+	query, err := sqlQueries.ReadFile("queries/list_forecasts.sql")
+	if err != nil {
+		return nil, err
+	}
+
+	rows, err := s.db.Query(string(query), limit, userID)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+
+	for rows.Next() {
+		var forecast models.Forecast
+
+		err := rows.Scan(
+			&forecast.Month, &forecast.Revenue, &forecast.Expense, &forecast.Cashflow,
+		)
+		if err != nil {
+			return nil, err
+		}
+
+		forecasts = append(forecasts, forecast)
+	}
+
+	return forecasts, nil
+}
+
+// UpsertForecast Inserts or updates a forecast
+func (s *DatabaseService) UpsertForecast(payload models.CreateForecast, userID int64) (int64, error) {
+	query, err := sqlQueries.ReadFile("queries/upsert_forecast.sql")
+	if err != nil {
+		return 0, err
+	}
+
+	stmt, err := s.db.Prepare(string(query))
+	if err != nil {
+		return 0, err
+	}
+	defer stmt.Close()
+
+	res, err := stmt.Exec(
+		userID, payload.Month, payload.Revenue, payload.Expense, payload.Cashflow,
+	)
+	if err != nil {
+		return 0, err
+	}
+
+	// Get the ID of the newly inserted employee
+	id, err := res.LastInsertId()
+	if err != nil {
+		return 0, err
+	}
+
+	return id, nil
+}
+
+// ClearForecasts clears all records of the user
+func (s *DatabaseService) ClearForecasts(userID int64) (int64, error) {
+	query, err := sqlQueries.ReadFile("queries/clear_forecasts.sql")
+	if err != nil {
+		return 0, err
+	}
+
+	stmt, err := s.db.Prepare(string(query))
+	if err != nil {
+		return 0, err
+	}
+	defer stmt.Close()
+
+	res, err := stmt.Exec(userID)
+	if err != nil {
+		return 0, err
+	}
+
+	// Get the ID of the newly inserted employee
+	affected, err := res.RowsAffected()
+	if err != nil {
+		return 0, err
+	}
+
+	return affected, nil
+}
+
+// ListBankAccounts returns the available bank accounts
+func (s *DatabaseService) ListBankAccounts(userID int64) ([]models.BankAccount, error) {
+	bankAccounts := make([]models.BankAccount, 0)
+
+	query, err := sqlQueries.ReadFile("queries/list_bank_accounts.sql")
+	if err != nil {
+		return nil, err
+	}
+
+	rows, err := s.db.Query(string(query), userID)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+
+	for rows.Next() {
+		var bankAccount models.BankAccount
+
+		err := rows.Scan(
+			&bankAccount.ID, &bankAccount.Name, &bankAccount.Amount,
+			&bankAccount.Currency.ID, &bankAccount.Currency.Code, &bankAccount.Currency.Description, &bankAccount.Currency.LocaleCode,
+		)
+		if err != nil {
+			return nil, err
+		}
+
+		bankAccounts = append(bankAccounts, bankAccount)
+	}
+
+	return bankAccounts, nil
+}
+
+func (s *DatabaseService) GetBankAccount(userID int64, bankAccountID string) (*models.BankAccount, error) {
+	var bankAccount models.BankAccount
+
+	query, err := sqlQueries.ReadFile("queries/get_bank_account.sql")
+	if err != nil {
+		return nil, err
+	}
+
+	err = s.db.QueryRow(string(query), bankAccountID, userID).Scan(
+		&bankAccount.ID, &bankAccount.Name, &bankAccount.Amount,
+		&bankAccount.Currency.ID, &bankAccount.Currency.Code, &bankAccount.Currency.Description, &bankAccount.Currency.LocaleCode,
+	)
+	if err != nil {
+		return nil, err
+	}
+
+	return &bankAccount, nil
+}
+
+func (s *DatabaseService) CreateBankAccount(payload models.CreateBankAccount, userID int64) (int64, error) {
+	query, err := sqlQueries.ReadFile("queries/create_bank_account.sql")
+	if err != nil {
+		return 0, err
+	}
+
+	stmt, err := s.db.Prepare(string(query))
+	if err != nil {
+		return 0, err
+	}
+	defer stmt.Close()
+
+	res, err := stmt.Exec(
+		payload.Name, payload.Amount, payload.Currency, userID,
+	)
+	if err != nil {
+		return 0, err
+	}
+
+	// Get the ID of the newly inserted bank account
+	id, err := res.LastInsertId()
+	if err != nil {
+		return 0, err
+	}
+
+	return id, nil
+}
+
+func (s *DatabaseService) UpdateBankAccount(payload models.UpdateBankAccount, userID int64, bankAccountID string) error {
+	// Base query
+	query := "UPDATE go_bank_accounts SET "
+	queryBuild := []string{}
+	args := []interface{}{}
+
+	// Dynamically add fields that are not nil
+	if payload.Name != nil {
+		queryBuild = append(queryBuild, "name = ?")
+		args = append(args, *payload.Name)
+	}
+	if payload.Amount != nil {
+		queryBuild = append(queryBuild, "amount = ?")
+		args = append(args, *payload.Amount)
+	}
+	if payload.Currency != nil {
+		queryBuild = append(queryBuild, "currency = ?")
+		args = append(args, *payload.Currency)
+	}
+
+	// Add WHERE clause
+	query += strings.Join(queryBuild, ", ")
+	query += " WHERE id = ?"
+	args = append(args, bankAccountID)
+
+	stmt, err := s.db.Prepare(query)
+	if err != nil {
+		return err
+	}
+	defer stmt.Close()
+
+	_, err = stmt.Exec(args...)
+	if err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (s *DatabaseService) DeleteBankAccount(userID int64, bankAccountID string) error {
+	query, err := sqlQueries.ReadFile("queries/delete_bank_account.sql")
+	if err != nil {
+		return err
+	}
+
+	stmt, err := s.db.Prepare(string(query))
+	if err != nil {
+		return err
+	}
+	defer stmt.Close()
+
+	res, err := stmt.Exec(bankAccountID, userID)
 	if err != nil {
 		return err
 	}

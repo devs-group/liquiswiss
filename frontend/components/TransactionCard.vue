@@ -3,7 +3,8 @@
     <template #title>
       <div class="flex items-center justify-between">
         <p class="truncate text-base">{{transaction.name}}</p>
-        <div class="flex justify-end">
+        <div class="flex gap-2 justify-end">
+          <Button @click="$emit('onClone', transaction)" severity="help" icon="pi pi-copy" outlined rounded />
           <Button @click="$emit('onEdit', transaction)" icon="pi pi-pencil" outlined rounded />
         </div>
       </div>
@@ -37,6 +38,7 @@ const props = defineProps({
 
 defineEmits<{
   'onEdit': [transaction: TransactionResponse]
+  'onClone': [transaction: TransactionResponse]
 }>()
 
 const isRevenue = computed(() => props.transaction.amount >= 0)

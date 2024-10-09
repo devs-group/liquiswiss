@@ -4,6 +4,7 @@ export const Routes = {
     EMPLOYEE_EDIT: 'employees-id',
     TRANSACTIONS: 'transactions',
     FORECASTS: 'forecasts',
+    BANK_ACCOUNTS: 'bank-accounts',
     LOGIN: 'auth',
     REGISTER: 'auth-register',
 }

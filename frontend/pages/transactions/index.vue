@@ -4,7 +4,7 @@
 
     <Message v-if="transactionsErrorMessage.length" severity="error" :closable="false" class="col-span-full">{{transactionsErrorMessage}}</Message>
     <div v-else-if="transactions?.data.length" class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
-      <TransactionCard @on-edit="onEditTransaction" v-for="transaction in transactions.data" :transaction="transaction"/>
+      <TransactionCard @on-edit="onEditTransaction" @on-clone="onCloneTransaction" v-for="transaction in transactions.data" :transaction="transaction"/>
     </div>
     <p v-else>Es gibt noch keine Transaktionen</p>
 
@@ -48,6 +48,19 @@ const onEditTransaction = (transaction: TransactionResponse) => {
     },
     props: {
       header: 'Transaktion bearbeiten',
+      ...ModalConfig,
+    },
+  })
+}
+
+const onCloneTransaction = (transaction: TransactionResponse) => {
+  dialog.open(TransactionDialog, {
+    data: {
+      transaction: transaction,
+      isClone: true,
+    },
+    props: {
+      header: 'Transaktion klonen',
       ...ModalConfig,
     },
   })

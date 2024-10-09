@@ -1,0 +1,1 @@
+INSERT INTO liquiswiss.go_employee_history (id, employee_id, hours_per_month, salary_per_month, salary_currency, vacation_days_per_year, from_date, to_date) VALUES (2, 2, 160, 1200000, 1, 30, '2024-01-01', null);
