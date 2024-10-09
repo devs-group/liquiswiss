@@ -2,6 +2,7 @@ import {ref} from 'vue';
 import type {ForecastResponse} from "~/models/forecast";
 
 const limitForecasts = ref(12)
+const forecastPerformance = ref(100)
 const forecasts = ref<ForecastResponse[]>([]);
 
 export default function useForecasts() {
@@ -29,6 +30,7 @@ export default function useForecasts() {
     return {
         listForecasts,
         limitForecasts,
+        forecastPerformance,
         forecasts,
     };
 }
