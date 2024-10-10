@@ -20,17 +20,15 @@
 <script setup lang="ts">
 import {Routes} from "~/config/routes";
 import useAuth from "~/composables/useAuth";
-import {Config} from "~/config/config";
 import type {MenuItemCommandEvent} from "primevue/menuitem";
 
 const {logout} = useAuth()
 const confirm = useConfirm()
 
 const items = ref([
-  { label: 'Übersicht', icon: 'pi pi-home', name: Routes.HOME },
+  { label: 'Prognose', icon: 'pi pi-chart-line', name: Routes.HOME },
   { label: 'Mitarbeitende', icon: 'pi pi-user', name: Routes.EMPLOYEES },
   { label: 'Transaktionen', icon: 'pi pi-money-bill', name: Routes.TRANSACTIONS },
-  { label: 'Prognose', icon: 'pi pi-chart-line', name: Routes.FORECASTS },
   { label: 'Bankkonten', icon: 'pi pi-building', name: Routes.BANK_ACCOUNTS },
   { label: 'Abmelden', icon: 'pi pi-sign-out', command: async (event: MenuItemCommandEvent) => {
       confirm.require({

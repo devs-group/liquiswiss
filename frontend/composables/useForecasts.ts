@@ -1,16 +1,14 @@
 import {ref} from 'vue';
 import type {ForecastResponse} from "~/models/forecast";
 
-const limitForecasts = ref(12)
-const forecastPerformance = ref(100)
 const forecasts = ref<ForecastResponse[]>([]);
 
 export default function useForecasts() {
-    const listForecasts = async ()  => {
+    const listForecasts = async (months: number)  => {
         const {data, status} = await useFetch<ForecastResponse[]>('/api/forecasts', {
             method: 'GET',
             query: {
-                limit: limitForecasts.value,
+                limit: months,
             }
         });
 
@@ -29,8 +27,6 @@ export default function useForecasts() {
 
     return {
         listForecasts,
-        limitForecasts,
-        forecastPerformance,
         forecasts,
     };
 }

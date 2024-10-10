@@ -21,7 +21,7 @@
     <div class="flex flex-col gap-2 col-span-full md:col-span-1">
       <div class="flex items-center gap-2">
         <label class="text-sm font-bold" for="salary-per-month">Lohnkosten pro Monat*</label>
-        <i class="pi pi-info-circle" v-tooltip="'Nettolohn + Arbeitgeberkosten'"></i>
+        <i class="pi pi-info-circle" v-tooltip="'Bruttolohn + Arbeitgeberkosten'"></i>
       </div>
       <InputText v-model.number="salaryPerMonth" v-bind="salaryPerMonthProps"
                  :class="{'p-invalid': errors['salaryPerMonth']?.length}"
