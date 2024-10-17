@@ -8,7 +8,7 @@ export default function useCharts() {
                 {
                     label: 'Saldo',
                     data: saldos,
-                    fill: false,
+                    fill: true,
                     borderColor: '#10b981',
                     tension: 0.2,
                 },
@@ -45,7 +45,8 @@ export default function useCharts() {
                         color: textColorSecondary,
                     },
                     grid: {
-                        color: surfaceBorder
+                        color: ({ tick }) => tick.value == 0 ? "#ff0000" : "#eee",
+                        lineWidth: ({ tick }) => tick.value == 0 ? 2 : 1
                     },
                     beginAtZero: true,
                 }
