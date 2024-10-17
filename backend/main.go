@@ -72,7 +72,7 @@ func main() {
 
 	// Cronjob
 	c := cron.New()
-	_, err = c.AddFunc("@every 15m", fixerIOService.FetchFiatRates)
+	_, err = c.AddFunc("@every 30m", fixerIOService.FetchFiatRates)
 	if err != nil {
 		logger.Logger.Errorf("Failed to set fixer.io cronjob: %v", err)
 		return
