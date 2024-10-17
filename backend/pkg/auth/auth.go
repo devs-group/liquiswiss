@@ -12,8 +12,6 @@ import (
 	"github.com/golang-jwt/jwt/v5"
 )
 
-var jwtKey = []byte(config.GetEnv("JWT_KEY", "my_secret_key"))
-
 type Claims struct {
 	UserID int64 `json:"userId"`
 	jwt.RegisteredClaims
@@ -30,8 +28,9 @@ func GenerateAccessToken(user models.User) (string, time.Time, *Claims, error) {
 		},
 	}
 
+	cfg := config.GetConfig()
 	token := jwt.NewWithClaims(jwt.SigningMethodHS256, claims)
-	tokenString, err := token.SignedString(jwtKey)
+	tokenString, err := token.SignedString(cfg.JWTKey)
 
 	return tokenString, expirationTime, claims, err
 }
@@ -49,8 +48,9 @@ func GenerateRefreshToken(user models.User) (string, string, time.Time, error) {
 		},
 	}
 
+	cfg := config.GetConfig()
 	token := jwt.NewWithClaims(jwt.SigningMethodHS256, claims)
-	tokenString, err := token.SignedString(jwtKey)
+	tokenString, err := token.SignedString(cfg.JWTKey)
 
 	return tokenString, tokenID, expirationTime, err
 }
@@ -59,8 +59,9 @@ func GenerateRefreshToken(user models.User) (string, string, time.Time, error) {
 func VerifyToken(tokenString string) (*Claims, error) {
 	claims := &Claims{}
 
+	cfg := config.GetConfig()
 	token, err := jwt.ParseWithClaims(tokenString, claims, func(token *jwt.Token) (interface{}, error) {
-		return jwtKey, nil
+		return cfg.JWTKey, nil
 	})
 
 	if err != nil {

@@ -55,19 +55,28 @@ func CalculateForecasts(dbService service.IDatabaseService, c *gin.Context) {
 		return
 	}
 
+	fiatRates, err := dbService.ListFiatRates(utils.BaseCurrency)
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		return
+	}
+
 	// We need a map for revenues and expenses
 	forecastMap := make(map[string]map[string]int64)
 	for _, transaction := range transactions {
+		fiatRate := utils.GetFiatRateFromCurrency(fiatRates, *transaction.Currency.Code)
+		amount := utils.CalculateAmountWithFiatRate(transaction.Amount, fiatRate)
+
 		if transaction.Type == "single" {
 			startDate := time.Time(transaction.StartDate)
 			monthKey := getYearMonth(startDate)
 			if forecastMap[monthKey] == nil {
 				initForecastMapKey(forecastMap, monthKey)
 			}
-			if transaction.Amount > 0 {
-				forecastMap[monthKey]["revenue"] += transaction.Amount
-			} else if transaction.Amount < 0 {
-				forecastMap[monthKey]["expense"] += transaction.Amount
+			if amount > 0 {
+				forecastMap[monthKey]["revenue"] += amount
+			} else if amount < 0 {
+				forecastMap[monthKey]["expense"] += amount
 			}
 		} else {
 			startDate := time.Time(transaction.StartDate)
@@ -82,10 +91,10 @@ func CalculateForecasts(dbService service.IDatabaseService, c *gin.Context) {
 					if forecastMap[monthKey] == nil {
 						initForecastMapKey(forecastMap, monthKey)
 					}
-					if transaction.Amount > 0 {
-						forecastMap[monthKey]["revenue"] += transaction.Amount
-					} else if transaction.Amount < 0 {
-						forecastMap[monthKey]["expense"] += transaction.Amount
+					if amount > 0 {
+						forecastMap[monthKey]["revenue"] += amount
+					} else if amount < 0 {
+						forecastMap[monthKey]["expense"] += amount
 					}
 				}
 			case "weekly":
@@ -94,10 +103,10 @@ func CalculateForecasts(dbService service.IDatabaseService, c *gin.Context) {
 					if forecastMap[monthKey] == nil {
 						initForecastMapKey(forecastMap, monthKey)
 					}
-					if transaction.Amount > 0 {
-						forecastMap[monthKey]["revenue"] += transaction.Amount
-					} else if transaction.Amount < 0 {
-						forecastMap[monthKey]["expense"] += transaction.Amount
+					if amount > 0 {
+						forecastMap[monthKey]["revenue"] += amount
+					} else if amount < 0 {
+						forecastMap[monthKey]["expense"] += amount
 					}
 				}
 			case "monthly":
@@ -106,10 +115,10 @@ func CalculateForecasts(dbService service.IDatabaseService, c *gin.Context) {
 					if forecastMap[monthKey] == nil {
 						initForecastMapKey(forecastMap, monthKey)
 					}
-					if transaction.Amount > 0 {
-						forecastMap[monthKey]["revenue"] += transaction.Amount
-					} else if transaction.Amount < 0 {
-						forecastMap[monthKey]["expense"] += transaction.Amount
+					if amount > 0 {
+						forecastMap[monthKey]["revenue"] += amount
+					} else if amount < 0 {
+						forecastMap[monthKey]["expense"] += amount
 					}
 				}
 			case "quarterly":
@@ -118,10 +127,10 @@ func CalculateForecasts(dbService service.IDatabaseService, c *gin.Context) {
 					if forecastMap[monthKey] == nil {
 						initForecastMapKey(forecastMap, monthKey)
 					}
-					if transaction.Amount > 0 {
-						forecastMap[monthKey]["revenue"] += transaction.Amount
-					} else if transaction.Amount < 0 {
-						forecastMap[monthKey]["expense"] += transaction.Amount
+					if amount > 0 {
+						forecastMap[monthKey]["revenue"] += amount
+					} else if amount < 0 {
+						forecastMap[monthKey]["expense"] += amount
 					}
 				}
 			case "biannually":
@@ -130,10 +139,10 @@ func CalculateForecasts(dbService service.IDatabaseService, c *gin.Context) {
 					if forecastMap[monthKey] == nil {
 						initForecastMapKey(forecastMap, monthKey)
 					}
-					if transaction.Amount > 0 {
-						forecastMap[monthKey]["revenue"] += transaction.Amount
-					} else if transaction.Amount < 0 {
-						forecastMap[monthKey]["expense"] += transaction.Amount
+					if amount > 0 {
+						forecastMap[monthKey]["revenue"] += amount
+					} else if amount < 0 {
+						forecastMap[monthKey]["expense"] += amount
 					}
 				}
 			case "yearly":
@@ -142,10 +151,10 @@ func CalculateForecasts(dbService service.IDatabaseService, c *gin.Context) {
 					if forecastMap[monthKey] == nil {
 						initForecastMapKey(forecastMap, monthKey)
 					}
-					if transaction.Amount > 0 {
-						forecastMap[monthKey]["revenue"] += transaction.Amount
-					} else if transaction.Amount < 0 {
-						forecastMap[monthKey]["expense"] += transaction.Amount
+					if amount > 0 {
+						forecastMap[monthKey]["revenue"] += amount
+					} else if amount < 0 {
+						forecastMap[monthKey]["expense"] += amount
 					}
 				}
 			}

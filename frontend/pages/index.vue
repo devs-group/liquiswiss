@@ -82,8 +82,9 @@
 <script setup lang="ts">
 import Chart from "primevue/chart";
 import useCharts from "~/composables/useCharts";
+import {Constants} from "~/utils/constants";
 
-const formatter = new Intl.DateTimeFormat('de-CH', { month: 'long', year: '2-digit' })
+const formatter = new Intl.DateTimeFormat(Constants.BASE_LOCALE_CODE, { month: 'long', year: '2-digit' })
 const monthChoices = [
   {
     label: '6 Monate',
@@ -133,12 +134,12 @@ const revenues = computed(() => forecasts.value.map(f => {
   const revenue = f.revenue * (forecastPerformance.value / 100)
   return {
     amount: revenue,
-    formatted: NumberToFormattedCurrency(AmountToFloat(revenue), 'de-CH'),
+    formatted: NumberToFormattedCurrency(AmountToFloat(revenue), Constants.BASE_LOCALE_CODE),
   }
 }))
 const expenses = computed(() => forecasts.value.map(f => ({
   amount: f.expense,
-  formatted: NumberToFormattedCurrency(AmountToFloat(f.expense), 'de-CH'),
+  formatted: NumberToFormattedCurrency(AmountToFloat(f.expense), Constants.BASE_LOCALE_CODE),
 })))
 const cashflows = computed(() => {
   return revenues.value.map((r, index) => {
@@ -146,12 +147,12 @@ const cashflows = computed(() => {
     const cashflow = r.amount + e.amount
     return {
       amount: cashflow,
-      formatted: NumberToFormattedCurrency(AmountToFloat(cashflow), 'de-CH'),
+      formatted: NumberToFormattedCurrency(AmountToFloat(cashflow), Constants.BASE_LOCALE_CODE),
     }
   })
   // forecasts.value.map(f => ({
   //   amount: f.cashflow,
-  //   formatted: NumberToFormattedCurrency(AmountToFloat(f.cashflow), 'de-CH'),
+  //   formatted: NumberToFormattedCurrency(AmountToFloat(f.cashflow), Constants.BASE_LOCALE_CODE),
   // }))
 })
 const saldos = computed(() => {
@@ -160,7 +161,7 @@ const saldos = computed(() => {
     totalBankSaldo += c.amount
     return {
       amount: totalBankSaldo,
-      formatted: NumberToFormattedCurrency(AmountToFloat(totalBankSaldo), 'de-CH'),
+      formatted: NumberToFormattedCurrency(AmountToFloat(totalBankSaldo), Constants.BASE_LOCALE_CODE),
     }
   })
 })

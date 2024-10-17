@@ -1,7 +1,9 @@
 import type {CookieOptions} from "#app";
 
 export const Constants = {
-    SESSION_EXPIRED_NAME: 'sessionExpired'
+    SESSION_EXPIRED_NAME: 'sessionExpired',
+    BASE_CURRENCY: 'CHF',
+    BASE_LOCALE_CODE: 'de-CH'
 }
 
 export const LocalStorageKeys = {

@@ -48,6 +48,8 @@
       <div class="flex items-center gap-2">
         <label class="text-sm font-bold" for="name">Betrag *</label>
         <i class="pi pi-info-circle text-blue-600" v-tooltip="'Negatives Vorzeichen = Ausgabe'"></i>
+        <div class="flex-1"></div>
+        <small v-if="selectedCurrencyCode && selectedCurrencyCode != Constants.BASE_CURRENCY" class="text-gray-600">{{amountInBaseCurrency}}</small>
       </div>
       <InputText v-model="amount" v-bind="amountProps"
                  :class="{'p-invalid': errors['amount']?.length}"
@@ -119,12 +121,15 @@ import * as yup from 'yup';
 import {Config} from "~/config/config";
 import {type TransactionFormData} from "~/models/transaction";
 import {CycleType, TransactionType} from "~/config/enums";
+import {TransactionTypeToOptions, CycleTypeToOptions} from "~/utils/enum-helper";
+import {Constants} from "../../utils/constants";
+import {NumberToFormattedCurrency} from "../../utils/format-helper";
 
 const dialogRef = inject<ITransactionFormDialog>('dialogRef')!;
 
 const {createTransaction, updateTransaction, deleteTransaction} = useTransactions()
 const {employees, getEmployees} = useEmployees()
-const {categories, currencies} = useGlobalData()
+const {categories, currencies, convertAmountToRate} = useGlobalData()
 const confirm = useConfirm()
 const toast = useToast()
 
@@ -276,5 +281,13 @@ const onDeleteTransaction = (event: MouseEvent) => {
 
 const isRepeatingTransaction = computed(() => {
   return type.value === TransactionType.Repeating
+})
+const selectedCurrencyCode = computed(() => currencies.value.find(c => c.id == currency.value)?.code)
+const amountInBaseCurrency = computed(() => {
+  let baseAmount = amount.value
+  if (selectedCurrencyCode.value) {
+    baseAmount = convertAmountToRate(amount.value, selectedCurrencyCode.value)
+  }
+  return `~ ${NumberToFormattedCurrency(baseAmount, Constants.BASE_LOCALE_CODE)} ${Constants.BASE_CURRENCY}`
 })
 </script>

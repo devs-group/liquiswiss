@@ -159,6 +159,13 @@ func (api *API) setupRouter() {
 			protected.PATCH("/currencies/:id", func(ctx *gin.Context) {
 				handlers.UpdateCurrency(api.DBService, ctx)
 			})
+
+			protected.GET("/fiat-rates", func(ctx *gin.Context) {
+				handlers.ListFiatRates(api.DBService, ctx)
+			})
+			protected.GET("/fiat-rates/:currency", func(ctx *gin.Context) {
+				handlers.GetFiatRate(api.DBService, ctx)
+			})
 		}
 	}
 }

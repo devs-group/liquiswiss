@@ -17,7 +17,7 @@ import {Config} from "~/config/config";
 import {Constants} from "~/utils/constants";
 
 const {user, getAccessToken, getProfile} = useAuth()
-const {fetchCurrencies, fetchCategories} = useGlobalData()
+const {fetchCurrencies, fetchCategories, fetchFiatRates, fiatRates} = useGlobalData()
 const route = useRoute()
 const toast = useToast()
 
@@ -49,7 +49,7 @@ if (!user.value) {
   if (route.path.includes('/auth')) {
     await navigateTo('/', {replace: true})
   }
-  await Promise.all([fetchCurrencies(), fetchCategories()])
+  await Promise.all([fetchCurrencies(), fetchCategories(), fetchFiatRates()])
 }
 
 useHead({

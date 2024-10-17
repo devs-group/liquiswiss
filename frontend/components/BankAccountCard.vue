@@ -16,6 +16,11 @@
           {{ amountFormatted }} {{ bankAccount.currency.code }}
         </span>
         </p>
+        <p v-if="bankAccount.currency.code != Constants.BASE_CURRENCY" class="flex flex-wrap gap-1">
+          <span class="text-xs">
+            ~ {{ amountToBaseFormatted }} CHF
+          </span>
+        </p>
       </div>
     </template>
   </Card>
@@ -23,6 +28,9 @@
 
 <script setup lang="ts">
 import type {BankAccountResponse} from "~/models/bank-account";
+import {Constants} from "~/utils/constants";
+
+const {convertAmountToRate} = useGlobalData()
 
 const props = defineProps({
   bankAccount: {
@@ -36,4 +44,8 @@ defineEmits<{
 }>()
 
 const amountFormatted = computed(() => NumberToFormattedCurrency(AmountToFloat(props.bankAccount.amount), props.bankAccount.currency.localeCode))
+const amountToBaseFormatted = computed(() => NumberToFormattedCurrency(
+    convertAmountToRate(AmountToFloat(props.bankAccount.amount), props.bankAccount.currency.code),
+    Constants.BASE_LOCALE_CODE,
+))
 </script>

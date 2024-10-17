@@ -10,19 +10,27 @@ type Config struct {
 	DBHost     string
 	DBPort     string
 	DBName     string
+	JWTKey     []byte
+	FixerIOURl string
+	FixerIOKey string
 }
 
 func GetConfig() Config {
 	return Config{
-		DBUser:     GetEnv("DB_USER", "ls_user"),
-		DBPassword: GetEnv("DB_PASSWORD", "password"),
-		DBHost:     GetEnv("DB_HOST", "localhost"),
-		DBPort:     GetEnv("DB_PORT", "3306"),
-		DBName:     GetEnv("DB_NAME", "liquiswiss"),
+		DBUser:     getEnv("DB_USER", ""),
+		DBPassword: getEnv("DB_PASSWORD", ""),
+		DBHost:     getEnv("DB_HOST", ""),
+		DBPort:     getEnv("DB_PORT", ""),
+		DBName:     getEnv("DB_NAME", ""),
+
+		JWTKey: []byte(getEnv("JWT_KEY", "")),
+
+		FixerIOURl: getEnv("FIXER_IO_URL", ""),
+		FixerIOKey: getEnv("FIXER_IO_KEY", ""),
 	}
 }
 
-func GetEnv(key, fallback string) string {
+func getEnv(key, fallback string) string {
 	if value, exists := os.LookupEnv(key); exists {
 		return value
 	}

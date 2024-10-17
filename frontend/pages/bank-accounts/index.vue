@@ -2,7 +2,7 @@
   <div class="flex flex-col gap-4">
     <Button @click="onCreateBankAccount" class="self-end" label="Bankkonto hinzufügen" icon="pi pi-building"/>
 
-    <p class="text-sm font-bold text-right">Gesamtvermögen: {{totalSaldo}} CHF</p>
+    <p class="text-sm font-bold text-right">Gesamtvermögen: ~ {{totalSaldo}} CHF</p>
 
     <Message v-if="bankAccountsErrorMessage.length" severity="error" :closable="false" class="col-span-full">{{bankAccountsErrorMessage}}</Message>
     <div v-else-if="bankAccounts?.length" class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
@@ -18,15 +18,19 @@ import BankAccountDialog from "~/components/dialogs/BankAccountDialog.vue";
 import type {BankAccountResponse} from "~/models/bank-account";
 import BankAccountCard from "~/components/BankAccountCard.vue";
 import useBankAccounts from "~/composables/useBankAccounts";
+import {Constants} from "~/utils/constants";
 
 const dialog = useDialog();
 const {bankAccounts, listBankAccounts} = useBankAccounts()
+const {convertAmountToRate} = useGlobalData()
 
 const bankAccountsErrorMessage = ref('')
 
 const totalSaldo = computed(() => {
-  const totalBankSaldo = bankAccounts.value.reduce((previousValue, currentValue) => previousValue + currentValue.amount, 0)
-  return NumberToFormattedCurrency(AmountToFloat(totalBankSaldo), 'de-CH')
+  const totalBankSaldo = bankAccounts.value.reduce((previousValue, currentValue) => {
+    return previousValue + convertAmountToRate(currentValue.amount ,currentValue.currency.code)
+  }, 0)
+  return NumberToFormattedCurrency(AmountToFloat(totalBankSaldo), Constants.BASE_LOCALE_CODE)
 })
 
 await listBankAccounts(false)

@@ -2,7 +2,10 @@ package main
 
 import (
 	"embed"
+	"fmt"
+	"github.com/joho/godotenv"
 	"github.com/pressly/goose/v3"
+	"github.com/robfig/cron/v3"
 	"liquiswiss/internal/api"
 	"liquiswiss/internal/db"
 	"liquiswiss/internal/middleware"
@@ -19,6 +22,14 @@ var embedMigrations embed.FS
 func main() {
 	// Init global logger
 	logger.NewZapLogger()
+
+	// Environment for DEV
+	if !utils.IsProduction() {
+		err := godotenv.Load()
+		if err != nil {
+			panic(fmt.Sprintf("Error loading .env file: %v", err))
+		}
+	}
 
 	// Global Validator
 	utils.InitValidator()
@@ -55,8 +66,24 @@ func main() {
 	}
 
 	dbService := service.NewDatabaseService(conn)
+	fixerIOService := service.NewFixerIOService(dbService)
 	middleware.InjectUserService(dbService)
 	apiHandler := api.NewAPI(dbService)
+
+	// Cronjob
+	c := cron.New()
+	_, err = c.AddFunc("@every 15m", fixerIOService.FetchFiatRates)
+	if err != nil {
+		logger.Logger.Errorf("Failed to set fixer.io cronjob: %v", err)
+		return
+	}
+	c.Start()
+
+	if utils.IsProduction() {
+		go fixerIOService.FetchFiatRates()
+	} else {
+		logger.Logger.Debug("Skipping Fiat Rates because we are not on Production")
+	}
 
 	// TODO: REMOVE ME BEFORE RELEASE
 	err = dbService.ApplyMocks()
@@ -66,6 +93,7 @@ func main() {
 
 	err = http.ListenAndServe(":8080", apiHandler.Router)
 	if err != nil {
+		c.Stop()
 		logger.Logger.Error("Failed to start api:", err)
 		os.Exit(1)
 	}
