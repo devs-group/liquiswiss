@@ -40,6 +40,20 @@ func (m *MockIDatabaseService) EXPECT() *MockIDatabaseServiceMockRecorder {
 	return m.recorder
 }
 
+// ApplyMocks mocks base method.
+func (m *MockIDatabaseService) ApplyMocks() error {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "ApplyMocks")
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// ApplyMocks indicates an expected call of ApplyMocks.
+func (mr *MockIDatabaseServiceMockRecorder) ApplyMocks() *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ApplyMocks", reflect.TypeOf((*MockIDatabaseService)(nil).ApplyMocks))
+}
+
 // AssignUserToOrganisation mocks base method.
 func (m *MockIDatabaseService) AssignUserToOrganisation(arg0, arg1 int64, arg2 string) error {
 	m.ctrl.T.Helper()
@@ -82,6 +96,51 @@ func (m *MockIDatabaseService) CheckUserExistance(arg0 int64) (bool, error) {
 func (mr *MockIDatabaseServiceMockRecorder) CheckUserExistance(arg0 any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CheckUserExistance", reflect.TypeOf((*MockIDatabaseService)(nil).CheckUserExistance), arg0)
+}
+
+// ClearForecasts mocks base method.
+func (m *MockIDatabaseService) ClearForecasts(arg0 int64) (int64, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "ClearForecasts", arg0)
+	ret0, _ := ret[0].(int64)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// ClearForecasts indicates an expected call of ClearForecasts.
+func (mr *MockIDatabaseServiceMockRecorder) ClearForecasts(arg0 any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ClearForecasts", reflect.TypeOf((*MockIDatabaseService)(nil).ClearForecasts), arg0)
+}
+
+// CountEmployees mocks base method.
+func (m *MockIDatabaseService) CountEmployees(arg0, arg1, arg2 int64) (int64, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "CountEmployees", arg0, arg1, arg2)
+	ret0, _ := ret[0].(int64)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// CountEmployees indicates an expected call of CountEmployees.
+func (mr *MockIDatabaseServiceMockRecorder) CountEmployees(arg0, arg1, arg2 any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CountEmployees", reflect.TypeOf((*MockIDatabaseService)(nil).CountEmployees), arg0, arg1, arg2)
+}
+
+// CreateBankAccount mocks base method.
+func (m *MockIDatabaseService) CreateBankAccount(arg0 models.CreateBankAccount, arg1 int64) (int64, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "CreateBankAccount", arg0, arg1)
+	ret0, _ := ret[0].(int64)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// CreateBankAccount indicates an expected call of CreateBankAccount.
+func (mr *MockIDatabaseServiceMockRecorder) CreateBankAccount(arg0, arg1 any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CreateBankAccount", reflect.TypeOf((*MockIDatabaseService)(nil).CreateBankAccount), arg0, arg1)
 }
 
 // CreateCategory mocks base method.
@@ -129,6 +188,21 @@ func (mr *MockIDatabaseServiceMockRecorder) CreateEmployee(arg0, arg1 any) *gomo
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CreateEmployee", reflect.TypeOf((*MockIDatabaseService)(nil).CreateEmployee), arg0, arg1)
 }
 
+// CreateEmployeeHistory mocks base method.
+func (m *MockIDatabaseService) CreateEmployeeHistory(arg0 models.CreateEmployeeHistory, arg1 int64, arg2 string) (int64, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "CreateEmployeeHistory", arg0, arg1, arg2)
+	ret0, _ := ret[0].(int64)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// CreateEmployeeHistory indicates an expected call of CreateEmployeeHistory.
+func (mr *MockIDatabaseServiceMockRecorder) CreateEmployeeHistory(arg0, arg1, arg2 any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CreateEmployeeHistory", reflect.TypeOf((*MockIDatabaseService)(nil).CreateEmployeeHistory), arg0, arg1, arg2)
+}
+
 // CreateOrganisation mocks base method.
 func (m *MockIDatabaseService) CreateOrganisation(arg0 string, arg1 int64) (int64, error) {
 	m.ctrl.T.Helper()
@@ -159,6 +233,48 @@ func (mr *MockIDatabaseServiceMockRecorder) CreateTransaction(arg0, arg1 any) *g
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CreateTransaction", reflect.TypeOf((*MockIDatabaseService)(nil).CreateTransaction), arg0, arg1)
 }
 
+// DeleteBankAccount mocks base method.
+func (m *MockIDatabaseService) DeleteBankAccount(arg0 int64, arg1 string) error {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "DeleteBankAccount", arg0, arg1)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// DeleteBankAccount indicates an expected call of DeleteBankAccount.
+func (mr *MockIDatabaseServiceMockRecorder) DeleteBankAccount(arg0, arg1 any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "DeleteBankAccount", reflect.TypeOf((*MockIDatabaseService)(nil).DeleteBankAccount), arg0, arg1)
+}
+
+// DeleteEmployee mocks base method.
+func (m *MockIDatabaseService) DeleteEmployee(arg0, arg1 int64) error {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "DeleteEmployee", arg0, arg1)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// DeleteEmployee indicates an expected call of DeleteEmployee.
+func (mr *MockIDatabaseServiceMockRecorder) DeleteEmployee(arg0, arg1 any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "DeleteEmployee", reflect.TypeOf((*MockIDatabaseService)(nil).DeleteEmployee), arg0, arg1)
+}
+
+// DeleteEmployeeHistory mocks base method.
+func (m *MockIDatabaseService) DeleteEmployeeHistory(arg0, arg1 int64) error {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "DeleteEmployeeHistory", arg0, arg1)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// DeleteEmployeeHistory indicates an expected call of DeleteEmployeeHistory.
+func (mr *MockIDatabaseServiceMockRecorder) DeleteEmployeeHistory(arg0, arg1 any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "DeleteEmployeeHistory", reflect.TypeOf((*MockIDatabaseService)(nil).DeleteEmployeeHistory), arg0, arg1)
+}
+
 // DeleteRefreshToken mocks base method.
 func (m *MockIDatabaseService) DeleteRefreshToken(arg0 string, arg1 int64) error {
 	m.ctrl.T.Helper()
@@ -171,6 +287,35 @@ func (m *MockIDatabaseService) DeleteRefreshToken(arg0 string, arg1 int64) error
 func (mr *MockIDatabaseServiceMockRecorder) DeleteRefreshToken(arg0, arg1 any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "DeleteRefreshToken", reflect.TypeOf((*MockIDatabaseService)(nil).DeleteRefreshToken), arg0, arg1)
+}
+
+// DeleteTransaction mocks base method.
+func (m *MockIDatabaseService) DeleteTransaction(arg0 int64, arg1 string) error {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "DeleteTransaction", arg0, arg1)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// DeleteTransaction indicates an expected call of DeleteTransaction.
+func (mr *MockIDatabaseServiceMockRecorder) DeleteTransaction(arg0, arg1 any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "DeleteTransaction", reflect.TypeOf((*MockIDatabaseService)(nil).DeleteTransaction), arg0, arg1)
+}
+
+// GetBankAccount mocks base method.
+func (m *MockIDatabaseService) GetBankAccount(arg0 int64, arg1 string) (*models.BankAccount, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "GetBankAccount", arg0, arg1)
+	ret0, _ := ret[0].(*models.BankAccount)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// GetBankAccount indicates an expected call of GetBankAccount.
+func (mr *MockIDatabaseServiceMockRecorder) GetBankAccount(arg0, arg1 any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetBankAccount", reflect.TypeOf((*MockIDatabaseService)(nil).GetBankAccount), arg0, arg1)
 }
 
 // GetCategory mocks base method.
@@ -216,6 +361,36 @@ func (m *MockIDatabaseService) GetEmployee(arg0 int64, arg1 string) (*models.Emp
 func (mr *MockIDatabaseServiceMockRecorder) GetEmployee(arg0, arg1 any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetEmployee", reflect.TypeOf((*MockIDatabaseService)(nil).GetEmployee), arg0, arg1)
+}
+
+// GetEmployeeHistory mocks base method.
+func (m *MockIDatabaseService) GetEmployeeHistory(arg0 int64, arg1 string) (*models.EmployeeHistory, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "GetEmployeeHistory", arg0, arg1)
+	ret0, _ := ret[0].(*models.EmployeeHistory)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// GetEmployeeHistory indicates an expected call of GetEmployeeHistory.
+func (mr *MockIDatabaseServiceMockRecorder) GetEmployeeHistory(arg0, arg1 any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetEmployeeHistory", reflect.TypeOf((*MockIDatabaseService)(nil).GetEmployeeHistory), arg0, arg1)
+}
+
+// GetFiatRate mocks base method.
+func (m *MockIDatabaseService) GetFiatRate(arg0, arg1 string) (*models.FiatRate, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "GetFiatRate", arg0, arg1)
+	ret0, _ := ret[0].(*models.FiatRate)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// GetFiatRate indicates an expected call of GetFiatRate.
+func (mr *MockIDatabaseServiceMockRecorder) GetFiatRate(arg0, arg1 any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetFiatRate", reflect.TypeOf((*MockIDatabaseService)(nil).GetFiatRate), arg0, arg1)
 }
 
 // GetOrganisation mocks base method.
@@ -278,6 +453,36 @@ func (mr *MockIDatabaseServiceMockRecorder) GetUserPasswordByEMail(arg0 any) *go
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetUserPasswordByEMail", reflect.TypeOf((*MockIDatabaseService)(nil).GetUserPasswordByEMail), arg0)
 }
 
+// IsOwnerOfEmployee mocks base method.
+func (m *MockIDatabaseService) IsOwnerOfEmployee(arg0 string, arg1 int64) (bool, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "IsOwnerOfEmployee", arg0, arg1)
+	ret0, _ := ret[0].(bool)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// IsOwnerOfEmployee indicates an expected call of IsOwnerOfEmployee.
+func (mr *MockIDatabaseServiceMockRecorder) IsOwnerOfEmployee(arg0, arg1 any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "IsOwnerOfEmployee", reflect.TypeOf((*MockIDatabaseService)(nil).IsOwnerOfEmployee), arg0, arg1)
+}
+
+// ListBankAccounts mocks base method.
+func (m *MockIDatabaseService) ListBankAccounts(arg0 int64) ([]models.BankAccount, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "ListBankAccounts", arg0)
+	ret0, _ := ret[0].([]models.BankAccount)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// ListBankAccounts indicates an expected call of ListBankAccounts.
+func (mr *MockIDatabaseServiceMockRecorder) ListBankAccounts(arg0 any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ListBankAccounts", reflect.TypeOf((*MockIDatabaseService)(nil).ListBankAccounts), arg0)
+}
+
 // ListCategories mocks base method.
 func (m *MockIDatabaseService) ListCategories(arg0, arg1 int64) ([]models.Category, int64, error) {
 	m.ctrl.T.Helper()
@@ -310,6 +515,22 @@ func (mr *MockIDatabaseServiceMockRecorder) ListCurrencies(arg0, arg1 any) *gomo
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ListCurrencies", reflect.TypeOf((*MockIDatabaseService)(nil).ListCurrencies), arg0, arg1)
 }
 
+// ListEmployeeHistory mocks base method.
+func (m *MockIDatabaseService) ListEmployeeHistory(arg0 int64, arg1 string, arg2, arg3 int64) ([]models.EmployeeHistory, int64, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "ListEmployeeHistory", arg0, arg1, arg2, arg3)
+	ret0, _ := ret[0].([]models.EmployeeHistory)
+	ret1, _ := ret[1].(int64)
+	ret2, _ := ret[2].(error)
+	return ret0, ret1, ret2
+}
+
+// ListEmployeeHistory indicates an expected call of ListEmployeeHistory.
+func (mr *MockIDatabaseServiceMockRecorder) ListEmployeeHistory(arg0, arg1, arg2, arg3 any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ListEmployeeHistory", reflect.TypeOf((*MockIDatabaseService)(nil).ListEmployeeHistory), arg0, arg1, arg2, arg3)
+}
+
 // ListEmployees mocks base method.
 func (m *MockIDatabaseService) ListEmployees(arg0, arg1, arg2 int64) ([]models.Employee, int64, error) {
 	m.ctrl.T.Helper()
@@ -324,6 +545,36 @@ func (m *MockIDatabaseService) ListEmployees(arg0, arg1, arg2 int64) ([]models.E
 func (mr *MockIDatabaseServiceMockRecorder) ListEmployees(arg0, arg1, arg2 any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ListEmployees", reflect.TypeOf((*MockIDatabaseService)(nil).ListEmployees), arg0, arg1, arg2)
+}
+
+// ListFiatRates mocks base method.
+func (m *MockIDatabaseService) ListFiatRates(arg0 string) ([]models.FiatRate, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "ListFiatRates", arg0)
+	ret0, _ := ret[0].([]models.FiatRate)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// ListFiatRates indicates an expected call of ListFiatRates.
+func (mr *MockIDatabaseServiceMockRecorder) ListFiatRates(arg0 any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ListFiatRates", reflect.TypeOf((*MockIDatabaseService)(nil).ListFiatRates), arg0)
+}
+
+// ListForecasts mocks base method.
+func (m *MockIDatabaseService) ListForecasts(arg0, arg1 int64) ([]models.Forecast, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "ListForecasts", arg0, arg1)
+	ret0, _ := ret[0].([]models.Forecast)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// ListForecasts indicates an expected call of ListForecasts.
+func (mr *MockIDatabaseServiceMockRecorder) ListForecasts(arg0, arg1 any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ListForecasts", reflect.TypeOf((*MockIDatabaseService)(nil).ListForecasts), arg0, arg1)
 }
 
 // ListOrganisations mocks base method.
@@ -343,9 +594,9 @@ func (mr *MockIDatabaseServiceMockRecorder) ListOrganisations(arg0, arg1, arg2 a
 }
 
 // ListTransactions mocks base method.
-func (m *MockIDatabaseService) ListTransactions(arg0, arg1, arg2 int64) ([]models.Transaction, int64, error) {
+func (m *MockIDatabaseService) ListTransactions(arg0, arg1, arg2 int64, arg3, arg4 string) ([]models.Transaction, int64, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "ListTransactions", arg0, arg1, arg2)
+	ret := m.ctrl.Call(m, "ListTransactions", arg0, arg1, arg2, arg3, arg4)
 	ret0, _ := ret[0].([]models.Transaction)
 	ret1, _ := ret[1].(int64)
 	ret2, _ := ret[2].(error)
@@ -353,9 +604,9 @@ func (m *MockIDatabaseService) ListTransactions(arg0, arg1, arg2 int64) ([]model
 }
 
 // ListTransactions indicates an expected call of ListTransactions.
-func (mr *MockIDatabaseServiceMockRecorder) ListTransactions(arg0, arg1, arg2 any) *gomock.Call {
+func (mr *MockIDatabaseServiceMockRecorder) ListTransactions(arg0, arg1, arg2, arg3, arg4 any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ListTransactions", reflect.TypeOf((*MockIDatabaseService)(nil).ListTransactions), arg0, arg1, arg2)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ListTransactions", reflect.TypeOf((*MockIDatabaseService)(nil).ListTransactions), arg0, arg1, arg2, arg3, arg4)
 }
 
 // RegisterUser mocks base method.
@@ -385,6 +636,20 @@ func (m *MockIDatabaseService) StoreRefreshTokenID(arg0 int64, arg1 string, arg2
 func (mr *MockIDatabaseServiceMockRecorder) StoreRefreshTokenID(arg0, arg1, arg2, arg3 any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "StoreRefreshTokenID", reflect.TypeOf((*MockIDatabaseService)(nil).StoreRefreshTokenID), arg0, arg1, arg2, arg3)
+}
+
+// UpdateBankAccount mocks base method.
+func (m *MockIDatabaseService) UpdateBankAccount(arg0 models.UpdateBankAccount, arg1 int64, arg2 string) error {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "UpdateBankAccount", arg0, arg1, arg2)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// UpdateBankAccount indicates an expected call of UpdateBankAccount.
+func (mr *MockIDatabaseServiceMockRecorder) UpdateBankAccount(arg0, arg1, arg2 any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "UpdateBankAccount", reflect.TypeOf((*MockIDatabaseService)(nil).UpdateBankAccount), arg0, arg1, arg2)
 }
 
 // UpdateCategory mocks base method.
@@ -429,6 +694,20 @@ func (mr *MockIDatabaseServiceMockRecorder) UpdateEmployee(arg0, arg1, arg2 any)
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "UpdateEmployee", reflect.TypeOf((*MockIDatabaseService)(nil).UpdateEmployee), arg0, arg1, arg2)
 }
 
+// UpdateEmployeeHistory mocks base method.
+func (m *MockIDatabaseService) UpdateEmployeeHistory(arg0 models.UpdateEmployeeHistory, arg1 int64, arg2 string) error {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "UpdateEmployeeHistory", arg0, arg1, arg2)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// UpdateEmployeeHistory indicates an expected call of UpdateEmployeeHistory.
+func (mr *MockIDatabaseServiceMockRecorder) UpdateEmployeeHistory(arg0, arg1, arg2 any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "UpdateEmployeeHistory", reflect.TypeOf((*MockIDatabaseService)(nil).UpdateEmployeeHistory), arg0, arg1, arg2)
+}
+
 // UpdateOrganisation mocks base method.
 func (m *MockIDatabaseService) UpdateOrganisation(arg0 models.UpdateOrganisation, arg1 int64, arg2 string) error {
 	m.ctrl.T.Helper()
@@ -455,4 +734,33 @@ func (m *MockIDatabaseService) UpdateTransaction(arg0 models.UpdateTransaction, 
 func (mr *MockIDatabaseServiceMockRecorder) UpdateTransaction(arg0, arg1, arg2 any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "UpdateTransaction", reflect.TypeOf((*MockIDatabaseService)(nil).UpdateTransaction), arg0, arg1, arg2)
+}
+
+// UpsertFiatRate mocks base method.
+func (m *MockIDatabaseService) UpsertFiatRate(arg0 models.CreateFiatRate) error {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "UpsertFiatRate", arg0)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// UpsertFiatRate indicates an expected call of UpsertFiatRate.
+func (mr *MockIDatabaseServiceMockRecorder) UpsertFiatRate(arg0 any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "UpsertFiatRate", reflect.TypeOf((*MockIDatabaseService)(nil).UpsertFiatRate), arg0)
+}
+
+// UpsertForecast mocks base method.
+func (m *MockIDatabaseService) UpsertForecast(arg0 models.CreateForecast, arg1 int64) (int64, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "UpsertForecast", arg0, arg1)
+	ret0, _ := ret[0].(int64)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// UpsertForecast indicates an expected call of UpsertForecast.
+func (mr *MockIDatabaseServiceMockRecorder) UpsertForecast(arg0, arg1 any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "UpsertForecast", reflect.TypeOf((*MockIDatabaseService)(nil).UpsertForecast), arg0, arg1)
 }

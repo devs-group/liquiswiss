@@ -48,8 +48,10 @@ func CalculateForecasts(dbService service.IDatabaseService, c *gin.Context) {
 
 	page := int64(1)
 	limit := int64(100000)
+	sortBy := "name"
+	sortOrder := "ASC"
 
-	transactions, _, err := dbService.ListTransactions(userID, page, limit)
+	transactions, _, err := dbService.ListTransactions(userID, page, limit, sortBy, sortOrder)
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 		return

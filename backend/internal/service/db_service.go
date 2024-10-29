@@ -5,6 +5,7 @@ import (
 	"database/sql"
 	"embed"
 	"errors"
+	"fmt"
 	"io/fs"
 	"liquiswiss/pkg/logger"
 	"liquiswiss/pkg/models"
@@ -28,7 +29,7 @@ type IDatabaseService interface {
 	GetProfile(id string) (*models.User, error)
 	CheckUserExistance(id int64) (bool, error)
 
-	ListTransactions(userID int64, page int64, limit int64) ([]models.Transaction, int64, error)
+	ListTransactions(userID int64, page int64, limit int64, sortBy string, sortOrder string) ([]models.Transaction, int64, error)
 	GetTransaction(userID int64, transactionID string) (*models.Transaction, error)
 	CreateTransaction(payload models.CreateTransaction, userID int64) (int64, error)
 	UpdateTransaction(payload models.UpdateTransaction, userID int64, transactionID string) error
@@ -318,16 +319,31 @@ func (s *DatabaseService) DeleteTransaction(userID int64, transactionID string) 
 	return nil
 }
 
-func (s *DatabaseService) ListTransactions(userID int64, page int64, limit int64) ([]models.Transaction, int64, error) {
+func (s *DatabaseService) ListTransactions(userID int64, page int64, limit int64, sortBy string, sortOrder string) ([]models.Transaction, int64, error) {
 	transactions := []models.Transaction{}
 	var totalCount int64
+	sortByMap := map[string]string{
+		"name": "r.name", "startDate": "r.start_date", "endDate": "r.end_date", "amount": "r.amount",
+		"cycle": "r.cycle", "category": "c.name", "employee": "emp.name",
+	}
+	allowedSortOrders := map[string]bool{
+		"ASC": true, "DESC": true,
+	}
+
+	// Validate inputs
+	sortBy = sortByMap[sortBy]
+	if sortBy == "" || !allowedSortOrders[sortOrder] {
+		return nil, 0, fmt.Errorf("invalid sort by or sort order")
+	}
 
 	query, err := sqlQueries.ReadFile("queries/list_transactions.sql")
 	if err != nil {
 		return nil, 0, err
 	}
 
-	rows, err := s.db.Query(string(query), userID, (page)*limit, 0)
+	queryString := fmt.Sprintf(string(query), sortBy, sortBy, sortOrder)
+
+	rows, err := s.db.Query(queryString, userID, (page)*limit, 0)
 	if err != nil {
 		return nil, 0, err
 	}

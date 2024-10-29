@@ -1,24 +1,38 @@
 import {ref} from 'vue';
 import {DefaultListResponse} from "~/models/classes";
 import type {ListTransactionResponse, TransactionFormData, TransactionResponse} from "~/models/transaction";
+import {IsAbortedError} from "~/utils/error-helper";
 
 const limitTransactions = ref(20)
 const pageTransactions = ref(1)
 const noMoreDataTransactions = ref(false)
 const transactions = ref<ListTransactionResponse>(new DefaultListResponse());
+const abortController = ref<AbortController|null>(null)
 
 export default function useTransactions() {
+    const {transactionSortBy, transactionSortOrder} = useSettings()
+
     const listTransactions = async (append: boolean)  => {
-        const {data, status} = await useFetch<ListTransactionResponse>('/api/transactions', {
+        if (abortController.value) {
+            abortController.value.abort()
+        }
+        abortController.value = new AbortController()
+
+        const {data, status, error} = await useFetch<ListTransactionResponse>('/api/transactions', {
             method: 'GET',
             query: {
                 page: pageTransactions.value,
                 limit: limitTransactions.value,
-            }
+                sortBy: transactionSortBy.value,
+                sortOrder: transactionSortOrder.value,
+            },
+            signal: abortController.value.signal,
         });
 
-        if (status.value === 'error') {
-            return Promise.reject('Fehler beim Laden der Historie')
+        if (IsAbortedError(error.value)) {
+            return Promise.reject('aborted')
+        } else if (status.value === 'error') {
+            return Promise.reject('Fehler beim Laden der Transaktionen')
         } else {
             if (data.value) {
                 if (append) {

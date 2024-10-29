@@ -28,8 +28,10 @@ func ListTransactions(dbService service.IDatabaseService, c *gin.Context) {
 		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 		return
 	}
+	sortBy := c.DefaultQuery("sortBy", "name")
+	sortOrder := c.DefaultQuery("sortOrder", "ASC")
 
-	transactions, totalCount, err := dbService.ListTransactions(userID, page, limit)
+	transactions, totalCount, err := dbService.ListTransactions(userID, page, limit, sortBy, sortOrder)
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 		return

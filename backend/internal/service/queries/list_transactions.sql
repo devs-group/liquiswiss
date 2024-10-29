@@ -22,6 +22,9 @@ FROM
     LEFT JOIN go_employees emp ON r.employee = emp.id
 WHERE
     r.owner = ?
+ORDER BY
+    %s IS NULL,
+    %s %s
 LIMIT ?
 OFFSET
     ?
