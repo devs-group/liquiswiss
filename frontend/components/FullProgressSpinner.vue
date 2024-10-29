@@ -18,7 +18,7 @@ watch(() => props.show, value => {
     clearTimeout(timeout)
   }
   if (value) {
-    timeout = setTimeout(() => showInternal.value = value, 1000)
+    timeout = setTimeout(() => showInternal.value = value, 300)
   } else {
     showInternal.value = value
   }
