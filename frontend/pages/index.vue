@@ -39,7 +39,7 @@
 
         <template v-if="forecastShowRevenueDetails">
           <div v-for="category of revenueCategories" class="flex items-center col-span-full">
-            <div class="flex gap-1 cursor-pointer border-b border-l border-gray-600 bg-gray-300 p-1 min-w-28">
+            <div class="flex gap-1 cursor-default border-b border-l border-gray-600 bg-gray-300 p-1 min-w-28">
               <p class="w-full text-xs text-right">{{category}}</p>
             </div>
             <div v-for="data in forecastDetails" class="border-b border-l last:border-r border-gray-600 bg-gray-100 p-1 min-w-40">
@@ -64,7 +64,7 @@
 
         <template v-if="forecastShowExpenseDetails">
           <div v-for="category of expenseCategories" class="flex items-center col-span-full">
-            <div class="flex gap-1 cursor-pointer border-b border-l border-gray-600 bg-gray-300 p-1 min-w-28">
+            <div class="flex gap-1 cursor-default border-b border-l border-gray-600 bg-gray-300 p-1 min-w-28">
               <p class="w-full text-xs text-right">{{category}}</p>
             </div>
             <div v-for="data in forecastDetails" class="border-b border-l last:border-r border-gray-600 bg-gray-100 p-1 min-w-40">
@@ -76,7 +76,7 @@
         </template>
 
         <div class="flex items-center col-span-full">
-          <div class="border-b border-l border-gray-600 bg-gray-300 p-2 min-w-28">
+          <div class="cursor-default border-b border-l border-gray-600 bg-gray-300 p-2 min-w-28">
             <p class="text-xs">Cashflow</p>
           </div>
           <div v-for="cashflow in cashflows" class="border-b border-l last:border-r border-gray-600 p-2 min-w-40"
@@ -88,8 +88,8 @@
         </div>
 
         <div class="flex items-center col-span-full">
-          <div class="border-b border-b border-l border-gray-600 bg-gray-300 p-2 min-w-28">
-            <p class="text-xs">Saldo</p>
+          <div class="cursor-default border-b border-l border-gray-600 bg-gray-300 p-2 min-w-28">
+            <p class="text-xs">Endsaldo</p>
           </div>
           <div v-for="saldo in saldos" class="border-b border-l last:border-r border-gray-600 p-2 min-w-40"
                :class="{'bg-red-100': saldo.amount < 0, 'bg-green-100': saldo.amount > 0}">
