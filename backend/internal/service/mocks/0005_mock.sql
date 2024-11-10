@@ -1,2 +1,2 @@
-INSERT INTO liquiswiss.go_categories (id, name)
-VALUES (2, 'Steuern');
+INSERT INTO liquiswiss.go_categories (name)
+VALUES ('Steuern');

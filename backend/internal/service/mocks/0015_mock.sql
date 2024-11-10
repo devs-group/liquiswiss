@@ -1,2 +1,2 @@
 INSERT INTO liquiswiss.go_categories (name)
-VALUES ('Lizenzen');
+VALUES ('Versicherungen');

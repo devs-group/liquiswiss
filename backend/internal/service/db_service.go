@@ -104,6 +104,10 @@ func (s *DatabaseService) ApplyMocks() error {
 		if err != nil {
 			return err
 		}
+		if utils.IsProduction() && strings.Contains(path, "dev_") {
+			logger.Logger.Infof(`Skipping mock "%s"`, path)
+			return nil
+		}
 		if filepath.Ext(path) == ".sql" {
 			query, err := sqlMocks.ReadFile(path)
 			if err != nil {
