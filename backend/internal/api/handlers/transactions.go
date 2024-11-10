@@ -122,7 +122,7 @@ func CreateTransaction(dbService service.IDatabaseService, c *gin.Context) {
 		return
 	}
 
-	go CalculateForecasts(dbService, c)
+	CalculateForecasts(dbService, c)
 
 	c.JSON(http.StatusCreated, transaction)
 }
@@ -185,7 +185,7 @@ func UpdateTransaction(dbService service.IDatabaseService, c *gin.Context) {
 		return
 	}
 
-	go CalculateForecasts(dbService, c)
+	CalculateForecasts(dbService, c)
 
 	c.JSON(http.StatusOK, transaction)
 }
@@ -215,7 +215,7 @@ func DeleteTransaction(dbService service.IDatabaseService, c *gin.Context) {
 		return
 	}
 
-	go CalculateForecasts(dbService, c)
+	CalculateForecasts(dbService, c)
 
 	c.Status(http.StatusNoContent)
 }
