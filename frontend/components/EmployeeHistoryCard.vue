@@ -14,7 +14,7 @@
         <p>{{employeeHistory.hoursPerMonth}} max. Stunden pro Monat</p>
         <p>{{salaryFormatted}} {{employeeHistory.salaryCurrency.code}} pro Monat</p>
         <p>{{employeeHistory.vacationDaysPerYear}} Urlaubstage im Jahr</p>
-        <p v-if="employeeHistory.toDate">Bis {{toDateFormatted}}</p>
+        <p v-if="employeeHistory.toDate" class="text-orange-500">Bis {{toDateFormatted}}</p>
       </div>
     </template>
   </Card>

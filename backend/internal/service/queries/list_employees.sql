@@ -7,10 +7,12 @@ WITH ranked_history AS (
         vacation_days_per_year,
         from_date,
         to_date,
-        ROW_NUMBER() OVER (PARTITION BY employee_id ORDER BY from_date DESC) AS rn
+        IF(from_date > CURDATE(), TRUE, FALSE) AS is_in_future,
+        ROW_NUMBER() OVER (PARTITION BY employee_id ORDER BY
+            IF(from_date <= CURDATE() AND (to_date IS NULL OR to_date >= CURDATE()), 1, 2),
+            from_date DESC
+        ) AS rn
     FROM go_employee_history
-    WHERE from_date <= CURDATE()
-      AND (to_date IS NULL OR to_date >= CURDATE())
 )
 SELECT
     e.id,
@@ -24,6 +26,7 @@ SELECT
     h.vacation_days_per_year,
     h.from_date,
     h.to_date,
+    h.is_in_future,
     COUNT(*) OVER () AS total_count
 FROM go_employees e
 LEFT JOIN ranked_history h ON e.id = h.employee_id AND h.rn = 1

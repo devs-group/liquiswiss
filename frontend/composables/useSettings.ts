@@ -2,19 +2,56 @@ import {CreateSettingsCookie} from "~/utils/cookie-helper";
 import {ref} from "vue";
 import type {SortOrderType, TransactionSortByType} from "~/utils/types";
 import {SortOrderOptions, TransactionSortByOptions} from "~/utils/types";
+import {SymbolKind} from "vscode-languageserver-types";
+import Boolean = SymbolKind.Boolean;
 
+const forecastShowRevenueDetails = ref(false)
+const forecastShowExpenseDetails = ref(false)
 const transactionDisplay = ref<'grid'|'list'>('grid')
 const transactionSortBy = ref<TransactionSortByType>('name')
 const transactionSortOrder = ref<SortOrderType>('ASC')
 const forecastPerformance = ref(100)
-const forecastMonths = ref(12)
+// 13 to include from current to the same month
+const forecastMonths = ref(13)
 
 export default function useSettings() {
+    const forecastShowRevenueDetailsCookie = CreateSettingsCookie('forecast-revenue-details')
+    const forecastShowExpenseDetailsCookie = CreateSettingsCookie('forecast-expense-details')
     const transactionDisplayCookie = CreateSettingsCookie('transaction-display')
     const transactionSortByCookie = CreateSettingsCookie('transaction-sort-by')
     const transactionSortOrderCookie = CreateSettingsCookie('transaction-sort-order')
     const forecastPerformanceCookie = CreateSettingsCookie('forecast-performance')
     const forecastMonthsCookie = CreateSettingsCookie('forecast-months')
+
+    if (forecastShowRevenueDetailsCookie.value !== undefined) {
+        const val = forecastShowRevenueDetailsCookie.value
+        if (val == 'true') {
+            forecastShowRevenueDetails.value = true
+        }
+        else if (val == 'false') {
+            forecastShowRevenueDetails.value = false
+        } else if (typeof val === 'boolean') {
+            // Can be boolean for some reason
+            forecastShowRevenueDetails.value = val
+        }
+    } else {
+        forecastShowRevenueDetails.value = false
+    }
+
+    if (forecastShowExpenseDetailsCookie.value !== undefined) {
+        const val = forecastShowExpenseDetailsCookie.value
+        if (val == 'true') {
+            forecastShowExpenseDetails.value = true
+        }
+        else if (val == 'false') {
+            forecastShowExpenseDetails.value = false
+        } else if (typeof val === 'boolean') {
+            // Can be boolean for some reason
+            forecastShowExpenseDetails.value = val
+        }
+    } else {
+        forecastShowExpenseDetails.value = false
+    }
 
     if (transactionDisplayCookie.value !== undefined) {
         const val = transactionDisplayCookie.value
@@ -58,7 +95,8 @@ export default function useSettings() {
             forecastMonths.value = Number.parseInt(val)
         }
     } else {
-        forecastMonths.value = 12
+        // 13 to include from current to the same month
+        forecastMonths.value = 13
     }
 
     const toggleDisplayType = () => {
@@ -73,6 +111,14 @@ export default function useSettings() {
     };
 
     // Watchers
+    watch(forecastShowRevenueDetails, (value) => {
+        forecastShowRevenueDetailsCookie.value = value.toString()
+    })
+
+    watch(forecastShowExpenseDetails, (value) => {
+        forecastShowExpenseDetailsCookie.value = value.toString()
+    })
+
     watch(forecastPerformance, (value) => {
         forecastPerformanceCookie.value = value.toString()
     })
@@ -91,6 +137,8 @@ export default function useSettings() {
 
     return {
         toggleDisplayType,
+        forecastShowRevenueDetails,
+        forecastShowExpenseDetails,
         transactionDisplay,
         transactionSortBy,
         transactionSortOrder,

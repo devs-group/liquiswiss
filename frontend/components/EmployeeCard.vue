@@ -10,7 +10,8 @@
     </template>
     <template #content>
       <div v-if="employee.hoursPerMonth !== null" class="flex flex-col gap-2 text-sm">
-        <p class="font-bold">Aktuelle Daten:</p>
+        <p v-if="!employee.isInFuture" class="text-green-500 font-bold">Aktuelle Daten:</p>
+        <p v-else class="text-orange-500 font-bold">Kommende Daten:</p>
         <p>{{employee.hoursPerMonth}} Arbeitsstunden / Monat</p>
         <p v-if="employee.salaryPerMonth && employee.salaryCurrency">
           {{salaryFormatted}} {{employee.salaryCurrency.code}} / Monat
@@ -19,10 +20,10 @@
           {{employee.vacationDaysPerYear}} Urlaubstage / Jahr
         </p>
         <p v-if="employee.fromDate">
-          Gültig seit {{DateStringToFormattedDate(employee.fromDate)}}
+          <strong>Gültig {{ employee.isInFuture ? 'ab' : 'seit' }}</strong> {{DateStringToFormattedDate(employee.fromDate)}}
         </p>
         <p v-if="employee.toDate">
-          Gültig bis {{DateStringToFormattedDate(employee.toDate)}}
+          <strong>Gültig bis</strong> {{DateStringToFormattedDate(employee.toDate)}}
         </p>
       </div>
       <div v-else class="flex flex-col gap-2 text-sm">

@@ -114,6 +114,10 @@ func (api *API) setupRouter() {
 			protected.GET("/forecasts", func(ctx *gin.Context) {
 				handlers.ListForecasts(api.DBService, ctx)
 			})
+
+			protected.GET("/forecast-details", func(ctx *gin.Context) {
+				handlers.ListForecastDetails(api.DBService, ctx)
+			})
 			protected.GET("/forecasts/calculate", func(ctx *gin.Context) {
 				handlers.CalculateForecasts(api.DBService, ctx)
 			})

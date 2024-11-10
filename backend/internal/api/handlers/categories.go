@@ -30,7 +30,7 @@ func ListCategories(dbService service.IDatabaseService, c *gin.Context) {
 
 	c.JSON(http.StatusOK, models.ListResponse[models.Category]{
 		Data:       categories,
-		Pagination: utils.CalculatePagination(page, limit, totalCount),
+		Pagination: models.CalculatePagination(page, limit, totalCount),
 	})
 }
 

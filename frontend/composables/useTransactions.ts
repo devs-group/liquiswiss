@@ -3,7 +3,7 @@ import {DefaultListResponse} from "~/models/classes";
 import type {ListTransactionResponse, TransactionFormData, TransactionResponse} from "~/models/transaction";
 import {IsAbortedError} from "~/utils/error-helper";
 
-const limitTransactions = ref(20)
+const limitTransactions = ref(50)
 const pageTransactions = ref(1)
 const noMoreDataTransactions = ref(false)
 const transactions = ref<ListTransactionResponse>(new DefaultListResponse());

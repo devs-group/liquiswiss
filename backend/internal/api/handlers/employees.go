@@ -51,7 +51,7 @@ func ListEmployees(dbService service.IDatabaseService, c *gin.Context) {
 
 	c.JSON(http.StatusOK, models.ListResponse[models.Employee]{
 		Data:       employees,
-		Pagination: utils.CalculatePagination(page, limit, totalCount),
+		Pagination: models.CalculatePagination(page, limit, totalCount),
 	})
 }
 
@@ -98,7 +98,7 @@ func ListEmployeeHistory(dbService service.IDatabaseService, c *gin.Context) {
 
 	c.JSON(http.StatusOK, models.ListResponse[models.EmployeeHistory]{
 		Data:       employeeHistories,
-		Pagination: utils.CalculatePagination(page, limit, totalCount),
+		Pagination: models.CalculatePagination(page, limit, totalCount),
 	})
 }
 
@@ -132,7 +132,7 @@ func GetEmployeesPagination(dbService service.IDatabaseService, c *gin.Context) 
 	}
 
 	c.JSON(http.StatusOK, models.PaginationResponse{
-		Pagination: utils.CalculatePagination(page, limit, totalCount),
+		Pagination: models.CalculatePagination(page, limit, totalCount),
 	})
 }
 
@@ -389,7 +389,7 @@ func UpdateEmployeeHistory(dbService service.IDatabaseService, c *gin.Context) {
 		return
 	}
 
-	err = dbService.UpdateEmployeeHistory(payload, userID, historyID)
+	err = dbService.UpdateEmployeeHistory(payload, existingEmployeeHistory.EmployeeID, historyID)
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 		return

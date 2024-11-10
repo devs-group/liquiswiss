@@ -24,7 +24,8 @@ WHERE
     r.owner = ?
 ORDER BY
     %s IS NULL,
-    %s %s
+    %s %s,
+    r.name ASC
 LIMIT ?
 OFFSET
     ?

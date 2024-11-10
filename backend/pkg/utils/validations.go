@@ -61,8 +61,7 @@ func validateEndDate(fl validator.FieldLevel) bool {
 	}
 
 	// Parse start and end dates
-	layout := "2006-01-02" // Assuming the date format is YYYY-MM-DD
-	startDate, err := time.Parse(layout, startDateStr)
+	startDate, err := time.Parse(InternalDateFormat, startDateStr)
 	if err != nil {
 		return false // Invalid start date format
 	}
@@ -71,7 +70,7 @@ func validateEndDate(fl validator.FieldLevel) bool {
 		return true // If EndDate is empty, we allow this as it's omitempty
 	}
 
-	endDate, err := time.Parse(layout, endDateStr)
+	endDate, err := time.Parse(InternalDateFormat, endDateStr)
 	if err != nil {
 		return false // Invalid end date format
 	}
@@ -107,8 +106,7 @@ func validateToDate(fl validator.FieldLevel) bool {
 	}
 
 	// Parse start and end dates
-	layout := "2006-01-02" // Assuming the date format is YYYY-MM-DD
-	fromDate, err := time.Parse(layout, fromDateStr)
+	fromDate, err := time.Parse(InternalDateFormat, fromDateStr)
 	if err != nil {
 		return false // Invalid start date format
 	}
@@ -117,7 +115,7 @@ func validateToDate(fl validator.FieldLevel) bool {
 		return true // If ToDate is empty, we allow this as it's omitempty
 	}
 
-	toDate, err := time.Parse(layout, toDateStr)
+	toDate, err := time.Parse(InternalDateFormat, toDateStr)
 	if err != nil {
 		return false // Invalid end date format
 	}

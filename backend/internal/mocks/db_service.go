@@ -562,6 +562,21 @@ func (mr *MockIDatabaseServiceMockRecorder) ListFiatRates(arg0 any) *gomock.Call
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ListFiatRates", reflect.TypeOf((*MockIDatabaseService)(nil).ListFiatRates), arg0)
 }
 
+// ListForecastDetails mocks base method.
+func (m *MockIDatabaseService) ListForecastDetails(arg0, arg1 int64) ([]models.ForecastDatabaseDetails, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "ListForecastDetails", arg0, arg1)
+	ret0, _ := ret[0].([]models.ForecastDatabaseDetails)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// ListForecastDetails indicates an expected call of ListForecastDetails.
+func (mr *MockIDatabaseServiceMockRecorder) ListForecastDetails(arg0, arg1 any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ListForecastDetails", reflect.TypeOf((*MockIDatabaseService)(nil).ListForecastDetails), arg0, arg1)
+}
+
 // ListForecasts mocks base method.
 func (m *MockIDatabaseService) ListForecasts(arg0, arg1 int64) ([]models.Forecast, error) {
 	m.ctrl.T.Helper()
@@ -763,4 +778,19 @@ func (m *MockIDatabaseService) UpsertForecast(arg0 models.CreateForecast, arg1 i
 func (mr *MockIDatabaseServiceMockRecorder) UpsertForecast(arg0, arg1 any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "UpsertForecast", reflect.TypeOf((*MockIDatabaseService)(nil).UpsertForecast), arg0, arg1)
+}
+
+// UpsertForecastDetail mocks base method.
+func (m *MockIDatabaseService) UpsertForecastDetail(arg0 models.CreateForecastDetail, arg1, arg2 int64) (int64, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "UpsertForecastDetail", arg0, arg1, arg2)
+	ret0, _ := ret[0].(int64)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// UpsertForecastDetail indicates an expected call of UpsertForecastDetail.
+func (mr *MockIDatabaseServiceMockRecorder) UpsertForecastDetail(arg0, arg1, arg2 any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "UpsertForecastDetail", reflect.TypeOf((*MockIDatabaseService)(nil).UpsertForecastDetail), arg0, arg1, arg2)
 }

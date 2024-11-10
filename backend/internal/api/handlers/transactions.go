@@ -51,7 +51,7 @@ func ListTransactions(dbService service.IDatabaseService, c *gin.Context) {
 
 	c.JSON(http.StatusOK, models.ListResponse[models.Transaction]{
 		Data:       transactions,
-		Pagination: utils.CalculatePagination(page, limit, totalCount),
+		Pagination: models.CalculatePagination(page, limit, totalCount),
 	})
 }
 

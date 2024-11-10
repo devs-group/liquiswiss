@@ -47,7 +47,7 @@
         <label class="text-sm font-bold" for="vacation-days-per-year">Von*</label>
         <i class="pi pi-info-circle" v-tooltip="'Von wann gelten diese Daten'"></i>
       </div>
-      <Calendar v-model="fromDate" v-bind="fromDateProps" date-format="dd.mm.yy" showIcon showButtonBar
+      <Calendar v-model="fromDate" v-bind="fromDateProps" :disabled-dates="getDisabledDates" date-format="dd.mm.yy" showIcon showButtonBar
                 :class="{'p-invalid': errors['fromDate']?.length}" :disabled="isLoading"/>
       <small class="text-red-400">{{errors["fromDate"] || '&nbsp;'}}</small>
     </div>
@@ -57,7 +57,7 @@
         <label class="text-sm font-bold" for="vacation-days-per-year">Bis</label>
         <i class="pi pi-info-circle" v-tooltip="'Bis wann gelten diese Daten? (Leer lassen für unbegrenzt)'"></i>
       </div>
-      <Calendar v-model="toDate" v-bind="toDateProps" date-format="dd.mm.yy" showIcon showButtonBar
+      <Calendar v-model="toDate" :min-date="fromDate" v-bind="toDateProps" date-format="dd.mm.yy" showIcon showButtonBar
                 :class="{'p-invalid': errors['toDate']?.length}" :disabled="isLoading"/>
       <small class="text-red-400">{{errors["toDate"] || '&nbsp;'}}</small>
     </div>
@@ -83,10 +83,11 @@ import {useForm} from "vee-validate";
 import * as yup from 'yup';
 import {Config} from "~/config/config";
 import type {EmployeeHistoryFormData} from "~/models/employee";
+import {DateToUTCDate} from "~/utils/format-helper";
 
 const dialogRef = inject<IHistoryFormDialog>('dialogRef')!;
 
-const {createEmployeeHistory, updateEmployeeHistory, deleteEmployeeHistory} = useEmployees()
+const {employeeHistories, createEmployeeHistory, updateEmployeeHistory, deleteEmployeeHistory} = useEmployees()
 const {currencies} = useGlobalData()
 const confirm = useConfirm()
 const toast = useToast()
@@ -125,6 +126,19 @@ const [salaryCurrency, salaryCurrencyProps] = defineField('salaryCurrency')
 const [vacationDaysPerYear, vacationDaysPerYearProps] = defineField('vacationDaysPerYear')
 const [fromDate, fromDateProps] = defineField('fromDate')
 const [toDate, toDateProps] = defineField('toDate')
+
+// Watchers
+watch(fromDate, (value) => {
+  if (toDate.value && value > toDate.value) {
+    toDate.value = undefined
+  }
+})
+
+const getDisabledDates = computed(() => {
+  return employeeHistories.value.data.filter(h => h.id !== employeeHistory?.id).map(h => {
+    return DateToUTCDate(h.fromDate)
+  })
+})
 
 const onSubmit = handleSubmit((values) => {
   isLoading.value = true

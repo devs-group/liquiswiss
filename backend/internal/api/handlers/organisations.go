@@ -50,7 +50,7 @@ func ListOrganisations(dbService service.IDatabaseService, c *gin.Context) {
 
 	c.JSON(http.StatusOK, models.ListResponse[models.Organisation]{
 		Data:       organisations,
-		Pagination: utils.CalculatePagination(page, limit, totalCount),
+		Pagination: models.CalculatePagination(page, limit, totalCount),
 	})
 }
 

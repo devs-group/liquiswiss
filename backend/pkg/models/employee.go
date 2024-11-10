@@ -13,6 +13,7 @@ type Employee struct {
 	VacationDaysPerYear *uint16       `db:"-" json:"vacationDaysPerYear"`
 	FromDate            *types.AsDate `db:"-" json:"fromDate"`
 	ToDate              *types.AsDate `db:"-" json:"toDate"`
+	IsInFuture          bool          `db:"-" json:"isInFuture"`
 }
 
 type CreateEmployee struct {

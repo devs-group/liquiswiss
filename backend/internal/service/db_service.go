@@ -4,12 +4,15 @@ package service
 import (
 	"database/sql"
 	"embed"
+	"encoding/json"
 	"errors"
 	"fmt"
 	"io/fs"
 	"liquiswiss/pkg/logger"
 	"liquiswiss/pkg/models"
 	"liquiswiss/pkg/types"
+	"liquiswiss/pkg/utils"
+	"log"
 	"path/filepath"
 	"strings"
 	"time"
@@ -49,12 +52,14 @@ type IDatabaseService interface {
 	CreateEmployee(payload models.CreateEmployee, userID int64) (int64, error)
 	CreateEmployeeHistory(payload models.CreateEmployeeHistory, userID int64, employeeID string) (int64, error)
 	UpdateEmployee(payload models.UpdateEmployee, userID int64, employeeID string) error
-	UpdateEmployeeHistory(payload models.UpdateEmployeeHistory, userID int64, historyID string) error
+	UpdateEmployeeHistory(payload models.UpdateEmployeeHistory, employeeID int64, historyID string) error
 	DeleteEmployee(employeeID int64, userID int64) error
 	DeleteEmployeeHistory(historyID int64, userID int64) error
 
 	ListForecasts(userID int64, limit int64) ([]models.Forecast, error)
+	ListForecastDetails(userID int64, limit int64) ([]models.ForecastDatabaseDetails, error)
 	UpsertForecast(payload models.CreateForecast, userID int64) (int64, error)
+	UpsertForecastDetail(payload models.CreateForecastDetail, userID, forecastID int64) (int64, error)
 	ClearForecasts(userID int64) (int64, error)
 
 	ListBankAccounts(userID int64) ([]models.BankAccount, error)
@@ -252,7 +257,7 @@ func (s *DatabaseService) UpdateTransaction(payload models.UpdateTransaction, us
 	// Always consider EndDate in case it is set back to null
 	queryBuild = append(queryBuild, "end_date = ?")
 	if payload.EndDate != nil {
-		endDate, err := time.Parse("2006-01-02", *payload.EndDate)
+		endDate, err := time.Parse(utils.InternalDateFormat, *payload.EndDate)
 		if err != nil {
 			return err
 		}
@@ -576,13 +581,14 @@ func (s *DatabaseService) ListEmployees(userID int64, page int64, limit int64) (
 		var employee models.Employee
 		var fromDate sql.NullTime
 		var toDate sql.NullTime
+		var isInFuture sql.NullBool
 
 		employee.SalaryCurrency = &models.Currency{}
 
 		err := rows.Scan(
 			&employee.ID, &employee.Name, &employee.HoursPerMonth, &employee.SalaryPerMonth,
 			&employee.SalaryCurrency.ID, &employee.SalaryCurrency.LocaleCode, &employee.SalaryCurrency.Description,
-			&employee.SalaryCurrency.Code, &employee.VacationDaysPerYear, &fromDate, &toDate, &totalCount,
+			&employee.SalaryCurrency.Code, &employee.VacationDaysPerYear, &fromDate, &toDate, &isInFuture, &totalCount,
 		)
 		if err != nil {
 			return nil, 0, err
@@ -595,6 +601,11 @@ func (s *DatabaseService) ListEmployees(userID int64, page int64, limit int64) (
 		if toDate.Valid {
 			convertedDate := types.AsDate(toDate.Time)
 			employee.ToDate = &convertedDate
+		}
+		if isInFuture.Valid {
+			employee.IsInFuture = isInFuture.Bool
+		} else {
+			employee.IsInFuture = false
 		}
 
 		employees = append(employees, employee)
@@ -774,26 +785,42 @@ func (s *DatabaseService) CreateEmployee(payload models.CreateEmployee, userID i
 
 // CreateEmployeeHistory implements the creation of a new employee
 func (s *DatabaseService) CreateEmployeeHistory(payload models.CreateEmployeeHistory, userID int64, employeeID string) (int64, error) {
+	tx, err := s.db.Begin()
+	if err != nil {
+		return 0, err
+	}
+
+	defer func() {
+		if p := recover(); p != nil {
+			tx.Rollback()
+			panic(p)
+		} else if err != nil {
+			tx.Rollback()
+		} else {
+			err = tx.Commit()
+		}
+	}()
+
 	query, err := sqlQueries.ReadFile("queries/create_employee_history.sql")
 	if err != nil {
 		return 0, err
 	}
 
-	stmt, err := s.db.Prepare(string(query))
+	stmt, err := tx.Prepare(string(query))
 	if err != nil {
 		return 0, err
 	}
 	defer stmt.Close()
 
 	// Prepare entry and exit date
-	fromDate, err := time.Parse("2006-01-02", payload.FromDate)
+	fromDate, err := time.Parse(utils.InternalDateFormat, payload.FromDate)
 	if err != nil {
 		return 0, err
 	}
 
 	var toDate sql.NullTime
 	if payload.ToDate != nil {
-		parsedToDate, err := time.Parse("2006-01-02", *payload.ToDate)
+		parsedToDate, err := time.Parse(utils.InternalDateFormat, *payload.ToDate)
 		if err != nil {
 			return 0, err
 		}
@@ -811,15 +838,90 @@ func (s *DatabaseService) CreateEmployeeHistory(payload models.CreateEmployeeHis
 	}
 
 	// Get the ID of the newly inserted history
-	id, err := res.LastInsertId()
+	historyID, err := res.LastInsertId()
 	if err != nil {
 		return 0, err
 	}
-	if id == 0 {
+	if historyID == 0 {
 		return 0, sql.ErrNoRows
 	}
 
-	return id, nil
+	// Fetch and adjust previous entry if required
+	var previous models.EmployeeHistory
+	if err := tx.QueryRow(`
+        SELECT id, from_date, to_date FROM go_employee_history 
+        WHERE employee_id = ? AND from_date < ? AND (to_date IS NULL OR to_date >= ?) AND id != ?
+        ORDER BY from_date DESC LIMIT 1
+    `, employeeID, payload.FromDate, payload.FromDate, historyID).Scan(&previous.ID, &previous.FromDate, &previous.ToDate); err != nil && err != sql.ErrNoRows {
+		return 0, err
+	}
+
+	if previous.ID != 0 {
+		logger.Logger.Debugf("Checking previous history entry")
+		currentFromDate, err := time.Parse(utils.InternalDateFormat, payload.FromDate)
+		if err != nil {
+			return 0, err
+		}
+		needsAdjustment := false
+		if previous.ToDate == nil {
+			needsAdjustment = true
+		} else {
+			previousToDate := time.Time(*previous.ToDate)
+			if previousToDate.After(currentFromDate) || previousToDate.Equal(currentFromDate) {
+				needsAdjustment = true
+			}
+		}
+
+		if needsAdjustment {
+			logger.Logger.Debugf("Adjusting previous history entry")
+			_, err := tx.Exec(`
+            UPDATE go_employee_history SET to_date = ? WHERE id = ?
+        `, currentFromDate.AddDate(0, 0, -1), previous.ID)
+			if err != nil {
+				return 0, err
+			}
+		}
+	}
+
+	// Fetch and adjust current entry if required by next
+	var next models.EmployeeHistory
+	if err := tx.QueryRow(`
+	   SELECT id, from_date, to_date FROM go_employee_history
+       WHERE employee_id = ? AND from_date > ? AND id != ?
+	   ORDER BY from_date ASC LIMIT 1
+	`, employeeID, payload.FromDate, historyID).Scan(&next.ID, &next.FromDate, &next.ToDate); err != nil && err != sql.ErrNoRows {
+		return 0, err
+	}
+
+	if next.ID != 0 {
+		logger.Logger.Debugf("Checking next history entry")
+		needsAdjustment := false
+
+		nextFromDate := time.Time(next.FromDate)
+		if payload.ToDate == nil {
+			needsAdjustment = true
+		} else {
+			currentToDate, err := time.Parse(utils.InternalDateFormat, *payload.ToDate)
+			if err != nil {
+				return 0, err
+			}
+			if currentToDate.After(nextFromDate) {
+				needsAdjustment = true
+			}
+		}
+
+		if needsAdjustment {
+			logger.Logger.Debugf("Adjusting current history entry to: %s", nextFromDate.AddDate(0, 0, -1))
+			_, err := tx.Exec(`
+            UPDATE go_employee_history SET to_date = ? WHERE id = ?
+        `, nextFromDate.AddDate(0, 0, -1), historyID)
+			if err != nil {
+				return 0, err
+			}
+		}
+	}
+
+	return historyID, nil
 }
 
 // UpdateEmployee implements updating employee details
@@ -855,7 +957,23 @@ func (s *DatabaseService) UpdateEmployee(payload models.UpdateEmployee, userID i
 }
 
 // UpdateEmployeeHistory implements updating employee history details
-func (s *DatabaseService) UpdateEmployeeHistory(payload models.UpdateEmployeeHistory, userID int64, historyID string) error {
+func (s *DatabaseService) UpdateEmployeeHistory(payload models.UpdateEmployeeHistory, employeeID int64, historyID string) error {
+	tx, err := s.db.Begin()
+	if err != nil {
+		return err
+	}
+
+	defer func() {
+		if p := recover(); p != nil {
+			tx.Rollback()
+			panic(p)
+		} else if err != nil {
+			tx.Rollback()
+		} else {
+			err = tx.Commit()
+		}
+	}()
+
 	// Base query
 	query := "UPDATE go_employee_history SET "
 	queryBuild := []string{}
@@ -880,7 +998,7 @@ func (s *DatabaseService) UpdateEmployeeHistory(payload models.UpdateEmployeeHis
 	}
 	if payload.FromDate != nil {
 		queryBuild = append(queryBuild, "from_date = ?")
-		entryDate, err := time.Parse("2006-01-02", *payload.FromDate)
+		entryDate, err := time.Parse(utils.InternalDateFormat, *payload.FromDate)
 		if err != nil {
 			return err
 		}
@@ -889,7 +1007,7 @@ func (s *DatabaseService) UpdateEmployeeHistory(payload models.UpdateEmployeeHis
 	// Always consider ToDate in case it is set back to null
 	queryBuild = append(queryBuild, "to_date = ?")
 	if payload.ToDate != nil {
-		exitDate, err := time.Parse("2006-01-02", *payload.ToDate)
+		exitDate, err := time.Parse(utils.InternalDateFormat, *payload.ToDate)
 		if err != nil {
 			return err
 		}
@@ -903,7 +1021,7 @@ func (s *DatabaseService) UpdateEmployeeHistory(payload models.UpdateEmployeeHis
 	query += " WHERE id = ?"
 	args = append(args, historyID)
 
-	stmt, err := s.db.Prepare(query)
+	stmt, err := tx.Prepare(query)
 	if err != nil {
 		return err
 	}
@@ -912,6 +1030,81 @@ func (s *DatabaseService) UpdateEmployeeHistory(payload models.UpdateEmployeeHis
 	_, err = stmt.Exec(args...)
 	if err != nil {
 		return err
+	}
+
+	// Fetch and adjust previous entry if required
+	var previous models.EmployeeHistory
+	if err := tx.QueryRow(`
+        SELECT id, from_date, to_date FROM go_employee_history 
+        WHERE employee_id = ? AND from_date < ? AND (to_date IS NULL OR to_date >= ?) AND id != ?
+        ORDER BY from_date DESC LIMIT 1
+    `, employeeID, payload.FromDate, payload.FromDate, historyID).Scan(&previous.ID, &previous.FromDate, &previous.ToDate); err != nil && err != sql.ErrNoRows {
+		return err
+	}
+
+	if previous.ID != 0 {
+		logger.Logger.Debugf("Checking previous history entry")
+		currentFromDate, err := time.Parse(utils.InternalDateFormat, *payload.FromDate)
+		if err != nil {
+			return err
+		}
+		needsAdjustment := false
+		if previous.ToDate == nil {
+			needsAdjustment = true
+		} else {
+			previousToDate := time.Time(*previous.ToDate)
+			if previousToDate.After(currentFromDate) || previousToDate.Equal(currentFromDate) {
+				needsAdjustment = true
+			}
+		}
+
+		if needsAdjustment {
+			logger.Logger.Debugf("Adjusting previous history entry")
+			_, err := tx.Exec(`
+            UPDATE go_employee_history SET to_date = ? WHERE id = ?
+        `, currentFromDate.AddDate(0, 0, -1), previous.ID)
+			if err != nil {
+				return err
+			}
+		}
+	}
+
+	// Fetch and adjust current entry if required by next
+	var next models.EmployeeHistory
+	if err := tx.QueryRow(`
+	   SELECT id, from_date, to_date FROM go_employee_history
+       WHERE employee_id = ? AND from_date > ? AND id != ?
+	   ORDER BY from_date ASC LIMIT 1
+	`, employeeID, payload.FromDate, historyID).Scan(&next.ID, &next.FromDate, &next.ToDate); err != nil && err != sql.ErrNoRows {
+		return err
+	}
+
+	if next.ID != 0 {
+		logger.Logger.Debugf("Checking next history entry")
+		needsAdjustment := false
+
+		nextFromDate := time.Time(next.FromDate)
+		if payload.ToDate == nil {
+			needsAdjustment = true
+		} else {
+			currentToDate, err := time.Parse(utils.InternalDateFormat, *payload.ToDate)
+			if err != nil {
+				return err
+			}
+			if currentToDate.After(nextFromDate) {
+				needsAdjustment = true
+			}
+		}
+
+		if needsAdjustment {
+			logger.Logger.Debugf("Adjusting current history entry to: %s", nextFromDate.AddDate(0, 0, -1))
+			_, err := tx.Exec(`
+            UPDATE go_employee_history SET to_date = ? WHERE id = ?
+        `, nextFromDate.AddDate(0, 0, -1), historyID)
+			if err != nil {
+				return err
+			}
+		}
 	}
 
 	return nil
@@ -1000,6 +1193,42 @@ func (s *DatabaseService) ListForecasts(userID int64, limit int64) ([]models.For
 	return forecasts, nil
 }
 
+// ListForecastDetails lists all forecasts
+func (s *DatabaseService) ListForecastDetails(userID int64, limit int64) ([]models.ForecastDatabaseDetails, error) {
+	forecastDetails := make([]models.ForecastDatabaseDetails, 0)
+
+	query, err := sqlQueries.ReadFile("queries/list_forecast_details.sql")
+	if err != nil {
+		return nil, err
+	}
+
+	rows, err := s.db.Query(string(query), limit, userID)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+
+	for rows.Next() {
+		var forecastDetail models.ForecastDatabaseDetails
+		var revenueJSON, expenseJSON []byte
+
+		if err := rows.Scan(&forecastDetail.Month, &revenueJSON, &expenseJSON, &forecastDetail.ForecastID); err != nil {
+			return nil, err
+		}
+
+		if err := json.Unmarshal(revenueJSON, &forecastDetail.Revenue); err != nil {
+			log.Fatal(err)
+		}
+		if err := json.Unmarshal(expenseJSON, &forecastDetail.Expense); err != nil {
+			log.Fatal(err)
+		}
+
+		forecastDetails = append(forecastDetails, forecastDetail)
+	}
+
+	return forecastDetails, nil
+}
+
 // UpsertForecast Inserts or updates a forecast
 func (s *DatabaseService) UpsertForecast(payload models.CreateForecast, userID int64) (int64, error) {
 	query, err := sqlQueries.ReadFile("queries/upsert_forecast.sql")
@@ -1015,6 +1244,45 @@ func (s *DatabaseService) UpsertForecast(payload models.CreateForecast, userID i
 
 	res, err := stmt.Exec(
 		userID, payload.Month, payload.Revenue, payload.Expense, payload.Cashflow,
+	)
+	if err != nil {
+		return 0, err
+	}
+
+	// Get the ID of the newly inserted employee
+	id, err := res.LastInsertId()
+	if err != nil {
+		return 0, err
+	}
+
+	return id, nil
+}
+
+// UpsertForecastDetail Inserts or updates a forecast detail that belongs to a forecast
+func (s *DatabaseService) UpsertForecastDetail(payload models.CreateForecastDetail, userID, forecastID int64) (int64, error) {
+	query, err := sqlQueries.ReadFile("queries/upsert_forecast_detail.sql")
+	if err != nil {
+		return 0, err
+	}
+
+	stmt, err := s.db.Prepare(string(query))
+	if err != nil {
+		return 0, err
+	}
+	defer stmt.Close()
+
+	revenueJson, err := json.Marshal(payload.Revenue)
+	if err != nil {
+		return 0, err
+	}
+
+	expenseJson, err := json.Marshal(payload.Expense)
+	if err != nil {
+		return 0, err
+	}
+
+	res, err := stmt.Exec(
+		userID, payload.Month, revenueJson, expenseJson, forecastID,
 	)
 	if err != nil {
 		return 0, err

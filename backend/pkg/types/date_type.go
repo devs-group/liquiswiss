@@ -2,6 +2,7 @@ package types
 
 import (
 	"fmt"
+	"liquiswiss/pkg/utils"
 	"time"
 )
 
@@ -9,12 +10,12 @@ import (
 type AsDate time.Time
 
 func (cd AsDate) MarshalJSON() ([]byte, error) {
-	formattedDate := fmt.Sprintf("\"%s\"", time.Time(cd).Format("2006-01-02"))
+	formattedDate := fmt.Sprintf("\"%s\"", time.Time(cd).Format(utils.InternalDateFormat))
 	return []byte(formattedDate), nil
 }
 
 func (cd AsDate) ToString() string {
-	formattedDate := fmt.Sprintf("%s", time.Time(cd).Format("2006-01-02"))
+	formattedDate := fmt.Sprintf("%s", time.Time(cd).Format(utils.InternalDateFormat))
 	return formattedDate
 }
 
@@ -25,7 +26,7 @@ func (cd *AsDate) UnmarshalJSON(data []byte) error {
 	strDate = strDate[1 : len(strDate)-1]
 
 	// Parse the date
-	parsedDate, err := time.Parse("2006-01-02", strDate)
+	parsedDate, err := time.Parse(utils.InternalDateFormat, strDate)
 	if err != nil {
 		return err
 	}

@@ -15,6 +15,7 @@ export interface EmployeeResponse {
     vacationDaysPerYear?: number | null;
     fromDate?: string | null;
     toDate?: string | null;
+    isInFuture: boolean;
 }
 
 export interface ListEmployeeResponse {
