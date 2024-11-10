@@ -7,6 +7,7 @@
     </div>
     <p>{{ startDate }}</p>
     <p>{{ endDate || '-' }}</p>
+    <p>{{ nextExecutionDate || '-' }}</p>
     <p class="flex flex-wrap gap-1">
       <span class="font-bold" :class="{'text-red-500': !isRevenue, 'text-green-500': isRevenue}">{{amountFormatted}} {{transaction.currency.code}}</span>
     </p>
@@ -36,6 +37,7 @@ defineEmits<{
 const isRevenue = computed(() => props.transaction.amount >= 0)
 const startDate = computed(() => DateStringToFormattedDate(props.transaction.startDate))
 const endDate = computed(() => props.transaction.endDate ? DateStringToFormattedDate(props.transaction.endDate) : '')
+const nextExecutionDate = computed(() => props.transaction.nextExecutionDate ? DateStringToFormattedDate(props.transaction.nextExecutionDate) : '')
 const amountFormatted = computed(() => NumberToFormattedCurrency(AmountToFloat(props.transaction.amount), props.transaction.currency.localeCode))
 const isRepeating = computed(() => props.transaction.type === TransactionType.Repeating)
 const cycle = computed(() => CycleTypeToOptions().find((ct) => ct.value === props.transaction.cycle)?.name ?? '')

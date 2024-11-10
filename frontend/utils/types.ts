@@ -1,4 +1,4 @@
-export const TransactionSortByOptions = ['name', 'startDate', 'endDate', 'amount', 'cycle', 'category', 'employee'] as const
+export const TransactionSortByOptions = ['name', 'startDate', 'endDate', 'amount', 'cycle', 'category', 'employee', 'nextExecutionDate'] as const
 export type TransactionSortByType = typeof TransactionSortByOptions[number]
 
 export const SortOrderOptions = ['ASC', 'DESC'] as const

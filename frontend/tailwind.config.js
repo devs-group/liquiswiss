@@ -8,7 +8,7 @@ export default {
         'help': '#a855f7'
       },
       gridTemplateColumns: {
-        'transactions': 'minmax(16rem, 1fr), 8rem, 8rem, minmax(12rem, 1fr), 12rem, 12rem, 16rem',
+        'transactions': 'minmax(16rem, 1fr), 8rem, 8rem, 12rem, minmax(12rem, 1fr), 12rem, 12rem, 16rem',
       }
     },
   },

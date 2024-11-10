@@ -27,6 +27,10 @@
             <p>Ende</p>
             <i :class="getSortIcon('endDate')"></i>
           </div>
+          <div @click="onSort('nextExecutionDate')" class="flex items-center gap-2 cursor-pointer hover:bg-gray-50 transition-colors duration-300">
+            <p>Nächste Ausführung</p>
+            <i :class="getSortIcon('nextExecutionDate')"></i>
+          </div>
           <div @click="onSort('amount')" class="flex items-center gap-2 cursor-pointer hover:bg-gray-50 transition-colors duration-300">
             <p>Betrag</p>
             <i :class="getSortIcon('amount')"></i>

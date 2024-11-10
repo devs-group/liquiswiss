@@ -28,6 +28,7 @@ export interface TransactionResponse {
     type: TransactionTypeToStringDefinition;
     startDate: string;
     endDate: string | null;
+    nextExecutionDate: string | null;
     category: CategoryResponse;
     currency: CurrencyResponse;
     employee: TransactionEmployeeResponse | null;

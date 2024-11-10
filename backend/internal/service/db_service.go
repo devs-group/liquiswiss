@@ -363,6 +363,7 @@ func (s *DatabaseService) ListTransactions(userID int64, page int64, limit int64
 		// These are required for proper date convertion afterwards
 		var startDate time.Time
 		var endDate sql.NullTime
+		var nextExecutionDate sql.NullTime
 		var transactionEmployeeID sql.NullInt64
 		var transactionEmployeeName sql.NullString
 
@@ -370,7 +371,7 @@ func (s *DatabaseService) ListTransactions(userID int64, page int64, limit int64
 			&transaction.ID, &transaction.Name, &transaction.Amount, &transaction.Cycle, &transaction.Type, &startDate, &endDate,
 			&transaction.Category.ID, &transaction.Category.Name,
 			&transaction.Currency.ID, &transaction.Currency.Code, &transaction.Currency.Description, &transaction.Currency.LocaleCode,
-			&transactionEmployeeID, &transactionEmployeeName,
+			&transactionEmployeeID, &transactionEmployeeName, &nextExecutionDate,
 			&totalCount,
 		)
 		if err != nil {
@@ -382,6 +383,11 @@ func (s *DatabaseService) ListTransactions(userID int64, page int64, limit int64
 		if endDate.Valid {
 			convertedDate := types.AsDate(endDate.Time)
 			transaction.EndDate = &convertedDate
+		}
+
+		if nextExecutionDate.Valid {
+			convertedDate := types.AsDate(nextExecutionDate.Time)
+			transaction.NextExecutionDate = &convertedDate
 		}
 
 		if transactionEmployeeID.Valid {
