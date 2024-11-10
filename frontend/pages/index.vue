@@ -137,7 +137,7 @@ const monthChoices = [
 ]
 
 const {listForecasts, listForecastDetails, forecasts, forecastDetails} = useForecasts()
-const {listBankAccounts, bankAccounts} = useBankAccounts()
+const {listBankAccounts, totalBankSaldoInCHF} = useBankAccounts()
 const {forecastPerformance, forecastMonths, forecastShowRevenueDetails, forecastShowExpenseDetails} = useSettings()
 const {setChartData, setChartOptions} = useCharts()
 
@@ -232,13 +232,9 @@ const cashflows = computed(() => {
       formatted: NumberToFormattedCurrency(AmountToFloat(cashflow), Constants.BASE_LOCALE_CODE),
     }
   })
-  // forecasts.value.map(f => ({
-  //   amount: f.cashflow,
-  //   formatted: NumberToFormattedCurrency(AmountToFloat(f.cashflow), Constants.BASE_LOCALE_CODE),
-  // }))
 })
 const saldos = computed(() => {
-  let totalBankSaldo = bankAccounts.value.reduce((previousValue, currentValue) => previousValue + currentValue.amount, 0)
+  let totalBankSaldo = totalBankSaldoInCHF.value
   return cashflows.value.map(c => {
     totalBankSaldo += c.amount
     return {

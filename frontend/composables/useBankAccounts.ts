@@ -4,6 +4,8 @@ import type {BankAccountFormData, BankAccountResponse} from "~/models/bank-accou
 const bankAccounts = ref<BankAccountResponse[]>([]);
 
 export default function useBankAccounts() {
+    const {convertAmountToRate} = useGlobalData()
+
     const listBankAccounts = async ()  => {
         const {data, status} = await useFetch<BankAccountResponse[]>('/api/bank-accounts', {
             method: 'GET',
@@ -48,7 +50,7 @@ export default function useBankAccounts() {
         if (status.value === 'error') {
             return Promise.reject('Fehler beim Erstellen des Bankkontos')
         } else {
-            await listBankAccounts(false)
+            await listBankAccounts()
             if (data.value) {
                 id = data.value.id
             }
@@ -68,7 +70,7 @@ export default function useBankAccounts() {
         if (status.value === 'error') {
             return Promise.reject('Fehler beim Aktualisieren des Bankkontos')
         } else {
-            await listBankAccounts(false)
+            await listBankAccounts()
         }
         return Promise.resolve()
     }
@@ -81,13 +83,20 @@ export default function useBankAccounts() {
         if (status.value === 'error') {
             return Promise.reject('Fehler beim Löschen des Bankkontos')
         } else {
-            await listBankAccounts(false)
+            await listBankAccounts()
         }
         return Promise.resolve()
     }
 
+    const totalBankSaldoInCHF = computed(() => {
+        return bankAccounts.value.reduce((previousValue, currentValue) => {
+            return previousValue + convertAmountToRate(currentValue.amount ,currentValue.currency.code)
+        }, 0)
+    })
+
     return {
         bankAccounts,
+        totalBankSaldoInCHF,
         listBankAccounts,
         getBankAccount,
         createBankAccount,
