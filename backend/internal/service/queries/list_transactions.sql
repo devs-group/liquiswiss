@@ -18,11 +18,27 @@ SELECT
         WHEN r.type = 'single' THEN r.start_date
         WHEN r.type = 'repeating' AND r.cycle = 'daily' THEN DATE_ADD(r.start_date, INTERVAL DATEDIFF(CURDATE(), r.start_date) DIV 1 + 1 DAY)
         WHEN r.type = 'repeating' AND r.cycle = 'weekly' THEN DATE_ADD(r.start_date, INTERVAL DATEDIFF(CURDATE(), r.start_date) DIV 7 + 1 WEEK)
-        WHEN r.type = 'repeating' AND r.cycle = 'monthly' THEN DATE_ADD(r.start_date, INTERVAL TIMESTAMPDIFF(MONTH, r.start_date, CURDATE()) + IF(DAY(CURDATE()) >= DAY(r.start_date), 1, 0) MONTH)
-        WHEN r.type = 'repeating' AND r.cycle = 'quarterly' THEN DATE_ADD(r.start_date, INTERVAL CEIL(TIMESTAMPDIFF(MONTH, r.start_date, CURDATE()) / 3.0) * 3 MONTH)
-        WHEN r.type = 'repeating' AND r.cycle = 'biannually' THEN DATE_ADD(r.start_date, INTERVAL CEIL(TIMESTAMPDIFF(MONTH, r.start_date, CURDATE()) / 6.0) * 6 MONTH)
-        WHEN r.type = 'repeating' AND r.cycle = 'yearly' THEN DATE_ADD(r.start_date, INTERVAL TIMESTAMPDIFF(YEAR, r.start_date, CURDATE()) + IF(MONTH(CURDATE()) > MONTH(r.start_date) OR (MONTH(CURDATE()) = MONTH(r.start_date) AND DAY(CURDATE()) >= DAY(r.start_date)), 1, 0) YEAR)
-    END AS next_execution_date,
+        WHEN r.type = 'repeating' AND r.cycle = 'monthly' THEN
+            IF( TIMESTAMPDIFF(MONTH, r.start_date, CURDATE()) < 0,
+               r.start_date,
+               DATE_ADD(r.start_date, INTERVAL TIMESTAMPDIFF(MONTH, r.start_date, CURDATE()) + 1 MONTH)
+            )
+        WHEN r.type = 'repeating' AND r.cycle = 'quarterly' THEN
+            IF( TIMESTAMPDIFF(MONTH, r.start_date, CURDATE()) < 0,
+                r.start_date,
+               DATE_ADD(r.start_date, INTERVAL (FLOOR(TIMESTAMPDIFF(MONTH, r.start_date, CURDATE()) / 3) + 1) * 3 MONTH)
+            )
+        WHEN r.type = 'repeating' AND r.cycle = 'biannually' THEN
+            IF( TIMESTAMPDIFF(MONTH, r.start_date, CURDATE()) < 0,
+                r.start_date,
+               DATE_ADD(r.start_date, INTERVAL (CEIL(TIMESTAMPDIFF(MONTH, r.start_date, CURDATE()) / 6.0) * 6) MONTH)
+            )
+        WHEN r.type = 'repeating' AND r.cycle = 'yearly' THEN
+            IF( TIMESTAMPDIFF(YEAR, r.start_date, CURDATE()) < 0,
+               r.start_date,
+               DATE_ADD(r.start_date, INTERVAL TIMESTAMPDIFF(YEAR, r.start_date, CURDATE()) + 1 YEAR)
+            )
+        END AS next_execution_date,
     COUNT(*) OVER () AS total_count
 FROM
     go_transactions AS r
