@@ -23,9 +23,10 @@
         <label class="text-sm font-bold" for="salary-per-month">Lohnkosten pro Monat*</label>
         <i class="pi pi-info-circle" v-tooltip="'Bruttolohn + Arbeitgeberkosten'"></i>
       </div>
-      <InputText v-model.number="salaryPerMonth" v-bind="salaryPerMonthProps"
+      <InputText v-model="salaryPerMonth" v-bind="salaryPerMonthProps"
+                 @input="onParseAmount"
                  :class="{'p-invalid': errors['salaryPerMonth']?.length}"
-                 id="salary-per-month" type="number" min="0"
+                 id="salary-per-month" type="text"
                  :disabled="isLoading"/>
       <small class="text-red-400">{{errors["salaryPerMonth"] || '&nbsp;'}}</small>
     </div>
@@ -84,6 +85,7 @@ import * as yup from 'yup';
 import {Config} from "~/config/config";
 import type {EmployeeHistoryFormData} from "~/models/employee";
 import {DateToUTCDate} from "~/utils/format-helper";
+import {parseNumberInput} from "~/utils/element-helper";
 
 const dialogRef = inject<IHistoryFormDialog>('dialogRef')!;
 
@@ -139,6 +141,12 @@ const getDisabledDates = computed(() => {
     return DateToUTCDate(h.fromDate)
   })
 })
+
+const onParseAmount = (event: Event) => {
+  if (event instanceof InputEvent) {
+    parseNumberInput(event, salaryPerMonth)
+  }
+}
 
 const onSubmit = handleSubmit((values) => {
   isLoading.value = true

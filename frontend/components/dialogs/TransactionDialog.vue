@@ -52,6 +52,7 @@
         <small v-if="selectedCurrencyCode && selectedCurrencyCode != Constants.BASE_CURRENCY" class="text-gray-600">{{amountInBaseCurrency}}</small>
       </div>
       <InputText v-model="amount" v-bind="amountProps"
+                 @input="onParseAmount"
                  :class="{'p-invalid': errors['amount']?.length}"
                  id="name" type="text"/>
       <small class="text-red-400">{{errors["amount"] || '&nbsp;'}}</small>
@@ -122,8 +123,9 @@ import {Config} from "~/config/config";
 import {type TransactionFormData} from "~/models/transaction";
 import {CycleType, TransactionType} from "~/config/enums";
 import {TransactionTypeToOptions, CycleTypeToOptions} from "~/utils/enum-helper";
-import {Constants} from "../../utils/constants";
-import {NumberToFormattedCurrency} from "../../utils/format-helper";
+import {Constants} from "~/utils/constants";
+import {NumberToFormattedCurrency} from "~/utils/format-helper";
+import {parseNumberInput} from "~/utils/element-helper";
 
 const dialogRef = inject<ITransactionFormDialog>('dialogRef')!;
 
@@ -242,6 +244,12 @@ const onSubmit = handleSubmit((values) => {
         })
   }
 })
+
+const onParseAmount = (event: Event) => {
+  if (event instanceof InputEvent) {
+    parseNumberInput(event, amount)
+  }
+}
 
 const onDeleteTransaction = (event: MouseEvent) => {
   confirm.require({

@@ -14,6 +14,7 @@
         <i class="pi pi-info-circle text-blue-600" v-tooltip="'Negatives Vorzeichen möglich'"></i>
       </div>
       <InputText v-model="amount" v-bind="amountProps"
+                 @input="onParseAmount"
                  :class="{'p-invalid': errors['amount']?.length}"
                  id="name" type="text"/>
       <small class="text-red-400">{{errors["amount"] || '&nbsp;'}}</small>
@@ -46,6 +47,7 @@ import {useForm} from "vee-validate";
 import * as yup from 'yup';
 import {Config} from "~/config/config";
 import type {BankAccountFormData} from "~/models/bank-account";
+import {parseNumberInput} from "~/utils/element-helper";
 
 const dialogRef = inject<IBankAccountFormDialog>('dialogRef')!;
 
@@ -80,6 +82,12 @@ const { defineField, errors, handleSubmit, meta } = useForm({
 const [name, nameProps] = defineField('name')
 const [amount, amountProps] = defineField('amount')
 const [currency, currencyProps] = defineField('currency')
+
+const onParseAmount = (event: Event) => {
+  if (event instanceof InputEvent) {
+    parseNumberInput(event, amount)
+  }
+}
 
 const onSubmit = handleSubmit((values) => {
   isLoading.value = true
