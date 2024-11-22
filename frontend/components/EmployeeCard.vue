@@ -13,10 +13,10 @@
         <p v-if="!employee.isInFuture" class="text-green-500 font-bold">Aktuelle Daten:</p>
         <p v-else class="text-orange-500 font-bold">Kommende Daten:</p>
         <p>{{employee.hoursPerMonth}} Arbeitsstunden / Monat</p>
-        <p v-if="employee.salaryPerMonth && employee.salaryCurrency">
+        <p>
           {{salaryFormatted}} {{employee.salaryCurrency.code}} / Monat
         </p>
-        <p v-if="employee.vacationDaysPerYear">
+        <p>
           {{employee.vacationDaysPerYear}} Urlaubstage / Jahr
         </p>
         <p v-if="employee.fromDate">

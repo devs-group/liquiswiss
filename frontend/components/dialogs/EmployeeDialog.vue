@@ -23,7 +23,7 @@ import {useForm} from "vee-validate";
 import * as yup from 'yup';
 import {Config} from "~/config/config";
 import type {EmployeeFormData} from "~/models/employee";
-import {Routes} from "~/config/routes";
+import {RouteNames} from "~/config/routes";
 
 const dialogRef = inject<IEmployeeFormDialog>('dialogRef')!;
 
@@ -50,7 +50,7 @@ const onCreateEmployee = handleSubmit((values) => {
   createEmployee(values)
       .then(async (employeeID: number) => {
         dialogRef?.value.close()
-        navigateTo({name: Routes.EMPLOYEE_EDIT, params: {id: employeeID}})
+        navigateTo({name: RouteNames.EMPLOYEE_EDIT, params: {id: employeeID}})
         toast.add({
           summary: 'Erfolg',
           detail: `Mitarbeiter "${values.name}" wurde angelegt`,

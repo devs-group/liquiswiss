@@ -1,50 +1,46 @@
-import { ref } from 'vue';
-import type {User} from "~/models/auth";
-
-const user = ref<User>();
+import type {User, UserPasswordFormData, UserProfileFormData} from "~/models/auth";
+import type {TransactionFormData, TransactionResponse} from "~/models/transaction";
 
 export default function useAuth() {
+    const user = useState<User|null>('user');
+    const hasFetchedInitially = useState('hasFetchedInitially', () => false)
+
     const login = async (email: string, password: string): Promise<boolean> => {
         try {
-            const {data} = await useFetch('/api/auth/login', {
+            const data = await $fetch('/api/auth/login', {
                 method: 'POST',
                 body: {
                     email: email,
                     password: password,
                 }
             });
-            if (data.value) {
-                return true
-            }
-        } catch (error) {
-            console.error('Error logging in:', error);
+            return true
+        } catch (err) {
+            return false
         }
-        return false
     }
 
     const register = async (email: string, password: string): Promise<boolean> => {
         try {
-            const {data} = await useFetch('/api/auth/register', {
+            await $fetch('/api/auth/register', {
                 method: 'POST',
                 body: {
                     email: email,
                     password: password,
                 }
             });
-            if (data.value) {
-                return true
-            }
-        } catch (error) {
-            console.error('Error registering:', error);
+            return true
+        } catch (err) {
+            return false
         }
-        return false
     }
 
     const logout = async () => {
         try {
-            await useFetch('/api/auth/logout', {
+            await $fetch('/api/auth/logout', {
                 method: 'GET',
             });
+            user.value = null
         } catch (error) {
             console.error('Error logging out:', error);
         }
@@ -61,50 +57,57 @@ export default function useAuth() {
         }
     }
 
-    const getProfile = async (serverSide: boolean) => {
+    const useFetchGetProfile = async () => {
+        hasFetchedInitially.value = true
+        const {data, error} = await useFetch('/api/profile', {
+            method: 'GET',
+            retry: false,
+        });
+        if (error.value) {
+            console.error(error.value)
+            return Promise.reject('Benutzer konnte nicht geladen werden')
+        }
+        user.value = data.value
+    }
+
+    const updateProfile = async (payload: UserProfileFormData) => {
         try {
-            const {data} = await useFetch('/api/profile', {
-                method: 'GET',
-                server: serverSide,
+            user.value = await $fetch<User>(`/api/profile`, {
+                method: 'PATCH',
+                body: {
+                    ...payload,
+                },
             });
-            user.value = data.value
-        } catch (error) {
-            console.error('Error getting profile:', error);
+        } catch (err) {
+            return Promise.reject('Fehler beim Aktualisieren des Profils')
         }
     }
 
-    const getCategories = async (page: number = 1, limit: number = 10) => {
+    const updatePassword = async (payload: UserPasswordFormData) => {
         try {
-            const {data} = await useFetch('/api/categories', {
-                method: 'GET',
-                query: {
-                    page,
-                    limit,
-                }
+            await $fetch(`/api/profile/password`, {
+                method: 'POST',
+                body: {
+                    ...payload,
+                },
             });
-        } catch (error) {
-            console.error('Error listing categories:', error);
+        } catch (err) {
+            return Promise.reject('Fehler beim Ändern des Password')
         }
     }
 
-    const getCategory = async (id: string) => {
-        try {
-            const {data} = await useFetch(`/api/categories/${id}`, {
-                method: 'GET',
-            });
-        } catch (error) {
-            console.error('Error getting category:', error);
-        }
-    }
+    const isAuthenticated = computed(() => !!user.value);
 
     return {
         user,
+        hasFetchedInitially,
+        isAuthenticated,
         login,
         register,
         logout,
         getAccessToken,
-        getProfile,
-        getCategories,
-        getCategory,
+        useFetchGetProfile,
+        updateProfile,
+        updatePassword,
     };
 }

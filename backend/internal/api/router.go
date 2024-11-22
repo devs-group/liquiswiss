@@ -44,6 +44,12 @@ func (api *API) setupRouter() {
 			protected.GET("/profile", func(ctx *gin.Context) {
 				handlers.GetProfile(api.DBService, ctx)
 			})
+			protected.PATCH("/profile", func(ctx *gin.Context) {
+				handlers.UpdateProfile(api.DBService, ctx)
+			})
+			protected.POST("/profile/password", func(ctx *gin.Context) {
+				handlers.UpdatePassword(api.DBService, ctx)
+			})
 			protected.GET("/access-token", func(ctx *gin.Context) {
 				handlers.GetAccessToken(api.DBService, ctx)
 			})

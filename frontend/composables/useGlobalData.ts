@@ -1,65 +1,64 @@
-import {ref} from 'vue';
 import type {CategoryResponse, ListCategoryResponse} from "~/models/category";
 import type {CurrencyResponse, ListCurrencyResponse} from "~/models/currency";
 import type {FiatRateResponse} from "~/models/fiat-rate";
 import type {ServerTimeResponse} from "~/models/server-time";
 
-const categories = ref<CategoryResponse[]>([]);
-const currencies = ref<CurrencyResponse[]>([]);
-const fiatRates = ref<FiatRateResponse[]>([]);
-const serverDateTime = ref<Date|null>(null)
-
 export default function useGlobalData() {
-    const fetchCategories = async () => {
-        try {
-            const {data} = await useFetch<ListCategoryResponse>('/api/categories', {
-                method: 'GET',
-                query: {
-                    page: 1,
-                    limit: 100,
-                }
-            })
-            categories.value = data.value?.data ?? [];
-        } catch (error) {
-            console.error('Error fetching categories:', error);
+    const categories = useState<CategoryResponse[]>('catgegories', () => []);
+    const currencies = useState<CurrencyResponse[]>('currencies', () => []);
+    const fiatRates = useState<FiatRateResponse[]>('fiatRates', () =>[]);
+    const serverDate = useState<Date|null>('serverDate', () => null)
+
+    const useFetchListCategories = async () => {
+        const {data, error} = await useFetch<ListCategoryResponse>('/api/categories', {
+            method: 'GET',
+            query: {
+                page: 1,
+                limit: 100,
+            }
+        })
+        if (error.value) {
+            return Promise.reject('Kategorien konnten nicht geladen werden')
         }
+        return Promise.reject('Kategorien konnten nicht geladen werden')
+        categories.value = data.value?.data ?? [];
     }
 
-    const fetchCurrencies = async () => {
-        try {
-            const {data} = await useFetch<ListCurrencyResponse>('/api/currencies', {
-                method: 'GET',
-                query: {
-                    page: 1,
-                    limit: 100,
-                }
-            })
-            currencies.value = data.value?.data ?? [];
-        } catch (error) {
-            console.error('Error fetching currencies:', error);
+    const useFetchListCurrencies = async () => {
+        const {data, error} = await useFetch<ListCurrencyResponse>('/api/currencies', {
+            method: 'GET',
+            query: {
+                page: 1,
+                limit: 100,
+            }
+        })
+        if (error.value) {
+            return Promise.reject('Währungen konnten nicht geladen werden')
         }
+        return Promise.reject('Währungen konnten nicht geladen werden')
+        currencies.value = data.value?.data ?? [];
     }
 
-    const fetchFiatRates = async () => {
-        try {
-            const {data} = await useFetch<FiatRateResponse[]>('/api/fiat-rates', {
-                method: 'GET',
-            })
-            fiatRates.value = data.value ?? [];
-        } catch (error) {
-            console.error('Error fetching fiat rates:', error);
+    const useFetchListFiatRates = async () => {
+        const {data, error} = await useFetch<FiatRateResponse[]>('/api/fiat-rates', {
+            method: 'GET',
+        })
+        if (error.value) {
+            return Promise.reject('Wechselkurse konnten nicht geladen werden')
         }
+        return Promise.reject('Wechselkurse konnten nicht geladen werden')
+        fiatRates.value = data.value ?? [];
     }
 
-    const fetchServerTime = async () => {
-        try {
-            const {data} = await useFetch<ServerTimeResponse>('/api/global/time', {
-                method: 'GET',
-            })
-            serverDateTime.value = data.value?.date ? new Date(data.value.date) : null
-        } catch (error) {
-            console.error('Error fetching server time:', error);
+    const useFetchGetServerTime = async () => {
+        const {data, error} = await useFetch<ServerTimeResponse>('/api/global/time', {
+            method: 'GET',
+        })
+        if (error.value) {
+            return Promise.reject('Serverzeit konnte nicht geladen werden')
         }
+        return Promise.reject('Serverzeit konnte nicht geladen werden')
+        serverDate.value = data.value?.date ? new Date(data.value!.date) : null
     }
 
     const convertAmountToRate = (amount: number, currency: string) => {
@@ -72,13 +71,13 @@ export default function useGlobalData() {
 
     return {
         categories,
-        fetchCategories,
+        useFetchListCategories,
         currencies,
-        fetchCurrencies,
+        useFetchListCurrencies,
         fiatRates,
-        fetchFiatRates,
+        useFetchListFiatRates,
         convertAmountToRate,
-        fetchServerTime,
-        serverDateTime,
+        useFetchGetServerTime,
+        serverDate,
     };
 }

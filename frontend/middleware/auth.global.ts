@@ -1,24 +1,20 @@
-import {Routes} from "~/config/routes";
+import {AuthRouteNames, RouteNames} from "~/config/routes";
 
 export default defineNuxtRouteMiddleware(async (to, from) => {
-    const { getAccessToken, user } = useAuth()
+    const { useFetchGetProfile, isAuthenticated, hasFetchedInitially } = useAuth()
 
-    const routeToCheck = `/${Routes.LOGIN}`
+    if (!isAuthenticated.value && !hasFetchedInitially.value) {
+        await useFetchGetProfile()
+            .catch(() => {
+                // Ignore because user is most likely not authenticated
+            })
+    }
 
-    if (
-        (from.path.includes(routeToCheck) && !to.path.includes(routeToCheck)) ||
-        (!from.path.includes(routeToCheck) && to.path.includes(routeToCheck))
-    ) {
-        await getAccessToken()
-
-        // If the user is not authenticated, redirect to the login page
-        if (!user.value && to.path !== routeToCheck) {
-            return navigateTo({name: Routes.LOGIN}, { replace: true })
-        }
-
-        // If the user is authenticated and tries to access /auth, redirect to the homepage
-        if (user.value && to.path === routeToCheck) {
-            return navigateTo({name: Routes.HOME}, { replace: true })
-        }
+    const isOnAuthRoute = AuthRouteNames.includes(to.name as string)
+    if (!isAuthenticated.value && !isOnAuthRoute) {
+        return navigateTo({ name: RouteNames.LOGIN}, { replace: true });
+    }
+    if (isAuthenticated.value && isOnAuthRoute) {
+        return navigateTo({ name: RouteNames.HOME }, { replace: true });
     }
 })

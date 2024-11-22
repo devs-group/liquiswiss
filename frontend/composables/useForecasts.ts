@@ -1,55 +1,94 @@
-import {ref} from 'vue';
 import type {ForecastDetailResponse, ForecastResponse} from "~/models/forecast";
 
-const forecasts = ref<ForecastResponse[]>([]);
-const forecastDetails = ref<ForecastDetailResponse[]>([]);
-
 export default function useForecasts() {
-    const listForecasts = async (months: number)  => {
-        const {data, status} = await useFetch<ForecastResponse[]>('/api/forecasts', {
+    const forecasts = useState<ForecastResponse[]>('forecasts', () => []);
+    const forecastDetails = useState<ForecastDetailResponse[]>('forecastDetails', () => []);
+
+    const useFetchListForecast = async (months: number) => {
+        const {data, error} = await useFetch<ForecastResponse[]>('/api/forecasts', {
             method: 'GET',
             query: {
                 limit: months,
             }
         });
-
-        if (status.value === 'error') {
-            return Promise.reject('Fehler beim Laden der Prognose')
-        } else {
-            if (data.value) {
-                forecasts.value = data.value
-            } else {
-                forecasts.value = []
-            }
+        if (error.value) {
+            return Promise.reject('Prognose konnten nicht geladen werden')
         }
-        return Promise.resolve()
+        setForecasts(data.value, false)
+    }
+
+    const listForecasts = async (months: number)  => {
+        try {
+            const data = await $fetch<ForecastResponse[]>('/api/forecasts', {
+                method: 'GET',
+                query: {
+                    limit: months,
+                }
+            });
+            setForecasts(data, false)
+        } catch (err) {
+            return Promise.reject('Fehler beim Laden der Prognose')
+        }
+    }
+
+    const useFetchListForecastDetails = async (months: number)  => {
+        const {data, error} = await useFetch<ForecastDetailResponse[]>('/api/forecast-details', {
+            method: 'GET',
+            query: {
+                limit: months,
+            }
+        });
+        if (error.value) {
+            return Promise.reject('Fehler beim Laden der Prognose Details')
+        }
+        setForecastDetails(data.value, false)
     }
 
     const listForecastDetails = async (months: number)  => {
-        const {data, status} = await useFetch<ForecastDetailResponse[]>('/api/forecast-details', {
-            method: 'GET',
-            query: {
-                limit: months,
-            }
-        });
-
-        if (status.value === 'error') {
+        try {
+            const data = await $fetch<ForecastDetailResponse[]>('/api/forecast-details', {
+                method: 'GET',
+                query: {
+                    limit: months,
+                }
+            });
+            setForecastDetails(data, false)
+        } catch (err) {
             return Promise.reject('Fehler beim Laden der Prognose Details')
-        } else {
-            if (data.value) {
-                forecastDetails.value = data.value
-            } else {
-                forecastDetails.value = []
-            }
         }
-        return Promise.resolve()
     }
 
+    const setForecasts = (data: ForecastResponse[]|null, append: boolean) => {
+        if (data) {
+            if (append) {
+                forecasts.value = forecasts.value.concat(data ?? [])
+            } else {
+                forecasts.value = data
+            }
+        } else {
+            forecasts.value = []
+        }
+    }
+
+    const setForecastDetails = (data: ForecastDetailResponse[]|null, append: boolean) => {
+        if (data) {
+            if (append) {
+                forecastDetails.value = forecastDetails.value.concat(data ?? [])
+            } else {
+                forecastDetails.value = data
+            }
+        } else {
+            forecastDetails.value = []
+        }
+    }
 
     return {
-        listForecasts,
-        listForecastDetails,
         forecasts,
         forecastDetails,
+        useFetchListForecast,
+        listForecasts,
+        useFetchListForecastDetails,
+        listForecastDetails,
+        setForecasts,
     };
 }

@@ -21,8 +21,7 @@ import useBankAccounts from "~/composables/useBankAccounts";
 import {Constants} from "~/utils/constants";
 
 const dialog = useDialog();
-const {bankAccounts, totalBankSaldoInCHF, listBankAccounts} = useBankAccounts()
-const {convertAmountToRate} = useGlobalData()
+const {bankAccounts, totalBankSaldoInCHF, useFetchListBankAccounts, setBankAccounts} = useBankAccounts()
 
 const bankAccountsErrorMessage = ref('')
 
@@ -30,9 +29,9 @@ const totalSaldo = computed(() => {
   return NumberToFormattedCurrency(AmountToFloat(totalBankSaldoInCHF.value), Constants.BASE_LOCALE_CODE)
 })
 
-await listBankAccounts()
-    .catch(() => {
-      bankAccountsErrorMessage.value = 'Bankkonten konnten nicht geladen werden'
+await useFetchListBankAccounts()
+    .catch(reason => {
+      bankAccountsErrorMessage.value = reason
     })
 
 const onCreateBankAccount = () => {

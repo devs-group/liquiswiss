@@ -1,91 +1,92 @@
-import {ref} from 'vue';
 import type {BankAccountFormData, BankAccountResponse} from "~/models/bank-account";
 
-const bankAccounts = ref<BankAccountResponse[]>([]);
-
 export default function useBankAccounts() {
+    const bankAccounts = useState<BankAccountResponse[]>('bankAccounts', () => []);
+
     const {convertAmountToRate} = useGlobalData()
 
-    const listBankAccounts = async ()  => {
-        const {data, status} = await useFetch<BankAccountResponse[]>('/api/bank-accounts', {
+    const useFetchListBankAccounts = async () => {
+        const {data, error} = await useFetch<BankAccountResponse[]>('/api/bank-accounts', {
             method: 'GET',
         });
-
-        if (status.value === 'error') {
-            return Promise.reject('Fehler beim Laden der Bankkonten')
-        } else {
-            if (data.value) {
-                bankAccounts.value = data.value
-
-            } else {
-                bankAccounts.value = []
-            }
+        if (error.value) {
+            return Promise.reject('Bankkonten konnten nicht geladen werden')
         }
-        return Promise.resolve()
+        setBankAccounts(data.value, false)
+    }
+
+    const listBankAccounts = async ()  => {
+        try {
+            const data = await $fetch<BankAccountResponse[]>('/api/bank-accounts', {
+                method: 'GET',
+            });
+            setBankAccounts(data, false)
+        } catch (err) {
+            return Promise.reject('Fehler beim Laden der Bankkonten')
+        }
     }
 
     const getBankAccount = async (bankAccountID: number) => {
-        const {data, status} = await useFetch<BankAccountResponse>(`/api/bank-accounts/${bankAccountID}`, {
-            method: 'GET',
-        });
-
-        if (status.value === 'error') {
+        try {
+            return await $fetch<BankAccountResponse>(`/api/bank-accounts/${bankAccountID}`, {
+                method: 'GET',
+            });
+        } catch (err) {
             return Promise.reject('Fehler beim Laden des Bankkontos')
-        } else {
         }
-        return Promise.resolve(data.value)
     }
 
     const createBankAccount = async (payload: BankAccountFormData) => {
-        let id = 0
-
-        const {data, status} = await useFetch<BankAccountResponse>(`/api/bank-accounts`, {
-            method: 'POST',
-            body: {
-                ...payload,
-                amount: AmountToInteger(payload.amount),
-            },
-        });
-
-        if (status.value === 'error') {
-            return Promise.reject('Fehler beim Erstellen des Bankkontos')
-        } else {
+        try {
+            await $fetch<BankAccountResponse>(`/api/bank-accounts`, {
+                method: 'POST',
+                body: {
+                    ...payload,
+                    amount: AmountToInteger(payload.amount),
+                },
+            });
             await listBankAccounts()
-            if (data.value) {
-                id = data.value.id
-            }
+        } catch (err) {
+            return Promise.reject('Fehler beim Erstellen des Bankkontos')
         }
-        return Promise.resolve(id)
     }
 
     const updateBankAccount = async (payload: BankAccountFormData) => {
-        const {status} = await useFetch<BankAccountResponse>(`/api/bank-accounts/${payload.id}`, {
-            method: 'PATCH',
-            body: {
-                ...payload,
-                amount: AmountToInteger(payload.amount),
-            },
-        });
-
-        if (status.value === 'error') {
-            return Promise.reject('Fehler beim Aktualisieren des Bankkontos')
-        } else {
+        try {
+            await $fetch<BankAccountResponse>(`/api/bank-accounts/${payload.id}`, {
+                method: 'PATCH',
+                body: {
+                    ...payload,
+                    amount: AmountToInteger(payload.amount),
+                },
+            });
             await listBankAccounts()
+        } catch (err) {
+            return Promise.reject('Fehler beim Aktualisieren des Bankkontos')
         }
-        return Promise.resolve()
     }
 
     const deleteBankAccount = async (bankAccountID: number) => {
-        const {status} = await useFetch(`/api/bank-accounts/${bankAccountID}`, {
-            method: 'DELETE',
-        });
-
-        if (status.value === 'error') {
-            return Promise.reject('Fehler beim Löschen des Bankkontos')
-        } else {
+        try {
+            await $fetch(`/api/bank-accounts/${bankAccountID}`, {
+                method: 'DELETE',
+            });
             await listBankAccounts()
+        } catch (err) {
+            return Promise.reject('Fehler beim Löschen des Bankkontos')
         }
-        return Promise.resolve()
+    }
+
+    const setBankAccounts = (data: BankAccountResponse[]|null, append: boolean) => {
+        if (data) {
+            if (append) {
+                bankAccounts.value = bankAccounts.value.concat(data ?? [])
+            } else {
+                bankAccounts.value = data
+            }
+        } else {
+            bankAccounts.value = []
+        }
     }
 
     const totalBankSaldoInCHF = computed(() => {
@@ -95,12 +96,14 @@ export default function useBankAccounts() {
     })
 
     return {
-        bankAccounts,
-        totalBankSaldoInCHF,
+        useFetchListBankAccounts,
         listBankAccounts,
         getBankAccount,
         createBankAccount,
         updateBankAccount,
         deleteBankAccount,
+        setBankAccounts,
+        bankAccounts,
+        totalBankSaldoInCHF,
     };
 }

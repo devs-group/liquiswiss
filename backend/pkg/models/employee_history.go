@@ -14,19 +14,19 @@ type EmployeeHistory struct {
 }
 
 type CreateEmployeeHistory struct {
-	HoursPerMonth       uint16  `json:"hoursPerMonth" validate:"required,gt=0"`
-	SalaryPerMonth      uint64  `json:"salaryPerMonth" validate:"required,gte=0"`
+	HoursPerMonth       uint16  `json:"hoursPerMonth" validate:"gte=0"`
+	SalaryPerMonth      uint64  `json:"salaryPerMonth" validate:"gte=0"`
 	SalaryCurrency      int64   `json:"salaryCurrency" validate:"required,gte=0"`
-	VacationDaysPerYear uint16  `json:"vacationDaysPerYear" validate:"required,gt=0"`
+	VacationDaysPerYear uint16  `json:"vacationDaysPerYear" validate:"gte=0"`
 	FromDate            string  `json:"fromDate" validate:"required"`
 	ToDate              *string `json:"toDate" validate:"omitempty,fromDateGTEToDate"`
 }
 
 type UpdateEmployeeHistory struct {
-	HoursPerMonth       *uint16 `json:"hoursPerMonth" validate:"omitempty,gt=0"`
+	HoursPerMonth       *uint16 `json:"hoursPerMonth" validate:"omitempty,gte=0"`
 	SalaryPerMonth      *uint64 `json:"salaryPerMonth" validate:"omitempty,gte=0"`
 	SalaryCurrency      *int64  `json:"salaryCurrency" validate:"omitempty,gte=0"`
-	VacationDaysPerYear *uint16 `json:"vacationDaysPerYear" validate:"omitempty,gt=0"`
+	VacationDaysPerYear *uint16 `json:"vacationDaysPerYear" validate:"omitempty,gte=0"`
 	FromDate            *string `json:"fromDate" validate:"omitempty"`
 	ToDate              *string `json:"toDate" validate:"omitempty,fromDateGTEToDate"`
 }

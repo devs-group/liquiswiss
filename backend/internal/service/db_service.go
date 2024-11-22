@@ -30,6 +30,8 @@ type IDatabaseService interface {
 	RegisterUser(email, password string) (int64, error)
 	GetUserPasswordByEMail(email string) (*models.Login, error)
 	GetProfile(id string) (*models.User, error)
+	UpdateProfile(payload models.UpdateUser, userID string) error
+	UpdatePassword(password string, userID string) error
 	CheckUserExistance(id int64) (bool, error)
 
 	ListTransactions(userID int64, page int64, limit int64, sortBy string, sortOrder string) ([]models.Transaction, int64, error)
@@ -182,6 +184,70 @@ func (s *DatabaseService) GetProfile(id string) (*models.User, error) {
 	}
 
 	return &user, nil
+}
+
+func (s *DatabaseService) UpdateProfile(payload models.UpdateUser, userID string) error {
+	// Base query
+	query := "UPDATE go_users SET "
+	queryBuild := []string{}
+	args := []interface{}{}
+
+	// Dynamically add fields that are not nil
+	if payload.Name != nil {
+		queryBuild = append(queryBuild, "name = ?")
+		args = append(args, *payload.Name)
+	}
+	if payload.Email != nil {
+		queryBuild = append(queryBuild, "email = ?")
+		args = append(args, *payload.Email)
+	}
+
+	// Add WHERE clause
+	query += strings.Join(queryBuild, ", ")
+	query += " WHERE id = ?"
+	args = append(args, userID)
+
+	stmt, err := s.db.Prepare(query)
+	if err != nil {
+		return err
+	}
+	defer stmt.Close()
+
+	_, err = stmt.Exec(args...)
+	if err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (s *DatabaseService) UpdatePassword(password string, userID string) error {
+	// Base query
+	query := "UPDATE go_users SET "
+	queryBuild := []string{}
+	args := []interface{}{}
+
+	// Dynamically add fields that are not nil
+	queryBuild = append(queryBuild, "password = ?")
+	args = append(args, password)
+
+	// Add WHERE clause
+	query += strings.Join(queryBuild, ", ")
+	query += " WHERE id = ?"
+	args = append(args, userID)
+
+	stmt, err := s.db.Prepare(query)
+	if err != nil {
+		return err
+	}
+	defer stmt.Close()
+
+	_, err = stmt.Exec(args...)
+	if err != nil {
+		return err
+	}
+
+	return nil
 }
 
 func (s *DatabaseService) CheckUserExistance(id int64) (bool, error) {

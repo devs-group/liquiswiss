@@ -35,11 +35,12 @@
       <hr class="h-0.5 bg-black flex-1"/>
     </div>
     <Button @click="onCreateEmployeeHistory" class="self-end" :loading="isSubmitting" label="Historie hinzufügen" icon="pi pi-history"/>
+
+    <Message v-if="historyErrorMessage.length" severity="error" :closable="false" class="col-span-full">{{historyErrorMessage}}</Message>
+
     <div v-if="employeeHistories?.data.length" class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
       <EmployeeHistoryCard @on-edit="onUpdateEmployeeHistory" @on-clone="onCloneEmployeeHistory" v-for="employeeHistory in employeeHistories.data" :employee-history="employeeHistory"/>
     </div>
-
-    <Message v-if="historyErrorMessage.length" severity="error" :closable="false" class="col-span-full">{{historyErrorMessage}}</Message>
 
     <div v-if="employeeHistories?.data.length" class="self-center">
       <Button v-if="!noMoreDataEmployeeHistories" severity="info" label="Mehr anzeigen" @click="onLoadMoreEmployeeHistory" :loading="isLoadingMore"/>
@@ -51,7 +52,7 @@
 
   <div v-else class="flex flex-col gap-2 items-start bg-red-100 border border-red-200 p-4">
     <span>{{ employeeLoadErrorMessage }}</span>
-    <NuxtLink :to="{name: Routes.EMPLOYEES, replace: true}">
+    <NuxtLink :to="{name: RouteNames.EMPLOYEES, replace: true}">
       <Button label="Zurück zur Übersicht"/>
     </NuxtLink>
   </div>
@@ -60,14 +61,19 @@
 <script setup lang="ts">
 import {ModalConfig} from "~/config/dialog-props";
 import {Config} from "~/config/config";
-import type {EmployeeFormData, EmployeeHistoryResponse, EmployeeResponse} from "~/models/employee";
-import {Routes} from "~/config/routes";
+import type {
+  EmployeeFormData,
+  EmployeeHistoryResponse,
+  EmployeeResponse,
+  ListEmployeeHistoryResponse
+} from "~/models/employee";
+import {RouteNames} from "~/config/routes";
 import {useForm} from "vee-validate";
 import * as yup from "yup";
 import EmployeeHistoryDialog from "~/components/dialogs/EmployeeHistoryDialog.vue";
 import EmployeeHistoryCard from "~/components/EmployeeHistoryCard.vue";
 
-const {employeeHistories, noMoreDataEmployeeHistories, pageEmployeeHistories, getEmployee, updateEmployee, deleteEmployee, getEmployeeHistory} = useEmployees()
+const {employeeHistories, noMoreDataEmployeeHistories, pageEmployeeHistories, useFetchGetEmployee, updateEmployee, deleteEmployee, useFetchListEmployeeHistory, listEmployeeHistory, limitEmployeeHistories, setEmployeeHistories} = useEmployees()
 const dialog = useDialog();
 const toast = useToast()
 const route = useRoute()
@@ -83,21 +89,24 @@ const employeeUpdateErrorMessage = ref('')
 const employeeDeleteErrorMessage = ref('')
 const historyErrorMessage = ref('')
 
-
 if (route.params.id && !Number.isNaN(employeeID) && Number.isInteger(employeeID)) {
-  await getEmployee(employeeID)
-      .then((payload) => {
-        employee.value = payload
+   await useFetchGetEmployee(employeeID)
+       .then(value => {
+         employee.value = value
+       })
+      .catch(reason => {
+        employeeLoadErrorMessage.value = reason
       })
-      .catch(() => {
-        employeeLoadErrorMessage.value = `Mitarbeiter mit der ID "${route.params.id}" wurde nicht gefunden`
-      })
+} else {
+  await navigateTo({name: RouteNames.EMPLOYEES})
 }
 
-await getEmployeeHistory(employeeID)
-    .catch(() => {
-      historyErrorMessage.value = 'Historie konnte nicht geladen werden'
-    })
+if (employee.value) {
+  await useFetchListEmployeeHistory(employeeID)
+      .catch(reason => {
+        historyErrorMessage.value = reason
+      })
+}
 
 const { defineField, errors, handleSubmit, meta, resetForm } = useForm({
   validationSchema: yup.object({
@@ -112,7 +121,7 @@ const { defineField, errors, handleSubmit, meta, resetForm } = useForm({
 const [name, nameProps] = defineField('name')
 
 const onGoBack = () => {
-  navigateTo({name: Routes.EMPLOYEES, replace: true})
+  navigateTo({name: RouteNames.EMPLOYEES, replace: true})
 }
 
 const onUpdateEmployee = handleSubmit((values) => {
@@ -146,7 +155,7 @@ const onDeleteEmployee = (payload: MouseEvent) => {
         isSubmitting.value = true
         deleteEmployee(employeeID)
             .then(() => {
-              navigateTo({name: Routes.EMPLOYEES, replace: true})
+              navigateTo({name: RouteNames.EMPLOYEES, replace: true})
               toast.add({
                 summary: 'Erfolg',
                 detail: `Mitarbeiter "${employee.value!.name}" wurde gelöscht`,
@@ -209,7 +218,7 @@ const onCloneEmployeeHistory = (employeeHistory: EmployeeHistoryResponse) => {
 const onLoadMoreEmployeeHistory = async (event: MouseEvent) => {
   isLoadingMore.value = true
   pageEmployeeHistories.value += 1
-  await getEmployeeHistory(employeeID)
+  await listEmployeeHistory(employeeID)
   isLoadingMore.value = false
 }
 </script>

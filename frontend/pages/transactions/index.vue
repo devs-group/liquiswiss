@@ -1,7 +1,7 @@
 <template>
   <div class="flex flex-col gap-4 relative">
     <div class="flex flex-col sm:flex-row gap-2 justify-between items-center">
-      <div class="flex gap-2 w-full sm:w-auto">
+      <div class="flex items-center gap-2 w-full sm:w-auto">
         <InputText v-model="search" placeholder="Suchen"/>
         <Button @click="toggleDisplayType" :icon="getDisplayIcon"/>
       </div>
@@ -65,14 +65,14 @@
 <script setup lang="ts">
 import {ModalConfig} from "~/config/dialog-props";
 import TransactionDialog from "~/components/dialogs/TransactionDialog.vue";
-import type {TransactionResponse} from "~/models/transaction";
+import type {ListTransactionResponse, TransactionResponse} from "~/models/transaction";
 import TransactionCard from "~/components/TransactionCard.vue";
 import TransactionRow from "~/components/TransactionRow.vue";
 import FullProgressSpinner from "~/components/FullProgressSpinner.vue";
 import type {TransactionSortByType} from "~/utils/types";
 
 const dialog = useDialog();
-const {transactions, noMoreDataTransactions, pageTransactions, listTransactions} = useTransactions()
+const {transactions, noMoreDataTransactions, pageTransactions, limitTransactions, useFetchListTransactions, listTransactions, setTransactions} = useTransactions()
 const {toggleDisplayType, transactionSortBy, transactionSortOrder, transactionDisplay} = useSettings()
 
 const isLoading = ref(false)
@@ -87,12 +87,13 @@ const filterTransactions = computed(() => {
       .filter(t => t.name.toLowerCase().includes(search.value.toLowerCase()))
 })
 
-// Functions
-await listTransactions(false)
-    .catch(() => {
-      transactionsErrorMessage.value = 'Transaktionen konnten nicht geladen werden'
+// Init
+await useFetchListTransactions()
+    .catch(reason => {
+      transactionsErrorMessage.value = reason
     })
 
+// Functions
 const onSort = (column: TransactionSortByType) => {
   if (column == transactionSortBy.value) {
     transactionSortOrder.value = transactionSortOrder.value == 'ASC' ? 'DESC' : 'ASC'

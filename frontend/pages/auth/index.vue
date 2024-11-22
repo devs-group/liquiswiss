@@ -2,7 +2,7 @@
   <form @submit.prevent class="flex flex-col items-center justify-center gap-2">
     <InputText placeholder="E-Mail" type="email" name="email" autocomplete="email" v-model.trim="email" :disabled="isLoading"/>
     <InputText placeholder="Passwort" type="password" name="password" autocomplete="current-password" v-model="password" :disabled="isLoading"/>
-    <p class="text-sm">Kein Konto? Jetzt <NuxtLink :to="{name: Routes.REGISTER}" class="underline">registrieren</NuxtLink></p>
+    <p class="text-sm">Kein Konto? Jetzt <NuxtLink :to="{name: RouteNames.REGISTER}" class="underline">registrieren</NuxtLink></p>
     <Button label="Login" @click="onLogin" :disabled="isLoading" :loading="isLoading" type="submit"/>
 
   </form>
@@ -11,7 +11,7 @@
 <script setup lang="ts">
 import useAuth from "~/composables/useAuth";
 import {Config} from "~/config/config";
-import {Routes} from "~/config/routes";
+import {RouteNames} from "~/config/routes";
 
 const {login} = useAuth()
 const toast = useToast()
@@ -24,7 +24,7 @@ const onLogin = async () => {
   isLoading.value = true
   const isLoggedIn = await login(email.value, password.value)
   if (isLoggedIn) {
-    reloadNuxtApp({force: true})
+    reloadNuxtApp({force: true}) // , path: RoutePaths.HOME
   } else {
     isLoading.value = false
     toast.add({

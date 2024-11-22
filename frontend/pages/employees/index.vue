@@ -18,18 +18,19 @@
 <script setup lang="ts">
 import {ModalConfig} from "~/config/dialog-props";
 import EmployeeDialog from "~/components/dialogs/EmployeeDialog.vue";
-import type {EmployeeResponse} from "~/models/employee";
-import {Routes} from "~/config/routes";
+import type {EmployeeResponse, ListEmployeeResponse} from "~/models/employee";
+import {RouteNames} from "~/config/routes";
 
-const {employees, noMoreDataEmployees, pageEmployees, getEmployees} = useEmployees()
+const {employees, noMoreDataEmployees, pageEmployees, useFetchListEmployees, listEmployees, setEmployees} = useEmployees()
 const dialog = useDialog();
 
 const isLoadingMore = ref(false)
 const employeesErrorMessage = ref('')
 
-await getEmployees(false)
-    .catch(() => {
-      employeesErrorMessage.value = 'Mitarbeiter konnten nicht geladen werden'
+// Init
+await useFetchListEmployees()
+    .catch(reason => {
+      employeesErrorMessage.value = reason
     })
 
 const onCreateEmployee = () => {
@@ -42,13 +43,13 @@ const onCreateEmployee = () => {
 }
 
 const onEditEmployee = (employee: EmployeeResponse) => {
-  navigateTo({name: Routes.EMPLOYEE_EDIT, params: {id: employee.id}})
+  navigateTo({name: RouteNames.EMPLOYEE_EDIT, params: {id: employee.id}})
 }
 
 const onLoadMoreEmployees = async (event: MouseEvent) => {
   isLoadingMore.value = true
   pageEmployees.value += 1
-  await getEmployees(false)
+  await listEmployees(false)
   isLoadingMore.value = false
 }
 </script>

@@ -1,11 +1,11 @@
 <template>
   <div class="flex flex-col gap-4 p-4">
-    <MainMenu v-if="user"/>
+    <MainMenu v-if="isAuthenticated"/>
     <div class="w-full h-full">
       <NuxtPage/>
     </div>
-    <div v-if="serverTimeFormatted" class="p-2 bg-gray-100 self-end">
-      <p class="text-xs text-right">Serverzeit: {{serverTimeFormatted}}</p>
+    <div v-if="serverDateFormatted" class="p-2 bg-gray-100 self-end">
+      <p class="text-xs text-right">Serverzeit: {{ serverDateFormatted }}</p>
     </div>
   </div>
   <DynamicDialog/>
@@ -18,16 +18,30 @@
 import useAuth from "~/composables/useAuth";
 import {Config} from "~/config/config";
 import {Constants} from "~/utils/constants";
-import {DateStringToFormattedDateTime} from "~/utils/format-helper";
+import {DateStringToFormattedDate} from "~/utils/format-helper";
 
-const {user, getAccessToken, getProfile} = useAuth()
-const {fetchCurrencies, fetchCategories, fetchFiatRates, fetchServerTime, serverDateTime} = useGlobalData()
-const route = useRoute()
+const {isAuthenticated, getAccessToken} = useAuth()
+const {useFetchListCurrencies, useFetchListCategories, useFetchListFiatRates, useFetchGetServerTime, serverDate} = useGlobalData()
 const toast = useToast()
+
+useHead({
+  title: 'LiquiSwiss'
+})
+
+const serverDateFormatted = computed(() => {
+  return serverDate.value ? DateStringToFormattedDate(serverDate.value) : ''
+})
+
+if (isAuthenticated.value) {
+  await Promise.all([useFetchListCurrencies(), useFetchListCategories(), useFetchListFiatRates(), useFetchGetServerTime()])
+      .catch(reason => {
+        console.log(reason)
+      })
+}
 
 // This is to ensure users gets an access token if it expires
 onMounted(() => {
-  if (!!user.value) {
+  if (isAuthenticated.value) {
     getAccessToken()
   } else {
     if (localStorage.getItem(Constants.SESSION_EXPIRED_NAME) === 'true') {
@@ -40,27 +54,5 @@ onMounted(() => {
       })
     }
   }
-})
-
-const serverTimeFormatted = computed(() => {
-  return serverDateTime.value ? DateStringToFormattedDateTime(serverDateTime.value) : ''
-})
-
-// Initial check if user is authenticated or not
-await getProfile(true)
-
-if (!user.value) {
-  if (!route.path.includes('/auth')) {
-    await navigateTo('/auth', {replace: true})
-  }
-} else {
-  if (route.path.includes('/auth')) {
-    await navigateTo('/', {replace: true})
-  }
-  await Promise.all([fetchCurrencies(), fetchCategories(), fetchFiatRates(), fetchServerTime()])
-}
-
-useHead({
-  title: 'LiquiSwiss'
 })
 </script>

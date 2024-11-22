@@ -30,6 +30,10 @@
       <small class="text-red-400">{{errors["currency"] || '&nbsp;'}}</small>
     </div>
 
+    <div v-if="!isCreate" class="flex justify-end col-span-full">
+      <Button @click="onDeleteBankAccount" :loading="isLoading" label="Löschen" icon="pi pi-trash" severity="danger" size="small"/>
+    </div>
+
     <hr class="my-4 col-span-full"/>
 
     <Message v-if="errorMessage.length" severity="error" :closable="false" class="col-span-full">{{errorMessage}}</Message>

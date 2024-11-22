@@ -1,20 +1,18 @@
 import {CreateSettingsCookie} from "~/utils/cookie-helper";
-import {ref} from "vue";
 import type {SortOrderType, TransactionSortByType} from "~/utils/types";
 import {SortOrderOptions, TransactionSortByOptions} from "~/utils/types";
 import {SymbolKind} from "vscode-languageserver-types";
-import Boolean = SymbolKind.Boolean;
-
-const forecastShowRevenueDetails = ref(false)
-const forecastShowExpenseDetails = ref(false)
-const transactionDisplay = ref<'grid'|'list'>('grid')
-const transactionSortBy = ref<TransactionSortByType>('name')
-const transactionSortOrder = ref<SortOrderType>('ASC')
-const forecastPerformance = ref(100)
-// 13 to include from current to the same month
-const forecastMonths = ref(13)
 
 export default function useSettings() {
+    const forecastShowRevenueDetails = useState('forecastShowRevenueDetails', () => false)
+    const forecastShowExpenseDetails = useState('forecastShowExpenseDetails', () => false)
+    const transactionDisplay = useState<'grid'|'list'>('transactionDisplay', () => 'grid')
+    const transactionSortBy = useState<TransactionSortByType>('transactionSortBy', () => 'name')
+    const transactionSortOrder = useState<SortOrderType>('transactionSortOrder', () => 'ASC')
+    const forecastPerformance = useState('forecastPerformance', () => 100)
+    // 13 to include from current to the same month
+    const forecastMonths = useState('forecastMonths', () => 13)
+
     const forecastShowRevenueDetailsCookie = CreateSettingsCookie('forecast-revenue-details')
     const forecastShowExpenseDetailsCookie = CreateSettingsCookie('forecast-expense-details')
     const transactionDisplayCookie = CreateSettingsCookie('transaction-display')

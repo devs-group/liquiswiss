@@ -130,7 +130,7 @@ import {parseNumberInput} from "~/utils/element-helper";
 const dialogRef = inject<ITransactionFormDialog>('dialogRef')!;
 
 const {createTransaction, updateTransaction, deleteTransaction} = useTransactions()
-const {employees, getEmployees} = useEmployees()
+const {employees, listEmployees} = useEmployees()
 const {categories, currencies, convertAmountToRate} = useGlobalData()
 const confirm = useConfirm()
 const toast = useToast()
@@ -144,7 +144,7 @@ const isCreate = isClone || !transaction?.id
 const errorMessage = ref('')
 const employeesErrorMessage = ref('')
 
-getEmployees(false)
+listEmployees(false)
     .catch(() => {
       employeesErrorMessage.value = 'Mitarbeiter konnten nicht geladen werden'
     })
