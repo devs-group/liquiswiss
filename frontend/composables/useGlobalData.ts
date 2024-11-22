@@ -2,10 +2,12 @@ import {ref} from 'vue';
 import type {CategoryResponse, ListCategoryResponse} from "~/models/category";
 import type {CurrencyResponse, ListCurrencyResponse} from "~/models/currency";
 import type {FiatRateResponse} from "~/models/fiat-rate";
+import type {ServerTimeResponse} from "~/models/server-time";
 
 const categories = ref<CategoryResponse[]>([]);
 const currencies = ref<CurrencyResponse[]>([]);
 const fiatRates = ref<FiatRateResponse[]>([]);
+const serverDateTime = ref<Date|null>(null)
 
 export default function useGlobalData() {
     const fetchCategories = async () => {
@@ -49,6 +51,17 @@ export default function useGlobalData() {
         }
     }
 
+    const fetchServerTime = async () => {
+        try {
+            const {data} = await useFetch<ServerTimeResponse>('/api/global/time', {
+                method: 'GET',
+            })
+            serverDateTime.value = data.value?.date ? new Date(data.value.date) : null
+        } catch (error) {
+            console.error('Error fetching server time:', error);
+        }
+    }
+
     const convertAmountToRate = (amount: number, currency: string) => {
         const fiatRate = fiatRates.value.find(fr => fr.target == currency)
         if (fiatRate) {
@@ -65,5 +78,7 @@ export default function useGlobalData() {
         fiatRates,
         fetchFiatRates,
         convertAmountToRate,
+        fetchServerTime,
+        serverDateTime,
     };
 }

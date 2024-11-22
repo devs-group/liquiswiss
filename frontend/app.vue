@@ -4,6 +4,9 @@
     <div class="w-full h-full">
       <NuxtPage/>
     </div>
+    <div v-if="serverTimeFormatted" class="p-2 bg-gray-100 self-end">
+      <p class="text-xs text-right">Serverzeit: {{serverTimeFormatted}}</p>
+    </div>
   </div>
   <DynamicDialog/>
   <ConfirmDialog :draggable="false"/>
@@ -15,9 +18,10 @@
 import useAuth from "~/composables/useAuth";
 import {Config} from "~/config/config";
 import {Constants} from "~/utils/constants";
+import {DateStringToFormattedDateTime} from "~/utils/format-helper";
 
 const {user, getAccessToken, getProfile} = useAuth()
-const {fetchCurrencies, fetchCategories, fetchFiatRates, fiatRates} = useGlobalData()
+const {fetchCurrencies, fetchCategories, fetchFiatRates, fetchServerTime, serverDateTime} = useGlobalData()
 const route = useRoute()
 const toast = useToast()
 
@@ -38,6 +42,10 @@ onMounted(() => {
   }
 })
 
+const serverTimeFormatted = computed(() => {
+  return serverDateTime.value ? DateStringToFormattedDateTime(serverDateTime.value) : ''
+})
+
 // Initial check if user is authenticated or not
 await getProfile(true)
 
@@ -49,7 +57,7 @@ if (!user.value) {
   if (route.path.includes('/auth')) {
     await navigateTo('/', {replace: true})
   }
-  await Promise.all([fetchCurrencies(), fetchCategories(), fetchFiatRates()])
+  await Promise.all([fetchCurrencies(), fetchCategories(), fetchFiatRates(), fetchServerTime()])
 }
 
 useHead({

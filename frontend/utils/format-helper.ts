@@ -5,6 +5,15 @@ export const DateStringToFormattedDate = (date: string|Date) => {
     return fmt.format(date instanceof Date ? date : new Date(date))
 }
 
+export const DateStringToFormattedDateTime = (date: string|Date) => {
+    const fmt = Intl.DateTimeFormat(Constants.BASE_LOCALE_CODE, {
+        day: '2-digit', month: '2-digit', year: 'numeric',
+        hour: '2-digit', minute: '2-digit', second: '2-digit',
+        timeZone: 'UTC'
+    })
+    return fmt.format(date instanceof Date ? date : new Date(date))
+}
+
 export const DateToUTCDate = (date: string|Date) => {
     let dateToFormat = date instanceof Date ? date : new Date(date);
     return new Date(dateToFormat.toLocaleDateString('en-US', {timeZone: 'UTC'}))

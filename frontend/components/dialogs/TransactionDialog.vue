@@ -93,7 +93,7 @@
         <label class="text-sm font-bold" for="vacation-days-per-year">Bis</label>
         <i class="pi pi-info-circle" v-tooltip="'(Optional) Bis wann geht diese Transaktion?'"></i>
       </div>
-      <Calendar v-model="endDate" v-bind="endDateProps" date-format="dd.mm.yy" showIcon showButtonBar
+      <Calendar v-model="endDate" :min-date="startDate" v-bind="endDateProps" date-format="dd.mm.yy" showIcon showButtonBar
                 :class="{'p-invalid': errors['endDate']?.length}"/>
       <small class="text-red-400">{{errors["endDate"] || '&nbsp;'}}</small>
     </div>
