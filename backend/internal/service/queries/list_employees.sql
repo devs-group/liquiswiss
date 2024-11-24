@@ -32,4 +32,8 @@ FROM go_employees e
 LEFT JOIN ranked_history h ON e.id = h.employee_id AND h.rn = 1
 LEFT JOIN go_currencies c ON h.salary_currency = c.id
 WHERE e.owner = ? -- Filter by the owner
+ORDER BY
+    %s IS NULL,
+    %s %s,
+    e.name ASC
 LIMIT ? OFFSET ?;

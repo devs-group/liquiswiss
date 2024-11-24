@@ -1,25 +1,31 @@
 import {CreateSettingsCookie} from "~/utils/cookie-helper";
 import type {SortOrderType, TransactionSortByType} from "~/utils/types";
 import {SortOrderOptions, TransactionSortByOptions} from "~/utils/types";
-import {SymbolKind} from "vscode-languageserver-types";
 
 export default function useSettings() {
     const forecastShowRevenueDetails = useState('forecastShowRevenueDetails', () => false)
     const forecastShowExpenseDetails = useState('forecastShowExpenseDetails', () => false)
-    const transactionDisplay = useState<'grid'|'list'>('transactionDisplay', () => 'grid')
-    const transactionSortBy = useState<TransactionSortByType>('transactionSortBy', () => 'name')
-    const transactionSortOrder = useState<SortOrderType>('transactionSortOrder', () => 'ASC')
     const forecastPerformance = useState('forecastPerformance', () => 100)
     // 13 to include from current to the same month
     const forecastMonths = useState('forecastMonths', () => 13)
-
     const forecastShowRevenueDetailsCookie = CreateSettingsCookie('forecast-revenue-details')
     const forecastShowExpenseDetailsCookie = CreateSettingsCookie('forecast-expense-details')
+    const forecastPerformanceCookie = CreateSettingsCookie('forecast-performance')
+    const forecastMonthsCookie = CreateSettingsCookie('forecast-months')
+
+    const employeeDisplay = useState<'grid'|'list'>('employeeDisplay', () => 'grid')
+    const employeeSortBy = useState<EmployeeSortByType>('employeeSortBy', () => 'name')
+    const employeeSortOrder = useState<SortOrderType>('employeeSortOrder', () => 'ASC')
+    const employeeDisplayCookie = CreateSettingsCookie('employee-display')
+    const employeeSortByCookie = CreateSettingsCookie('employee-sort-by')
+    const employeeSortOrderCookie = CreateSettingsCookie('employee-sort-order')
+
+    const transactionDisplay = useState<'grid'|'list'>('transactionDisplay', () => 'grid')
+    const transactionSortBy = useState<TransactionSortByType>('transactionSortBy', () => 'name')
+    const transactionSortOrder = useState<SortOrderType>('transactionSortOrder', () => 'ASC')
     const transactionDisplayCookie = CreateSettingsCookie('transaction-display')
     const transactionSortByCookie = CreateSettingsCookie('transaction-sort-by')
     const transactionSortOrderCookie = CreateSettingsCookie('transaction-sort-order')
-    const forecastPerformanceCookie = CreateSettingsCookie('forecast-performance')
-    const forecastMonthsCookie = CreateSettingsCookie('forecast-months')
 
     if (forecastShowRevenueDetailsCookie.value !== undefined) {
         const val = forecastShowRevenueDetailsCookie.value
@@ -49,6 +55,33 @@ export default function useSettings() {
         }
     } else {
         forecastShowExpenseDetails.value = false
+    }
+
+    if (employeeDisplayCookie.value !== undefined) {
+        const val = employeeDisplayCookie.value
+        if (val == 'list' || val == 'grid') {
+            employeeDisplay.value = val
+        }
+    } else {
+        employeeDisplay.value = 'grid'
+    }
+
+    if (employeeSortByCookie.value !== undefined) {
+        const val = employeeSortByCookie.value as typeof employeeSortBy.value
+        if (EmployeeSortByOptions.includes(val)) {
+            employeeSortBy.value = val
+        }
+    } else {
+        employeeSortBy.value = 'name'
+    }
+
+    if (employeeSortOrderCookie.value !== undefined) {
+        const val = employeeSortOrderCookie.value as typeof employeeSortOrder.value
+        if (SortOrderOptions.includes(val)) {
+            employeeSortOrder.value = val
+        }
+    } else {
+        employeeSortOrder.value = 'ASC'
     }
 
     if (transactionDisplayCookie.value !== undefined) {
@@ -97,7 +130,7 @@ export default function useSettings() {
         forecastMonths.value = 13
     }
 
-    const toggleDisplayType = () => {
+    const toggleTransactionDisplayType = () => {
         switch (transactionDisplay.value) {
             case 'grid':
                 transactionDisplay.value = 'list'
@@ -106,6 +139,17 @@ export default function useSettings() {
                 transactionDisplay.value = 'grid'
         }
         transactionDisplayCookie.value = transactionDisplay.value
+    };
+
+    const toggleEmployeeDisplayType = () => {
+        switch (employeeDisplay.value) {
+            case 'grid':
+                employeeDisplay.value = 'list'
+                break
+            case 'list':
+                employeeDisplay.value = 'grid'
+        }
+        employeeDisplayCookie.value = employeeDisplay.value
     };
 
     // Watchers
@@ -121,6 +165,14 @@ export default function useSettings() {
         forecastPerformanceCookie.value = value.toString()
     })
 
+    watch(employeeSortBy, (value) => {
+        employeeSortByCookie.value = value.toString()
+    })
+
+    watch(employeeSortOrder, (value) => {
+        employeeSortOrderCookie.value = value.toString()
+    })
+
     watch(transactionSortBy, (value) => {
         transactionSortByCookie.value = value.toString()
     })
@@ -134,13 +186,17 @@ export default function useSettings() {
     })
 
     return {
-        toggleDisplayType,
         forecastShowRevenueDetails,
         forecastShowExpenseDetails,
+        forecastPerformance,
+        forecastMonths,
+        toggleEmployeeDisplayType,
+        employeeDisplay,
+        employeeSortBy,
+        employeeSortOrder,
+        toggleTransactionDisplayType,
         transactionDisplay,
         transactionSortBy,
         transactionSortOrder,
-        forecastPerformance,
-        forecastMonths,
     };
 }

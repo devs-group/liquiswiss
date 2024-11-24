@@ -17,12 +17,16 @@ export default function useEmployees() {
     const employees = useState<ListEmployeeResponse>('employees', () => DefaultListResponse());
     const employeeHistories = useState<ListEmployeeHistoryResponse>('employeeHistories', () => DefaultListResponse())
 
+    const {employeeSortBy, employeeSortOrder} = useSettings()
+
     const useFetchListEmployees = async () => {
         const {data, error} = await useFetch<ListEmployeeResponse>('/api/employees', {
             method: 'GET',
             query: {
                 page: pageEmployees.value,
                 limit: limitEmployees.value,
+                sortBy: employeeSortBy.value,
+                sortOrder: employeeSortOrder.value,
             }
         });
         if (error.value) {
@@ -38,6 +42,8 @@ export default function useEmployees() {
                 query: {
                     page: pageEmployees.value,
                     limit: limitEmployees.value,
+                    sortBy: employeeSortBy.value,
+                    sortOrder: employeeSortOrder.value,
                 }
             });
             setEmployees(data, append)

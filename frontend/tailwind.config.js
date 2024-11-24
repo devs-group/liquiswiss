@@ -9,9 +9,9 @@ export default {
       },
       gridTemplateColumns: {
         'transactions': 'minmax(16rem, 1fr), 8rem, 8rem, 12rem, minmax(12rem, 1fr), 12rem, 12rem, 16rem',
+        'employees': 'minmax(16rem, 1fr), minmax(12rem, 1fr), minmax(12rem, 1fr), minmax(12rem, 1fr), 12rem, 12rem',
       }
     },
   },
   plugins: [],
 }
-

@@ -24,6 +24,10 @@ var sqlQueries embed.FS
 //go:embed mocks/*.sql
 var sqlMocks embed.FS
 
+var allowedSortOrders = map[string]bool{
+	"ASC": true, "DESC": true,
+}
+
 type IDatabaseService interface {
 	ApplyMocks() error
 
@@ -46,7 +50,7 @@ type IDatabaseService interface {
 	UpdateOrganisation(payload models.UpdateOrganisation, userID int64, organisationID string) error
 	AssignUserToOrganisation(userID int64, organisationID int64, role string) error
 
-	ListEmployees(userID int64, page int64, limit int64) ([]models.Employee, int64, error)
+	ListEmployees(userID int64, page int64, limit int64, sortBy string, sortOrder string) ([]models.Employee, int64, error)
 	ListEmployeeHistory(userID int64, employeeID string, page int64, limit int64) ([]models.EmployeeHistory, int64, error)
 	CountEmployees(userID int64, page int64, limit int64) (int64, error)
 	GetEmployee(userID int64, id string) (*models.Employee, error)
@@ -401,9 +405,6 @@ func (s *DatabaseService) ListTransactions(userID int64, page int64, limit int64
 		"name": "r.name", "startDate": "r.start_date", "endDate": "r.end_date", "amount": "r.amount",
 		"cycle": "r.cycle", "category": "c.name", "employee": "emp.name",
 	}
-	allowedSortOrders := map[string]bool{
-		"ASC": true, "DESC": true,
-	}
 
 	// Validate inputs
 	sortBy = sortByMap[sortBy]
@@ -638,16 +639,28 @@ func (s *DatabaseService) AssignUserToOrganisation(userID int64, organisationID 
 }
 
 // ListEmployees implements employee listing with pagination
-func (s *DatabaseService) ListEmployees(userID int64, page int64, limit int64) ([]models.Employee, int64, error) {
+func (s *DatabaseService) ListEmployees(userID int64, page int64, limit int64, sortBy string, sortOrder string) ([]models.Employee, int64, error) {
 	employees := make([]models.Employee, 0)
 	var totalCount int64
+	sortByMap := map[string]string{
+		"name": "e.name", "hoursPerMonth": "h.hours_per_month", "salaryPerMonth": "h.salary_per_month", "vacationDaysPerYear": "h.vacation_days_per_year",
+		"fromDate": "h.from_date", "toDate": "h.to_date",
+	}
+
+	// Validate inputs
+	sortBy = sortByMap[sortBy]
+	if sortBy == "" || !allowedSortOrders[sortOrder] {
+		return nil, 0, fmt.Errorf("invalid sort by or sort order")
+	}
 
 	query, err := sqlQueries.ReadFile("queries/list_employees.sql")
 	if err != nil {
 		return nil, 0, err
 	}
 
-	rows, err := s.db.Query(string(query), userID, (page)*limit, 0)
+	queryString := fmt.Sprintf(string(query), sortBy, sortBy, sortOrder)
+
+	rows, err := s.db.Query(queryString, userID, (page)*limit, 0)
 	if err != nil {
 		return nil, 0, err
 	}

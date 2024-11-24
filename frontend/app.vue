@@ -23,6 +23,7 @@ import {DateStringToFormattedDate} from "~/utils/format-helper";
 const {isAuthenticated, getAccessToken} = useAuth()
 const {useFetchListCurrencies, useFetchListCategories, useFetchListFiatRates, useFetchGetServerTime, serverDate} = useGlobalData()
 const toast = useToast()
+const hasInitialLoadError = ref(false)
 
 useHead({
   title: 'LiquiSwiss'
@@ -35,7 +36,7 @@ const serverDateFormatted = computed(() => {
 if (isAuthenticated.value) {
   await Promise.all([useFetchListCurrencies(), useFetchListCategories(), useFetchListFiatRates(), useFetchGetServerTime()])
       .catch(reason => {
-        console.log(reason)
+        hasInitialLoadError.value = true
       })
 }
 
@@ -43,6 +44,14 @@ if (isAuthenticated.value) {
 onMounted(() => {
   if (isAuthenticated.value) {
     getAccessToken()
+    if (hasInitialLoadError.value) {
+      toast.add({
+        summary: 'Fehler',
+        detail: `Es scheint aktuell technische Probleme zu geben.`,
+        severity: 'warn',
+        life: Config.TOAST_LIFE_TIME,
+      })
+    }
   } else {
     if (localStorage.getItem(Constants.SESSION_EXPIRED_NAME) === 'true') {
       localStorage.removeItem(Constants.SESSION_EXPIRED_NAME)

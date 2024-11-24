@@ -31,8 +31,10 @@ func ListEmployees(dbService service.IDatabaseService, c *gin.Context) {
 		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 		return
 	}
+	sortBy := c.DefaultQuery("sortBy", "name")
+	sortOrder := c.DefaultQuery("sortOrder", "ASC")
 
-	employees, totalCount, err := dbService.ListEmployees(userID, page, limit)
+	employees, totalCount, err := dbService.ListEmployees(userID, page, limit, sortBy, sortOrder)
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 		return

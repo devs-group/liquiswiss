@@ -20,7 +20,6 @@ export default function useGlobalData() {
         if (error.value) {
             return Promise.reject('Kategorien konnten nicht geladen werden')
         }
-        return Promise.reject('Kategorien konnten nicht geladen werden')
         categories.value = data.value?.data ?? [];
     }
 
@@ -35,7 +34,6 @@ export default function useGlobalData() {
         if (error.value) {
             return Promise.reject('Währungen konnten nicht geladen werden')
         }
-        return Promise.reject('Währungen konnten nicht geladen werden')
         currencies.value = data.value?.data ?? [];
     }
 
@@ -46,7 +44,6 @@ export default function useGlobalData() {
         if (error.value) {
             return Promise.reject('Wechselkurse konnten nicht geladen werden')
         }
-        return Promise.reject('Wechselkurse konnten nicht geladen werden')
         fiatRates.value = data.value ?? [];
     }
 
@@ -57,7 +54,6 @@ export default function useGlobalData() {
         if (error.value) {
             return Promise.reject('Serverzeit konnte nicht geladen werden')
         }
-        return Promise.reject('Serverzeit konnte nicht geladen werden')
         serverDate.value = data.value?.date ? new Date(data.value!.date) : null
     }
 

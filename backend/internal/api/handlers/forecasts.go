@@ -234,7 +234,7 @@ func CalculateForecasts(dbService service.IDatabaseService, c *gin.Context) {
 	}
 
 	// Collect the employee expenses now
-	employees, _, err := dbService.ListEmployees(userID, page, limit)
+	employees, _, err := dbService.ListEmployees(userID, page, limit, sortBy, sortOrder)
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 		return
