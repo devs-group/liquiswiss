@@ -3,7 +3,7 @@
     <p>LIQUI<span class="text-red-400">SWISS</span></p>
     <Button @click="toggleDrawer" icon="pi pi-bars" severity="secondary"/>
   </div>
-  <Drawer v-model:visible="showDrawer" :show-close-icon="false">
+  <Drawer v-model:visible="showDrawer" :show-close-icon="true" header="Menü" position="right">
     <Navigation @click="showDrawer = false"/>
   </Drawer>
 </template>
