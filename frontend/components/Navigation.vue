@@ -1,35 +1,40 @@
 <template>
-  <Menubar :model="items" breakpoint="768px">
-    <template #item="{ item, props, hasSubmenu }">
-      <RouterLink v-if="item.name" v-slot="{ href, navigate, isActive }" :to="{name: item.name}" custom>
+  <Menu class="sm:!rounded-none sm:!border-t-0 sm:!border-b-0" :model="items">
+    <template #start>
+      <div :to="{name: RouteNames.HOME}" class="hidden sm:block text-xl text-center w-full font-semibold cursor-default p-4">
+        <p>LIQUI<span class="text-red-400">SWISS</span></p>
+      </div>
+    </template>
+
+    <template #item="{ item, props }">
+      <router-link v-if="item.routeName" v-slot="{ href, navigate, isActive }" :to="{name: item.routeName}" custom>
         <a v-ripple :href="href" v-bind="props.action" @click="navigate" :class="{'!text-green-600': isActive}">
           <span :class="item.icon" />
           <span class="ml-2">{{ item.label }}</span>
         </a>
-      </RouterLink>
+      </router-link>
       <a v-else v-ripple :href="item.url" :target="item.target" v-bind="props.action">
         <span :class="item.icon" />
         <span class="ml-2">{{ item.label }}</span>
-        <span v-if="hasSubmenu" class="pi pi-fw pi-angle-down ml-2" />
       </a>
     </template>
-  </Menubar>
+  </Menu>
 </template>
 
 <script setup lang="ts">
 import {RouteNames} from "~/config/routes";
 import useAuth from "~/composables/useAuth";
-import type {MenuItemCommandEvent} from "primevue/menuitem";
+import type {MenuItem, MenuItemCommandEvent} from "primevue/menuitem";
 
 const {logout} = useAuth()
 const confirm = useConfirm()
 
-const items = ref([
-  { label: 'Prognose', icon: 'pi pi-chart-line', name: RouteNames.HOME },
-  { label: 'Mitarbeitende', icon: 'pi pi-users', name: RouteNames.EMPLOYEES },
-  { label: 'Transaktionen', icon: 'pi pi-money-bill', name: RouteNames.TRANSACTIONS },
-  { label: 'Bankkonten', icon: 'pi pi-building', name: RouteNames.BANK_ACCOUNTS },
-  { label: 'Konto', icon: 'pi pi-user', name: RouteNames.ACCOUNT },
+const items = ref<MenuItem[]>([
+  { label: 'Prognose', icon: 'pi pi-chart-line', routeName: RouteNames.HOME },
+  { label: 'Mitarbeitende', icon: 'pi pi-users', routeName: RouteNames.EMPLOYEES },
+  { label: 'Transaktionen', icon: 'pi pi-money-bill', routeName: RouteNames.TRANSACTIONS },
+  { label: 'Bankkonten', icon: 'pi pi-building', routeName: RouteNames.BANK_ACCOUNTS },
+  { label: 'Konto', icon: 'pi pi-user', routeName: RouteNames.ACCOUNT },
   { label: 'Abmelden', icon: 'pi pi-sign-out', command: async (event: MenuItemCommandEvent) => {
       confirm.require({
         header: 'Abmelden',

@@ -1,11 +1,14 @@
 <template>
-  <div class="flex flex-col gap-4 p-4">
-    <MainMenu v-if="isAuthenticated"/>
-    <div class="w-full h-full">
-      <NuxtPage/>
-    </div>
-    <div v-if="serverDateFormatted" class="p-2 bg-gray-100 self-end">
-      <p class="text-xs text-right">Serverzeit: {{ serverDateFormatted }}</p>
+  <div class="flex min-h-screen">
+    <DesktopMenu v-if="isAuthenticated"/>
+    <div class="flex flex-col gap-4 p-4 flex-1 overflow-hidden">
+      <MobileMenu v-if="isAuthenticated"/>
+      <div class="w-full h-full">
+        <NuxtPage/>
+      </div>
+      <div v-if="serverDateFormatted" class="p-2 bg-gray-100 self-end">
+        <p class="text-xs text-right">Serverzeit: {{ serverDateFormatted }}</p>
+      </div>
     </div>
   </div>
   <DynamicDialog/>
