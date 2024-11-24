@@ -1,25 +1,35 @@
 // https://nuxt.com/docs/api/configuration/nuxt-config
+
+import LiquiswissTheme from "./config/theme";
+
 export default defineNuxtConfig({
     devtools: {
         enabled: false,
+        telemetry: false,
     },
     runtimeConfig: {
         apiHost: '',
     },
     modules: [
-        'nuxt-primevue',
+        '@primevue/nuxt-module',
         '@nuxtjs/tailwindcss',
     ],
     primevue: {
         options: {
             ripple: true,
-            inputStyle: 'filled',
+            inputVariant: 'filled',
+            theme: {
+                preset: LiquiswissTheme,
+                options: {
+                    darkModeSelector: ".lq-dark",
+                },
+            },
         },
-        cssLayerOrder: 'tailwind-base, primevue, tailwind-utilities',
     },
-    css: [
-        'primevue/resources/themes/aura-light-green/theme.css',
-        'primeicons/primeicons.css',
-    ],
+    tailwindcss: {
+        viewer: false,
+    },
+    css: ["@/assets/css/tailwind.css", "primeicons/primeicons.css"],
+    watch: ["config/theme.ts"],
     compatibilityDate: '2024-07-16',
 })

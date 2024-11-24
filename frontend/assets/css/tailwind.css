@@ -1,4 +1,4 @@
-@layer tailwind-base, primevue, tailwind-utilities;
+@layer tailwind-base, primevue, liquiswiss, tailwind-utilities;
 
 @layer liquiswiss {
     @media (max-width: 767px) {

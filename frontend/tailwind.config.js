@@ -1,6 +1,7 @@
 /** @type {import('tailwindcss').Config} */
 export default {
   content: [],
+  darkMode: ["selector", ".lq-dark"],
   theme: {
     extend: {
       colors: {

@@ -2,7 +2,7 @@
   <Menubar :model="items" breakpoint="768px">
     <template #item="{ item, props, hasSubmenu }">
       <RouterLink v-if="item.name" v-slot="{ href, navigate, isActive }" :to="{name: item.name}" custom>
-        <a v-ripple :href="href" v-bind="props.action" @click="navigate" :class="{'text-green-600': isActive}">
+        <a v-ripple :href="href" v-bind="props.action" @click="navigate" :class="{'!text-green-600': isActive}">
           <span :class="item.icon" />
           <span class="ml-2">{{ item.label }}</span>
         </a>
@@ -14,7 +14,6 @@
       </a>
     </template>
   </Menubar>
-
 </template>
 
 <script setup lang="ts">

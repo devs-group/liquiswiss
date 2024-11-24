@@ -1,27 +1,27 @@
 <template>
   <div class="grid grid-cols-employees items-center *:bg-gray-100 *:border *:border-r-0 *:border-b-0 *:border-gray-600 *:p-1 *:text-sm *:font-bold">
     <div @click="onSort('name')" class="flex items-center gap-2 cursor-pointer hover:bg-gray-50 transition-colors duration-300">
-      <p>Name</p>
+      <p class="truncate">Name</p>
       <i :class="getSortIcon('name')"></i>
     </div>
     <div @click="onSort('hoursPerMonth')" class="flex items-center gap-2 cursor-pointer hover:bg-gray-50 transition-colors duration-300">
-      <p>Arbeitsstunden / Monat</p>
+      <p class="truncate">Arbeitsstunden / Monat</p>
       <i :class="getSortIcon('hoursPerMonth')"></i>
     </div>
     <div @click="onSort('salaryPerMonth')" class="flex items-center gap-2 cursor-pointer hover:bg-gray-50 transition-colors duration-300">
-      <p>Lohn / Monat</p>
+      <p class="truncate">Lohn / Monat</p>
       <i :class="getSortIcon('salaryPerMonth')"></i>
     </div>
     <div @click="onSort('vacationDaysPerYear')" class="flex items-center gap-2 cursor-pointer hover:bg-gray-50 transition-colors duration-300">
-      <p>Urlaubstage / Jahr</p>
+      <p class="truncate">Urlaubstage / Jahr</p>
       <i :class="getSortIcon('vacationDaysPerYear')"></i>
     </div>
     <div @click="onSort('fromDate')" class="flex items-center gap-2 cursor-pointer hover:bg-gray-50 transition-colors duration-300">
-      <p>Gültig ab/seit</p>
+      <p class="truncate">Gültig ab/seit</p>
       <i :class="getSortIcon('fromDate')"></i>
     </div>
     <div @click="onSort('toDate')" class="flex items-center gap-2 !border-r cursor-pointer hover:bg-gray-50 transition-colors duration-300">
-      <p>Gültig bis</p>
+      <p class="truncate">Gültig bis</p>
       <i :class="getSortIcon('toDate')"></i>
     </div>
   </div>

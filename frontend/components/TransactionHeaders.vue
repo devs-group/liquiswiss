@@ -1,34 +1,34 @@
 <template>
   <div class="grid grid-cols-transactions items-center *:bg-gray-100 *:border *:border-r-0 *:border-b-0 *:border-gray-600 *:p-1 *:text-sm *:font-bold">
     <div @click="onSort('name')" class="flex items-center gap-2 cursor-pointer hover:bg-gray-50 transition-colors duration-300">
-      <p>Name</p>
+      <p class="truncate">Name</p>
       <i :class="getSortIcon('name')"></i>
     </div>
     <div @click="onSort('startDate')" class="flex items-center gap-2 cursor-pointer hover:bg-gray-50 transition-colors duration-300">
-      <p>Start</p>
+      <p class="truncate">Start</p>
       <i :class="getSortIcon('startDate')"></i>
     </div>
     <div @click="onSort('endDate')" class="flex items-center gap-2 cursor-pointer hover:bg-gray-50 transition-colors duration-300">
-      <p>Ende</p>
+      <p class="truncate">Ende</p>
       <i :class="getSortIcon('endDate')"></i>
     </div>
     <div class="flex items-center gap-2 cursor-default hover:bg-gray-50 transition-colors duration-300">
-      <p>Nächste Ausführung</p>
+      <p class="truncate">Nächste Ausführung</p>
     </div>
     <div @click="onSort('amount')" class="flex items-center gap-2 cursor-pointer hover:bg-gray-50 transition-colors duration-300">
-      <p>Betrag</p>
+      <p class="truncate">Betrag</p>
       <i :class="getSortIcon('amount')"></i>
     </div>
     <div @click="onSort('cycle')" class="flex items-center gap-2 cursor-pointer hover:bg-gray-50 transition-colors duration-300">
-      <p>Häufigkeit</p>
+      <p class="truncate">Häufigkeit</p>
       <i :class="getSortIcon('cycle')"></i>
     </div>
     <div @click="onSort('category')" class="flex items-center gap-2 cursor-pointer hover:bg-gray-50 transition-colors duration-300">
-      <p>Kategorie</p>
+      <p class="truncate">Kategorie</p>
       <i :class="getSortIcon('category')"></i>
     </div>
     <div @click="onSort('employee')" class="flex items-center gap-2 !border-r cursor-pointer hover:bg-gray-50 transition-colors duration-300">
-      <p>Mitarbeiter</p>
+      <p class="truncate">Mitarbeiter</p>
       <i :class="getSortIcon('employee')"></i>
     </div>
   </div>

@@ -12,16 +12,17 @@
   },
   "devDependencies": {
     "@nuxtjs/tailwindcss": "^6.12.2",
+    "@primevue/nuxt-module": "^4.2.3",
     "nuxt": "^3.14.1592",
-    "nuxt-primevue": "^0.2.2",
     "vue": "^3.4.14",
     "vue-router": "^4.4.5"
   },
   "dependencies": {
+    "@primevue/themes": "^4.2.3",
     "@vee-validate/nuxt": "^4.14.7",
     "chart.js": "^3.9.1",
     "primeicons": "^6.0.1",
-    "primevue": "^3.53.0",
+    "primevue": "^4.2.3",
     "vee-validate": "^4.12.4",
     "yup": "^1.4.0"
   }
