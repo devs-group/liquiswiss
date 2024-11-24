@@ -532,9 +532,9 @@ func (mr *MockIDatabaseServiceMockRecorder) ListEmployeeHistory(arg0, arg1, arg2
 }
 
 // ListEmployees mocks base method.
-func (m *MockIDatabaseService) ListEmployees(arg0, arg1, arg2 int64) ([]models.Employee, int64, error) {
+func (m *MockIDatabaseService) ListEmployees(arg0, arg1, arg2 int64, arg3, arg4 string) ([]models.Employee, int64, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "ListEmployees", arg0, arg1, arg2)
+	ret := m.ctrl.Call(m, "ListEmployees", arg0, arg1, arg2, arg3, arg4)
 	ret0, _ := ret[0].([]models.Employee)
 	ret1, _ := ret[1].(int64)
 	ret2, _ := ret[2].(error)
@@ -542,9 +542,9 @@ func (m *MockIDatabaseService) ListEmployees(arg0, arg1, arg2 int64) ([]models.E
 }
 
 // ListEmployees indicates an expected call of ListEmployees.
-func (mr *MockIDatabaseServiceMockRecorder) ListEmployees(arg0, arg1, arg2 any) *gomock.Call {
+func (mr *MockIDatabaseServiceMockRecorder) ListEmployees(arg0, arg1, arg2, arg3, arg4 any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ListEmployees", reflect.TypeOf((*MockIDatabaseService)(nil).ListEmployees), arg0, arg1, arg2)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ListEmployees", reflect.TypeOf((*MockIDatabaseService)(nil).ListEmployees), arg0, arg1, arg2, arg3, arg4)
 }
 
 // ListFiatRates mocks base method.
@@ -735,6 +735,34 @@ func (m *MockIDatabaseService) UpdateOrganisation(arg0 models.UpdateOrganisation
 func (mr *MockIDatabaseServiceMockRecorder) UpdateOrganisation(arg0, arg1, arg2 any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "UpdateOrganisation", reflect.TypeOf((*MockIDatabaseService)(nil).UpdateOrganisation), arg0, arg1, arg2)
+}
+
+// UpdatePassword mocks base method.
+func (m *MockIDatabaseService) UpdatePassword(arg0, arg1 string) error {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "UpdatePassword", arg0, arg1)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// UpdatePassword indicates an expected call of UpdatePassword.
+func (mr *MockIDatabaseServiceMockRecorder) UpdatePassword(arg0, arg1 any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "UpdatePassword", reflect.TypeOf((*MockIDatabaseService)(nil).UpdatePassword), arg0, arg1)
+}
+
+// UpdateProfile mocks base method.
+func (m *MockIDatabaseService) UpdateProfile(arg0 models.UpdateUser, arg1 string) error {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "UpdateProfile", arg0, arg1)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// UpdateProfile indicates an expected call of UpdateProfile.
+func (mr *MockIDatabaseServiceMockRecorder) UpdateProfile(arg0, arg1 any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "UpdateProfile", reflect.TypeOf((*MockIDatabaseService)(nil).UpdateProfile), arg0, arg1)
 }
 
 // UpdateTransaction mocks base method.
