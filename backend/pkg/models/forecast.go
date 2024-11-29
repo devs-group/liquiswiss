@@ -23,7 +23,7 @@ type ForecastDatabaseDetails struct {
 	Month      string                         `db:"month" json:"month"`
 	Revenue    []ForecastDetailRevenueExpense `db:"revenue" json:"revenue"`
 	Expense    []ForecastDetailRevenueExpense `db:"expense" json:"expense"`
-	ForecastID int64                          `db:"forecast_id" json:"forecastID"`
+	ForecastID *int64                         `db:"forecast_id" json:"forecastID"`
 }
 
 type CreateForecast struct {
