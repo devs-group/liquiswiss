@@ -1,3 +1,7 @@
-node_modules
-.nuxt
-.strapi
+frontend/node_modules
+frontend/.nuxt
+frontend/.output
+backend/tmp
+backend/.vscode
+backend/Makefile
+backend/.env
