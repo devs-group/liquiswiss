@@ -10,6 +10,13 @@ export default defineNuxtConfig({
     runtimeConfig: {
         apiHost: '',
     },
+    routeRules: {
+        '/**': {
+            headers: {
+                'cache-control': 'no-cache',
+            }
+        }
+    },
     modules: [
         '@primevue/nuxt-module',
         '@nuxtjs/tailwindcss',
