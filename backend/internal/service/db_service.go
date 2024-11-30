@@ -1270,7 +1270,8 @@ func (s *DatabaseService) ListForecasts(userID int64, limit int64) ([]models.For
 		var forecast models.Forecast
 
 		err := rows.Scan(
-			&forecast.Month, &forecast.Revenue, &forecast.Expense, &forecast.Cashflow,
+			&forecast.Data.Month, &forecast.Data.Revenue, &forecast.Data.Expense, &forecast.Data.Cashflow,
+			&forecast.UpdatedAt,
 		)
 		if err != nil {
 			return nil, err

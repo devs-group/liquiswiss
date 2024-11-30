@@ -1,15 +1,15 @@
 import {Constants} from "~/utils/constants";
 
-export const DateStringToFormattedDate = (date: string|Date) => {
-    const fmt = Intl.DateTimeFormat(Constants.BASE_LOCALE_CODE, {day: '2-digit', month: '2-digit', year: 'numeric', timeZone: 'UTC'})
+export const DateStringToFormattedDate = (date: string|Date, asUtc: boolean = true) => {
+    const fmt = Intl.DateTimeFormat(Constants.BASE_LOCALE_CODE, {day: '2-digit', month: '2-digit', year: 'numeric', timeZone:  asUtc ? 'UTC' : undefined})
     return fmt.format(date instanceof Date ? date : new Date(date))
 }
 
-export const DateStringToFormattedDateTime = (date: string|Date) => {
+export const DateStringToFormattedDateTime = (date: string|Date, asUtc: boolean = true) => {
     const fmt = Intl.DateTimeFormat(Constants.BASE_LOCALE_CODE, {
         day: '2-digit', month: '2-digit', year: 'numeric',
         hour: '2-digit', minute: '2-digit', second: '2-digit',
-        timeZone: 'UTC'
+        timeZone: asUtc ? 'UTC' : undefined
     })
     return fmt.format(date instanceof Date ? date : new Date(date))
 }

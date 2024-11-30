@@ -58,6 +58,16 @@ export default function useForecasts() {
         }
     }
 
+    const calculateForecast = async ()  => {
+        try {
+            await $fetch<ForecastDetailResponse[]>('/api/forecasts/calculate', {
+                method: 'GET',
+            });
+        } catch (err) {
+            return Promise.reject('Fehler beim Berechnen der Prognose')
+        }
+    }
+
     const setForecasts = (data: ForecastResponse[]|null, append: boolean) => {
         if (data) {
             if (append) {
@@ -90,5 +100,6 @@ export default function useForecasts() {
         useFetchListForecastDetails,
         listForecastDetails,
         setForecasts,
+        calculateForecast,
     };
 }

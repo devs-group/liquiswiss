@@ -1,13 +1,14 @@
 <template>
   <Message v-if="bankAccountsErrorMessage.length" severity="error" :closable="false" class="col-span-full">{{bankAccountsErrorMessage}}</Message>
   <Message v-if="forecastDetailsErrorMessage.length" severity="error" :closable="false" class="col-span-full">{{forecastDetailsErrorMessage}}</Message>
+  <Message v-if="forecastCalculateErrorMessage.length" severity="error" :closable="false" class="col-span-full">{{forecastCalculateErrorMessage}}</Message>
   <Message v-if="forecastErrorMessage.length" severity="error" :closable="false" class="col-span-full">{{forecastErrorMessage}}</Message>
   <template v-else>
     <div class="flex flex-col gap-4">
       <div class="grid grid-cols-1 sm:grid-cols-3">
         <div class="flex items-center gap-2">
           <p class="text-sm">Zeitraum:</p>
-          <Dropdown v-model="forecastMonths"
+          <Select v-model="forecastMonths"
                     :options="monthChoices" option-label="label" option-value="value"
                     empty-message="Keine Auswahl gefunden"
           />
@@ -18,7 +19,20 @@
         </div>
       </div>
 
-      <div class="relative flex flex-col overflow-x-auto p-4">
+      <div class="flex flex-col items-end gap-1">
+        <Button @click="onCalculateForecast" :disabled="isLoading" label="Neu berechnen" size="small"/>
+        <p class="text-xs">
+          Zuletzt berechnet am
+          <span>
+            <ClientOnly>
+              {{latestUpdate}}
+              <template #fallback>...</template>
+            </ClientOnly>
+          </span>
+        </p>
+      </div>
+
+      <div class="relative flex flex-col overflow-x-auto pb-2">
         <div class="grid grid-cols-12 items-center">
           <div class="flex items-center col-span-full">
             <div class="border-t border-b border-l border-gray-600 bg-gray-300 p-2 min-w-28">
@@ -118,9 +132,9 @@
 import Chart from "primevue/chart";
 import useCharts from "~/composables/useCharts";
 import {Constants} from "~/utils/constants";
-import type {ForecastDetailResponse, ForecastResponse} from "~/models/forecast";
+import type {ForecastDetailResponse} from "~/models/forecast";
 import FullProgressSpinner from "~/components/FullProgressSpinner.vue";
-import type {BankAccountResponse} from "~/models/bank-account";
+import {DateStringToFormattedDateTime} from "~/utils/format-helper";
 
 const formatter = new Intl.DateTimeFormat(Constants.BASE_LOCALE_CODE, { month: 'long', year: '2-digit' })
 const monthChoices = [
@@ -142,7 +156,7 @@ const monthChoices = [
   }
 ]
 
-const {useFetchListForecast, listForecasts, useFetchListForecastDetails, listForecastDetails, forecasts, forecastDetails} = useForecasts()
+const {useFetchListForecast, listForecasts, useFetchListForecastDetails, listForecastDetails, forecasts, forecastDetails, calculateForecast} = useForecasts()
 const {useFetchListBankAccounts, totalBankSaldoInCHF} = useBankAccounts()
 const {forecastPerformance, forecastMonths, forecastShowRevenueDetails, forecastShowExpenseDetails} = useSettings()
 const {setChartData, setChartOptions} = useCharts()
@@ -150,6 +164,7 @@ const {setChartData, setChartOptions} = useCharts()
 const bankAccountsErrorMessage = ref('')
 const forecastErrorMessage = ref('')
 const forecastDetailsErrorMessage = ref('')
+const forecastCalculateErrorMessage = ref('')
 
 await useFetchListForecast(forecastMonths.value)
     .catch(reason => {
@@ -182,6 +197,38 @@ const months = computed(() => {
     return formatter.format(nextMonth)
   })
 })
+const latestUpdate = computed(() => {
+  const forecastWithUpdatedAt = forecasts.value.find(f => f.updatedAt != null)
+  if (forecastWithUpdatedAt) {
+    return DateStringToFormattedDateTime(forecastWithUpdatedAt.updatedAt, false)
+  }
+  return '-'
+})
+
+const onCalculateForecast = () => {
+  isLoading.value = true
+  calculateForecast()
+      .then(async () => {
+        await listForecasts(forecastMonths.value)
+            .then(async () => {
+              if (forecastShowRevenueDetails.value || forecastShowExpenseDetails.value) {
+                await listForecastDetails(forecastMonths.value)
+                    .catch(reason => {
+                      forecastDetailsErrorMessage.value = reason
+                    })
+                    .finally(() => isLoading.value = false)
+              }
+            })
+            .catch(reason => {
+              forecastErrorMessage.value = reason
+            })
+            .finally(() => isLoading.value = false)
+      })
+      .catch(reason => {
+        forecastCalculateErrorMessage.value = reason
+      })
+      .finally(() => isLoading.value = false)
+}
 
 const onToggleRevenueDetails = () => {
   forecastShowRevenueDetails.value = !forecastShowRevenueDetails.value
@@ -224,6 +271,9 @@ watch(forecastMonths, (value) => {
               .finally(() => isLoading.value = false)
         }
       })
+      .catch(reason => {
+        forecastErrorMessage.value = reason
+      })
       .finally(() => isLoading.value = false)
 })
 
@@ -242,15 +292,15 @@ const expenseCategories = computed(() => {
   )).sort((a, b) => a.localeCompare(b))
 })
 const revenues = computed(() => forecasts.value.map(f => {
-  const revenue = f.revenue * (forecastPerformance.value / 100)
+  const revenue = f.data.revenue * (forecastPerformance.value / 100)
   return {
     amount: revenue,
     formatted: NumberToFormattedCurrency(AmountToFloat(revenue), Constants.BASE_LOCALE_CODE),
   }
 }))
 const expenses = computed(() => forecasts.value.map(f => ({
-  amount: f.expense,
-  formatted: NumberToFormattedCurrency(AmountToFloat(f.expense), Constants.BASE_LOCALE_CODE),
+  amount: f.data.expense,
+  formatted: NumberToFormattedCurrency(AmountToFloat(f.data.expense), Constants.BASE_LOCALE_CODE),
 })))
 const cashflows = computed(() => {
   return revenues.value.map((r, index) => {

@@ -1,10 +1,17 @@
 package models
 
-type Forecast struct {
+import "time"
+
+type ForecastData struct {
 	Month    string `db:"month" json:"month"`
 	Revenue  int64  `db:"revenue" json:"revenue"`
 	Expense  int64  `db:"expense" json:"expense"`
 	Cashflow int64  `db:"cashflow" json:"cashflow"`
+}
+
+type Forecast struct {
+	UpdatedAt *time.Time   `json:"updatedAt"`
+	Data      ForecastData `json:"data"`
 }
 
 type ForecastDetailRevenueExpense struct {

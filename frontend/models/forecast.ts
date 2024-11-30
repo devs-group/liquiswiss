@@ -1,8 +1,11 @@
 export interface ForecastResponse {
-    month: string;
-    revenue: number;
-    expense: number;
-    cashflow: number;
+    data: {
+        month: string;
+        revenue: number;
+        expense: number;
+        cashflow: number;
+    }
+    updatedAt: string;
 }
 
 export interface ForecastDetailRevenueExpenseResponse {

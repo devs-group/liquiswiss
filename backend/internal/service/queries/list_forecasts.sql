@@ -12,7 +12,8 @@ SELECT
     DATE_FORMAT(ds.date, '%Y-%m') AS month,
     COALESCE(f.revenue, 0) AS revenue,
     COALESCE(f.expense, 0) AS expense,
-    COALESCE(f.cashflow, 0) AS cashflow
+    COALESCE(f.cashflow, 0) AS cashflow,
+    f.updated_at AS updated_at
 FROM date_series ds
 LEFT JOIN go_forecasts f ON DATE_FORMAT(ds.date, '%Y-%m') = f.month AND f.owner = ?
 ORDER BY ds.date
