@@ -1,5 +1,5 @@
 <template>
-  <Card>
+  <Card :class="{'!bg-green-50': isActive}">
     <template #title>
       <div class="flex items-center justify-between">
         <p class="truncate text-base">Von {{fromDateFormatted}}</p>
@@ -15,6 +15,7 @@
         <p>{{salaryFormatted}} {{employeeHistory.salaryCurrency.code}} pro Monat</p>
         <p>{{employeeHistory.vacationDaysPerYear}} Urlaubstage im Jahr</p>
         <p v-if="employeeHistory.toDate" class="text-orange-500">Bis {{toDateFormatted}}</p>
+        <p v-if="isActive" class="text-green-500">Aktive Historie</p>
       </div>
     </template>
   </Card>
@@ -26,6 +27,10 @@ import type {EmployeeHistoryResponse} from "~/models/employee";
 const props = defineProps({
   employeeHistory: {
     type: Object as PropType<EmployeeHistoryResponse>,
+    required: true,
+  },
+  isActive: {
+    type: Boolean,
     required: true,
   }
 })

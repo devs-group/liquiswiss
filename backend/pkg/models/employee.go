@@ -14,6 +14,7 @@ type Employee struct {
 	FromDate            *types.AsDate `db:"-" json:"fromDate"`
 	ToDate              *types.AsDate `db:"-" json:"toDate"`
 	IsInFuture          bool          `db:"-" json:"isInFuture"`
+	HistoryID           *int64        `db:"-" json:"historyID"`
 }
 
 type CreateEmployee struct {

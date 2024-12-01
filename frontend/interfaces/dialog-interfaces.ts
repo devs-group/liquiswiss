@@ -18,7 +18,7 @@ export interface IEmployeeFormDialog {
 export interface IHistoryFormDialog {
     close: () => {},
     value: {
-        close: () => any,
+        close: (data: boolean) => any,
         data: {
             isClone: boolean
             employeeID: number

@@ -782,6 +782,7 @@ func (s *DatabaseService) GetEmployee(userID int64, id string) (*models.Employee
 	var employee models.Employee
 	var fromDate sql.NullTime
 	var toDate sql.NullTime
+	var isInFuture sql.NullBool
 
 	employee.SalaryCurrency = &models.Currency{}
 
@@ -793,7 +794,7 @@ func (s *DatabaseService) GetEmployee(userID int64, id string) (*models.Employee
 	err = s.db.QueryRow(string(query), id, userID).Scan(
 		&employee.ID, &employee.Name, &employee.HoursPerMonth, &employee.SalaryPerMonth,
 		&employee.SalaryCurrency.ID, &employee.SalaryCurrency.LocaleCode, &employee.SalaryCurrency.Description,
-		&employee.SalaryCurrency.Code, &employee.VacationDaysPerYear, &fromDate, &toDate,
+		&employee.SalaryCurrency.Code, &employee.VacationDaysPerYear, &fromDate, &toDate, &isInFuture, &employee.HistoryID,
 	)
 	if err != nil {
 		return nil, err
@@ -806,6 +807,11 @@ func (s *DatabaseService) GetEmployee(userID int64, id string) (*models.Employee
 	if toDate.Valid {
 		convertedDate := types.AsDate(toDate.Time)
 		employee.ToDate = &convertedDate
+	}
+	if isInFuture.Valid {
+		employee.IsInFuture = isInFuture.Bool
+	} else {
+		employee.IsInFuture = false
 	}
 
 	return &employee, nil

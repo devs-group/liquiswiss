@@ -39,7 +39,7 @@
     <Message v-if="historyErrorMessage.length" severity="error" :closable="false" class="col-span-full">{{historyErrorMessage}}</Message>
 
     <div v-if="employeeHistories?.data.length" class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
-      <EmployeeHistoryCard @on-edit="onUpdateEmployeeHistory" @on-clone="onCloneEmployeeHistory" v-for="employeeHistory in employeeHistories.data" :employee-history="employeeHistory"/>
+      <EmployeeHistoryCard @on-edit="onUpdateEmployeeHistory" @on-clone="onCloneEmployeeHistory" v-for="employeeHistory in employeeHistories.data" :employee-history="employeeHistory" :is-active="employee?.historyID == employeeHistory.id"/>
     </div>
 
     <div v-if="employeeHistories?.data.length" class="self-center">
@@ -73,7 +73,7 @@ import * as yup from "yup";
 import EmployeeHistoryDialog from "~/components/dialogs/EmployeeHistoryDialog.vue";
 import EmployeeHistoryCard from "~/components/EmployeeHistoryCard.vue";
 
-const {employeeHistories, noMoreDataEmployeeHistories, pageEmployeeHistories, useFetchGetEmployee, updateEmployee, deleteEmployee, useFetchListEmployeeHistory, listEmployeeHistory, limitEmployeeHistories, setEmployeeHistories} = useEmployees()
+const {employeeHistories, noMoreDataEmployeeHistories, pageEmployeeHistories, useFetchGetEmployee, getEmployee, updateEmployee, deleteEmployee, useFetchListEmployeeHistory, listEmployeeHistory, limitEmployeeHistories, setEmployeeHistories} = useEmployees()
 const dialog = useDialog();
 const toast = useToast()
 const route = useRoute()
@@ -185,6 +185,7 @@ const onCreateEmployeeHistory = () => {
       header: 'Neue Historie anlegen',
       ...ModalConfig,
     },
+    onClose: onClosedHistoryDialog
   })
 }
 
@@ -198,6 +199,7 @@ const onUpdateEmployeeHistory = (employeeHistory: EmployeeHistoryResponse) => {
       header: 'Historie bearbeiten',
       ...ModalConfig,
     },
+    onClose: onClosedHistoryDialog
   })
 }
 
@@ -212,7 +214,21 @@ const onCloneEmployeeHistory = (employeeHistory: EmployeeHistoryResponse) => {
       header: 'Historie klonen',
       ...ModalConfig,
     },
+    onClose: onClosedHistoryDialog
   })
+}
+
+const onClosedHistoryDialog = (options: any) => {
+  if (options?.data === true) {
+    // Refetch employee to set proper active history
+    getEmployee(employeeID)
+        .then((value) => {
+          employee.value = value
+        })
+        .catch(reason => {
+          employeeLoadErrorMessage.value = reason
+        })
+  }
 }
 
 const onLoadMoreEmployeeHistory = async (event: MouseEvent) => {

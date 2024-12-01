@@ -89,7 +89,7 @@ import {parseNumberInput} from "~/utils/element-helper";
 
 const dialogRef = inject<IHistoryFormDialog>('dialogRef')!;
 
-const {employeeHistories, createEmployeeHistory, updateEmployeeHistory, deleteEmployeeHistory} = useEmployees()
+const {employeeHistories, getEmployee, createEmployeeHistory, updateEmployeeHistory, deleteEmployeeHistory} = useEmployees()
 const {currencies} = useGlobalData()
 const confirm = useConfirm()
 const toast = useToast()
@@ -159,7 +159,7 @@ const onSubmit = handleSubmit((values) => {
   if (isCreate) {
     createEmployeeHistory(employeeID, values)
         .then(() => {
-          dialogRef.value.close()
+          dialogRef.value.close(true)
           toast.add({
             summary: 'Erfolg',
             detail: `Historie wurde angelegt`,
@@ -179,7 +179,7 @@ const onSubmit = handleSubmit((values) => {
   } else {
     updateEmployeeHistory(employeeID, values)
         .then(() => {
-          dialogRef.value.close()
+          dialogRef.value.close(true)
           toast.add({
             summary: 'Erfolg',
             detail: `Historie wurde bearbeitet`,
@@ -217,7 +217,7 @@ const onDeleteEmployeeHistory = (event: MouseEvent) => {
                 severity: 'success',
                 life: Config.TOAST_LIFE_TIME,
               })
-              dialogRef.value.close()
+              dialogRef.value.close(true)
             })
             .catch(() => {
               errorMessage.value = `Historie konnte nicht gelöscht werden`

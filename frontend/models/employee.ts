@@ -16,6 +16,7 @@ export interface EmployeeResponse {
     fromDate?: string | null;
     toDate?: string | null;
     isInFuture: boolean;
+    historyID: number | null;
 }
 
 export interface ListEmployeeResponse {

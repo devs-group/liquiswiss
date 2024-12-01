@@ -8,9 +8,15 @@ WITH ranked_history AS (
         from_date,
         to_date,
         IF(from_date > CURDATE(), TRUE, FALSE) AS is_in_future,
-        ROW_NUMBER() OVER (PARTITION BY employee_id ORDER BY
-            IF(from_date <= CURDATE() AND (to_date IS NULL OR to_date >= CURDATE()), 1, 2),
-            from_date DESC
+        ROW_NUMBER() OVER (
+            PARTITION BY employee_id
+            ORDER BY
+                CASE
+                    WHEN from_date <= CURDATE() AND (to_date IS NULL OR to_date >= CURDATE()) THEN 1
+                    WHEN from_date > CURDATE() THEN 2 -- Next, prioritize future entries
+                    ELSE 3
+                    END,
+                from_date -- Sort ASC from_date for ties
         ) AS rn
     FROM go_employee_history
 )
