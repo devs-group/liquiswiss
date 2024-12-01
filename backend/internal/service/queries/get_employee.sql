@@ -20,6 +20,7 @@ WITH ranked_history AS (
                 from_date -- Sort ASC from_date for ties
         ) AS rn
     FROM go_employee_history
+    WHERE to_date IS NULL OR to_date >= CURDATE()
 )
 SELECT
     e.id,
