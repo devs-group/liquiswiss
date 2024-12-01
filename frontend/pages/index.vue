@@ -136,7 +136,7 @@ import type {ForecastDetailResponse} from "~/models/forecast";
 import FullProgressSpinner from "~/components/FullProgressSpinner.vue";
 import {DateStringToFormattedDateTime} from "~/utils/format-helper";
 
-const formatter = new Intl.DateTimeFormat(Constants.BASE_LOCALE_CODE, { month: 'long', year: '2-digit' })
+const utcFormatter = new Intl.DateTimeFormat(Constants.BASE_LOCALE_CODE, { month: 'long', year: '2-digit', timeZone: 'UTC' });
 const monthChoices = [
   {
     label: '6 Monate',
@@ -192,10 +192,7 @@ const chartOptions = setChartOptions()
 
 const now = new Date()
 const months = computed(() => {
-  return Array.from({length: forecastMonths.value}, (_, i) => {
-    const nextMonth = new Date(now.getFullYear(), now.getMonth() + i)
-    return formatter.format(nextMonth)
-  })
+  return forecasts.value.map(f => utcFormatter.format(Date.parse(f.data.month)))
 })
 const latestUpdate = computed(() => {
   const forecastWithUpdatedAt = forecasts.value.find(f => f.updatedAt != null)
