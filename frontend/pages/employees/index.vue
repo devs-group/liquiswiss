@@ -13,7 +13,7 @@
       <div v-if="employeeDisplay == 'grid'" class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
         <EmployeeCard @on-edit="onEditEmployee" v-for="employee in filterEmployees" :employee="employee"/>
       </div>
-      <div v-else class="flex flex-col overflow-x-auto">
+      <div v-else class="flex flex-col overflow-x-auto pb-2">
         <EmployeeHeaders @on-sort="onSort"/>
         <EmployeeRow @on-edit="onEditEmployee" v-for="employee in filterEmployees" :employee="employee"/>
       </div>

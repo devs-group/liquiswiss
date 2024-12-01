@@ -13,7 +13,7 @@
       <div v-if="transactionDisplay == 'grid'" class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
         <TransactionCard @on-edit="onEditTransaction" @on-clone="onCloneTransaction" v-for="transaction in filterTransactions" :transaction="transaction"/>
       </div>
-      <div v-else class="flex flex-col overflow-x-auto">
+      <div v-else class="flex flex-col overflow-x-auto pb-2">
         <TransactionHeaders @on-sort="onSort"/>
         <TransactionRow @on-edit="onEditTransaction" @on-clone="onCloneTransaction" v-for="transaction in filterTransactions" :transaction="transaction"/>
       </div>
