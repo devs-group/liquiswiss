@@ -32,6 +32,12 @@
         </p>
       </div>
 
+      <ClientOnly>
+        <div v-if="hasNoDataInCurrentMonth">
+          <Message size="small">Hinweis: In deiner Zeitzone ist es noch {{localMonth}}, für diesen Monat gibt es keine Prognosedaten mehr</Message>
+        </div>
+      </ClientOnly>
+
       <div class="relative flex flex-col overflow-x-auto pb-2">
         <div class="grid grid-cols-12 items-center">
           <div class="flex items-center col-span-full">
@@ -137,6 +143,7 @@ import FullProgressSpinner from "~/components/FullProgressSpinner.vue";
 import {DateStringToFormattedDateTime} from "~/utils/format-helper";
 
 const utcFormatter = new Intl.DateTimeFormat(Constants.BASE_LOCALE_CODE, { month: 'long', year: '2-digit', timeZone: 'UTC' });
+const localFormatter = new Intl.DateTimeFormat(Constants.BASE_LOCALE_CODE, { month: 'long', year: '2-digit' });
 const monthChoices = [
   {
     label: '6 Monate',
@@ -190,7 +197,7 @@ const chartData = computed(() => setChartData(
 ))
 const chartOptions = setChartOptions()
 
-const now = new Date()
+const localMonth = computed(() => localFormatter.format(new Date()))
 const months = computed(() => {
   return forecasts.value.map(f => utcFormatter.format(Date.parse(f.data.month)))
 })
@@ -200,6 +207,9 @@ const latestUpdate = computed(() => {
     return DateStringToFormattedDateTime(forecastWithUpdatedAt.updatedAt, false)
   }
   return '-'
+})
+const hasNoDataInCurrentMonth = computed(() => {
+  return !months.value.includes(localMonth.value)
 })
 
 const onCalculateForecast = () => {
