@@ -14,13 +14,15 @@ export const parseNumberInput = (event: InputEvent, amount: Ref<number>) => {
     const lengthBefore = element.value.length;
 
     const parsedAmount = parseCurrency(amount.value)
-    if (!parsedAmount.endsWith('.')) {
-        amount.value = parseFloat(parsedAmount)
+    if (parsedAmount.length > 0 && !parsedAmount.endsWith('.')) {
+        nextTick(() => {
+            amount.value = parseFloat(parsedAmount)
+        }).then(() => {
+            const lengthAfter = amount.value.toString().length;
+            const offset = lengthAfter - lengthBefore;
+            const newCursorPosition = cursorPosition + offset;
 
-        const lengthAfter = amount.value.toString().length;
-        const offset = lengthAfter - lengthBefore;
-        const newCursorPosition = cursorPosition + offset;
-
-        nextTick(() => element.setSelectionRange(newCursorPosition, newCursorPosition))
+            element.setSelectionRange(newCursorPosition, newCursorPosition)
+        })
     }
 }

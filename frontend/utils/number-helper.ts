@@ -14,6 +14,8 @@ export const parseCurrency = (input: string|number) => {
     // Replace all commas with dots (unifying decimal separator)
     let unifiedInput = input.replace(/,/g, '.');
 
+    let isNegative = unifiedInput.startsWith('-');
+
     // Remove all invalid characters except numbers and dots
     unifiedInput = unifiedInput.replace(/[^0-9.]/g, '');
 
@@ -24,6 +26,10 @@ export const parseCurrency = (input: string|number) => {
         const decimals = parts.pop();
         // Reassemble with a single dot
         unifiedInput = parts.join('') + '.' + decimals;
+    }
+
+    if (isNegative) {
+        unifiedInput = '-' + unifiedInput;
     }
 
     return unifiedInput;
