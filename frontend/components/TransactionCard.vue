@@ -15,7 +15,7 @@
         <p>Nächste {{getNextLabel}}: {{ nextExecutionDate }}</p>
         <p v-if="isRepeating && endDate">Ende: {{ endDate }}</p>
         <p class="flex flex-wrap gap-1">
-          Betrag: <span class="font-bold" :class="{'text-red-500': !isRevenue, 'text-green-500': isRevenue}">{{amountFormatted}} {{transaction.currency.code}}</span>
+          Betrag: <span class="font-bold" :class="{'text-liqui-red': !isRevenue, 'text-liqui-green': isRevenue}">{{amountFormatted}} {{transaction.currency.code}}</span>
         </p>
         <p v-if="isRepeating">Wiederkehrend: {{cycle}}</p>
         <p v-else>Einmalig</p>

@@ -5,25 +5,25 @@
       <InputText v-model="name" v-bind="nameProps"
                  :class="{'p-invalid': errors['name']?.length}"
                  id="name" type="text"/>
-      <small class="text-red-400">{{errors["name"] || '&nbsp;'}}</small>
+      <small class="text-liqui-red">{{errors["name"] || '&nbsp;'}}</small>
     </div>
 
     <div class="flex flex-col gap-2 col-span-full md:col-span-1">
       <label class="text-sm font-bold" for="name">Kategorie *</label>
-      <Dropdown v-model="category" v-bind="categoryProps" empty-message="Keine Kategorien gefunden"
+      <Select v-model="category" v-bind="categoryProps" empty-message="Keine Kategorien gefunden"
                 :options="categories" option-label="name" option-value="id"
                 placeholder="Bitte wählen"
                 :class="{'p-invalid': errors['category']?.length}"
                 id="name" type="text"/>
-      <small class="text-red-400">{{errors["category"] || '&nbsp;'}}</small>
+      <small class="text-liqui-red">{{errors["category"] || '&nbsp;'}}</small>
     </div>
 
     <div class="flex flex-col gap-2 col-span-full md:col-span-1">
       <div class="flex items-center gap-2">
         <label class="text-sm font-bold" for="name">Mitarbeiter</label>
-        <i class="pi pi-info-circle text-blue-600" v-tooltip="'Optionale Assoziation'"></i>
+        <i class="pi pi-info-circle text-liqui-blue" v-tooltip="'Optionale Assoziation'"></i>
       </div>
-      <Dropdown v-model="employee" v-bind="employeeProps" empty-message="Keine Mitarbeiter gefunden"
+      <Select v-model="employee" v-bind="employeeProps" empty-message="Keine Mitarbeiter gefunden"
                 :options="employees.data" option-label="name" option-value="id"
                 placeholder="Bitte wählen"
                 showClear
@@ -31,51 +31,51 @@
                 :disabled="isLoadingEmployees"
                 :class="{'p-invalid': errors['employee']?.length}"
                 id="name" type="text"/>
-      <small class="text-red-400">{{errors["employee"] || employeesErrorMessage || '&nbsp;'}}</small>
+      <small class="text-liqui-red">{{errors["employee"] || employeesErrorMessage || '&nbsp;'}}</small>
     </div>
 
     <div class="flex flex-col gap-2 col-span-full md:col-span-1">
       <label class="text-sm font-bold" for="name">Währung *</label>
-      <Dropdown v-model="currency" v-bind="currencyProps" empty-message="Keine Währungen gefunden"
+      <Select v-model="currency" v-bind="currencyProps" empty-message="Keine Währungen gefunden"
                 :options="currencies" option-label="code" option-value="id"
                 placeholder="Bitte wählen"
                 :class="{'p-invalid': errors['currency']?.length}"
                 id="name" type="text"/>
-      <small class="text-red-400">{{errors["currency"] || '&nbsp;'}}</small>
+      <small class="text-liqui-red">{{errors["currency"] || '&nbsp;'}}</small>
     </div>
 
     <div class="flex flex-col gap-2 col-span-full md:col-span-1">
       <div class="flex items-center gap-2">
         <label class="text-sm font-bold" for="name">Betrag *</label>
-        <i class="pi pi-info-circle text-blue-600" v-tooltip="'Negatives Vorzeichen = Ausgabe'"></i>
+        <i class="pi pi-info-circle text-liqui-blue" v-tooltip="'Negatives Vorzeichen = Ausgabe'"></i>
         <div class="flex-1"></div>
-        <small v-if="selectedCurrencyCode && selectedCurrencyCode != Constants.BASE_CURRENCY" class="text-gray-600">{{amountInBaseCurrency}}</small>
+        <small v-if="selectedCurrencyCode && selectedCurrencyCode != Constants.BASE_CURRENCY" class="text-zinc-600 dark:text-zinc-400">{{amountInBaseCurrency}}</small>
       </div>
       <InputText v-model="amount" v-bind="amountProps"
                  @input="onParseAmount"
                  :class="{'p-invalid': errors['amount']?.length}"
                  id="name" type="text"/>
-      <small class="text-red-400">{{errors["amount"] || '&nbsp;'}}</small>
+      <small class="text-liqui-red">{{errors["amount"] || '&nbsp;'}}</small>
     </div>
 
     <div class="flex flex-col gap-2 col-span-full md:col-span-1">
       <label class="text-sm font-bold" for="name">Zahlungstyp</label>
-      <Dropdown v-model="type" v-bind="typeProps" empty-message="Keine Typen gefunden"
+      <Select v-model="type" v-bind="typeProps" empty-message="Keine Typen gefunden"
                 :options="TransactionTypeToOptions()" option-label="name" option-value="value"
                 placeholder="Bitte wählen"
                 :class="{'p-invalid': errors['type']?.length}"
                 id="name" type="text"/>
-      <small class="text-red-400">{{errors["type"] || '&nbsp;'}}</small>
+      <small class="text-liqui-red">{{errors["type"] || '&nbsp;'}}</small>
     </div>
 
     <div v-if="isRepeatingTransaction" class="flex flex-col gap-2 col-span-full md:col-span-1">
       <label class="text-sm font-bold" for="name">Zahlungszyklus</label>
-      <Dropdown v-model="cycle" v-bind="cycleProps" empty-message="Keine Zyklen gefunden"
+      <Select v-model="cycle" v-bind="cycleProps" empty-message="Keine Zyklen gefunden"
                 :options="CycleTypeToOptions()" option-label="name" option-value="value"
                 placeholder="Bitte wählen"
                 :class="{'p-invalid': errors['cycle']?.length}"
                 id="name" type="text"/>
-      <small class="text-red-400">{{errors["cycle"] || '&nbsp;'}}</small>
+      <small class="text-liqui-red">{{errors["cycle"] || '&nbsp;'}}</small>
     </div>
     <span v-else class="hidden md:block"></span>
 
@@ -86,7 +86,7 @@
       </div>
       <Calendar v-model="startDate" v-bind="startDateProps" date-format="dd.mm.yy" showIcon showButtonBar
                 :class="{'p-invalid': errors['startDate']?.length}"/>
-      <small class="text-red-400">{{errors["startDate"] || '&nbsp;'}}</small>
+      <small class="text-liqui-red">{{errors["startDate"] || '&nbsp;'}}</small>
     </div>
 
     <div v-if="isRepeatingTransaction" class="flex flex-col gap-2 col-span-full md:col-span-1">
@@ -96,7 +96,7 @@
       </div>
       <Calendar v-model="endDate" :min-date="startDate" v-bind="endDateProps" date-format="dd.mm.yy" showIcon showButtonBar
                 :class="{'p-invalid': errors['endDate']?.length}"/>
-      <small class="text-red-400">{{errors["endDate"] || '&nbsp;'}}</small>
+      <small class="text-liqui-red">{{errors["endDate"] || '&nbsp;'}}</small>
     </div>
     <span v-else class="hidden md:block"></span>
 

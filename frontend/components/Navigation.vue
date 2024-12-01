@@ -1,16 +1,14 @@
 <template>
   <Menu class="sm:!rounded-none sm:!border-t-0 sm:!border-b-0" :model="items">
     <template #start>
-      <div :to="{name: RouteNames.HOME}" class="hidden sm:block text-xl text-center w-full font-semibold cursor-default p-4">
-        <p>LIQUI<span class="text-red-400">SWISS</span></p>
-      </div>
+      <Logo class="hidden sm:block p-4"/>
     </template>
 
     <template #item="{ item, props }">
       <router-link v-if="item.routeName" v-slot="{ href, navigate, isActive }" :to="{name: item.routeName}" custom>
-        <a v-ripple :href="href" v-bind="props.action" @click="navigate" :class="{'!text-green-600': isActive}">
+        <a v-ripple :href="href" v-bind="props.action" @click="navigate">
           <span :class="item.icon" />
-          <span class="ml-2">{{ item.label }}</span>
+          <span class="ml-2" :class="{'text-liqui-green': isActive}">{{ item.label }}</span>
         </a>
       </router-link>
       <a v-else v-ripple :href="item.url" :target="item.target" v-bind="props.action">

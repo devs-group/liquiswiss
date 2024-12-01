@@ -18,7 +18,7 @@
         <InputText v-model="name" v-bind="nameProps"
                    :class="{'p-invalid': errors['name']?.length}"
                    id="name" type="text"/>
-        <small class="text-red-400">{{errors["name"] || '&nbsp;'}}</small>
+        <small class="text-liqui-red">{{errors["name"] || '&nbsp;'}}</small>
       </div>
 
       <Message v-if="employeeUpdateMessage.length" severity="success" :life="Config.MESSAGE_LIFE_TIME" :sticky="false" :closable="false" class="col-span-full">{{employeeUpdateMessage}}</Message>
@@ -50,7 +50,7 @@
 
   </div>
 
-  <div v-else class="flex flex-col gap-2 items-start bg-red-100 border border-red-200 p-4">
+  <div v-else class="flex flex-col gap-2 items-start bg-liqui-red border border-red-200 p-4">
     <span>{{ employeeLoadErrorMessage }}</span>
     <NuxtLink :to="{name: RouteNames.EMPLOYEES, replace: true}">
       <Button label="Zurück zur Übersicht"/>

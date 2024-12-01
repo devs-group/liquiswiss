@@ -1,12 +1,13 @@
 /** @type {import('tailwindcss').Config} */
+
 export default {
   content: [],
-  darkMode: ["selector", ".lq-dark"],
+  darkMode: 'media',
   theme: {
     extend: {
       colors: {
         'primary': '#10b981',
-        'help': '#a855f7'
+        'help': '#a855f7',
       },
       gridTemplateColumns: {
         'transactions': 'minmax(14rem, 1fr), 8rem, 8rem, 12rem, minmax(12rem, 1fr), 10rem, 10rem, 14rem',

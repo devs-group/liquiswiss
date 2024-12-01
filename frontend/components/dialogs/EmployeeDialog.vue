@@ -5,7 +5,7 @@
       <InputText v-model="name" v-bind="nameProps"
                  :class="{'p-invalid': errors['name']?.length}"
                  id="name" type="text"/>
-      <small class="text-red-400">{{errors["name"] || '&nbsp;'}}</small>
+      <small class="text-liqui-red">{{errors["name"] || '&nbsp;'}}</small>
     </div>
 
     <Message v-if="errorMessage.length" severity="error" :closable="false" class="col-span-full">{{errorMessage}}</Message>

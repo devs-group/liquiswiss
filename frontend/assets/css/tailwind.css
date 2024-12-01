@@ -21,4 +21,20 @@
 @layer tailwind-utilities {
     @tailwind components;
     @tailwind utilities;
+
+    .text-liqui-red {
+        @apply text-red-600 dark:text-red-400;
+    }
+    .text-liqui-green {
+        @apply text-green-600 dark:text-green-400;
+    }
+    .text-liqui-blue {
+        @apply text-blue-600 dark:text-blue-400;
+    }
+    .bg-liqui-red {
+        @apply bg-red-100 dark:bg-red-800;
+    }
+    .bg-liqui-green {
+        @apply bg-green-100 dark:bg-green-800;
+    }
 }

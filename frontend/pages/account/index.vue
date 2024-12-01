@@ -12,14 +12,14 @@
         <InputText v-model="name" v-bind="nameProps"
                    :class="{'p-invalid': errorsProfile['name']?.length}"
                    id="name" type="text"/>
-        <small class="text-red-400">{{errorsProfile["name"] || '&nbsp;'}}</small>
+        <small class="text-liqui-red">{{errorsProfile["name"] || '&nbsp;'}}</small>
       </div>
       <div class="flex flex-col gap-2 col-span-full md:col-span-1">
         <label class="text-sm font-bold" for="email">E-Mail*</label>
         <InputText v-model="email" v-bind="emailProps"
                    :class="{'p-invalid': errorsProfile['email']?.length}"
                    id="email" type="email"/>
-        <small class="text-red-400">{{errorsProfile["email"] || '&nbsp;'}}</small>
+        <small class="text-liqui-red">{{errorsProfile["email"] || '&nbsp;'}}</small>
       </div>
 
       <Message v-if="profileUpdateMessage.length" severity="success" :life="Config.MESSAGE_LIFE_TIME" :sticky="false" :closable="false" class="col-span-full">{{profileUpdateMessage}}</Message>
@@ -42,14 +42,14 @@
         <InputText v-model="password" v-bind="passwordProps"
                    :class="{'p-invalid': errorsPassword['password']?.length}"
                    id="password" type="password"/>
-        <small class="text-red-400">{{errorsPassword["password"] || '&nbsp;'}}</small>
+        <small class="text-liqui-red">{{errorsPassword["password"] || '&nbsp;'}}</small>
       </div>
       <div class="flex flex-col gap-2 col-span-full md:col-span-1">
         <label class="text-sm font-bold" for="passwordRepeat">Passwort ändern wiederholen*</label>
         <InputText v-model="passwordRepeat" v-bind="passwordRepeatProps"
                    :class="{'p-invalid': errorsPassword['passwordRepeat']?.length}"
                    id="passwordRepeat" type="password"/>
-        <small class="text-red-400">{{errorsPassword["passwordRepeat"] || '&nbsp;'}}</small>
+        <small class="text-liqui-red">{{errorsPassword["passwordRepeat"] || '&nbsp;'}}</small>
       </div>
 
       <Message v-if="passwordUpdateMessage.length" severity="success" :life="Config.MESSAGE_LIFE_TIME" :sticky="false" :closable="false" class="col-span-full">{{passwordUpdateMessage}}</Message>

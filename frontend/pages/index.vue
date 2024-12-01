@@ -3,7 +3,7 @@
   <Message v-if="forecastDetailsErrorMessage.length" severity="error" :closable="false" class="col-span-full">{{forecastDetailsErrorMessage}}</Message>
   <Message v-if="forecastCalculateErrorMessage.length" severity="error" :closable="false" class="col-span-full">{{forecastCalculateErrorMessage}}</Message>
   <Message v-if="forecastErrorMessage.length" severity="error" :closable="false" class="col-span-full">{{forecastErrorMessage}}</Message>
-  <template v-else>
+  <div v-else class="flex flex-col gap-4">
     <div class="flex flex-col gap-4">
       <div class="grid grid-cols-1 sm:grid-cols-3">
         <div class="flex items-center gap-2">
@@ -41,20 +41,20 @@
       <div class="relative flex flex-col overflow-x-auto pb-2">
         <div class="grid grid-cols-12 items-center">
           <div class="flex items-center col-span-full">
-            <div class="border-t border-b border-l border-gray-600 bg-gray-300 p-2 min-w-28">
+            <div class="border-t border-b border-l border-zinc-600 dark:border-zinc-400 bg-zinc-300 dark:bg-zinc-700 p-2 min-w-28">
               <p class="text-xs">&nbsp;</p>
             </div>
-            <div v-for="month in months" class="border-t border-b border-l last:border-r border-gray-600 bg-gray-300 p-2 min-w-40">
+            <div v-for="month in months" class="border-t border-b border-l last:border-r border-zinc-600 dark:border-zinc-400 bg-zinc-300 dark:bg-zinc-700 p-2 min-w-40">
               <p class="text-xs text-center font-bold">{{ month }}</p>
             </div>
           </div>
 
           <div class="flex items-center col-span-full">
-            <div @click="onToggleRevenueDetails" class="flex gap-1 cursor-pointer border-b border-l border-gray-600 bg-gray-300 p-2 min-w-28">
+            <div @click="onToggleRevenueDetails" class="flex gap-1 cursor-pointer border-b border-l border-zinc-600 dark:border-zinc-400 bg-zinc-300 dark:bg-zinc-700 p-2 min-w-28">
               <p class="text-xs">Einnahmen</p>
               <i class="pi" :class="{'pi-sort-down': forecastShowRevenueDetails, 'pi-sort-up': !forecastShowRevenueDetails}"></i>
             </div>
-            <div v-for="revenue in revenues" class="border-b border-l last:border-r border-gray-600 bg-green-100 p-2 min-w-40">
+            <div v-for="revenue in revenues" class="border-b border-l last:border-r border-zinc-600 dark:border-zinc-400 bg-liqui-green p-2 min-w-40">
               <p class="text-xs text-center">
                 {{revenue.formatted}} CHF
               </p>
@@ -63,10 +63,10 @@
 
           <template v-if="forecastShowRevenueDetails">
             <div v-for="category of revenueCategories" class="flex items-center col-span-full">
-              <div class="flex gap-1 cursor-default border-b border-l border-gray-600 bg-gray-300 p-1 min-w-28">
+              <div class="flex gap-1 cursor-default border-b border-l border-zinc-600 dark:border-zinc-400 bg-zinc-300 dark:bg-zinc-700 p-1 min-w-28">
                 <p class="w-full text-xs text-right">{{category}}</p>
               </div>
-              <div v-for="data in forecastDetails" class="border-b border-l last:border-r border-gray-600 bg-gray-100 p-1 min-w-40">
+              <div v-for="data in forecastDetails" class="border-b border-l last:border-r border-zinc-600 dark:border-zinc-400 bg-zinc-100 dark:bg-zinc-800 p-1 min-w-40">
                 <p class="text-xs text-center">
                   {{getCategoryAmount(data, category, 'revenue')}} CHF
                 </p>
@@ -75,11 +75,11 @@
           </template>
 
           <div class="flex items-center col-span-full">
-            <div @click="onToggleExpenseDetails" class="flex gap-1 cursor-pointer border-b border-l border-gray-600 bg-gray-300 p-2 min-w-28">
+            <div @click="onToggleExpenseDetails" class="flex gap-1 cursor-pointer border-b border-l border-zinc-600 dark:border-zinc-400 bg-zinc-300 dark:bg-zinc-700 p-2 min-w-28">
               <p class="text-xs">Ausgaben</p>
               <i class="pi" :class="{'pi-sort-down': forecastShowExpenseDetails, 'pi-sort-up': !forecastShowExpenseDetails}"></i>
             </div>
-            <div v-for="expense in expenses" class="border-b border-l last:border-r border-gray-600 bg-red-100 p-2 min-w-40">
+            <div v-for="expense in expenses" class="border-b border-l last:border-r border-zinc-600 dark:border-zinc-400 bg-liqui-red p-2 min-w-40">
               <p class="text-xs text-center">
                 {{expense.formatted}} CHF
               </p>
@@ -88,10 +88,10 @@
 
           <template v-if="forecastShowExpenseDetails">
             <div v-for="category of expenseCategories" class="flex items-center col-span-full">
-              <div class="flex gap-1 cursor-default border-b border-l border-gray-600 bg-gray-300 p-1 min-w-28">
+              <div class="flex gap-1 cursor-default border-b border-l border-zinc-600 dark:border-zinc-400 bg-zinc-300 dark:bg-zinc-700 p-1 min-w-28">
                 <p class="w-full text-xs text-right">{{category}}</p>
               </div>
-              <div v-for="data in forecastDetails" class="border-b border-l last:border-r border-gray-600 bg-gray-100 p-1 min-w-40">
+              <div v-for="data in forecastDetails" class="border-b border-l last:border-r border-zinc-600 dark:border-zinc-400 bg-zinc-100 dark:bg-zinc-800 p-1 min-w-40">
                 <p class="text-xs text-center">
                   {{getCategoryAmount(data, category, 'expense')}} CHF
                 </p>
@@ -100,11 +100,11 @@
           </template>
 
           <div class="flex items-center col-span-full">
-            <div class="cursor-default border-b border-l border-gray-600 bg-gray-300 p-2 min-w-28">
+            <div class="cursor-default border-b border-l border-zinc-600 dark:border-zinc-400 bg-zinc-300 dark:bg-zinc-700 p-2 min-w-28">
               <p class="text-xs">Cashflow</p>
             </div>
-            <div v-for="cashflow in cashflows" class="border-b border-l last:border-r border-gray-600 p-2 min-w-40"
-                 :class="{'text-red-600': cashflow.amount < 0, 'text-green-600': cashflow.amount > 0}">
+            <div v-for="cashflow in cashflows" class="border-b border-l last:border-r border-zinc-600 dark:border-zinc-400 p-2 min-w-40"
+                 :class="{'text-liqui-red': cashflow.amount < 0, 'text-liqui-green': cashflow.amount > 0}">
               <p class="text-xs text-center">
                 {{cashflow.formatted}} CHF
               </p>
@@ -112,26 +112,32 @@
           </div>
 
           <div class="flex items-center col-span-full">
-            <div class="cursor-default border-b border-l border-gray-600 bg-gray-300 p-2 min-w-28">
+            <div class="cursor-default border-b border-l border-zinc-600 dark:border-zinc-400 bg-zinc-300 dark:bg-zinc-700 p-2 min-w-28">
               <p class="text-xs">Endsaldo</p>
             </div>
-            <div v-for="saldo in saldos" class="border-b border-l last:border-r border-gray-600 p-2 min-w-40"
-                 :class="{'bg-red-100': saldo.amount < 0, 'bg-green-100': saldo.amount > 0}">
+            <div v-for="saldo in saldos" class="border-b border-l last:border-r border-zinc-600 dark:border-zinc-400 p-2 min-w-40"
+                 :class="{'bg-liqui-red': saldo.amount < 0, 'bg-liqui-green': saldo.amount > 0}">
               <p class="text-xs text-center font-bold truncate">
                 {{saldo.formatted}} CHF
               </p>
             </div>
           </div>
         </div>
-
-        <FullProgressSpinner :show="isLoading"/>
       </div>
     </div>
 
-    <div class="bg-gray-50">
-      <Chart type="line" :data="chartData" :options="chartOptions" class="h-80"/>
+    <div class="bg-zinc-50 dark:bg-zinc-800">
+      <ClientOnly>
+        <Chart type="line" :data="chartData" :options="chartOptions" class="h-80"/>
+        <template #fallback>
+          <Skeleton class="!h-80"/>
+        </template>
+      </ClientOnly>
     </div>
-  </template>
+
+    <FullProgressSpinner :show="isLoading"/>
+
+  </div>
 </template>
 
 <script setup lang="ts">
@@ -166,7 +172,7 @@ const monthChoices = [
 const {useFetchListForecast, listForecasts, useFetchListForecastDetails, listForecastDetails, forecasts, forecastDetails, calculateForecast} = useForecasts()
 const {useFetchListBankAccounts, totalBankSaldoInCHF} = useBankAccounts()
 const {forecastPerformance, forecastMonths, forecastShowRevenueDetails, forecastShowExpenseDetails} = useSettings()
-const {setChartData, setChartOptions} = useCharts()
+const {setChartData, getChartOptions} = useCharts()
 
 const bankAccountsErrorMessage = ref('')
 const forecastErrorMessage = ref('')
@@ -195,7 +201,7 @@ const chartData = computed(() => setChartData(
     months.value,
     saldos.value.map(s => AmountToFloat(s.amount)),
 ))
-const chartOptions = setChartOptions()
+const chartOptions = computed(() => getChartOptions())
 
 const localMonth = computed(() => localFormatter.format(new Date()))
 const months = computed(() => {
@@ -223,13 +229,11 @@ const onCalculateForecast = () => {
                     .catch(reason => {
                       forecastDetailsErrorMessage.value = reason
                     })
-                    .finally(() => isLoading.value = false)
               }
             })
             .catch(reason => {
               forecastErrorMessage.value = reason
             })
-            .finally(() => isLoading.value = false)
       })
       .catch(reason => {
         forecastCalculateErrorMessage.value = reason
@@ -275,7 +279,6 @@ watch(forecastMonths, (value) => {
               .catch(reason => {
                 forecastDetailsErrorMessage.value = reason
               })
-              .finally(() => isLoading.value = false)
         }
       })
       .catch(reason => {

@@ -27,7 +27,7 @@
         </p>
       </div>
       <div v-else class="flex flex-col gap-2 text-sm">
-        <p class="text-sm text-red-400">Der Mitarbeiter hat aktuell keine Daten</p>
+        <p class="text-sm text-liqui-red">Der Mitarbeiter hat aktuell keine Daten</p>
       </div>
     </template>
   </Card>

@@ -1,26 +1,26 @@
 <template>
-  <div class="grid grid-cols-employees items-center *:bg-gray-100 *:border *:border-r-0 *:border-b-0 *:border-gray-600 *:p-1 *:text-sm *:font-bold">
-    <div @click="onSort('name')" class="flex items-center gap-2 cursor-pointer hover:bg-gray-50 transition-colors duration-300">
+  <div class="grid grid-cols-employees items-center *:bg-zinc-100 *:dark:bg-zinc-800 *:border *:border-r-0 *:border-b-0 *:border-gray-600 *:p-1 *:text-sm *:font-bold">
+    <div @click="onSort('name')" class="flex items-center gap-2 cursor-pointer hover:bg-zinc-50 hover:dark:bg-zinc-700 transition-colors duration-300">
       <p class="truncate">Name</p>
       <i :class="getSortIcon('name')"></i>
     </div>
-    <div @click="onSort('hoursPerMonth')" class="flex items-center gap-2 cursor-pointer hover:bg-gray-50 transition-colors duration-300">
+    <div @click="onSort('hoursPerMonth')" class="flex items-center gap-2 cursor-pointer hover:bg-zinc-50 hover:dark:bg-zinc-700 transition-colors duration-300">
       <p class="truncate">Arbeitsstunden / Monat</p>
       <i :class="getSortIcon('hoursPerMonth')"></i>
     </div>
-    <div @click="onSort('salaryPerMonth')" class="flex items-center gap-2 cursor-pointer hover:bg-gray-50 transition-colors duration-300">
+    <div @click="onSort('salaryPerMonth')" class="flex items-center gap-2 cursor-pointer hover:bg-zinc-50 hover:dark:bg-zinc-700 transition-colors duration-300">
       <p class="truncate">Lohn / Monat</p>
       <i :class="getSortIcon('salaryPerMonth')"></i>
     </div>
-    <div @click="onSort('vacationDaysPerYear')" class="flex items-center gap-2 cursor-pointer hover:bg-gray-50 transition-colors duration-300">
+    <div @click="onSort('vacationDaysPerYear')" class="flex items-center gap-2 cursor-pointer hover:bg-zinc-50 hover:dark:bg-zinc-700 transition-colors duration-300">
       <p class="truncate">Urlaubstage / Jahr</p>
       <i :class="getSortIcon('vacationDaysPerYear')"></i>
     </div>
-    <div @click="onSort('fromDate')" class="flex items-center gap-2 cursor-pointer hover:bg-gray-50 transition-colors duration-300">
+    <div @click="onSort('fromDate')" class="flex items-center gap-2 cursor-pointer hover:bg-zinc-50 hover:dark:bg-zinc-700 transition-colors duration-300">
       <p class="truncate">Gültig ab/seit</p>
       <i :class="getSortIcon('fromDate')"></i>
     </div>
-    <div @click="onSort('toDate')" class="flex items-center gap-2 !border-r cursor-pointer hover:bg-gray-50 transition-colors duration-300">
+    <div @click="onSort('toDate')" class="flex items-center gap-2 !border-r cursor-pointer hover:bg-zinc-50 hover:dark:bg-zinc-700 transition-colors duration-300">
       <p class="truncate">Gültig bis</p>
       <i :class="getSortIcon('toDate')"></i>
     </div>

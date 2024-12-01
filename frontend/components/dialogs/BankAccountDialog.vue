@@ -5,29 +5,29 @@
       <InputText v-model="name" v-bind="nameProps"
                  :class="{'p-invalid': errors['name']?.length}"
                  id="name" type="text"/>
-      <small class="text-red-400">{{errors["name"] || '&nbsp;'}}</small>
+      <small class="text-liqui-red">{{errors["name"] || '&nbsp;'}}</small>
     </div>
 
     <div class="flex flex-col gap-2 col-span-full md:col-span-1">
       <div class="flex items-center gap-2">
         <label class="text-sm font-bold" for="name">Kontostand *</label>
-        <i class="pi pi-info-circle text-blue-600" v-tooltip="'Negatives Vorzeichen möglich'"></i>
+        <i class="pi pi-info-circle text-liqui-blue" v-tooltip="'Negatives Vorzeichen möglich'"></i>
       </div>
       <InputText v-model="amount" v-bind="amountProps"
                  @input="onParseAmount"
                  :class="{'p-invalid': errors['amount']?.length}"
                  id="name" type="text"/>
-      <small class="text-red-400">{{errors["amount"] || '&nbsp;'}}</small>
+      <small class="text-liqui-red">{{errors["amount"] || '&nbsp;'}}</small>
     </div>
 
     <div class="flex flex-col gap-2 col-span-full md:col-span-1">
       <label class="text-sm font-bold" for="name">Währung *</label>
-      <Dropdown v-model="currency" v-bind="currencyProps" empty-message="Keine Währungen gefunden"
+      <Select v-model="currency" v-bind="currencyProps" empty-message="Keine Währungen gefunden"
                 :options="currencies" option-label="code" option-value="id"
                 placeholder="Bitte wählen"
                 :class="{'p-invalid': errors['currency']?.length}"
                 id="name" type="text"/>
-      <small class="text-red-400">{{errors["currency"] || '&nbsp;'}}</small>
+      <small class="text-liqui-red">{{errors["currency"] || '&nbsp;'}}</small>
     </div>
 
     <div v-if="!isCreate" class="flex justify-end col-span-full">

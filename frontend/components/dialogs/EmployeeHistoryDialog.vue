@@ -6,7 +6,7 @@
                  :class="{'p-invalid': errors['hoursPerMonth']?.length}"
                  id="hours-per-month" type="number" min="0"
                  :disabled="isLoading"/>
-      <small class="text-red-400">{{errors["hoursPerMonth"] || '&nbsp;'}}</small>
+      <small class="text-liqui-red">{{errors["hoursPerMonth"] || '&nbsp;'}}</small>
     </div>
 
     <div class="flex flex-col gap-2 col-span-full md:col-span-1">
@@ -15,7 +15,7 @@
                  :class="{'p-invalid': errors['vacationDaysPerYear']?.length}"
                  id="vacation-days-per-year" type="number" min="0"
                  :disabled="isLoading"/>
-      <small class="text-red-400">{{errors["vacationDaysPerYear"] || '&nbsp;'}}</small>
+      <small class="text-liqui-red">{{errors["vacationDaysPerYear"] || '&nbsp;'}}</small>
     </div>
 
     <div class="flex flex-col gap-2 col-span-full md:col-span-1">
@@ -28,19 +28,19 @@
                  :class="{'p-invalid': errors['salaryPerMonth']?.length}"
                  id="salary-per-month" type="text"
                  :disabled="isLoading"/>
-      <small class="text-red-400">{{errors["salaryPerMonth"] || '&nbsp;'}}</small>
+      <small class="text-liqui-red">{{errors["salaryPerMonth"] || '&nbsp;'}}</small>
     </div>
 
     <div class="flex flex-col gap-2 col-span-full md:col-span-1">
       <label class="text-sm font-bold" for="salary-currency">Währung des Lohns*</label>
-      <Dropdown v-model="salaryCurrency" v-bind="salaryCurrencyProps"
+      <Select v-model="salaryCurrency" v-bind="salaryCurrencyProps"
                 empty-message="Keine Währungen gefunden"
                 :disabled="isLoading"
                 :class="{'p-invalid': errors['salaryCurrency']?.length}"
                 :options="currencies" option-label="code" option-value="id"
                 placeholder="Bitte wählen"
                 id="salary-currency"/>
-      <small class="text-red-400">{{errors["salaryCurrency"] || '&nbsp;'}}</small>
+      <small class="text-liqui-red">{{errors["salaryCurrency"] || '&nbsp;'}}</small>
     </div>
 
     <div class="flex flex-col gap-2 col-span-full md:col-span-1">
@@ -50,7 +50,7 @@
       </div>
       <Calendar v-model="fromDate" v-bind="fromDateProps" :disabled-dates="getDisabledDates" date-format="dd.mm.yy" showIcon showButtonBar
                 :class="{'p-invalid': errors['fromDate']?.length}" :disabled="isLoading"/>
-      <small class="text-red-400">{{errors["fromDate"] || '&nbsp;'}}</small>
+      <small class="text-liqui-red">{{errors["fromDate"] || '&nbsp;'}}</small>
     </div>
 
     <div class="flex flex-col gap-2 col-span-full md:col-span-1">
@@ -60,7 +60,7 @@
       </div>
       <Calendar v-model="toDate" :min-date="fromDate" v-bind="toDateProps" date-format="dd.mm.yy" showIcon showButtonBar
                 :class="{'p-invalid': errors['toDate']?.length}" :disabled="isLoading"/>
-      <small class="text-red-400">{{errors["toDate"] || '&nbsp;'}}</small>
+      <small class="text-liqui-red">{{errors["toDate"] || '&nbsp;'}}</small>
     </div>
 
     <div v-if="!isClone && !isCreate" class="flex justify-end col-span-full">

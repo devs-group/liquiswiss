@@ -6,8 +6,8 @@
       <div class="w-full h-full">
         <NuxtPage/>
       </div>
-      <div v-if="serverDateFormatted" class="p-2 bg-gray-100 self-end">
-        <p class="text-xs text-right">Serverzeit: {{ serverDateFormatted }}</p>
+      <div v-if="serverDateFormatted" class="p-2 bg-zinc-100 dark:bg-zinc-800 self-end">
+        <p class="text-xs text-right">Serverdatum: {{ serverDateFormatted }}</p>
       </div>
     </div>
   </div>
@@ -29,7 +29,8 @@ const toast = useToast()
 const hasInitialLoadError = ref(false)
 
 useHead({
-  title: 'LiquiSwiss'
+  title: 'LIQUISWISS',
+  bodyAttrs: () => ({class: 'bg-white dark:bg-zinc-900'})
 })
 
 const serverDateFormatted = computed(() => {

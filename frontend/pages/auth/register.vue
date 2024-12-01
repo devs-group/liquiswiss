@@ -1,11 +1,14 @@
 <template>
-  <h1>Register now</h1>
-  <form @submit.prevent class="flex flex-col items-center justify-center gap-2">
-    <InputText placeholder="E-Mail" type="email" name="email" autocomplete="email" v-model.trim="email" :disabled="isLoading"/>
-    <InputText placeholder="Passwort" type="password" name="password" autocomplete="new-password" v-model="password" :disabled="isLoading"/>
-    <p class="text-sm">Konto vorhanden? Jetzt <NuxtLink :to="{name: RouteNames.LOGIN}" class="underline">einloggen</NuxtLink></p>
-    <Button label="Konto erstellen" @click="onRegister" :disabled="isLoading" :loading="isLoading" type="submit"/>
-  </form>
+  <div class="flex flex-col gap-2">
+    <Logo/>
+
+    <form @submit.prevent class="flex flex-col items-center justify-center gap-2">
+      <InputText placeholder="E-Mail" type="email" name="email" autocomplete="email" v-model.trim="email" :disabled="isLoading"/>
+      <InputText placeholder="Passwort" type="password" name="password" autocomplete="new-password" v-model="password" :disabled="isLoading"/>
+      <p class="text-sm">Konto vorhanden? Jetzt <NuxtLink :to="{name: RouteNames.LOGIN}" class="underline">einloggen</NuxtLink></p>
+      <Button label="Konto erstellen" @click="onRegister" :disabled="isLoading" :loading="isLoading" type="submit"/>
+    </form>
+  </div>
 </template>
 
 <script setup lang="ts">

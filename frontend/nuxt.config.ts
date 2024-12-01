@@ -27,9 +27,6 @@ export default defineNuxtConfig({
             inputVariant: 'filled',
             theme: {
                 preset: LiquiswissTheme,
-                options: {
-                    darkModeSelector: ".lq-dark",
-                },
             },
         },
     },

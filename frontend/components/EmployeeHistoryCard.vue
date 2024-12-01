@@ -1,5 +1,5 @@
 <template>
-  <Card :class="{'!bg-green-50': isActive}">
+  <Card>
     <template #title>
       <div class="flex items-center justify-between">
         <p class="truncate text-base">Von {{fromDateFormatted}}</p>
@@ -15,7 +15,7 @@
         <p>{{salaryFormatted}} {{employeeHistory.salaryCurrency.code}} pro Monat</p>
         <p>{{employeeHistory.vacationDaysPerYear}} Urlaubstage im Jahr</p>
         <p v-if="employeeHistory.toDate" class="text-orange-500">Bis {{toDateFormatted}}</p>
-        <p v-if="isActive" class="text-green-500">Aktive Historie</p>
+        <p v-if="isActive" class="bg-liqui-green p-2 font-bold text-center">Aktive Historie</p>
       </div>
     </template>
   </Card>
