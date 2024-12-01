@@ -51,10 +51,14 @@
         <div class="flex-1"></div>
         <small v-if="selectedCurrencyCode && selectedCurrencyCode != Constants.BASE_CURRENCY" class="text-zinc-600 dark:text-zinc-400">{{amountInBaseCurrency}}</small>
       </div>
-      <InputText v-model="amount" v-bind="amountProps"
-                 @input="onParseAmount"
-                 :class="{'p-invalid': errors['amount']?.length}"
-                 id="name" type="text"/>
+      <div class="flex item-center gap-2">
+        <InputText v-model="amount" v-bind="amountProps"
+                   @input="onParseAmount"
+                   class="flex-1"
+                   :class="{'p-invalid': errors['amount']?.length}"
+                   id="name" type="text"/>
+        <AmountInvertButton @invert-amount="onInvertAmount" :amount="amount"/>
+      </div>
       <small class="text-liqui-red">{{errors["amount"] || '&nbsp;'}}</small>
     </div>
 
@@ -125,7 +129,9 @@ import {CycleType, TransactionType} from "~/config/enums";
 import {TransactionTypeToOptions, CycleTypeToOptions} from "~/utils/enum-helper";
 import {Constants} from "~/utils/constants";
 import {NumberToFormattedCurrency} from "~/utils/format-helper";
-import {parseNumberInput} from "~/utils/element-helper";
+import {parseNumberInput, scrollToParentBottom} from "~/utils/element-helper";
+import {isNumber} from "~/utils/number-helper";
+import AmountInvertButton from "~/components/AmountInvertButton.vue";
 
 const dialogRef = inject<ITransactionFormDialog>('dialogRef')!;
 
@@ -155,10 +161,7 @@ listEmployees(false)
 const { defineField, errors, handleSubmit, meta } = useForm({
   validationSchema: yup.object({
     name: yup.string().trim().required('Name wird benötigt'),
-    amount: yup.number().required('Betrag wird benötigt').typeError('Ungültiger Betrag')
-        .test('Not 0', 'Muss grösser oder kleiner 0 sein', (value) => {
-          return AmountToInteger(value) !== 0;
-        }),
+    amount: yup.number().required('Betrag wird benötigt').typeError('Ungültiger Betrag'),
     cycle: yup.string().required('Zahlungs-Zyklus wird benötigt'),
     type: yup.string().required('Typ wird benötigt'),
     startDate: yup.date().required('Start wird benötigt').typeError('Bitte Datum eingeben'),
@@ -170,7 +173,7 @@ const { defineField, errors, handleSubmit, meta } = useForm({
   initialValues: {
     id: isClone ? undefined : transaction?.id ?? undefined,
     name: transaction?.name ?? '',
-    amount: transaction?.amount ? AmountToFloat(transaction.amount) : '',
+    amount: isNumber(transaction?.amount) ? AmountToFloat(transaction!.amount) : '',
     cycle: transaction?.cycle ?? CycleType.Monthly,
     type: transaction?.type ?? TransactionType.Single,
     startDate: transaction?.startDate ? DateToUTCDate(transaction?.startDate) : null,
@@ -247,7 +250,7 @@ const onSubmit = handleSubmit((values) => {
 
 const onParseAmount = (event: Event) => {
   if (event instanceof InputEvent) {
-    parseNumberInput(event, amount)
+    parseNumberInput(event, amount, true)
   }
 }
 
@@ -285,6 +288,10 @@ const onDeleteTransaction = (event: MouseEvent) => {
     reject: () => {
     }
   });
+}
+
+const onInvertAmount = () => {
+  amount.value *= -1
 }
 
 const isRepeatingTransaction = computed(() => {

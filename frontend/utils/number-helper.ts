@@ -6,7 +6,11 @@ export const AmountToFloat = (amount: number) => {
     return Math.round(amount / 100 * 100) / 100
 }
 
-export const parseCurrency = (input: string|number) => {
+export const isNumber = (value: any): boolean => {
+    return typeof value === 'number' && !isNaN(value);
+}
+
+export const parseCurrency = (input: string|number, allowNegative: boolean) => {
     if (typeof input === 'number') {
         input = input.toString(10)
     }
@@ -14,7 +18,7 @@ export const parseCurrency = (input: string|number) => {
     // Replace all commas with dots (unifying decimal separator)
     let unifiedInput = input.replace(/,/g, '.');
 
-    let isNegative = unifiedInput.startsWith('-');
+    let isNegative = allowNegative && unifiedInput.startsWith('-');
 
     // Remove all invalid characters except numbers and dots
     unifiedInput = unifiedInput.replace(/[^0-9.]/g, '');
@@ -28,7 +32,7 @@ export const parseCurrency = (input: string|number) => {
         unifiedInput = parts.join('') + '.' + decimals;
     }
 
-    if (isNegative) {
+    if (isNegative && unifiedInput.length > 0) {
         unifiedInput = '-' + unifiedInput;
     }
 

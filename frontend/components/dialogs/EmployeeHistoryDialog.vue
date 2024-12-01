@@ -85,7 +85,8 @@ import * as yup from 'yup';
 import {Config} from "~/config/config";
 import type {EmployeeHistoryFormData} from "~/models/employee";
 import {DateToUTCDate} from "~/utils/format-helper";
-import {parseNumberInput} from "~/utils/element-helper";
+import {parseNumberInput, scrollToParentBottom} from "~/utils/element-helper";
+import {isNumber} from "~/utils/number-helper";
 
 const dialogRef = inject<IHistoryFormDialog>('dialogRef')!;
 
@@ -114,7 +115,7 @@ const { defineField, errors, handleSubmit, meta } = useForm({
   initialValues: {
     id: isClone ? undefined : employeeHistory?.id ?? undefined,
     hoursPerMonth: employeeHistory?.hoursPerMonth ?? 0,
-    salaryPerMonth: employeeHistory?.salaryPerMonth ? AmountToFloat(employeeHistory.salaryPerMonth) : 0,
+    salaryPerMonth: isNumber(employeeHistory?.salaryPerMonth) ? AmountToFloat(employeeHistory!.salaryPerMonth) : 0,
     salaryCurrency: employeeHistory?.salaryCurrency.id ?? null,
     vacationDaysPerYear: employeeHistory?.vacationDaysPerYear ?? 0,
     fromDate: employeeHistory?.fromDate ? DateToUTCDate(employeeHistory.fromDate) : null,
@@ -144,7 +145,7 @@ const getDisabledDates = computed(() => {
 
 const onParseAmount = (event: Event) => {
   if (event instanceof InputEvent) {
-    parseNumberInput(event, salaryPerMonth)
+    parseNumberInput(event, salaryPerMonth, false)
   }
 }
 

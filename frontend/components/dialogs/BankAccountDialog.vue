@@ -13,10 +13,14 @@
         <label class="text-sm font-bold" for="name">Kontostand *</label>
         <i class="pi pi-info-circle text-liqui-blue" v-tooltip="'Negatives Vorzeichen möglich'"></i>
       </div>
-      <InputText v-model="amount" v-bind="amountProps"
-                 @input="onParseAmount"
-                 :class="{'p-invalid': errors['amount']?.length}"
-                 id="name" type="text"/>
+      <div class="flex item-center gap-2">
+        <InputText v-model="amount" v-bind="amountProps"
+                   @input="onParseAmount"
+                   class="flex-1"
+                   :class="{'p-invalid': errors['amount']?.length}"
+                   id="name" type="text"/>
+        <AmountInvertButton @invert-amount="onInvertAmount" :amount="amount"/>
+      </div>
       <small class="text-liqui-red">{{errors["amount"] || '&nbsp;'}}</small>
     </div>
 
@@ -51,7 +55,9 @@ import {useForm} from "vee-validate";
 import * as yup from 'yup';
 import {Config} from "~/config/config";
 import type {BankAccountFormData} from "~/models/bank-account";
-import {parseNumberInput} from "~/utils/element-helper";
+import {parseNumberInput, scrollToParentBottom} from "~/utils/element-helper";
+import {isNumber} from "~/utils/number-helper";
+import AmountInvertButton from "~/components/AmountInvertButton.vue";
 
 const dialogRef = inject<IBankAccountFormDialog>('dialogRef')!;
 
@@ -69,16 +75,13 @@ const errorMessage = ref('')
 const { defineField, errors, handleSubmit, meta } = useForm({
   validationSchema: yup.object({
     name: yup.string().trim().required('Name wird benötigt'),
-    amount: yup.number().required('Betrag wird benötigt').typeError('Ungültiger Betrag')
-        .test('Not 0', 'Muss grösser oder kleiner 0 sein', (value) => {
-          return AmountToInteger(value) !== 0;
-        }),
+    amount: yup.number().required('Betrag wird benötigt').typeError('Ungültiger Betrag'),
     currency: yup.number().required('Währung wird benötigt').typeError('Ungültige Währung'),
   }),
   initialValues: {
     id: bankAccount?.id ?? undefined,
     name: bankAccount?.name ?? '',
-    amount: bankAccount?.amount ? AmountToFloat(bankAccount.amount) : '',
+    amount: isNumber(bankAccount?.amount) ? AmountToFloat(bankAccount!.amount) : '',
     currency: bankAccount?.currency.id ?? null,
   } as BankAccountFormData
 });
@@ -89,7 +92,7 @@ const [currency, currencyProps] = defineField('currency')
 
 const onParseAmount = (event: Event) => {
   if (event instanceof InputEvent) {
-    parseNumberInput(event, amount)
+    parseNumberInput(event, amount, true)
   }
 }
 
@@ -174,5 +177,9 @@ const onDeleteBankAccount = (event: MouseEvent) => {
     reject: () => {
     }
   });
+}
+
+const onInvertAmount = () => {
+  amount.value *= -1
 }
 </script>
