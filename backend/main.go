@@ -21,7 +21,7 @@ var embedMigrations embed.FS
 
 func main() {
 	// Init global logger
-	logger.NewZapLogger()
+	logger.NewZapLogger(utils.IsProduction())
 
 	// Environment for DEV
 	if !utils.IsProduction() {

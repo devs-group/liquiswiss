@@ -1,16 +1,14 @@
 package logger
 
 import (
-	"liquiswiss/pkg/utils"
-
 	"go.uber.org/zap"
 )
 
 var Logger *zap.SugaredLogger
 
-func NewZapLogger() *zap.SugaredLogger {
+func NewZapLogger(isProduction bool) *zap.SugaredLogger {
 	var l *zap.Logger
-	if utils.IsProduction() {
+	if isProduction {
 		l, _ = zap.NewProduction()
 	} else {
 		l, _ = zap.NewDevelopment()

@@ -162,7 +162,7 @@ func CalculateForecasts(dbService service.IDatabaseService, c *gin.Context) {
 					}
 				}
 			case "monthly":
-				for current := startDate; !current.After(endDate); current = getNextDate(startDate, current, 1) {
+				for current := startDate; !current.After(endDate); current = utils.GetNextDate(startDate, current, 1) {
 					if current.Before(today) {
 						continue
 					}
@@ -179,7 +179,7 @@ func CalculateForecasts(dbService service.IDatabaseService, c *gin.Context) {
 					}
 				}
 			case "quarterly":
-				for current := startDate; !current.After(endDate); current = getNextDate(startDate, current, 3) {
+				for current := startDate; !current.After(endDate); current = utils.GetNextDate(startDate, current, 3) {
 					if current.Before(today) {
 						continue
 					}
@@ -196,7 +196,7 @@ func CalculateForecasts(dbService service.IDatabaseService, c *gin.Context) {
 					}
 				}
 			case "biannually":
-				for current := startDate; !current.After(endDate); current = getNextDate(startDate, current, 6) {
+				for current := startDate; !current.After(endDate); current = utils.GetNextDate(startDate, current, 6) {
 					if current.Before(today) {
 						continue
 					}
@@ -213,7 +213,7 @@ func CalculateForecasts(dbService service.IDatabaseService, c *gin.Context) {
 					}
 				}
 			case "yearly":
-				for current := startDate; !current.After(endDate); current = getNextDate(startDate, current, 12) {
+				for current := startDate; !current.After(endDate); current = utils.GetNextDate(startDate, current, 12) {
 					if current.Before(today) {
 						continue
 					}
@@ -252,7 +252,7 @@ func CalculateForecasts(dbService service.IDatabaseService, c *gin.Context) {
 				toDate = time.Time(*history.ToDate)
 			}
 
-			for current := fromDate; !current.After(toDate); current = getNextDate(fromDate, current, 1) {
+			for current := fromDate; !current.After(toDate); current = utils.GetNextDate(fromDate, current, 1) {
 				if current.Before(today) {
 					continue
 				}
@@ -372,17 +372,6 @@ func addForecastDetail(detailMap map[string]*models.ForecastDetails, monthKey, c
 
 		detailMap[monthKey].Expense[category] += amount
 	}
-}
-
-func getNextDate(referenceDate, currentDate time.Time, months int) time.Time {
-	dayDiff := referenceDate.Day() - currentDate.Day()
-
-	nextDate := currentDate.AddDate(0, months, dayDiff)
-	if currentDate.Day() > nextDate.Day() {
-		nextDate = time.Date(nextDate.Year(), nextDate.Month(), 0, referenceDate.Hour(), referenceDate.Minute(), referenceDate.Second(), referenceDate.Nanosecond(), referenceDate.Location())
-	}
-
-	return nextDate
 }
 
 func getYearMonth(date time.Time) string {

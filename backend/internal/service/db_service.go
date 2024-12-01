@@ -962,16 +962,18 @@ func (s *DatabaseService) CreateEmployeeHistory(payload models.CreateEmployeeHis
 			needsAdjustment = true
 		} else {
 			previousToDate := time.Time(*previous.ToDate)
-			if previousToDate.After(currentFromDate) || previousToDate.Equal(currentFromDate) {
+			if !previousToDate.Before(currentFromDate) {
 				needsAdjustment = true
 			}
 		}
 
 		if needsAdjustment {
-			logger.Logger.Debugf("Adjusting previous history entry")
+			previousFromDate := time.Time(previous.FromDate)
+			newToDate := utils.GetNextAvailableDate(previousFromDate, currentFromDate)
+			logger.Logger.Debugf("Adjusting previous history entry to: %s", newToDate)
 			_, err := tx.Exec(`
             UPDATE go_employee_history SET to_date = ? WHERE id = ?
-        `, currentFromDate.AddDate(0, 0, -1), previous.ID)
+        `, newToDate, previous.ID)
 			if err != nil {
 				return 0, err
 			}
@@ -1000,16 +1002,21 @@ func (s *DatabaseService) CreateEmployeeHistory(payload models.CreateEmployeeHis
 			if err != nil {
 				return 0, err
 			}
-			if currentToDate.After(nextFromDate) {
+			if !currentToDate.Before(nextFromDate) {
 				needsAdjustment = true
 			}
 		}
 
 		if needsAdjustment {
-			logger.Logger.Debugf("Adjusting current history entry to: %s", nextFromDate.AddDate(0, 0, -1))
-			_, err := tx.Exec(`
+			currentFromDate, err := time.Parse(utils.InternalDateFormat, payload.FromDate)
+			if err != nil {
+				return 0, err
+			}
+			newToDate := utils.GetNextAvailableDate(currentFromDate, nextFromDate)
+			logger.Logger.Debugf("Adjusting current history entry to: %s", newToDate)
+			_, err = tx.Exec(`
             UPDATE go_employee_history SET to_date = ? WHERE id = ?
-        `, nextFromDate.AddDate(0, 0, -1), historyID)
+        `, newToDate, historyID)
 			if err != nil {
 				return 0, err
 			}
@@ -1148,16 +1155,18 @@ func (s *DatabaseService) UpdateEmployeeHistory(payload models.UpdateEmployeeHis
 			needsAdjustment = true
 		} else {
 			previousToDate := time.Time(*previous.ToDate)
-			if previousToDate.After(currentFromDate) || previousToDate.Equal(currentFromDate) {
+			if !previousToDate.Before(currentFromDate) {
 				needsAdjustment = true
 			}
 		}
 
 		if needsAdjustment {
-			logger.Logger.Debugf("Adjusting previous history entry")
+			previousFromDate := time.Time(previous.FromDate)
+			newToDate := utils.GetNextAvailableDate(previousFromDate, currentFromDate)
+			logger.Logger.Debugf("Adjusting previous history entry to: %s", newToDate)
 			_, err := tx.Exec(`
             UPDATE go_employee_history SET to_date = ? WHERE id = ?
-        `, currentFromDate.AddDate(0, 0, -1), previous.ID)
+        `, newToDate, previous.ID)
 			if err != nil {
 				return err
 			}
@@ -1186,16 +1195,21 @@ func (s *DatabaseService) UpdateEmployeeHistory(payload models.UpdateEmployeeHis
 			if err != nil {
 				return err
 			}
-			if currentToDate.After(nextFromDate) {
+			if !currentToDate.Before(nextFromDate) {
 				needsAdjustment = true
 			}
 		}
 
 		if needsAdjustment {
-			logger.Logger.Debugf("Adjusting current history entry to: %s", nextFromDate.AddDate(0, 0, -1))
-			_, err := tx.Exec(`
+			currentFromDate, err := time.Parse(utils.InternalDateFormat, *payload.FromDate)
+			if err != nil {
+				return err
+			}
+			newToDate := utils.GetNextAvailableDate(currentFromDate, nextFromDate)
+			logger.Logger.Debugf("Adjusting current history entry to: %s", newToDate)
+			_, err = tx.Exec(`
             UPDATE go_employee_history SET to_date = ? WHERE id = ?
-        `, nextFromDate.AddDate(0, 0, -1), historyID)
+        `, newToDate, historyID)
 			if err != nil {
 				return err
 			}
