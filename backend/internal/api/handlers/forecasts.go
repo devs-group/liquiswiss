@@ -95,7 +95,7 @@ func CalculateForecasts(dbService service.IDatabaseService, c *gin.Context) {
 	today := utils.GetTodayAsUTC()
 	maxEndDate := today.AddDate(3, 0, 0)
 	// We include the whole final month, otherwise the results might be confusing
-	lastDayOfMaxEndDate := time.Date(maxEndDate.Year(), maxEndDate.Month()+1, 0, 0, 0, 0, 0, maxEndDate.Location())
+	lastDayOfMaxEndDate := time.Date(maxEndDate.Year(), maxEndDate.Month()+1, 0, 23, 59, 59, 999999999, maxEndDate.Location())
 
 	// We need a map for revenues and expenses
 	forecastMap := make(map[string]map[string]int64)
