@@ -48,7 +48,7 @@
         <label class="text-sm font-bold" for="vacation-days-per-year">Von*</label>
         <i class="pi pi-info-circle" v-tooltip="'Von wann gelten diese Daten'"></i>
       </div>
-      <Calendar v-model="fromDate" v-bind="fromDateProps" :disabled-dates="getDisabledDates" date-format="dd.mm.yy" showIcon showButtonBar
+      <DatePicker v-model="fromDate" v-bind="fromDateProps" :disabled-dates="getDisabledDates" date-format="dd.mm.yy" showIcon showButtonBar
                 :class="{'p-invalid': errors['fromDate']?.length}" :disabled="isLoading"/>
       <small class="text-liqui-red">{{errors["fromDate"] || '&nbsp;'}}</small>
     </div>
@@ -58,7 +58,7 @@
         <label class="text-sm font-bold" for="vacation-days-per-year">Bis</label>
         <i class="pi pi-info-circle" v-tooltip="'Bis wann gelten diese Daten? (Leer lassen für unbegrenzt)'"></i>
       </div>
-      <Calendar v-model="toDate" :min-date="fromDate" v-bind="toDateProps" date-format="dd.mm.yy" showIcon showButtonBar
+      <DatePicker v-model="toDate" :min-date="fromDate" v-bind="toDateProps" date-format="dd.mm.yy" showIcon showButtonBar
                 :class="{'p-invalid': errors['toDate']?.length}" :disabled="isLoading"/>
       <small class="text-liqui-red">{{errors["toDate"] || '&nbsp;'}}</small>
     </div>

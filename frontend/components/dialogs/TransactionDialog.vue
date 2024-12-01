@@ -84,7 +84,7 @@
         <label class="text-sm font-bold" for="vacation-days-per-year">Von *</label>
         <i class="pi pi-info-circle" v-tooltip="'Ab wann beginnt diese Transaktion?'"></i>
       </div>
-      <Calendar v-model="startDate" v-bind="startDateProps" date-format="dd.mm.yy" showIcon showButtonBar
+      <DatePicker v-model="startDate" v-bind="startDateProps" date-format="dd.mm.yy" showIcon showButtonBar
                 :class="{'p-invalid': errors['startDate']?.length}"/>
       <small class="text-liqui-red">{{errors["startDate"] || '&nbsp;'}}</small>
     </div>
@@ -94,7 +94,7 @@
         <label class="text-sm font-bold" for="vacation-days-per-year">Bis</label>
         <i class="pi pi-info-circle" v-tooltip="'(Optional) Bis wann geht diese Transaktion?'"></i>
       </div>
-      <Calendar v-model="endDate" :min-date="startDate" v-bind="endDateProps" date-format="dd.mm.yy" showIcon showButtonBar
+      <DatePicker v-model="endDate" :min-date="startDate" v-bind="endDateProps" date-format="dd.mm.yy" showIcon showButtonBar
                 :class="{'p-invalid': errors['endDate']?.length}"/>
       <small class="text-liqui-red">{{errors["endDate"] || '&nbsp;'}}</small>
     </div>
