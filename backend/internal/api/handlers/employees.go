@@ -455,7 +455,7 @@ func DeleteEmployeeHistory(dbService service.IDatabaseService, c *gin.Context) {
 		return
 	}
 
-	err = dbService.DeleteEmployeeHistory(existingEmployeeHistory.ID, userID)
+	err = dbService.DeleteEmployeeHistory(existingEmployeeHistory, userID)
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 		return

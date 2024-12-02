@@ -60,7 +60,7 @@ type IDatabaseService interface {
 	UpdateEmployee(payload models.UpdateEmployee, userID int64, employeeID string) error
 	UpdateEmployeeHistory(payload models.UpdateEmployeeHistory, employeeID int64, historyID string) error
 	DeleteEmployee(employeeID int64, userID int64) error
-	DeleteEmployeeHistory(historyID int64, userID int64) error
+	DeleteEmployeeHistory(existingEmployeeHistory *models.EmployeeHistory, userID int64) error
 
 	ListForecasts(userID int64, limit int64) ([]models.Forecast, error)
 	ListForecastDetails(userID int64, limit int64) ([]models.ForecastDatabaseDetails, error)
@@ -1246,19 +1246,35 @@ func (s *DatabaseService) DeleteEmployee(employeeID int64, userID int64) error {
 }
 
 // DeleteEmployeeHistory implements deleting an employee history entry
-func (s *DatabaseService) DeleteEmployeeHistory(historyID int64, userID int64) error {
+func (s *DatabaseService) DeleteEmployeeHistory(toDeleteEmployeeHistory *models.EmployeeHistory, userID int64) error {
+	tx, err := s.db.Begin()
+	if err != nil {
+		return err
+	}
+
+	defer func() {
+		if p := recover(); p != nil {
+			tx.Rollback()
+			panic(p)
+		} else if err != nil {
+			tx.Rollback()
+		} else {
+			err = tx.Commit()
+		}
+	}()
+
 	query, err := sqlQueries.ReadFile("queries/delete_employee_history.sql")
 	if err != nil {
 		return err
 	}
 
-	stmt, err := s.db.Prepare(string(query))
+	stmt, err := tx.Prepare(string(query))
 	if err != nil {
 		return err
 	}
 	defer stmt.Close()
 
-	res, err := stmt.Exec(historyID, userID)
+	res, err := stmt.Exec(toDeleteEmployeeHistory.ID, userID)
 	if err != nil {
 		return err
 	}
@@ -1266,6 +1282,41 @@ func (s *DatabaseService) DeleteEmployeeHistory(historyID int64, userID int64) e
 	_, err = res.RowsAffected()
 	if err != nil {
 		return err
+	}
+
+	// In case there is a previous and next entry, adjust the previous toDate related to the next one
+	currentFromDate := time.Time(toDeleteEmployeeHistory.FromDate)
+	currentFromDateFormatted := currentFromDate.Format(utils.InternalDateFormat)
+	var previous models.EmployeeHistory
+	if err := tx.QueryRow(`
+        SELECT id, from_date, to_date FROM go_employee_history 
+        WHERE employee_id = ? AND from_date < ? AND id != ?
+        ORDER BY from_date DESC LIMIT 1
+    `, toDeleteEmployeeHistory.EmployeeID, currentFromDateFormatted, toDeleteEmployeeHistory.ID,
+	).Scan(&previous.ID, &previous.FromDate, &previous.ToDate); err != nil && err != sql.ErrNoRows {
+		return err
+	}
+	var next models.EmployeeHistory
+	if err := tx.QueryRow(`
+	   SELECT id, from_date, to_date FROM go_employee_history
+       WHERE employee_id = ? AND from_date > ? AND id != ?
+	   ORDER BY from_date ASC LIMIT 1
+	`, toDeleteEmployeeHistory.EmployeeID, currentFromDateFormatted, toDeleteEmployeeHistory.ID,
+	).Scan(&next.ID, &next.FromDate, &next.ToDate); err != nil && err != sql.ErrNoRows {
+		return err
+	}
+
+	if previous.ID != 0 && next.ID != 0 {
+		previousFromDate := time.Time(previous.FromDate)
+		nextFromDate := time.Time(next.FromDate)
+		newToDate := utils.GetNextAvailableDate(previousFromDate, nextFromDate)
+		logger.Logger.Debugf("Adjusting previous history entry to: %s", newToDate)
+		_, err := tx.Exec(`
+            UPDATE go_employee_history SET to_date = ? WHERE id = ?
+        `, newToDate, previous.ID)
+		if err != nil {
+			return err
+		}
 	}
 
 	return nil

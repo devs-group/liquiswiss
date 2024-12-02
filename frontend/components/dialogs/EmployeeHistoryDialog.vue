@@ -46,9 +46,9 @@
     <div class="flex flex-col gap-2 col-span-full md:col-span-1">
       <div class="flex items-center gap-2">
         <label class="text-sm font-bold" for="vacation-days-per-year">Von*</label>
-        <i class="pi pi-info-circle" v-tooltip="'Von wann gelten diese Daten'"></i>
+        <i class="pi pi-info-circle" v-tooltip="'Ab wann gelten diese Daten?'"></i>
       </div>
-      <DatePicker v-model="fromDate" v-bind="fromDateProps" :disabled-dates="getDisabledDates" date-format="dd.mm.yy" showIcon showButtonBar
+      <DatePicker v-model="fromDate" v-bind="fromDateProps" :min-date="getDisabledPreviousDate" :max-date="getDisabledNextDate" date-format="dd.mm.yy" showIcon showButtonBar
                 :class="{'p-invalid': errors['fromDate']?.length}" :disabled="isLoading"/>
       <small class="text-liqui-red">{{errors["fromDate"] || '&nbsp;'}}</small>
     </div>
@@ -56,11 +56,9 @@
     <div class="flex flex-col gap-2 col-span-full md:col-span-1">
       <div class="flex items-center gap-2">
         <label class="text-sm font-bold" for="vacation-days-per-year">Bis</label>
-        <i class="pi pi-info-circle" v-tooltip="'Bis wann gelten diese Daten? (Leer lassen für unbegrenzt)'"></i>
+        <i class="pi pi-info-circle" v-tooltip="'Bis wann gelten diese Daten?'"></i>
       </div>
-      <DatePicker v-model="toDate" :min-date="fromDate" v-bind="toDateProps" date-format="dd.mm.yy" showIcon showButtonBar
-                :class="{'p-invalid': errors['toDate']?.length}" :disabled="isLoading"/>
-      <small class="text-liqui-red">{{errors["toDate"] || '&nbsp;'}}</small>
+      <Message severity="secondary">Wird automatisch berechnet...</Message>
     </div>
 
     <div v-if="!isClone && !isCreate" class="flex justify-end col-span-full">
@@ -90,7 +88,7 @@ import {isNumber} from "~/utils/number-helper";
 
 const dialogRef = inject<IHistoryFormDialog>('dialogRef')!;
 
-const {employeeHistories, getEmployee, createEmployeeHistory, updateEmployeeHistory, deleteEmployeeHistory} = useEmployees()
+const {employeeHistories, createEmployeeHistory, updateEmployeeHistory, deleteEmployeeHistory} = useEmployees()
 const {currencies} = useGlobalData()
 const confirm = useConfirm()
 const toast = useToast()
@@ -110,7 +108,6 @@ const { defineField, errors, handleSubmit, meta } = useForm({
     salaryCurrency: yup.number().required('Währung wird benötigt').typeError('Bitte gültige Währung eingeben'),
     vacationDaysPerYear: yup.number().typeError('Bitte Zahl eingeben').min(0, 'Muss mindestens 0 sein'),
     fromDate: yup.date().typeError('Bitte Datum eingeben').required('Von wird benötigt'),
-    toDate: yup.date().nullable().typeError('Bitte Datum eingeben'),
   }),
   initialValues: {
     id: isClone ? undefined : employeeHistory?.id ?? undefined,
@@ -119,7 +116,6 @@ const { defineField, errors, handleSubmit, meta } = useForm({
     salaryCurrency: employeeHistory?.salaryCurrency.id ?? null,
     vacationDaysPerYear: employeeHistory?.vacationDaysPerYear ?? 0,
     fromDate: employeeHistory?.fromDate ? DateToUTCDate(employeeHistory.fromDate) : null,
-    toDate: employeeHistory?.toDate ? DateToUTCDate(employeeHistory.toDate) : undefined,
   } as EmployeeHistoryFormData
 });
 
@@ -128,19 +124,31 @@ const [salaryPerMonth, salaryPerMonthProps] = defineField('salaryPerMonth')
 const [salaryCurrency, salaryCurrencyProps] = defineField('salaryCurrency')
 const [vacationDaysPerYear, vacationDaysPerYearProps] = defineField('vacationDaysPerYear')
 const [fromDate, fromDateProps] = defineField('fromDate')
-const [toDate, toDateProps] = defineField('toDate')
 
-// Watchers
-watch(fromDate, (value) => {
-  if (toDate.value && value > toDate.value) {
-    toDate.value = undefined
+const getDisabledPreviousDate = computed(() => {
+  const fromDate = employeeHistory?.fromDate ? DateToUTCDate(employeeHistory?.fromDate) : DateToUTCDate(new Date())
+  const otherFutureHistories = employeeHistories.value.data
+      .filter(h => h.id !== employeeHistory?.id && h.toDate && DateToUTCDate(h.toDate) <= fromDate)
+      .map(h => DateToUTCDate(h.toDate!))
+      .sort((a, b) => b.getTime() - a.getTime())
+  if (otherFutureHistories.length > 0) {
+    const previousLockedDate = otherFutureHistories[0]
+    previousLockedDate.setDate(previousLockedDate.getDate() + 1)
+    return previousLockedDate
   }
 })
 
-const getDisabledDates = computed(() => {
-  return employeeHistories.value.data.filter(h => h.id !== employeeHistory?.id).map(h => {
-    return DateToUTCDate(h.fromDate)
-  })
+const getDisabledNextDate = computed(() => {
+  const fromDate = employeeHistory?.fromDate ? DateToUTCDate(employeeHistory?.fromDate) : DateToUTCDate(new Date())
+  const otherFutureHistories = employeeHistories.value.data
+      .filter(h => h.id !== employeeHistory?.id && DateToUTCDate(h.fromDate) >= fromDate)
+      .map(h => DateToUTCDate(h.fromDate))
+      .sort((a, b) => a.getTime() - b.getTime())
+  if (otherFutureHistories.length > 0) {
+    const nextLockedDate = otherFutureHistories[0]
+    nextLockedDate.setDate(nextLockedDate.getDate() - 1)
+    return nextLockedDate
+  }
 })
 
 const onParseAmount = (event: Event) => {
@@ -153,9 +161,6 @@ const onSubmit = handleSubmit((values) => {
   isLoading.value = true
   errorMessage.value = ''
   values.fromDate.setMinutes(values.fromDate.getMinutes() - values.fromDate.getTimezoneOffset())
-  if (values.toDate instanceof Date) {
-    values.toDate.setMinutes(values.toDate.getMinutes() - values.toDate.getTimezoneOffset())
-  }
 
   if (isCreate) {
     createEmployeeHistory(employeeID, values)
