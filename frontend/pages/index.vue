@@ -5,7 +5,7 @@
   <Message v-if="forecastErrorMessage.length" severity="error" :closable="false" class="col-span-full">{{forecastErrorMessage}}</Message>
   <div v-else class="flex flex-col gap-4">
     <div class="flex flex-col gap-4">
-      <div class="grid grid-cols-1 sm:grid-cols-3">
+      <div class="grid grid-cols-1 sm:grid-cols-3 gap-2">
         <div class="flex items-center gap-2">
           <p class="text-sm">Zeitraum:</p>
           <Select v-model="forecastMonths"
