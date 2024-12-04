@@ -11,6 +11,13 @@
       </div>
     </div>
   </div>
+  <div :class="{'!translate-y-0 opacity-100 pointer-events-auto': updateAvailable}"
+       class="flex items-center justify-center gap-2 bg-zinc-800 dark:bg-zinc-600 text-white
+       !bg-opacity-80 rounded-xl backdrop-blur-sm fixed bottom-2 right-2 left-2 sm:left-auto p-4
+       pointer-events-none transform translate-y-full opacity-0 transition-all duration-300">
+    <p class="text-sm flex-1 cursor-default">Es gibt eine neue Version dieser Webseite</p>
+    <Button @click="reloadNuxtApp({force: true})" label="Neu laden" severity="help" size="small"/>
+  </div>
   <DynamicDialog/>
   <ConfirmDialog :draggable="false"/>
   <Toast position="bottom-center"/>
@@ -26,7 +33,9 @@ import {DateStringToFormattedDate} from "~/utils/format-helper";
 const {isAuthenticated, getAccessToken} = useAuth()
 const {useFetchListCurrencies, useFetchListCategories, useFetchListFiatRates, useFetchGetServerTime, serverDate} = useGlobalData()
 const toast = useToast()
+const {hook} = useNuxtApp()
 const hasInitialLoadError = ref(false)
+const updateAvailable = ref(false)
 
 useHead({
   title: 'LIQUISWISS',
@@ -46,6 +55,10 @@ if (isAuthenticated.value) {
 
 // This is to ensure users gets an access token if it expires
 onMounted(() => {
+  hook("app:manifest:update", () => {
+    updateAvailable.value = true
+  })
+
   if (isAuthenticated.value) {
     getAccessToken()
     if (hasInitialLoadError.value) {

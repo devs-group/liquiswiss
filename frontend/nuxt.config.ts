@@ -33,6 +33,10 @@ export default defineNuxtConfig({
     tailwindcss: {
         viewer: false,
     },
+    experimental: {
+        appManifest: true,
+        checkOutdatedBuildInterval: 15 * 1000,
+    },
     css: ["@/assets/css/tailwind.css", "primeicons/primeicons.css"],
     watch: ["config/theme.ts"],
     compatibilityDate: '2024-07-16',
