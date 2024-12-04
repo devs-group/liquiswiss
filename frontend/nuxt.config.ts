@@ -8,7 +8,7 @@ export default defineNuxtConfig({
         telemetry: false,
     },
     runtimeConfig: {
-        apiHost: '',
+        apiHost: 'http://localhost:8080',
     },
     routeRules: {
         '/**': {
@@ -36,6 +36,11 @@ export default defineNuxtConfig({
     experimental: {
         appManifest: true,
         checkOutdatedBuildInterval: 15 * 1000,
+    },
+    vite: {
+        esbuild: {
+            drop: ['debugger'],
+        }
     },
     css: ["@/assets/css/tailwind.css", "primeicons/primeicons.css"],
     watch: ["config/theme.ts"],
