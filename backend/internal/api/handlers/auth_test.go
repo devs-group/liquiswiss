@@ -32,6 +32,7 @@ func TestRegisterSuccessfully(t *testing.T) {
 	mockDBService := mocks.NewMockIDatabaseService(ctrl)
 
 	// Set up expectations for the mock
+	mockDBService.EXPECT().StoreRefreshTokenID(gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any()).Return(nil)
 	mockDBService.EXPECT().RegisterUser(gomock.Any(), gomock.Any()).Return(int64(1), nil)
 	mockDBService.EXPECT().GetProfile("1").Return(&models.User{
 		ID:    1,

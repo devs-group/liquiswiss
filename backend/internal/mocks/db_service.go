@@ -262,7 +262,7 @@ func (mr *MockIDatabaseServiceMockRecorder) DeleteEmployee(arg0, arg1 any) *gomo
 }
 
 // DeleteEmployeeHistory mocks base method.
-func (m *MockIDatabaseService) DeleteEmployeeHistory(arg0, arg1 int64) error {
+func (m *MockIDatabaseService) DeleteEmployeeHistory(arg0 *models.EmployeeHistory, arg1 int64) error {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "DeleteEmployeeHistory", arg0, arg1)
 	ret0, _ := ret[0].(error)
