@@ -20,6 +20,7 @@ build-nuxt:
     - docker build -f ./.deploy/nuxt/Dockerfile -t ${IMAGE} ./
     - docker push ${IMAGE}
   rules:
+    - if: $CI_COMMIT_BRANCH == "main"
     - changes:
       - frontend/**/*
 
@@ -31,6 +32,7 @@ build-backend:
     - docker build -f ./.deploy/backend/Dockerfile -t ${IMAGE} ./
     - docker push ${IMAGE}
   rules:
+    - if: $CI_COMMIT_BRANCH == "main"
     - changes:
       - backend/**/*
 
