@@ -2,6 +2,7 @@
 package service
 
 import (
+	"bytes"
 	"database/sql"
 	"embed"
 	"encoding/json"
@@ -15,6 +16,7 @@ import (
 	"log"
 	"path/filepath"
 	"strings"
+	"text/template"
 	"time"
 )
 
@@ -73,6 +75,12 @@ type IDatabaseService interface {
 	CreateBankAccount(payload models.CreateBankAccount, userID int64) (int64, error)
 	UpdateBankAccount(payload models.UpdateBankAccount, userID int64, bankAccountID string) error
 	DeleteBankAccount(userID int64, bankAccountID string) error
+
+	ListVats(userID int64) ([]models.Vat, error)
+	GetVat(userID int64, vatID string) (*models.Vat, error)
+	CreateVat(payload models.CreateVat, userID int64) (int64, error)
+	UpdateVat(payload models.UpdateVat, userID int64, vatID string) error
+	DeleteVat(userID int64, vatID string) error
 
 	ListCategories(page int64, limit int64) ([]models.Category, int64, error)
 	GetCategory(id string) (*models.Category, error)
@@ -283,7 +291,7 @@ func (s *DatabaseService) CreateTransaction(payload models.CreateTransaction, us
 
 	res, err := stmt.Exec(
 		payload.Name, payload.Amount, payload.Cycle, payload.Type, payload.StartDate, payload.EndDate,
-		payload.Category, payload.Currency, payload.Employee, userID, nil,
+		payload.Category, payload.Currency, payload.Employee, userID, nil, payload.Vat, payload.VatIncluded,
 	)
 	if err != nil {
 		return 0, err
@@ -353,6 +361,16 @@ func (s *DatabaseService) UpdateTransaction(payload models.UpdateTransaction, us
 	} else {
 		args = append(args, nil)
 	}
+	queryBuild = append(queryBuild, "vat = ?")
+	if payload.Vat != nil {
+		args = append(args, *payload.Vat)
+	} else {
+		args = append(args, nil)
+	}
+	if payload.VatIncluded != nil {
+		queryBuild = append(queryBuild, "vat_included = ?")
+		args = append(args, *payload.VatIncluded)
+	}
 
 	// Add WHERE clause
 	query += strings.Join(queryBuild, ", ")
@@ -412,14 +430,21 @@ func (s *DatabaseService) ListTransactions(userID int64, page int64, limit int64
 		return nil, 0, fmt.Errorf("invalid sort by or sort order")
 	}
 
-	query, err := sqlQueries.ReadFile("queries/list_transactions.sql")
+	parsed, err := template.ParseFS(sqlQueries, "queries/list_transactions.sql")
 	if err != nil {
 		return nil, 0, err
 	}
 
-	queryString := fmt.Sprintf(string(query), sortBy, sortBy, sortOrder)
+	var query bytes.Buffer
+	err = parsed.Execute(&query, map[string]string{
+		"sortBy":    sortBy,
+		"sortOrder": sortOrder,
+	})
+	if err != nil {
+		return nil, 0, err
+	}
 
-	rows, err := s.db.Query(queryString, userID, (page)*limit, 0)
+	rows, err := s.db.Query(query.String(), userID, (page)*limit, 0)
 	if err != nil {
 		return nil, 0, err
 	}
@@ -433,13 +458,19 @@ func (s *DatabaseService) ListTransactions(userID int64, page int64, limit int64
 		var nextExecutionDate sql.NullTime
 		var transactionEmployeeID sql.NullInt64
 		var transactionEmployeeName sql.NullString
+		var vatID sql.NullInt64
+		var vatValue sql.NullInt64
+		var vatFormattedValue sql.NullString
+		var vatCanEdit sql.NullBool
 
 		err := rows.Scan(
-			&transaction.ID, &transaction.Name, &transaction.Amount, &transaction.Cycle, &transaction.Type, &startDate, &endDate,
+			&transaction.ID, &transaction.Name, &transaction.Amount, &transaction.VatAmount, &transaction.VatIncluded,
+			&transaction.Cycle, &transaction.Type, &startDate, &endDate,
 			&transaction.Category.ID, &transaction.Category.Name,
 			&transaction.Currency.ID, &transaction.Currency.Code, &transaction.Currency.Description, &transaction.Currency.LocaleCode,
-			&transactionEmployeeID, &transactionEmployeeName, &nextExecutionDate,
-			&totalCount,
+			&transactionEmployeeID, &transactionEmployeeName,
+			&vatID, &vatValue, &vatFormattedValue, &vatCanEdit,
+			&nextExecutionDate, &totalCount,
 		)
 		if err != nil {
 			return nil, 0, err
@@ -464,6 +495,15 @@ func (s *DatabaseService) ListTransactions(userID int64, page int64, limit int64
 			}
 		}
 
+		if vatID.Valid {
+			transaction.Vat = &models.Vat{
+				ID:             vatID.Int64,
+				Value:          vatValue.Int64,
+				FormattedValue: vatFormattedValue.String,
+				CanEdit:        vatCanEdit.Bool,
+			}
+		}
+
 		transactions = append(transactions, transaction)
 	}
 
@@ -477,6 +517,10 @@ func (s *DatabaseService) GetTransaction(userID int64, transactionID string) (*m
 	var endDate sql.NullTime
 	var transactionEmployeeID sql.NullInt64
 	var transactionEmployeeName sql.NullString
+	var vatID sql.NullInt64
+	var vatValue sql.NullInt64
+	var vatFormattedValue sql.NullString
+	var vatCanEdit sql.NullBool
 
 	query, err := sqlQueries.ReadFile("queries/get_transaction.sql")
 	if err != nil {
@@ -488,6 +532,7 @@ func (s *DatabaseService) GetTransaction(userID int64, transactionID string) (*m
 		&transaction.Category.ID, &transaction.Category.Name,
 		&transaction.Currency.ID, &transaction.Currency.Code, &transaction.Currency.Description, &transaction.Currency.LocaleCode,
 		&transactionEmployeeID, &transactionEmployeeName,
+		&vatID, &vatValue, &vatFormattedValue, &vatCanEdit,
 	)
 	if err != nil {
 		return nil, err
@@ -504,6 +549,15 @@ func (s *DatabaseService) GetTransaction(userID int64, transactionID string) (*m
 		transaction.Employee = &models.TransactionEmployee{
 			ID:   transactionEmployeeID.Int64,
 			Name: transactionEmployeeName.String,
+		}
+	}
+
+	if vatID.Valid {
+		transaction.Vat = &models.Vat{
+			ID:             vatID.Int64,
+			Value:          vatValue.Int64,
+			FormattedValue: vatFormattedValue.String,
+			CanEdit:        vatCanEdit.Bool,
 		}
 	}
 
@@ -1041,8 +1095,8 @@ func (s *DatabaseService) UpdateEmployee(payload models.UpdateEmployee, userID i
 
 	// Add WHERE clause
 	query += strings.Join(queryBuild, ", ")
-	query += " WHERE id = ?"
-	args = append(args, employeeID)
+	query += " WHERE id = ? AND owner = ?"
+	args = append(args, employeeID, userID)
 
 	stmt, err := s.db.Prepare(query)
 	if err != nil {
@@ -1120,8 +1174,8 @@ func (s *DatabaseService) UpdateEmployeeHistory(payload models.UpdateEmployeeHis
 
 	// Add WHERE clause
 	query += strings.Join(queryBuild, ", ")
-	query += " WHERE id = ?"
-	args = append(args, historyID)
+	query += " WHERE id = ? and employee_id = ?"
+	args = append(args, historyID, employeeID)
 
 	stmt, err := tx.Prepare(query)
 	if err != nil {
@@ -1586,8 +1640,8 @@ func (s *DatabaseService) UpdateBankAccount(payload models.UpdateBankAccount, us
 
 	// Add WHERE clause
 	query += strings.Join(queryBuild, ", ")
-	query += " WHERE id = ?"
-	args = append(args, bankAccountID)
+	query += " WHERE id = ? AND owner = ?"
+	args = append(args, bankAccountID, userID)
 
 	stmt, err := s.db.Prepare(query)
 	if err != nil {
@@ -1595,7 +1649,12 @@ func (s *DatabaseService) UpdateBankAccount(payload models.UpdateBankAccount, us
 	}
 	defer stmt.Close()
 
-	_, err = stmt.Exec(args...)
+	res, err := stmt.Exec(args...)
+	if err != nil {
+		return err
+	}
+
+	_, err = res.RowsAffected()
 	if err != nil {
 		return err
 	}
@@ -1616,6 +1675,144 @@ func (s *DatabaseService) DeleteBankAccount(userID int64, bankAccountID string) 
 	defer stmt.Close()
 
 	res, err := stmt.Exec(bankAccountID, userID)
+	if err != nil {
+		return err
+	}
+
+	_, err = res.RowsAffected()
+	if err != nil {
+		return err
+	}
+
+	return nil
+}
+
+// ListVats returns generally available vats and the vats created by the user
+func (s *DatabaseService) ListVats(userID int64) ([]models.Vat, error) {
+	vats := make([]models.Vat, 0)
+
+	query, err := sqlQueries.ReadFile("queries/list_vats.sql")
+	if err != nil {
+		return nil, err
+	}
+
+	rows, err := s.db.Query(string(query), userID)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+
+	for rows.Next() {
+		var vat models.Vat
+
+		err := rows.Scan(
+			&vat.ID, &vat.Value, &vat.FormattedValue, &vat.CanEdit,
+		)
+		if err != nil {
+			return nil, err
+		}
+
+		vats = append(vats, vat)
+	}
+
+	return vats, nil
+}
+
+func (s *DatabaseService) GetVat(userID int64, vatID string) (*models.Vat, error) {
+	var vat models.Vat
+
+	query, err := sqlQueries.ReadFile("queries/get_vat.sql")
+	if err != nil {
+		return nil, err
+	}
+
+	err = s.db.QueryRow(string(query), vatID, userID).Scan(
+		&vat.ID, &vat.Value, &vat.FormattedValue, &vat.CanEdit,
+	)
+	if err != nil {
+		return nil, err
+	}
+
+	return &vat, nil
+}
+
+func (s *DatabaseService) CreateVat(payload models.CreateVat, userID int64) (int64, error) {
+	query, err := sqlQueries.ReadFile("queries/create_vat.sql")
+	if err != nil {
+		return 0, err
+	}
+
+	stmt, err := s.db.Prepare(string(query))
+	if err != nil {
+		return 0, err
+	}
+	defer stmt.Close()
+
+	res, err := stmt.Exec(
+		payload.Value, userID,
+	)
+	if err != nil {
+		return 0, err
+	}
+
+	// Get the ID of the newly inserted bank account
+	id, err := res.LastInsertId()
+	if err != nil {
+		return 0, err
+	}
+
+	return id, nil
+}
+
+func (s *DatabaseService) UpdateVat(payload models.UpdateVat, userID int64, vatID string) error {
+	// Base query
+	query := "UPDATE vats SET "
+	queryBuild := []string{}
+	args := []interface{}{}
+
+	// Dynamically add fields that are not nil
+	if payload.Value != nil {
+		queryBuild = append(queryBuild, "value = ?")
+		args = append(args, *payload.Value)
+	}
+
+	// Add WHERE clause
+	query += strings.Join(queryBuild, ", ")
+	query += " WHERE id = ? AND owner = ?"
+	args = append(args, vatID, userID)
+
+	stmt, err := s.db.Prepare(query)
+	if err != nil {
+		return err
+	}
+	defer stmt.Close()
+
+	res, err := stmt.Exec(args...)
+	if err != nil {
+		return err
+	}
+
+	_, err = res.RowsAffected()
+	if err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (s *DatabaseService) DeleteVat(userID int64, vatID string) error {
+	query, err := sqlQueries.ReadFile("queries/delete_vat.sql")
+	if err != nil {
+		return err
+	}
+
+	stmt, err := s.db.Prepare(string(query))
+	if err != nil {
+		return err
+	}
+	defer stmt.Close()
+
+	res, err := stmt.Exec(vatID, userID)
 	if err != nil {
 		return err
 	}

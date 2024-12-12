@@ -96,7 +96,7 @@ const { defineField: defineFieldPassword, errors: errorsPassword, handleSubmit: 
       then: (schema) => schema.min(8, 'Bitte gib mind. 8 Zeichen ein').required('Passwort wird benötigt'),
       otherwise: (schema) => schema.notRequired(),
     }),
-    passwordRepeat: yup.string().test('passwords-match', 'Passwörter stimmen nicht überin',(value, context) => {
+    passwordRepeat: yup.string().test('passwords-match', 'Passwörter stimmen nicht überein',(value, context) => {
       return context.parent.password === value
     }),
   }),

@@ -2,6 +2,7 @@ import type {CycleType, TransactionType} from "~/config/enums";
 import type {CategoryResponse, Strapi_RelationResponse_Category} from "~/models/category";
 import type {CurrencyResponse, Strapi_RelationResponse_Currency} from "~/models/currency";
 import type {PaginationResponse} from "~/models/pagination";
+import type {VatResponse} from "~/models/vat";
 
 export interface StrapiTransaction {
     id?: number;
@@ -24,6 +25,9 @@ export interface TransactionResponse {
     id: number;
     name: string;
     amount: number;
+    vat: VatResponse | null;
+    vatAmount: number;
+    vatIncluded: boolean;
     cycle: CycleTypeToStringDefinition | null;
     type: TransactionTypeToStringDefinition;
     startDate: string;
@@ -48,6 +52,8 @@ export interface TransactionFormData {
     id: number;
     name: string;
     amount: number;
+    vat?: number;
+    vatIncluded: boolean;
     cycle?: CycleTypeToStringDefinition;
     type: TransactionTypeToStringDefinition;
     startDate: Date;

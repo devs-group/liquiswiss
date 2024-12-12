@@ -11,7 +11,7 @@
     <div class="flex flex-col gap-2 col-span-full md:col-span-1">
       <div class="flex items-center gap-2">
         <label class="text-sm font-bold" for="name">Kontostand *</label>
-        <i class="pi pi-info-circle text-liqui-blue" v-tooltip="'Negatives Vorzeichen möglich'"></i>
+        <i class="pi pi-info-circle text-liqui-blue" v-tooltip.top="'Negatives Vorzeichen möglich'"></i>
       </div>
       <div class="flex item-center gap-2">
         <InputText v-model="amount" v-bind="amountProps"

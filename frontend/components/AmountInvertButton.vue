@@ -4,7 +4,7 @@
           icon="pi"
           :icon-class="{'pi-minus-circle': !isAmountNegative, 'pi-plus-circle': isAmountNegative}"
           :disabled="normalizedAmount == 0"
-          v-tooltip="isAmountNegative ? 'Betrag positiv machen' : 'Betrag negativ machen'"
+          v-tooltip.top="isAmountNegative ? 'Betrag positiv machen' : 'Betrag negativ machen'"
   />
 </template>
 

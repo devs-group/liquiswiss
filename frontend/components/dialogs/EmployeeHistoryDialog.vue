@@ -21,7 +21,7 @@
     <div class="flex flex-col gap-2 col-span-full md:col-span-1">
       <div class="flex items-center gap-2">
         <label class="text-sm font-bold" for="salary-per-month">Lohnkosten pro Monat*</label>
-        <i class="pi pi-info-circle" v-tooltip="'Bruttolohn + Arbeitgeberkosten'"></i>
+        <i class="pi pi-info-circle" v-tooltip.top="'Bruttolohn + Arbeitgeberkosten'"></i>
       </div>
       <InputText v-model="salaryPerMonth" v-bind="salaryPerMonthProps"
                  @input="onParseAmount"
@@ -46,7 +46,7 @@
     <div class="flex flex-col gap-2 col-span-full md:col-span-1">
       <div class="flex items-center gap-2">
         <label class="text-sm font-bold" for="vacation-days-per-year">Von*</label>
-        <i class="pi pi-info-circle" v-tooltip="'Ab wann gelten diese Daten?'"></i>
+        <i class="pi pi-info-circle" v-tooltip.top="'Ab wann gelten diese Daten?'"></i>
       </div>
       <DatePicker v-model="fromDate" v-bind="fromDateProps" :min-date="getDisabledPreviousDate" :max-date="getDisabledNextDate" date-format="dd.mm.yy" showIcon showButtonBar
                 :class="{'p-invalid': errors['fromDate']?.length}" :disabled="isLoading"/>
@@ -56,7 +56,7 @@
     <div class="flex flex-col gap-2 col-span-full md:col-span-1">
       <div class="flex items-center gap-2">
         <label class="text-sm font-bold" for="vacation-days-per-year">Bis</label>
-        <i class="pi pi-info-circle" v-tooltip="'Bis wann gelten diese Daten?'"></i>
+        <i class="pi pi-info-circle" v-tooltip.top="'Bis wann gelten diese Daten?'"></i>
       </div>
       <Message severity="secondary">Wird automatisch berechnet...</Message>
     </div>

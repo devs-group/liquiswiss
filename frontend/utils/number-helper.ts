@@ -11,6 +11,9 @@ export const isNumber = (value: any): boolean => {
 }
 
 export const parseCurrency = (input: string|number, allowNegative: boolean) => {
+    if (input === undefined) {
+        input = ''
+    }
     if (typeof input === 'number') {
         input = input.toString(10)
     }

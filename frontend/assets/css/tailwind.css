@@ -37,4 +37,8 @@
     .bg-liqui-green {
         @apply bg-green-100 dark:bg-green-800;
     }
+
+    .p-tooltip.p-component {
+        @apply sm:!max-w-xl;
+    }
 }

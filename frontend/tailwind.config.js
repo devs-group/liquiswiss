@@ -10,7 +10,7 @@ export default {
         'help': '#a855f7',
       },
       gridTemplateColumns: {
-        'transactions': 'minmax(14rem, 1fr), 8rem, 8rem, 12rem, minmax(12rem, 1fr), 10rem, 10rem, 14rem',
+        'transactions': 'minmax(14rem, 1fr), 7rem, 7rem, 7rem, minmax(10rem, 1fr), 10rem, 10rem, 10rem, 12rem',
         'employees': 'minmax(14rem, 1fr), 14rem, minmax(12rem, 1fr), 12rem, 12rem, 12rem',
       },
       maxWidth: {

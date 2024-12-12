@@ -12,12 +12,15 @@
       <p class="truncate">Ende</p>
       <i :class="getSortIcon('endDate')"></i>
     </div>
-    <div class="flex items-center gap-2 cursor-default transition-colors duration-300">
-      <p class="truncate">Nächste Ausführung</p>
+    <div class="flex items-center gap-2 cursor-default">
+      <p class="truncate">Ausführung</p>
     </div>
     <div @click="onSort('amount')" class="flex items-center gap-2 cursor-pointer hover:bg-zinc-50 hover:dark:bg-zinc-700 transition-colors duration-300">
       <p class="truncate">Betrag</p>
       <i :class="getSortIcon('amount')"></i>
+    </div>
+    <div class="flex items-center gap-2 cursor-default">
+      <p class="truncate">MWST</p>
     </div>
     <div @click="onSort('cycle')" class="flex items-center gap-2 cursor-pointer hover:bg-zinc-50 hover:dark:bg-zinc-700 transition-colors duration-300">
       <p class="truncate">Häufigkeit</p>

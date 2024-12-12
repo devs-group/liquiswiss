@@ -144,6 +144,22 @@ func (api *API) setupRouter() {
 				handlers.DeleteBankAccount(api.DBService, ctx)
 			})
 
+			protected.GET("/vats", func(ctx *gin.Context) {
+				handlers.ListVats(api.DBService, ctx)
+			})
+			protected.GET("/vats/:vatID", func(ctx *gin.Context) {
+				handlers.GetVat(api.DBService, ctx)
+			})
+			protected.POST("/vats", func(ctx *gin.Context) {
+				handlers.CreateVat(api.DBService, ctx)
+			})
+			protected.PATCH("/vats/:vatID", func(ctx *gin.Context) {
+				handlers.UpdateVat(api.DBService, ctx)
+			})
+			protected.DELETE("/vats/:vatID", func(ctx *gin.Context) {
+				handlers.DeleteVat(api.DBService, ctx)
+			})
+
 			protected.GET("/categories", func(ctx *gin.Context) {
 				handlers.ListCategories(api.DBService, ctx)
 			})

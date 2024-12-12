@@ -21,7 +21,7 @@
     <div class="flex flex-col gap-2 col-span-full md:col-span-1">
       <div class="flex items-center gap-2">
         <label class="text-sm font-bold" for="name">Mitarbeiter</label>
-        <i class="pi pi-info-circle text-liqui-blue" v-tooltip="'Optionale Assoziation'"></i>
+        <i class="pi pi-info-circle text-liqui-blue" v-tooltip.top="'Optionale Assoziation'"></i>
       </div>
       <Select v-model="employee" v-bind="employeeProps" empty-message="Keine Mitarbeiter gefunden"
                 :options="employees.data" option-label="name" option-value="id"
@@ -47,7 +47,7 @@
     <div class="flex flex-col gap-2 col-span-full md:col-span-1">
       <div class="flex items-center gap-2">
         <label class="text-sm font-bold" for="name">Betrag *</label>
-        <i class="pi pi-info-circle text-liqui-blue" v-tooltip="'Negatives Vorzeichen = Ausgabe'"></i>
+        <i class="pi pi-info-circle text-liqui-blue" v-tooltip.top="'Negatives Vorzeichen = Ausgabe'"></i>
         <div class="flex-1"></div>
         <small v-if="selectedCurrencyCode && selectedCurrencyCode != Constants.BASE_CURRENCY" class="text-zinc-600 dark:text-zinc-400">{{amountInBaseCurrency}}</small>
       </div>
@@ -60,6 +60,49 @@
         <AmountInvertButton @invert-amount="onInvertAmount" :amount="amount"/>
       </div>
       <small class="text-liqui-red">{{errors["amount"] || '&nbsp;'}}</small>
+    </div>
+
+    <div class="flex flex-col gap-2 col-span-full md:col-span-1">
+      <label class="text-sm font-bold" for="vat">Mehrwertsteuer</label>
+      <Select v-model="vat" v-bind="vatProps" empty-message="Keine Mehrwertsteuern gefunden"
+              :options="vats" option-label="formattedValue" option-value="id"
+              placeholder="Wählen (optional)"
+              :loading="isLoadingVats"
+              :disabled="isLoadingVats"
+              show-clear
+              :class="{'p-invalid': errors['vat']?.length}"
+              id="vat" type="text"
+      >
+        <template #option="slotProps">
+          <div class="flex items-center w-full justify-between">
+            <p>{{ slotProps.option.formattedValue }}</p>
+            <div v-if="slotProps.option.canEdit" class="flex gap-2 justify-end">
+              <Button @click.stop="onEditVat(slotProps.option)" size="small" icon="pi pi-pencil" outlined rounded />
+              <Button @click.stop="onDeleteVat(slotProps.option)" size="small" severity="danger" icon="pi pi-trash" outlined rounded />
+            </div>
+            <i v-else class="pi pi-info-circle text-liqui-blue"
+               v-tooltip.top="'Vorgegebene Mehrwertsteuer. Kann nicht bearbeitet bzw. gelöscht werden.'"></i>
+          </div>
+        </template>
+
+        <template #footer>
+          <div class="p-1 pt-0">
+            <Button @click="onCreateVat" label="Hinzufügen" fluid severity="secondary" text size="small" icon="pi pi-plus" />
+          </div>
+        </template>
+      </Select>
+      <small class="text-liqui-red">{{errors["vat"] || vatsErrorMessage || '&nbsp;'}}</small>
+    </div>
+
+    <div class="flex flex-col just gap-2 col-span-full md:col-span-1">
+      <div class="flex items-center gap-2">
+        <label class="text-sm font-bold" for="name">Mehrwertsteuer inklusive?</label>
+        <i class="pi pi-info-circle text-liqui-blue" v-tooltip.top="'Anhaken falls Betrag die Mehrwertsteuer bereits enthält'"></i>
+      </div>
+      <div class="flex items-center flex-1">
+        <ToggleSwitch v-model="vatIncluded" v-bind="vatIncludedProps" :disabled="!vat"/>
+      </div>
+      <small class="text-liqui-red">{{errors["vatIncluded"] || vatsErrorMessage || '&nbsp;'}}</small>
     </div>
 
     <div class="flex flex-col gap-2 col-span-full md:col-span-1">
@@ -86,7 +129,7 @@
     <div class="flex flex-col gap-2 col-span-full md:col-span-1">
       <div class="flex items-center gap-2">
         <label class="text-sm font-bold" for="vacation-days-per-year">Von *</label>
-        <i class="pi pi-info-circle" v-tooltip="'Ab wann beginnt diese Transaktion?'"></i>
+        <i class="pi pi-info-circle" v-tooltip.top="'Ab wann beginnt diese Transaktion?'"></i>
       </div>
       <DatePicker v-model="startDate" v-bind="startDateProps" date-format="dd.mm.yy" showIcon showButtonBar
                 :class="{'p-invalid': errors['startDate']?.length}"/>
@@ -96,7 +139,7 @@
     <div v-if="isRepeatingTransaction" class="flex flex-col gap-2 col-span-full md:col-span-1">
       <div class="flex items-center gap-2">
         <label class="text-sm font-bold" for="vacation-days-per-year">Bis</label>
-        <i class="pi pi-info-circle" v-tooltip="'(Optional) Bis wann geht diese Transaktion?'"></i>
+        <i class="pi pi-info-circle" v-tooltip.top="'(Optional) Bis wann geht diese Transaktion?'"></i>
       </div>
       <DatePicker v-model="endDate" :min-date="startDate" v-bind="endDateProps" date-format="dd.mm.yy" showIcon showButtonBar
                 :class="{'p-invalid': errors['endDate']?.length}"/>
@@ -132,23 +175,30 @@ import {NumberToFormattedCurrency} from "~/utils/format-helper";
 import {parseNumberInput, scrollToParentBottom} from "~/utils/element-helper";
 import {isNumber} from "~/utils/number-helper";
 import AmountInvertButton from "~/components/AmountInvertButton.vue";
+import {ModalConfig} from "~/config/dialog-props";
+import VatDialog from "~/components/dialogs/VatDialog.vue";
+import type {VatResponse} from "~/models/vat";
 
 const dialogRef = inject<ITransactionFormDialog>('dialogRef')!;
 
 const {createTransaction, updateTransaction, deleteTransaction} = useTransactions()
 const {employees, listEmployees} = useEmployees()
+const {vats, listVats, deleteVat} = useVat()
 const {categories, currencies, convertAmountToRate} = useGlobalData()
 const confirm = useConfirm()
+const dialog = useDialog();
 const toast = useToast()
 
 // Data
 const isLoading = ref(false)
 const isLoadingEmployees = ref(true)
+const isLoadingVats = ref(true)
 const transaction = dialogRef.value.data?.transaction
 const isClone = dialogRef.value.data?.isClone
 const isCreate = isClone || !transaction?.id
 const errorMessage = ref('')
 const employeesErrorMessage = ref('')
+const vatsErrorMessage = ref('')
 
 listEmployees(false)
     .catch(() => {
@@ -158,10 +208,20 @@ listEmployees(false)
       isLoadingEmployees.value = false
     })
 
-const { defineField, errors, handleSubmit, meta } = useForm({
+listVats()
+    .catch(() => {
+      vatsErrorMessage.value = 'Mehrwertsteuern konnten nicht geladen werden'
+    })
+    .finally(() => {
+      isLoadingVats.value = false
+    })
+
+const { defineField, errors, handleSubmit, meta, setFieldValue } = useForm({
   validationSchema: yup.object({
     name: yup.string().trim().required('Name wird benötigt'),
     amount: yup.number().required('Betrag wird benötigt').typeError('Ungültiger Betrag'),
+    vat: yup.number().nullable().typeError('Ungültige Mehrwertsteuer'),
+    vatIncluded: yup.boolean().typeError('Ungültiger Wert'),
     cycle: yup.string().required('Zahlungs-Zyklus wird benötigt'),
     type: yup.string().required('Typ wird benötigt'),
     startDate: yup.date().required('Start wird benötigt').typeError('Bitte Datum eingeben'),
@@ -174,6 +234,8 @@ const { defineField, errors, handleSubmit, meta } = useForm({
     id: isClone ? undefined : transaction?.id ?? undefined,
     name: transaction?.name ?? '',
     amount: isNumber(transaction?.amount) ? AmountToFloat(transaction!.amount) : '',
+    vat: transaction?.vat?.id ?? null,
+    vatIncluded: transaction?.vatIncluded ?? false,
     cycle: transaction?.cycle ?? CycleType.Monthly,
     type: transaction?.type ?? TransactionType.Single,
     startDate: transaction?.startDate ? DateToUTCDate(transaction?.startDate) : null,
@@ -186,6 +248,8 @@ const { defineField, errors, handleSubmit, meta } = useForm({
 
 const [name, nameProps] = defineField('name')
 const [amount, amountProps] = defineField('amount')
+const [vat, vatProps] = defineField('vat')
+const [vatIncluded, vatIncludedProps] = defineField('vatIncluded')
 const [cycle, cycleProps] = defineField('cycle')
 const [type, typeProps] = defineField('type')
 const [startDate, startDateProps] = defineField('startDate')
@@ -279,6 +343,77 @@ const onDeleteTransaction = (event: MouseEvent) => {
               nextTick(() => {
                 scrollToParentBottom('transaction-form')
               });
+            })
+            .finally(() => {
+              isLoading.value = false
+            })
+      }
+    },
+    reject: () => {
+    }
+  });
+}
+
+const onCreateVat = () => {
+  dialog.open(VatDialog, {
+    props: {
+      header: 'Neue Mehrwertsteuer anlegen',
+      ...ModalConfig,
+    },
+    onClose: (options) => {
+      if (options?.data) {
+        setFieldValue('vat', options.data)
+      }
+    }
+  })
+}
+
+const onEditVat = (vatToEdit: VatResponse) => {
+  dialog.open(VatDialog, {
+    props: {
+      header: 'Mehrwertsteuer bearbeiten',
+      ...ModalConfig,
+    },
+    data: {
+      vatToEdit,
+    },
+    onClose: (options) => {
+      if (options?.data) {
+        setFieldValue('vat', options.data)
+      }
+    }
+  })
+}
+
+const onDeleteVat = (vatToDelete: VatResponse) => {
+  confirm.require({
+    header: 'Löschen',
+    message: `Mehrwertsteuer "${vatToDelete.formattedValue}" vollständig löschen?`,
+    icon: 'pi pi-exclamation-triangle',
+    rejectLabel: 'Nein',
+    acceptLabel: 'Ja',
+    accept: () => {
+      if (vat) {
+        isLoading.value = true
+        deleteVat(vatToDelete.id)
+            .then(() => {
+              if (vatToDelete.id === vat.value) {
+                setFieldValue('vat', undefined)
+              }
+              toast.add({
+                summary: 'Erfolg',
+                detail: `Mehrwertsteuer "${vatToDelete.formattedValue}" wurde gelöscht`,
+                severity: 'success',
+                life: Config.TOAST_LIFE_TIME,
+              })
+            })
+            .catch(() => {
+              toast.add({
+                summary: 'Fehler',
+                detail: `Mehrwertsteuer "${vatToDelete.formattedValue}" konnte nicht gelöscht werden`,
+                severity: 'error',
+                life: Config.TOAST_LIFE_TIME,
+              })
             })
             .finally(() => {
               isLoading.value = false

@@ -4,6 +4,7 @@ import type {
     EmployeeResponse
 } from "~/models/employee";
 import type {BankAccountResponse} from "~/models/bank-account";
+import type {VatResponse} from "~/models/vat";
 
 export interface IEmployeeFormDialog {
     close: () => {},
@@ -44,6 +45,16 @@ export interface IBankAccountFormDialog {
         data: {
             bankAccountID: number
             bankAccount?: BankAccountResponse
+        }
+    }
+}
+
+export interface IVatFormDialog {
+    close: () => {},
+    value: {
+        close: (vatId?: number) => any,
+        data: {
+            vat?: VatResponse
         }
     }
 }
