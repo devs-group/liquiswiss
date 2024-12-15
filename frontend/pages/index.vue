@@ -148,6 +148,10 @@ import type {ForecastDetailResponse} from "~/models/forecast";
 import FullProgressSpinner from "~/components/FullProgressSpinner.vue";
 import {DateStringToFormattedDateTime} from "~/utils/format-helper";
 
+useHead({
+  title: 'Prognose',
+})
+
 const utcFormatter = new Intl.DateTimeFormat(Constants.BASE_LOCALE_CODE, { month: 'long', year: '2-digit', timeZone: 'UTC' });
 const localFormatter = new Intl.DateTimeFormat(Constants.BASE_LOCALE_CODE, { month: 'long', year: '2-digit' });
 const monthChoices = [

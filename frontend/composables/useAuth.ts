@@ -1,18 +1,34 @@
-import type {User, UserPasswordFormData, UserProfileFormData} from "~/models/auth";
-import type {TransactionFormData, TransactionResponse} from "~/models/transaction";
+import type {
+    CheckRegistrationCodeFormData,
+    FinishRegistrationFormData, LoginFormData, ForgotPasswordFormData, RegistrationFormData,
+    User,
+    UserPasswordFormData,
+    UserProfileFormData, ResetPasswordFormData, CheckResetPasswordCodeFormData, UserUpdateOrganisationFormData
+} from "~/models/auth";
 
 export default function useAuth() {
     const user = useState<User|null>('user');
     const hasFetchedInitially = useState('hasFetchedInitially', () => false)
 
-    const login = async (email: string, password: string): Promise<boolean> => {
+    const login = async (payload: LoginFormData): Promise<void> => {
+        await $fetch('/api/auth/login', {
+            method: 'POST',
+            body: payload,
+        });
+    }
+
+    const registration = async (payload: RegistrationFormData): Promise<void> => {
+        await $fetch('/api/auth/registration/create', {
+            method: 'POST',
+            body: payload
+        });
+    }
+
+    const registrationCheckCode = async (payload: CheckRegistrationCodeFormData): Promise<boolean> => {
         try {
-            const data = await $fetch('/api/auth/login', {
+            await $fetch('/api/auth/registration/check-code', {
                 method: 'POST',
-                body: {
-                    email: email,
-                    password: password,
-                }
+                body: payload
             });
             return true
         } catch (err) {
@@ -20,14 +36,37 @@ export default function useAuth() {
         }
     }
 
-    const register = async (email: string, password: string): Promise<boolean> => {
+    const registrationFinish = async (payload: FinishRegistrationFormData): Promise<boolean> => {
         try {
-            await $fetch('/api/auth/register', {
+            await $fetch('/api/auth/registration/finish', {
                 method: 'POST',
-                body: {
-                    email: email,
-                    password: password,
-                }
+                body: payload,
+            });
+            return true
+        } catch (err) {
+            return false
+        }
+    }
+
+    const forgotPassword = async (payload: ForgotPasswordFormData): Promise<void> => {
+        await $fetch('/api/auth/forgot-password', {
+            method: 'POST',
+            body: payload
+        });
+    }
+
+    const resetPassword = async (payload: ResetPasswordFormData): Promise<void> => {
+        await $fetch('/api/auth/reset-password', {
+            method: 'POST',
+            body: payload
+        });
+    }
+
+    const resetPasswordCheckCode = async (payload: CheckResetPasswordCodeFormData): Promise<boolean> => {
+        try {
+            await $fetch('/api/auth/reset-password-check-code', {
+                method: 'POST',
+                body: payload
             });
             return true
         } catch (err) {
@@ -74,9 +113,7 @@ export default function useAuth() {
         try {
             user.value = await $fetch<User>(`/api/profile`, {
                 method: 'PATCH',
-                body: {
-                    ...payload,
-                },
+                body: payload
             });
         } catch (err) {
             return Promise.reject('Fehler beim Aktualisieren des Profils')
@@ -87,12 +124,21 @@ export default function useAuth() {
         try {
             await $fetch(`/api/profile/password`, {
                 method: 'POST',
-                body: {
-                    ...payload,
-                },
+                body: payload
             });
         } catch (err) {
             return Promise.reject('Fehler beim Ändern des Password')
+        }
+    }
+
+    const updateCurrentOrganisation = async (payload: UserUpdateOrganisationFormData) => {
+        try {
+            user.value = await $fetch<User>(`/api/profile/organisation`, {
+                method: 'PATCH',
+                body: payload
+            });
+        } catch (err) {
+            return Promise.reject('Fehler beim Aktualisieren der Organisation')
         }
     }
 
@@ -103,11 +149,17 @@ export default function useAuth() {
         hasFetchedInitially,
         isAuthenticated,
         login,
-        register,
+        registration,
+        registrationCheckCode,
+        registrationFinish,
+        forgotPassword,
+        resetPassword,
+        resetPasswordCheckCode,
         logout,
         getAccessToken,
         useFetchGetProfile,
         updateProfile,
         updatePassword,
+        updateCurrentOrganisation,
     };
 }

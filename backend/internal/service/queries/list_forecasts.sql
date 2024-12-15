@@ -15,5 +15,6 @@ SELECT
     COALESCE(f.cashflow, 0) AS cashflow,
     f.updated_at AS updated_at
 FROM date_series ds
-LEFT JOIN go_forecasts f ON DATE_FORMAT(ds.date, '%Y-%m') = f.month AND f.owner = ?
+LEFT JOIN forecasts f ON DATE_FORMAT(ds.date, '%Y-%m') = f.month
+    AND f.organisation_id = (SELECT current_organisation FROM users u WHERE u.id = ?)
 ORDER BY ds.date

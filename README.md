@@ -62,8 +62,8 @@ docker compose up -d (if you have docker)
 ## Migrations
 
 - Create Migration: `goose --dir internal/db/migrations create <name-of-migration> sql`
-- Apply Migration: `goose --dir internal/db/migrations mysql ls_user:password@/liquiswiss up`
-- Rollback Migration: `goose --dir internal/db/migrations mysql ls_user:password@/liquiswiss down`
+- Apply Migration: `goose --dir internal/db/migrations mysql liquiswiss:password@/liquiswiss up`
+- Rollback Migration: `goose --dir internal/db/migrations mysql liquiswiss:password@/liquiswiss down`
 
 ## Tests
 

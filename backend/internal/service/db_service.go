@@ -33,12 +33,21 @@ var allowedSortOrders = map[string]bool{
 type IDatabaseService interface {
 	ApplyMocks() error
 
-	RegisterUser(email, password string) (int64, error)
+	CreateRegistration(email, code string) (int64, error)
+	ValidateRegistration(email, code string, hours time.Duration) (int64, error)
+	DeleteRegistration(registrationID int64, email string) error
+
+	CreateUser(email, password string) (int64, error)
 	GetUserPasswordByEMail(email string) (*models.Login, error)
 	GetProfile(id string) (*models.User, error)
 	UpdateProfile(payload models.UpdateUser, userID string) error
 	UpdatePassword(password string, userID string) error
+	ResetPassword(password string, userID string) error
 	CheckUserExistance(id int64) (bool, error)
+	SetUserCurrentOrganisation(userID int64, organisationID int64) error
+	CreateResetPassword(email, code string, delay time.Duration) (bool, error)
+	ValidateResetPassword(email, code string, hours time.Duration) (int64, error)
+	DeleteResetPassword(email string) error
 
 	ListTransactions(userID int64, page int64, limit int64, sortBy string, sortOrder string) ([]models.Transaction, int64, error)
 	GetTransaction(userID int64, transactionID string) (*models.Transaction, error)
@@ -48,9 +57,9 @@ type IDatabaseService interface {
 
 	ListOrganisations(userID int64, page int64, limit int64) ([]models.Organisation, int64, error)
 	GetOrganisation(userID int64, id string) (*models.Organisation, error)
-	CreateOrganisation(name string, userID int64) (int64, error)
+	CreateOrganisation(name string) (int64, error)
 	UpdateOrganisation(payload models.UpdateOrganisation, userID int64, organisationID string) error
-	AssignUserToOrganisation(userID int64, organisationID int64, role string) error
+	AssignUserToOrganisation(userID int64, organisationID int64, role string, isDefault bool) error
 
 	ListEmployees(userID int64, page int64, limit int64, sortBy string, sortOrder string) ([]models.Employee, int64, error)
 	ListEmployeeHistory(userID int64, employeeID string, page int64, limit int64) ([]models.EmployeeHistory, int64, error)
@@ -82,10 +91,10 @@ type IDatabaseService interface {
 	UpdateVat(payload models.UpdateVat, userID int64, vatID string) error
 	DeleteVat(userID int64, vatID string) error
 
-	ListCategories(page int64, limit int64) ([]models.Category, int64, error)
-	GetCategory(id string) (*models.Category, error)
-	CreateCategory(payload models.CreateCategory) (int64, error)
-	UpdateCategory(payload models.UpdateCategory, categoryID string) error
+	ListCategories(userID, page, limit int64) ([]models.Category, int64, error)
+	GetCategory(userID int64, id string) (*models.Category, error)
+	CreateCategory(userID *int64, payload models.CreateCategory) (int64, error)
+	UpdateCategory(userID int64, payload models.UpdateCategory, categoryID string) error
 
 	ListCurrencies(page int64, limit int64) ([]models.Currency, int64, error)
 	GetCurrency(id string) (*models.Currency, error)
@@ -99,8 +108,6 @@ type IDatabaseService interface {
 	ListFiatRates(base string) ([]models.FiatRate, error)
 	GetFiatRate(base, target string) (*models.FiatRate, error)
 	UpsertFiatRate(payload models.CreateFiatRate) error
-
-	IsOwnerOfEmployee(employeeID string, userID int64) (bool, error)
 }
 
 type DatabaseService struct {
@@ -138,8 +145,78 @@ func (s *DatabaseService) ApplyMocks() error {
 	})
 }
 
-func (s *DatabaseService) RegisterUser(email string, password string) (int64, error) {
-	query, err := sqlQueries.ReadFile("queries/register_user.sql")
+func (s *DatabaseService) CreateRegistration(email, code string) (int64, error) {
+	query, err := sqlQueries.ReadFile("queries/create_registration.sql")
+	if err != nil {
+		return 0, err
+	}
+
+	stmt, err := s.db.Prepare(string(query))
+	if err != nil {
+		return 0, err
+	}
+	defer stmt.Close()
+
+	res, err := stmt.Exec(email, code, email)
+	if err != nil {
+		return 0, err
+	}
+
+	// Get the ID of the newly inserted registration
+	id, err := res.LastInsertId()
+	if err != nil {
+		return 0, err
+	}
+
+	return id, nil
+}
+
+func (s *DatabaseService) ValidateRegistration(email, code string, hours time.Duration) (int64, error) {
+	query, err := sqlQueries.ReadFile("queries/validate_registration.sql")
+	if err != nil {
+		return 0, err
+	}
+
+	stmt, err := s.db.Prepare(string(query))
+	if err != nil {
+		return 0, err
+	}
+	defer stmt.Close()
+
+	var id int64
+	err = stmt.QueryRow(email, code, hours.Hours()).Scan(&id)
+	if err != nil {
+		return 0, err
+	}
+	if id <= 0 {
+		return 0, errors.New("ungültiges Resultat für Registrierung")
+	}
+
+	return id, nil
+}
+
+func (s *DatabaseService) DeleteRegistration(registrationID int64, email string) error {
+	query, err := sqlQueries.ReadFile("queries/delete_registration.sql")
+	if err != nil {
+		return err
+	}
+
+	stmt, err := s.db.Prepare(string(query))
+	if err != nil {
+		return err
+	}
+	defer stmt.Close()
+
+	_, err = stmt.Exec(registrationID, email)
+	if err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (s *DatabaseService) CreateUser(email string, password string) (int64, error) {
+	query, err := sqlQueries.ReadFile("queries/create_user.sql")
 	if err != nil {
 		return 0, err
 	}
@@ -190,7 +267,7 @@ func (s *DatabaseService) GetProfile(id string) (*models.User, error) {
 		return nil, err
 	}
 
-	err = s.db.QueryRow(string(query), id).Scan(&user.ID, &user.Name, &user.Email)
+	err = s.db.QueryRow(string(query), id).Scan(&user.ID, &user.Name, &user.Email, &user.CurrentOrganisationID)
 	if err != nil {
 		return nil, err
 	}
@@ -200,7 +277,7 @@ func (s *DatabaseService) GetProfile(id string) (*models.User, error) {
 
 func (s *DatabaseService) UpdateProfile(payload models.UpdateUser, userID string) error {
 	// Base query
-	query := "UPDATE go_users SET "
+	query := "UPDATE users SET "
 	queryBuild := []string{}
 	args := []interface{}{}
 
@@ -235,7 +312,7 @@ func (s *DatabaseService) UpdateProfile(payload models.UpdateUser, userID string
 
 func (s *DatabaseService) UpdatePassword(password string, userID string) error {
 	// Base query
-	query := "UPDATE go_users SET "
+	query := "UPDATE users SET "
 	queryBuild := []string{}
 	args := []interface{}{}
 
@@ -247,6 +324,36 @@ func (s *DatabaseService) UpdatePassword(password string, userID string) error {
 	query += strings.Join(queryBuild, ", ")
 	query += " WHERE id = ?"
 	args = append(args, userID)
+
+	stmt, err := s.db.Prepare(query)
+	if err != nil {
+		return err
+	}
+	defer stmt.Close()
+
+	_, err = stmt.Exec(args...)
+	if err != nil {
+		return err
+	}
+
+	return nil
+}
+
+// ResetPassword is only called internally and only after the reset password has been confirmed
+func (s *DatabaseService) ResetPassword(password string, email string) error {
+	// Base query
+	query := "UPDATE users SET "
+	queryBuild := []string{}
+	args := []interface{}{}
+
+	// Dynamically add fields that are not nil
+	queryBuild = append(queryBuild, "password = ?")
+	args = append(args, password)
+
+	// Add WHERE clause
+	query += strings.Join(queryBuild, ", ")
+	query += " WHERE email = ?"
+	args = append(args, email)
 
 	stmt, err := s.db.Prepare(query)
 	if err != nil {
@@ -277,6 +384,88 @@ func (s *DatabaseService) CheckUserExistance(id int64) (bool, error) {
 	return exists, nil
 }
 
+func (s *DatabaseService) SetUserCurrentOrganisation(userID int64, organisationID int64) error {
+	query, err := sqlQueries.ReadFile("queries/set_user_current_organisation.sql")
+	if err != nil {
+		return err
+	}
+
+	res, err := s.db.Exec(string(query), organisationID, userID, organisationID)
+	if err != nil {
+		return err
+	}
+
+	_, err = res.RowsAffected()
+	if err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (s *DatabaseService) CreateResetPassword(email, code string, delay time.Duration) (bool, error) {
+	query, err := sqlQueries.ReadFile("queries/create_reset_password.sql")
+	if err != nil {
+		return false, err
+	}
+
+	res, err := s.db.Exec(string(query), email, code, email, email, delay.Minutes())
+	if err != nil {
+		return false, err
+	}
+
+	affected, err := res.RowsAffected()
+	if err != nil {
+		return false, err
+	}
+
+	return affected > 0, nil
+}
+
+func (s *DatabaseService) ValidateResetPassword(email, code string, hours time.Duration) (int64, error) {
+	query, err := sqlQueries.ReadFile("queries/validate_reset_password.sql")
+	if err != nil {
+		return 0, err
+	}
+
+	stmt, err := s.db.Prepare(string(query))
+	if err != nil {
+		return 0, err
+	}
+	defer stmt.Close()
+
+	var id int64
+	err = stmt.QueryRow(email, code, hours.Hours()).Scan(&id)
+	if err != nil {
+		return 0, err
+	}
+	if id <= 0 {
+		return 0, errors.New("ungültiges Resultat für Passwort Zurücksetzen")
+	}
+
+	return id, nil
+}
+
+func (s *DatabaseService) DeleteResetPassword(email string) error {
+	query, err := sqlQueries.ReadFile("queries/delete_reset_password.sql")
+	if err != nil {
+		return err
+	}
+
+	stmt, err := s.db.Prepare(string(query))
+	if err != nil {
+		return err
+	}
+	defer stmt.Close()
+
+	_, err = stmt.Exec(email)
+	if err != nil {
+		return err
+	}
+
+	return nil
+}
+
 func (s *DatabaseService) CreateTransaction(payload models.CreateTransaction, userID int64) (int64, error) {
 	query, err := sqlQueries.ReadFile("queries/create_transaction.sql")
 	if err != nil {
@@ -291,7 +480,7 @@ func (s *DatabaseService) CreateTransaction(payload models.CreateTransaction, us
 
 	res, err := stmt.Exec(
 		payload.Name, payload.Amount, payload.Cycle, payload.Type, payload.StartDate, payload.EndDate,
-		payload.Category, payload.Currency, payload.Employee, userID, nil, payload.Vat, payload.VatIncluded,
+		payload.Category, payload.Currency, payload.Employee, userID, payload.Vat, payload.VatIncluded,
 	)
 	if err != nil {
 		return 0, err
@@ -308,7 +497,7 @@ func (s *DatabaseService) CreateTransaction(payload models.CreateTransaction, us
 
 func (s *DatabaseService) UpdateTransaction(payload models.UpdateTransaction, userID int64, transactionID string) error {
 	// Base query
-	query := "UPDATE go_transactions SET "
+	query := "UPDATE transactions SET "
 	queryBuild := []string{}
 	args := []interface{}{}
 
@@ -348,20 +537,20 @@ func (s *DatabaseService) UpdateTransaction(payload models.UpdateTransaction, us
 		args = append(args, nil)
 	}
 	if payload.Category != nil {
-		queryBuild = append(queryBuild, "category = ?")
+		queryBuild = append(queryBuild, "category_id = ?")
 		args = append(args, *payload.Category)
 	}
 	if payload.Currency != nil {
-		queryBuild = append(queryBuild, "currency = ?")
+		queryBuild = append(queryBuild, "currency_id = ?")
 		args = append(args, *payload.Currency)
 	}
-	queryBuild = append(queryBuild, "employee = ?")
+	queryBuild = append(queryBuild, "employee_id = ?")
 	if payload.Employee != nil {
 		args = append(args, *payload.Employee)
 	} else {
 		args = append(args, nil)
 	}
-	queryBuild = append(queryBuild, "vat = ?")
+	queryBuild = append(queryBuild, "vat_id = ?")
 	if payload.Vat != nil {
 		args = append(args, *payload.Vat)
 	} else {
@@ -374,8 +563,9 @@ func (s *DatabaseService) UpdateTransaction(payload models.UpdateTransaction, us
 
 	// Add WHERE clause
 	query += strings.Join(queryBuild, ", ")
-	query += " WHERE id = ?"
+	query += " WHERE id = ? AND organisation_id = (SELECT current_organisation FROM users u WHERE u.id = ?)"
 	args = append(args, transactionID)
+	args = append(args, userID)
 
 	stmt, err := s.db.Prepare(query)
 	if err != nil {
@@ -583,7 +773,8 @@ func (s *DatabaseService) ListOrganisations(userID int64, page int64, limit int6
 		var organisation models.Organisation
 
 		err := rows.Scan(
-			&organisation.ID, &organisation.Name, &organisation.MemberCount, &organisation.Role,
+			&organisation.ID, &organisation.Name, &organisation.MemberCount,
+			&organisation.Role, &organisation.IsDefault,
 			&totalCount,
 		)
 		if err != nil {
@@ -615,7 +806,7 @@ func (s *DatabaseService) GetOrganisation(userID int64, id string) (*models.Orga
 }
 
 // CreateOrganisation implements IDatabaseService.
-func (s *DatabaseService) CreateOrganisation(name string, userID int64) (int64, error) {
+func (s *DatabaseService) CreateOrganisation(name string) (int64, error) {
 	query, err := sqlQueries.ReadFile("queries/create_organisation.sql")
 	if err != nil {
 		return 0, err
@@ -643,7 +834,7 @@ func (s *DatabaseService) CreateOrganisation(name string, userID int64) (int64, 
 
 func (s *DatabaseService) UpdateOrganisation(payload models.UpdateOrganisation, userID int64, organisationID string) error {
 	// Base query
-	query := "UPDATE go_organisations SET "
+	query := "UPDATE organisations SET "
 	queryBuild := []string{}
 	args := []interface{}{}
 
@@ -672,7 +863,7 @@ func (s *DatabaseService) UpdateOrganisation(payload models.UpdateOrganisation, 
 	return nil
 }
 
-func (s *DatabaseService) AssignUserToOrganisation(userID int64, organisationID int64, role string) error {
+func (s *DatabaseService) AssignUserToOrganisation(userID int64, organisationID int64, role string, isDefault bool) error {
 	query, err := sqlQueries.ReadFile("queries/assign_user_to_organisation.sql")
 	if err != nil {
 		return err
@@ -684,7 +875,7 @@ func (s *DatabaseService) AssignUserToOrganisation(userID int64, organisationID 
 	}
 	defer stmt.Close()
 
-	_, err = stmt.Exec(userID, organisationID, role)
+	_, err = stmt.Exec(userID, organisationID, role, isDefault)
 	if err != nil {
 		return err
 	}
@@ -726,12 +917,12 @@ func (s *DatabaseService) ListEmployees(userID int64, page int64, limit int64, s
 		var toDate sql.NullTime
 		var isInFuture sql.NullBool
 
-		employee.SalaryCurrency = &models.Currency{}
+		employee.Currency = &models.Currency{}
 
 		err := rows.Scan(
 			&employee.ID, &employee.Name, &employee.HoursPerMonth, &employee.SalaryPerMonth,
-			&employee.SalaryCurrency.ID, &employee.SalaryCurrency.LocaleCode, &employee.SalaryCurrency.Description,
-			&employee.SalaryCurrency.Code, &employee.VacationDaysPerYear, &fromDate, &toDate, &isInFuture, &totalCount,
+			&employee.Currency.ID, &employee.Currency.LocaleCode, &employee.Currency.Description,
+			&employee.Currency.Code, &employee.VacationDaysPerYear, &fromDate, &toDate, &isInFuture, &totalCount,
 		)
 		if err != nil {
 			return nil, 0, err
@@ -778,12 +969,12 @@ func (s *DatabaseService) ListEmployeeHistory(userID int64, employeeID string, p
 		var fromDate sql.NullTime
 		var toDate sql.NullTime
 
-		employeeHistory.SalaryCurrency = models.Currency{}
+		employeeHistory.Currency = models.Currency{}
 
 		err := rows.Scan(
 			&employeeHistory.ID, &employeeHistory.EmployeeID, &employeeHistory.HoursPerMonth, &employeeHistory.SalaryPerMonth,
-			&employeeHistory.SalaryCurrency.ID, &employeeHistory.SalaryCurrency.LocaleCode, &employeeHistory.SalaryCurrency.Description,
-			&employeeHistory.SalaryCurrency.Code,
+			&employeeHistory.Currency.ID, &employeeHistory.Currency.LocaleCode, &employeeHistory.Currency.Description,
+			&employeeHistory.Currency.Code,
 			&employeeHistory.VacationDaysPerYear, &fromDate, &toDate, &totalCount,
 		)
 		if err != nil {
@@ -838,7 +1029,7 @@ func (s *DatabaseService) GetEmployee(userID int64, id string) (*models.Employee
 	var toDate sql.NullTime
 	var isInFuture sql.NullBool
 
-	employee.SalaryCurrency = &models.Currency{}
+	employee.Currency = &models.Currency{}
 
 	query, err := sqlQueries.ReadFile("queries/get_employee.sql")
 	if err != nil {
@@ -847,8 +1038,8 @@ func (s *DatabaseService) GetEmployee(userID int64, id string) (*models.Employee
 
 	err = s.db.QueryRow(string(query), id, userID).Scan(
 		&employee.ID, &employee.Name, &employee.HoursPerMonth, &employee.SalaryPerMonth,
-		&employee.SalaryCurrency.ID, &employee.SalaryCurrency.LocaleCode, &employee.SalaryCurrency.Description,
-		&employee.SalaryCurrency.Code, &employee.VacationDaysPerYear, &fromDate, &toDate, &isInFuture, &employee.HistoryID,
+		&employee.Currency.ID, &employee.Currency.LocaleCode, &employee.Currency.Description,
+		&employee.Currency.Code, &employee.VacationDaysPerYear, &fromDate, &toDate, &isInFuture, &employee.HistoryID,
 	)
 	if err != nil {
 		return nil, err
@@ -877,7 +1068,7 @@ func (s *DatabaseService) GetEmployeeHistory(userID int64, historyID string) (*m
 	var fromDate time.Time
 	var toDate sql.NullTime
 
-	employeeHistory.SalaryCurrency = models.Currency{}
+	employeeHistory.Currency = models.Currency{}
 
 	query, err := sqlQueries.ReadFile("queries/get_employee_history.sql")
 	if err != nil {
@@ -886,8 +1077,8 @@ func (s *DatabaseService) GetEmployeeHistory(userID int64, historyID string) (*m
 
 	err = s.db.QueryRow(string(query), historyID, userID).Scan(
 		&employeeHistory.ID, &employeeHistory.EmployeeID, &employeeHistory.HoursPerMonth, &employeeHistory.SalaryPerMonth,
-		&employeeHistory.SalaryCurrency.ID, &employeeHistory.SalaryCurrency.LocaleCode, &employeeHistory.SalaryCurrency.Description,
-		&employeeHistory.SalaryCurrency.Code, &employeeHistory.VacationDaysPerYear, &fromDate, &toDate,
+		&employeeHistory.Currency.ID, &employeeHistory.Currency.LocaleCode, &employeeHistory.Currency.Description,
+		&employeeHistory.Currency.Code, &employeeHistory.VacationDaysPerYear, &fromDate, &toDate,
 	)
 	if err != nil {
 		return nil, err
@@ -979,7 +1170,7 @@ func (s *DatabaseService) CreateEmployeeHistory(payload models.CreateEmployeeHis
 	}
 
 	res, err := stmt.Exec(
-		employeeID, payload.HoursPerMonth, payload.SalaryPerMonth, payload.SalaryCurrency, payload.VacationDaysPerYear,
+		employeeID, payload.HoursPerMonth, payload.SalaryPerMonth, payload.CurrencyID, payload.VacationDaysPerYear,
 		fromDate, toDate, employeeID, userID,
 	)
 	if err != nil {
@@ -998,7 +1189,7 @@ func (s *DatabaseService) CreateEmployeeHistory(payload models.CreateEmployeeHis
 	// Fetch and adjust previous entry if required
 	var previous models.EmployeeHistory
 	if err := tx.QueryRow(`
-        SELECT id, from_date, to_date FROM go_employee_history 
+        SELECT id, from_date, to_date FROM employee_history 
         WHERE employee_id = ? AND from_date < ? AND (to_date IS NULL OR to_date >= ?) AND id != ?
         ORDER BY from_date DESC LIMIT 1
     `, employeeID, payload.FromDate, payload.FromDate, historyID).Scan(&previous.ID, &previous.FromDate, &previous.ToDate); err != nil && err != sql.ErrNoRows {
@@ -1026,7 +1217,7 @@ func (s *DatabaseService) CreateEmployeeHistory(payload models.CreateEmployeeHis
 			newToDate := utils.GetNextAvailableDate(previousFromDate, currentFromDate)
 			logger.Logger.Debugf("Adjusting previous history entry to: %s", newToDate)
 			_, err := tx.Exec(`
-            UPDATE go_employee_history SET to_date = ? WHERE id = ?
+            UPDATE employee_history SET to_date = ? WHERE id = ?
         `, newToDate, previous.ID)
 			if err != nil {
 				return 0, err
@@ -1037,7 +1228,7 @@ func (s *DatabaseService) CreateEmployeeHistory(payload models.CreateEmployeeHis
 	// Fetch and adjust current entry if required by next
 	var next models.EmployeeHistory
 	if err := tx.QueryRow(`
-	   SELECT id, from_date, to_date FROM go_employee_history
+	   SELECT id, from_date, to_date FROM employee_history
        WHERE employee_id = ? AND from_date > ? AND id != ?
 	   ORDER BY from_date ASC LIMIT 1
 	`, employeeID, payload.FromDate, historyID).Scan(&next.ID, &next.FromDate, &next.ToDate); err != nil && err != sql.ErrNoRows {
@@ -1069,7 +1260,7 @@ func (s *DatabaseService) CreateEmployeeHistory(payload models.CreateEmployeeHis
 			newToDate := utils.GetNextAvailableDate(currentFromDate, nextFromDate)
 			logger.Logger.Debugf("Adjusting current history entry to: %s", newToDate)
 			_, err = tx.Exec(`
-            UPDATE go_employee_history SET to_date = ? WHERE id = ?
+            UPDATE employee_history SET to_date = ? WHERE id = ?
         `, newToDate, historyID)
 			if err != nil {
 				return 0, err
@@ -1083,7 +1274,7 @@ func (s *DatabaseService) CreateEmployeeHistory(payload models.CreateEmployeeHis
 // UpdateEmployee implements updating employee details
 func (s *DatabaseService) UpdateEmployee(payload models.UpdateEmployee, userID int64, employeeID string) error {
 	// Base query
-	query := "UPDATE go_employees SET "
+	query := "UPDATE employees SET "
 	queryBuild := []string{}
 	args := []interface{}{}
 
@@ -1095,7 +1286,7 @@ func (s *DatabaseService) UpdateEmployee(payload models.UpdateEmployee, userID i
 
 	// Add WHERE clause
 	query += strings.Join(queryBuild, ", ")
-	query += " WHERE id = ? AND owner = ?"
+	query += " WHERE id = ? AND organisation_id = (SELECT current_organisation FROM users u WHERE u.id = ?)"
 	args = append(args, employeeID, userID)
 
 	stmt, err := s.db.Prepare(query)
@@ -1131,7 +1322,7 @@ func (s *DatabaseService) UpdateEmployeeHistory(payload models.UpdateEmployeeHis
 	}()
 
 	// Base query
-	query := "UPDATE go_employee_history SET "
+	query := "UPDATE employee_history SET "
 	queryBuild := []string{}
 	args := []interface{}{}
 
@@ -1144,9 +1335,9 @@ func (s *DatabaseService) UpdateEmployeeHistory(payload models.UpdateEmployeeHis
 		queryBuild = append(queryBuild, "salary_per_month = ?")
 		args = append(args, *payload.SalaryPerMonth)
 	}
-	if payload.SalaryCurrency != nil {
-		queryBuild = append(queryBuild, "salary_currency = ?")
-		args = append(args, *payload.SalaryCurrency)
+	if payload.CurrencyID != nil {
+		queryBuild = append(queryBuild, "currency_id = ?")
+		args = append(args, *payload.CurrencyID)
 	}
 	if payload.VacationDaysPerYear != nil {
 		queryBuild = append(queryBuild, "vacation_days_per_year = ?")
@@ -1174,7 +1365,7 @@ func (s *DatabaseService) UpdateEmployeeHistory(payload models.UpdateEmployeeHis
 
 	// Add WHERE clause
 	query += strings.Join(queryBuild, ", ")
-	query += " WHERE id = ? and employee_id = ?"
+	query += " WHERE id = ? AND employee_id = ?"
 	args = append(args, historyID, employeeID)
 
 	stmt, err := tx.Prepare(query)
@@ -1191,7 +1382,7 @@ func (s *DatabaseService) UpdateEmployeeHistory(payload models.UpdateEmployeeHis
 	// Fetch and adjust previous entry if required
 	var previous models.EmployeeHistory
 	if err := tx.QueryRow(`
-        SELECT id, from_date, to_date FROM go_employee_history 
+        SELECT id, from_date, to_date FROM employee_history 
         WHERE employee_id = ? AND from_date < ? AND (to_date IS NULL OR to_date >= ?) AND id != ?
         ORDER BY from_date DESC LIMIT 1
     `, employeeID, payload.FromDate, payload.FromDate, historyID).Scan(&previous.ID, &previous.FromDate, &previous.ToDate); err != nil && err != sql.ErrNoRows {
@@ -1219,7 +1410,7 @@ func (s *DatabaseService) UpdateEmployeeHistory(payload models.UpdateEmployeeHis
 			newToDate := utils.GetNextAvailableDate(previousFromDate, currentFromDate)
 			logger.Logger.Debugf("Adjusting previous history entry to: %s", newToDate)
 			_, err := tx.Exec(`
-            UPDATE go_employee_history SET to_date = ? WHERE id = ?
+            UPDATE employee_history SET to_date = ? WHERE id = ?
         `, newToDate, previous.ID)
 			if err != nil {
 				return err
@@ -1230,7 +1421,7 @@ func (s *DatabaseService) UpdateEmployeeHistory(payload models.UpdateEmployeeHis
 	// Fetch and adjust current entry if required by next
 	var next models.EmployeeHistory
 	if err := tx.QueryRow(`
-	   SELECT id, from_date, to_date FROM go_employee_history
+	   SELECT id, from_date, to_date FROM employee_history
        WHERE employee_id = ? AND from_date > ? AND id != ?
 	   ORDER BY from_date ASC LIMIT 1
 	`, employeeID, payload.FromDate, historyID).Scan(&next.ID, &next.FromDate, &next.ToDate); err != nil && err != sql.ErrNoRows {
@@ -1262,7 +1453,7 @@ func (s *DatabaseService) UpdateEmployeeHistory(payload models.UpdateEmployeeHis
 			newToDate := utils.GetNextAvailableDate(currentFromDate, nextFromDate)
 			logger.Logger.Debugf("Adjusting current history entry to: %s", newToDate)
 			_, err = tx.Exec(`
-            UPDATE go_employee_history SET to_date = ? WHERE id = ?
+            UPDATE employee_history SET to_date = ? WHERE id = ?
         `, newToDate, historyID)
 			if err != nil {
 				return err
@@ -1343,7 +1534,7 @@ func (s *DatabaseService) DeleteEmployeeHistory(toDeleteEmployeeHistory *models.
 	currentFromDateFormatted := currentFromDate.Format(utils.InternalDateFormat)
 	var previous models.EmployeeHistory
 	if err := tx.QueryRow(`
-        SELECT id, from_date, to_date FROM go_employee_history 
+        SELECT id, from_date, to_date FROM employee_history 
         WHERE employee_id = ? AND from_date < ? AND id != ?
         ORDER BY from_date DESC LIMIT 1
     `, toDeleteEmployeeHistory.EmployeeID, currentFromDateFormatted, toDeleteEmployeeHistory.ID,
@@ -1352,7 +1543,7 @@ func (s *DatabaseService) DeleteEmployeeHistory(toDeleteEmployeeHistory *models.
 	}
 	var next models.EmployeeHistory
 	if err := tx.QueryRow(`
-	   SELECT id, from_date, to_date FROM go_employee_history
+	   SELECT id, from_date, to_date FROM employee_history
        WHERE employee_id = ? AND from_date > ? AND id != ?
 	   ORDER BY from_date ASC LIMIT 1
 	`, toDeleteEmployeeHistory.EmployeeID, currentFromDateFormatted, toDeleteEmployeeHistory.ID,
@@ -1366,7 +1557,7 @@ func (s *DatabaseService) DeleteEmployeeHistory(toDeleteEmployeeHistory *models.
 		newToDate := utils.GetNextAvailableDate(previousFromDate, nextFromDate)
 		logger.Logger.Debugf("Adjusting previous history entry to: %s", newToDate)
 		_, err := tx.Exec(`
-            UPDATE go_employee_history SET to_date = ? WHERE id = ?
+            UPDATE employee_history SET to_date = ? WHERE id = ?
         `, newToDate, previous.ID)
 		if err != nil {
 			return err
@@ -1458,7 +1649,7 @@ func (s *DatabaseService) UpsertForecast(payload models.CreateForecast, userID i
 	defer stmt.Close()
 
 	res, err := stmt.Exec(
-		userID, payload.Month, payload.Revenue, payload.Expense, payload.Cashflow,
+		payload.Month, payload.Revenue, payload.Expense, payload.Cashflow, userID,
 	)
 	if err != nil {
 		return 0, err
@@ -1497,7 +1688,7 @@ func (s *DatabaseService) UpsertForecastDetail(payload models.CreateForecastDeta
 	}
 
 	res, err := stmt.Exec(
-		userID, payload.Month, revenueJson, expenseJson, forecastID,
+		payload.Month, revenueJson, expenseJson, forecastID, userID,
 	)
 	if err != nil {
 		return 0, err
@@ -1620,7 +1811,7 @@ func (s *DatabaseService) CreateBankAccount(payload models.CreateBankAccount, us
 
 func (s *DatabaseService) UpdateBankAccount(payload models.UpdateBankAccount, userID int64, bankAccountID string) error {
 	// Base query
-	query := "UPDATE go_bank_accounts SET "
+	query := "UPDATE bank_accounts SET "
 	queryBuild := []string{}
 	args := []interface{}{}
 
@@ -1634,13 +1825,13 @@ func (s *DatabaseService) UpdateBankAccount(payload models.UpdateBankAccount, us
 		args = append(args, *payload.Amount)
 	}
 	if payload.Currency != nil {
-		queryBuild = append(queryBuild, "currency = ?")
+		queryBuild = append(queryBuild, "currency_id = ?")
 		args = append(args, *payload.Currency)
 	}
 
 	// Add WHERE clause
 	query += strings.Join(queryBuild, ", ")
-	query += " WHERE id = ? AND owner = ?"
+	query += " WHERE id = ? AND organisation_id = (SELECT current_organisation FROM users u WHERE u.id = ?)"
 	args = append(args, bankAccountID, userID)
 
 	stmt, err := s.db.Prepare(query)
@@ -1778,7 +1969,7 @@ func (s *DatabaseService) UpdateVat(payload models.UpdateVat, userID int64, vatI
 
 	// Add WHERE clause
 	query += strings.Join(queryBuild, ", ")
-	query += " WHERE id = ? AND owner = ?"
+	query += " WHERE id = ? AND organisation_id = (SELECT current_organisation FROM users u WHERE u.id = ?)"
 	args = append(args, vatID, userID)
 
 	stmt, err := s.db.Prepare(query)
@@ -1826,7 +2017,7 @@ func (s *DatabaseService) DeleteVat(userID int64, vatID string) error {
 }
 
 // ListCategories implements listing categories
-func (s *DatabaseService) ListCategories(page int64, limit int64) ([]models.Category, int64, error) {
+func (s *DatabaseService) ListCategories(userID, page, limit int64) ([]models.Category, int64, error) {
 	categories := []models.Category{}
 	var totalCount int64
 
@@ -1835,7 +2026,7 @@ func (s *DatabaseService) ListCategories(page int64, limit int64) ([]models.Cate
 		return nil, 0, err
 	}
 
-	rows, err := s.db.Query(string(query), limit, (page-1)*limit)
+	rows, err := s.db.Query(string(query), userID, limit, (page-1)*limit)
 	if err != nil {
 		return nil, 0, err
 	}
@@ -1844,7 +2035,7 @@ func (s *DatabaseService) ListCategories(page int64, limit int64) ([]models.Cate
 	for rows.Next() {
 		var category models.Category
 
-		err := rows.Scan(&category.ID, &category.Name, &totalCount)
+		err := rows.Scan(&category.ID, &category.Name, &category.CanEdit, &totalCount)
 		if err != nil {
 			return nil, 0, err
 		}
@@ -1856,7 +2047,7 @@ func (s *DatabaseService) ListCategories(page int64, limit int64) ([]models.Cate
 }
 
 // GetCategory implements fetching a category by ID
-func (s *DatabaseService) GetCategory(id string) (*models.Category, error) {
+func (s *DatabaseService) GetCategory(userID int64, id string) (*models.Category, error) {
 	var category models.Category
 
 	query, err := sqlQueries.ReadFile("queries/get_category.sql")
@@ -1864,7 +2055,7 @@ func (s *DatabaseService) GetCategory(id string) (*models.Category, error) {
 		return nil, err
 	}
 
-	err = s.db.QueryRow(string(query), id).Scan(&category.ID, &category.Name)
+	err = s.db.QueryRow(string(query), id, userID).Scan(&category.ID, &category.Name, &category.CanEdit)
 	if err != nil {
 		return nil, err
 	}
@@ -1873,7 +2064,7 @@ func (s *DatabaseService) GetCategory(id string) (*models.Category, error) {
 }
 
 // CreateCategory implements the creation of a new category
-func (s *DatabaseService) CreateCategory(payload models.CreateCategory) (int64, error) {
+func (s *DatabaseService) CreateCategory(userID *int64, payload models.CreateCategory) (int64, error) {
 	query, err := sqlQueries.ReadFile("queries/create_category.sql")
 	if err != nil {
 		return 0, err
@@ -1885,7 +2076,7 @@ func (s *DatabaseService) CreateCategory(payload models.CreateCategory) (int64, 
 	}
 	defer stmt.Close()
 
-	res, err := stmt.Exec(payload.Name)
+	res, err := stmt.Exec(payload.Name, userID)
 	if err != nil {
 		return 0, err
 	}
@@ -1899,8 +2090,8 @@ func (s *DatabaseService) CreateCategory(payload models.CreateCategory) (int64, 
 }
 
 // UpdateCategory implements updating a category
-func (s *DatabaseService) UpdateCategory(payload models.UpdateCategory, categoryID string) error {
-	query := "UPDATE go_categories SET "
+func (s *DatabaseService) UpdateCategory(userID int64, payload models.UpdateCategory, categoryID string) error {
+	query := "UPDATE categories SET "
 	queryBuild := []string{}
 	args := []interface{}{}
 
@@ -1910,8 +2101,8 @@ func (s *DatabaseService) UpdateCategory(payload models.UpdateCategory, category
 	}
 
 	query += strings.Join(queryBuild, ", ")
-	query += " WHERE id = ?"
-	args = append(args, categoryID)
+	query += " WHERE id = ? AND organisation_id = (SELECT current_organisation FROM users u WHERE u.id = ?)"
+	args = append(args, categoryID, userID)
 
 	stmt, err := s.db.Prepare(query)
 	if err != nil {
@@ -2004,7 +2195,7 @@ func (s *DatabaseService) CreateCurrency(payload models.CreateCurrency) (int64, 
 
 // UpdateCurrency implements updating a currency
 func (s *DatabaseService) UpdateCurrency(payload models.UpdateCurrency, currencyID string) error {
-	query := "UPDATE go_currencies SET "
+	query := "UPDATE currencies SET "
 	queryBuild := []string{}
 	args := []interface{}{}
 
@@ -2153,16 +2344,4 @@ func (s *DatabaseService) UpsertFiatRate(payload models.CreateFiatRate) error {
 	}
 
 	return nil
-}
-
-func (s *DatabaseService) IsOwnerOfEmployee(employeeID string, userID int64) (bool, error) {
-	var ownerID int64
-	err := s.db.QueryRow("SELECT owner FROM go_employees WHERE id = ?", employeeID).Scan(&ownerID)
-	if err != nil {
-		if errors.Is(err, sql.ErrNoRows) {
-			return false, nil
-		}
-		return false, err
-	}
-	return ownerID == userID, nil
 }

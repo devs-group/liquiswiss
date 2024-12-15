@@ -9,7 +9,7 @@ type Employee struct {
 	Name                string        `db:"name" json:"name"`
 	HoursPerMonth       *uint16       `db:"-" json:"hoursPerMonth"`
 	SalaryPerMonth      *uint64       `db:"-" json:"salaryPerMonth"`
-	SalaryCurrency      *Currency     `db:"-" json:"salaryCurrency"`
+	Currency            *Currency     `db:"-" json:"currency"`
 	VacationDaysPerYear *uint16       `db:"-" json:"vacationDaysPerYear"`
 	FromDate            *types.AsDate `db:"-" json:"fromDate"`
 	ToDate              *types.AsDate `db:"-" json:"toDate"`

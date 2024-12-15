@@ -1,7 +1,15 @@
 <template>
   <Menu class="sm:!rounded-none sm:!border-t-0 sm:!border-b-0" :model="items">
     <template #start>
-      <Logo class="hidden sm:block p-4"/>
+      <div class="flex flex-col gap-2 p-4">
+        <Logo class="hidden sm:block"/>
+        <Select @click.stop
+                v-if="user"
+                v-model="selectedOrganisationID"
+                :options="organisations" option-label="name" option-value="id"
+                @change="onChangeOrganisation"
+                empty-message="Keine Organisationen gefunden"/>
+      </div>
     </template>
 
     <template #item="{ item, props }">
@@ -23,9 +31,16 @@
 import {RouteNames} from "~/config/routes";
 import useAuth from "~/composables/useAuth";
 import type {MenuItem, MenuItemCommandEvent} from "primevue/menuitem";
+import type {SelectChangeEvent} from "primevue";
+import {Config} from "~/config/config";
 
-const {logout} = useAuth()
+const {logout, user, updateCurrentOrganisation} = useAuth()
+const {organisations} = useOrganisations()
+const {showGlobalLoadingSpinner} = useGlobalData()
 const confirm = useConfirm()
+const toast = useToast()
+
+const selectedOrganisationID = ref<number|null>(user.value?.currentOrganisationId ?? null)
 
 const items = ref<MenuItem[]>([
   { label: 'Prognose', icon: 'pi pi-chart-line', routeName: RouteNames.HOME },
@@ -49,4 +64,40 @@ const items = ref<MenuItem[]>([
       });
     }},
 ]);
+
+const onChangeOrganisation = (event: SelectChangeEvent) => {
+  const currentSelectedOrganisationID = user.value?.currentOrganisationId ?? null
+  const newSelectedOrganisationID = selectedOrganisationID.value
+  if (newSelectedOrganisationID === currentSelectedOrganisationID || newSelectedOrganisationID == null) {
+    // Selection hasn't changed
+    return
+  }
+  const newOrganisation = organisations.value.find(o => o.id === event.value)
+  confirm.require({
+    header: 'Organisation wechseln',
+    message: `Möchten Sie die Organisation auf "${newOrganisation!.name}" wechseln?`,
+    icon: 'pi pi-question-circle',
+    rejectLabel: 'Nein',
+    acceptLabel: 'Ja',
+    accept: async () => {
+      showGlobalLoadingSpinner.value = true
+      updateCurrentOrganisation({organisationId: newSelectedOrganisationID})
+          .then(() => {
+            reloadNuxtApp({force: true})
+          })
+          .catch(() => {
+            showGlobalLoadingSpinner.value = false
+            toast.add({
+              summary: 'Fehler',
+              detail: `Die Organisation konnte nicht geändert werden. Dies ist ein Systemfehler`,
+              severity: 'error',
+              life: Config.TOAST_LIFE_TIME,
+            })
+          })
+    },
+    reject: () => {
+      selectedOrganisationID.value = currentSelectedOrganisationID
+    }
+  })
+}
 </script>

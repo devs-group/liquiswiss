@@ -38,6 +38,10 @@ import TransactionRow from "~/components/TransactionRow.vue";
 import FullProgressSpinner from "~/components/FullProgressSpinner.vue";
 import TransactionHeaders from "~/components/TransactionHeaders.vue";
 
+useHead({
+  title: 'Transaktionen',
+})
+
 const dialog = useDialog();
 const {transactions, noMoreDataTransactions, pageTransactions, useFetchListTransactions, listTransactions} = useTransactions()
 const {toggleTransactionDisplayType, transactionDisplay} = useSettings()

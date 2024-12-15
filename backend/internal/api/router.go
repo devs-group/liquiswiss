@@ -9,14 +9,16 @@ import (
 )
 
 type API struct {
-	Router    *gin.Engine
-	DBService service.IDatabaseService
+	Router          *gin.Engine
+	DBService       service.IDatabaseService
+	SendgridService service.ISendgridService
 }
 
-func NewAPI(dbService service.IDatabaseService) *API {
+func NewAPI(dbService service.IDatabaseService, sendgridService service.ISendgridService) *API {
 	api := &API{
-		Router:    gin.Default(),
-		DBService: dbService,
+		Router:          gin.Default(),
+		DBService:       dbService,
+		SendgridService: sendgridService,
 	}
 	api.setupRouter()
 	return api
@@ -27,11 +29,26 @@ func (api *API) setupRouter() {
 	{
 		public := group.Group("/auth")
 		{
-			public.POST("/register", func(ctx *gin.Context) {
-				handlers.Register(api.DBService, ctx)
+			public.POST("/registration/create", func(ctx *gin.Context) {
+				handlers.CreateRegistration(api.DBService, api.SendgridService, ctx)
+			})
+			public.POST("/registration/check-code", func(ctx *gin.Context) {
+				handlers.CheckRegistrationCode(api.DBService, ctx)
+			})
+			public.POST("/registration/finish", func(ctx *gin.Context) {
+				handlers.FinishRegistration(api.DBService, ctx)
 			})
 			public.POST("/login", func(ctx *gin.Context) {
 				handlers.Login(api.DBService, ctx)
+			})
+			public.POST("/forgot-password", func(ctx *gin.Context) {
+				handlers.ForgotPassword(api.DBService, api.SendgridService, ctx)
+			})
+			public.POST("/reset-password", func(ctx *gin.Context) {
+				handlers.ResetPassword(api.DBService, ctx)
+			})
+			public.POST("/reset-password-check-code", func(ctx *gin.Context) {
+				handlers.CheckResetPasswordCode(api.DBService, ctx)
 			})
 			public.GET("/logout", func(ctx *gin.Context) {
 				handlers.Logout(api.DBService, ctx)
@@ -49,6 +66,9 @@ func (api *API) setupRouter() {
 			})
 			protected.POST("/profile/password", func(ctx *gin.Context) {
 				handlers.UpdatePassword(api.DBService, ctx)
+			})
+			protected.PATCH("/profile/organisation", func(ctx *gin.Context) {
+				handlers.SetUserCurrentOrganisation(api.DBService, ctx)
 			})
 			protected.GET("/access-token", func(ctx *gin.Context) {
 				handlers.GetAccessToken(api.DBService, ctx)

@@ -14,5 +14,6 @@ SELECT
     COALESCE(f.expense, json_array()) AS expense,
     f.forecast_id AS forecast_id
 FROM date_series ds
-LEFT JOIN go_forecast_details f ON DATE_FORMAT(ds.date, '%Y-%m') = f.month AND f.owner = ?
+LEFT JOIN forecast_details f ON DATE_FORMAT(ds.date, '%Y-%m') = f.month
+    AND f.organisation_id = (SELECT current_organisation FROM users u WHERE u.id = ?)
 ORDER BY ds.date

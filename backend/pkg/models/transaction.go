@@ -37,7 +37,7 @@ type CreateTransaction struct {
 	Currency    int64   `json:"currency" validate:"required"`
 	Employee    *int64  `json:"employee" validate:"omitempty"`
 	Vat         *int64  `json:"vat" validate:"omitempty"`
-	VatIncluded *bool   `json:"VatIncluded" validate:"omitempty"`
+	VatIncluded bool    `json:"VatIncluded"`
 }
 
 type UpdateTransaction struct {

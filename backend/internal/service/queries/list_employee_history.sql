@@ -11,10 +11,10 @@ SELECT
     h.from_date,
     h.to_date,
     COUNT(*) OVER() AS total_count
-FROM go_employee_history h
-JOIN go_employees e ON e.id = h.employee_id
-JOIN go_currencies c ON h.salary_currency = c.id
-WHERE h.employee_id = ?  -- Filter by the specific employee_id
-  AND e.owner = ?        -- Ensure the employee belongs to the current user (owner)
+FROM employee_history h
+JOIN employees e ON e.id = h.employee_id
+JOIN currencies c ON h.currency_id = c.id
+WHERE h.employee_id = ?
+  AND e.organisation_id = (SELECT current_organisation FROM users u WHERE u.id = ?)
 ORDER BY h.from_date DESC -- Order by the most recent history first
-LIMIT ? OFFSET ?;        -- Pagination: limit the number of rows returned and apply offset
+LIMIT ? OFFSET ?

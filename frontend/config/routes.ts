@@ -7,7 +7,10 @@ export const RouteNames = {
     BANK_ACCOUNTS: 'bank-accounts',
     ACCOUNT: 'account',
     LOGIN: 'auth',
-    REGISTER: 'auth-register',
+    REGISTRATION: 'auth-registration',
+    FORGOT_PASSWORD: 'auth-forgot-password',
+    RESET_PASSWORD: 'auth-reset-password',
+    VALIDATE: 'auth-validate',
 }
 
 export const RoutePaths = {
@@ -15,4 +18,10 @@ export const RoutePaths = {
     AUTH: "/auth",
 };
 
-export const AuthRouteNames = [RouteNames.LOGIN, RouteNames.REGISTER]
+export const AuthRouteNames = [
+    RouteNames.LOGIN,
+    RouteNames.REGISTRATION,
+    RouteNames.VALIDATE,
+    RouteNames.FORGOT_PASSWORD,
+    RouteNames.RESET_PASSWORD,
+]

@@ -7,6 +7,20 @@ export default defineNuxtConfig({
         enabled: false,
         telemetry: false,
     },
+    app: {
+        head: {
+            meta: [
+                {name: 'apple-mobile-web-app-title', content: 'LiquiSwiss'},
+            ],
+            link: [
+                {rel: 'icon', type: 'image/png', href: '/favicon-96x96.png', sizes: '96x96'},
+                {rel: 'icon', type: 'image/svg+xml', href: '/favicon.svg'},
+                {rel: 'shortcut icon', href: '/favicon.ico'},
+                {rel: 'apple-touch-icon', href: '/apple-touch-icon.png', sizes: '180x180'},
+                {rel: 'manifest', href: '/site.webmanifest'},
+            ]
+        }
+    },
     runtimeConfig: {
         apiHost: 'http://localhost:8080',
     },

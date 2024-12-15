@@ -1,13 +1,13 @@
 -- +goose Up
 -- +goose StatementBegin
-ALTER TABLE go_transactions
-    ADD COLUMN vat BIGINT UNSIGNED,
-    ADD CONSTRAINT FK_Transaction_Vat FOREIGN KEY (vat) REFERENCES vats (id) ON DELETE SET NULL ON UPDATE CASCADE;
+ALTER TABLE transactions
+    ADD COLUMN vat_id BIGINT UNSIGNED,
+    ADD CONSTRAINT FK_Transaction_Vat FOREIGN KEY (vat_id) REFERENCES vats (id) ON DELETE SET NULL ON UPDATE CASCADE;
 -- +goose StatementEnd
 
 -- +goose Down
 -- +goose StatementBegin
-ALTER TABLE go_transactions
-    DROP COLUMN vat,
+ALTER TABLE transactions
+    DROP COLUMN vat_id,
     DROP CONSTRAINT FK_Transaction_Vat;
 -- +goose StatementEnd

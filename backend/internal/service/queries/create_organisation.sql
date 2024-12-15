@@ -1,1 +1,1 @@
-INSERT INTO go_organisations (name) VALUES (?)
+INSERT INTO organisations (name) VALUES (?)

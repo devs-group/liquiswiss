@@ -372,9 +372,8 @@ func UpdateEmployeeHistory(dbService service.IDatabaseService, c *gin.Context) {
 		salaryPerMonth := existingEmployeeHistory.SalaryPerMonth
 		payload.SalaryPerMonth = &salaryPerMonth
 	}
-	if payload.SalaryCurrency == nil {
-		salaryCurrency := existingEmployeeHistory.SalaryCurrency
-		payload.SalaryCurrency = salaryCurrency.ID
+	if payload.CurrencyID == nil {
+		payload.CurrencyID = existingEmployeeHistory.Currency.ID
 	}
 	if payload.VacationDaysPerYear == nil {
 		vacationDaysPerYear := existingEmployeeHistory.VacationDaysPerYear

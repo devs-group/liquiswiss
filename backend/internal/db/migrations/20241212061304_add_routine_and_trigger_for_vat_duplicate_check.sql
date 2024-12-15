@@ -1,6 +1,6 @@
 -- +goose Up
 -- +goose StatementBegin
-CREATE PROCEDURE CheckUniqueVat(id BIGINT, value BIGINT, owner BIGINT UNSIGNED, organisation BIGINT UNSIGNED)
+CREATE PROCEDURE CheckUniqueVat(id BIGINT, value BIGINT, organisation_id BIGINT UNSIGNED)
 BEGIN
     -- Check for duplicates
     IF EXISTS (
@@ -11,15 +11,13 @@ BEGIN
           AND id != v.id
           AND (
               -- System-level VAT
-              v.owner IS NULL AND v.organisation IS NULL
-              -- User-level VAT
-              OR (v.owner = owner AND v.owner IS NOT NULL)
+              v.organisation_id IS NULL
               -- Organisation-level VAT
-              OR (v.organisation = organisation AND v.organisation IS NOT NULL)
+              OR (v.organisation_id = organisation_id AND v.organisation_id IS NOT NULL)
             )
     ) THEN
         SIGNAL SQLSTATE '45000'
-            SET MESSAGE_TEXT = 'Duplicate VAT entry for value, owner, or organisation';
+            SET MESSAGE_TEXT = 'Duplicate VAT entries are not allowed';
     END IF;
 END;
 -- +goose StatementEnd
@@ -28,7 +26,7 @@ CREATE TRIGGER Enforce_Unique_Vat_Insert
     BEFORE INSERT ON vats
     FOR EACH ROW
 BEGIN
-    CALL CheckUniqueVat(0, NEW.value, NEW.owner, NEW.organisation);
+    CALL CheckUniqueVat(0, NEW.value, NEW.organisation_id);
 END;
 -- +goose StatementEnd
 -- +goose StatementBegin
@@ -36,7 +34,7 @@ CREATE TRIGGER Enforce_Unique_Vat_Update
     BEFORE UPDATE ON vats
     FOR EACH ROW
 BEGIN
-    CALL CheckUniqueVat(NEW.id, NEW.value, NEW.owner, NEW.organisation);
+    CALL CheckUniqueVat(NEW.id, NEW.value, NEW.organisation_id);
 END;
 -- +goose StatementEnd
 

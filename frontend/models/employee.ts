@@ -11,7 +11,7 @@ export interface EmployeeResponse {
     name: string;
     hoursPerMonth: number | null;
     salaryPerMonth: number | null;
-    salaryCurrency: CurrencyResponse | null;
+    currency: CurrencyResponse | null;
     vacationDaysPerYear?: number | null;
     fromDate?: string | null;
     toDate?: string | null;
@@ -28,7 +28,7 @@ export interface EmployeeHistoryFormData {
     id: number;
     hoursPerMonth: number;
     salaryPerMonth: number;
-    salaryCurrency: number;
+    currencyID: number;
     vacationDaysPerYear: number;
     fromDate: Date;
     toDate?: Date;
@@ -39,7 +39,7 @@ export interface EmployeeHistoryResponse {
     employeeID: string;
     hoursPerMonth: number;
     salaryPerMonth: number;
-    salaryCurrency: CurrencyResponse;
+    currency: CurrencyResponse;
     vacationDaysPerYear: number;
     fromDate: string;
     toDate: string | null;

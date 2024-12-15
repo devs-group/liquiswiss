@@ -20,6 +20,10 @@ import BankAccountCard from "~/components/BankAccountCard.vue";
 import useBankAccounts from "~/composables/useBankAccounts";
 import {Constants} from "~/utils/constants";
 
+useHead({
+  title: 'Bankkonten',
+})
+
 const dialog = useDialog();
 const {bankAccounts, totalBankSaldoInCHF, useFetchListBankAccounts, setBankAccounts} = useBankAccounts()
 

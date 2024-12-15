@@ -1,1 +1,1 @@
-DELETE FROM go_refresh_tokens WHERE token_id = ? AND user_id = ?
+DELETE FROM refresh_tokens WHERE token_id = ? AND user_id = ?

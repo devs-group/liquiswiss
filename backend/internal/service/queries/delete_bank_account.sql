@@ -1,4 +1,4 @@
-DELETE FROM go_bank_accounts
+DELETE FROM bank_accounts
 WHERE
     id = ?
-    AND owner = ?
+    AND organisation_id = (SELECT current_organisation FROM users u WHERE u.id = ?)

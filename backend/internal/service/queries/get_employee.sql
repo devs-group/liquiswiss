@@ -4,7 +4,7 @@ WITH ranked_history AS (
         employee_id,
         hours_per_month,
         salary_per_month,
-        salary_currency,
+        currency_id,
         vacation_days_per_year,
         from_date,
         to_date,
@@ -19,7 +19,7 @@ WITH ranked_history AS (
                     END,
                 from_date -- Sort ASC from_date for ties
         ) AS rn
-    FROM go_employee_history
+    FROM employee_history
     WHERE to_date IS NULL OR to_date >= CURDATE()
 )
 SELECT
@@ -36,9 +36,9 @@ SELECT
     h.to_date,
     h.is_in_future,
     h.id AS history_id
-FROM go_employees e
+FROM employees e
 LEFT JOIN ranked_history h ON e.id = h.employee_id AND h.rn = 1
-LEFT JOIN go_currencies c ON h.salary_currency = c.id
-WHERE e.id = ? -- Employee ID placeholder
-  AND e.owner = ? -- Owner ID placeholder
+LEFT JOIN currencies c ON h.currency_id = c.id
+WHERE e.id = ?
+  AND e.organisation_id = (SELECT current_organisation FROM users u WHERE u.id = ?)
 LIMIT 1;

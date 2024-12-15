@@ -1,1 +1,0 @@
-INSERT INTO liquiswiss.go_transactions (id, name, amount, cycle, type, start_date, end_date, category, currency, employee, owner, organisation) VALUES (9, 'Tägliche Ausgabe', -2200, 'daily', 'repeating', '2024-10-30', null, 3, 1, null, 1, null);

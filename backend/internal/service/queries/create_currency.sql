@@ -1,4 +1,4 @@
-INSERT INTO go_currencies
+INSERT INTO currencies
     (
      code,
      description,

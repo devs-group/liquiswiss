@@ -110,6 +110,35 @@ func UpdatePassword(dbService service.IDatabaseService, c *gin.Context) {
 	c.Status(http.StatusOK)
 }
 
+func SetUserCurrentOrganisation(dbService service.IDatabaseService, c *gin.Context) {
+	userID := c.GetInt64("userID")
+	if userID == 0 {
+		c.JSON(http.StatusUnauthorized, gin.H{"error": "Ungültiger Benutzer"})
+		return
+	}
+
+	var payload models.UpdateUserCurrentOrganisation
+	if err := c.Bind(&payload); err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		return
+	}
+
+	validator := utils.GetValidator()
+	if err := validator.Struct(payload); err != nil {
+		// Return validation errors
+		c.JSON(http.StatusBadRequest, gin.H{"error": "Ungültige Daten", "details": err.Error()})
+		return
+	}
+
+	err := dbService.SetUserCurrentOrganisation(userID, payload.OrganisationID)
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		return
+	}
+
+	c.Status(http.StatusOK)
+}
+
 func GetAccessToken(dbService service.IDatabaseService, c *gin.Context) {
 	// This does nothing it's simply for the user to get a refresh token
 	c.Status(http.StatusNoContent)

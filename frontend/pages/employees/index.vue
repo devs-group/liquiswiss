@@ -33,6 +33,10 @@ import EmployeeDialog from "~/components/dialogs/EmployeeDialog.vue";
 import type {EmployeeResponse} from "~/models/employee";
 import {RouteNames} from "~/config/routes";
 
+useHead({
+  title: 'Mitarbeitende',
+})
+
 const {employees, noMoreDataEmployees, pageEmployees, useFetchListEmployees, listEmployees} = useEmployees()
 const {toggleEmployeeDisplayType, employeeDisplay} = useSettings()
 const dialog = useDialog();

@@ -22,6 +22,7 @@
   <ConfirmDialog :draggable="false"/>
   <Toast position="bottom-center"/>
   <NuxtLoadingIndicator :height="4" :throttle="1000" color="#10B981" />
+  <FullProgressSpinner :show="showGlobalLoadingSpinner"/>
 </template>
 
 <script setup lang="ts">
@@ -31,15 +32,16 @@ import {Constants} from "~/utils/constants";
 import {DateStringToFormattedDate} from "~/utils/format-helper";
 
 const {isAuthenticated, getAccessToken} = useAuth()
-const {useFetchListCurrencies, useFetchListCategories, useFetchListFiatRates, useFetchGetServerTime, serverDate} = useGlobalData()
+const {useFetchListCurrencies, useFetchListCategories, useFetchListFiatRates, useFetchGetServerTime, serverDate, showGlobalLoadingSpinner} = useGlobalData()
+const {useFetchListOrganisations} = useOrganisations()
 const toast = useToast()
 const {hook} = useNuxtApp()
 const hasInitialLoadError = ref(false)
 const updateAvailable = ref(false)
 
 useHead({
-  title: 'LIQUISWISS',
-  bodyAttrs: () => ({class: 'bg-white dark:bg-zinc-900'})
+  titleTemplate: (title) => title ? `${title} - LiquiSwiss` : 'LiquiSwiss',
+  bodyAttrs: () => ({class: 'bg-white dark:bg-zinc-900'}),
 })
 
 const serverDateFormatted = computed(() => {
@@ -48,8 +50,17 @@ const serverDateFormatted = computed(() => {
 
 if (isAuthenticated.value) {
   await Promise.all([useFetchListCurrencies(), useFetchListCategories(), useFetchListFiatRates(), useFetchGetServerTime()])
-      .catch(reason => {
+      .catch(() => {
         hasInitialLoadError.value = true
+      })
+  await useFetchListOrganisations()
+      .catch(() => {
+        toast.add({
+          summary: 'Fehler',
+          detail: `Wir konnten Ihre Organisationen nicht laden. Dies scheint ein Systemfehler zu sein`,
+          severity: 'error',
+          life: Config.TOAST_LIFE_TIME,
+        })
       })
 }
 

@@ -1,8 +1,8 @@
 SELECT
     COUNT(*) OVER () AS total_count
 FROM
-    go_employees AS e
+    employees AS e
 WHERE
-    e.owner = ?
+    e.organisation_id = (SELECT current_organisation FROM users u WHERE u.id = ?)
 LIMIT ?
 OFFSET ?

@@ -1,9 +1,10 @@
 package models
 
 type User struct {
-	ID    int64  `db:"id" json:"id"`
-	Name  string `db:"name" json:"name" validate:"max=100"`
-	Email string `db:"email" json:"email" validate:"required,email"`
+	ID                    int64  `db:"id" json:"id"`
+	Name                  string `db:"name" json:"name" validate:"max=100"`
+	Email                 string `db:"email" json:"email" validate:"required,email"`
+	CurrentOrganisationID int64  `db:"current_organisation" json:"currentOrganisationId" validate:"required"`
 }
 
 type UpdateUser struct {
@@ -13,4 +14,8 @@ type UpdateUser struct {
 
 type UpdateUserPassword struct {
 	Password string `json:"password" validate:"required,min=8"`
+}
+
+type UpdateUserCurrentOrganisation struct {
+	OrganisationID int64 `json:"organisationId" validate:"required,gt=0"`
 }

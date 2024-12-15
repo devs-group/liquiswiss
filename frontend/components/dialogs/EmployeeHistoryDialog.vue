@@ -32,15 +32,15 @@
     </div>
 
     <div class="flex flex-col gap-2 col-span-full md:col-span-1">
-      <label class="text-sm font-bold" for="salary-currency">Währung des Lohns*</label>
-      <Select v-model="salaryCurrency" v-bind="salaryCurrencyProps"
+      <label class="text-sm font-bold" for="salary-currencyID">Währung des Lohns*</label>
+      <Select v-model="currencyID" v-bind="currencyIDProps"
                 empty-message="Keine Währungen gefunden"
                 :disabled="isLoading"
-                :class="{'p-invalid': errors['salaryCurrency']?.length}"
+                :class="{'p-invalid': errors['currencyID']?.length}"
                 :options="currencies" option-label="code" option-value="id"
                 placeholder="Bitte wählen"
-                id="salary-currency"/>
-      <small class="text-liqui-red">{{errors["salaryCurrency"] || '&nbsp;'}}</small>
+                id="salary-currency-id"/>
+      <small class="text-liqui-red">{{errors["currencyID"] || '&nbsp;'}}</small>
     </div>
 
     <div class="flex flex-col gap-2 col-span-full md:col-span-1">
@@ -105,7 +105,7 @@ const { defineField, errors, handleSubmit, meta } = useForm({
   validationSchema: yup.object({
     hoursPerMonth: yup.number().typeError('Bitte Zahl eingeben').min(0, 'Muss mindestens 0 sein'),
     salaryPerMonth: yup.number().typeError('Bitte Gehalt eingeben').min(0, 'Muss mindestens 0 sein'),
-    salaryCurrency: yup.number().required('Währung wird benötigt').typeError('Bitte gültige Währung eingeben'),
+    currencyID: yup.number().required('Währung wird benötigt').typeError('Bitte gültige Währung eingeben'),
     vacationDaysPerYear: yup.number().typeError('Bitte Zahl eingeben').min(0, 'Muss mindestens 0 sein'),
     fromDate: yup.date().typeError('Bitte Datum eingeben').required('Von wird benötigt'),
   }),
@@ -113,7 +113,7 @@ const { defineField, errors, handleSubmit, meta } = useForm({
     id: isClone ? undefined : employeeHistory?.id ?? undefined,
     hoursPerMonth: employeeHistory?.hoursPerMonth ?? 0,
     salaryPerMonth: isNumber(employeeHistory?.salaryPerMonth) ? AmountToFloat(employeeHistory!.salaryPerMonth) : 0,
-    salaryCurrency: employeeHistory?.salaryCurrency.id ?? null,
+    currencyID: employeeHistory?.currency.id ?? null,
     vacationDaysPerYear: employeeHistory?.vacationDaysPerYear ?? 0,
     fromDate: employeeHistory?.fromDate ? DateToUTCDate(employeeHistory.fromDate) : null,
   } as EmployeeHistoryFormData
@@ -121,7 +121,7 @@ const { defineField, errors, handleSubmit, meta } = useForm({
 
 const [hoursPerMonth, hoursPerMonthProps] = defineField('hoursPerMonth')
 const [salaryPerMonth, salaryPerMonthProps] = defineField('salaryPerMonth')
-const [salaryCurrency, salaryCurrencyProps] = defineField('salaryCurrency')
+const [currencyID, currencyIDProps] = defineField('currencyID')
 const [vacationDaysPerYear, vacationDaysPerYearProps] = defineField('vacationDaysPerYear')
 const [fromDate, fromDateProps] = defineField('fromDate')
 

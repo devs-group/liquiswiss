@@ -35,7 +35,7 @@ services:
       - '3306:3306'
     environment:
       MARIADB_ROOT_PASSWORD: password
-      MARIADB_USER: ls_user
+      MARIADB_USER: liquiswiss
       MARIADB_PASSWORD: password
       MARIADB_DATABASE: liquiswiss
     volumes:

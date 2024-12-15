@@ -55,17 +55,17 @@ func (mr *MockIDatabaseServiceMockRecorder) ApplyMocks() *gomock.Call {
 }
 
 // AssignUserToOrganisation mocks base method.
-func (m *MockIDatabaseService) AssignUserToOrganisation(arg0, arg1 int64, arg2 string) error {
+func (m *MockIDatabaseService) AssignUserToOrganisation(arg0, arg1 int64, arg2 string, arg3 bool) error {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "AssignUserToOrganisation", arg0, arg1, arg2)
+	ret := m.ctrl.Call(m, "AssignUserToOrganisation", arg0, arg1, arg2, arg3)
 	ret0, _ := ret[0].(error)
 	return ret0
 }
 
 // AssignUserToOrganisation indicates an expected call of AssignUserToOrganisation.
-func (mr *MockIDatabaseServiceMockRecorder) AssignUserToOrganisation(arg0, arg1, arg2 any) *gomock.Call {
+func (mr *MockIDatabaseServiceMockRecorder) AssignUserToOrganisation(arg0, arg1, arg2, arg3 any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "AssignUserToOrganisation", reflect.TypeOf((*MockIDatabaseService)(nil).AssignUserToOrganisation), arg0, arg1, arg2)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "AssignUserToOrganisation", reflect.TypeOf((*MockIDatabaseService)(nil).AssignUserToOrganisation), arg0, arg1, arg2, arg3)
 }
 
 // CheckRefreshToken mocks base method.
@@ -144,18 +144,18 @@ func (mr *MockIDatabaseServiceMockRecorder) CreateBankAccount(arg0, arg1 any) *g
 }
 
 // CreateCategory mocks base method.
-func (m *MockIDatabaseService) CreateCategory(arg0 models.CreateCategory) (int64, error) {
+func (m *MockIDatabaseService) CreateCategory(arg0 *int64, arg1 models.CreateCategory) (int64, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "CreateCategory", arg0)
+	ret := m.ctrl.Call(m, "CreateCategory", arg0, arg1)
 	ret0, _ := ret[0].(int64)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
 
 // CreateCategory indicates an expected call of CreateCategory.
-func (mr *MockIDatabaseServiceMockRecorder) CreateCategory(arg0 any) *gomock.Call {
+func (mr *MockIDatabaseServiceMockRecorder) CreateCategory(arg0, arg1 any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CreateCategory", reflect.TypeOf((*MockIDatabaseService)(nil).CreateCategory), arg0)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CreateCategory", reflect.TypeOf((*MockIDatabaseService)(nil).CreateCategory), arg0, arg1)
 }
 
 // CreateCurrency mocks base method.
@@ -204,18 +204,48 @@ func (mr *MockIDatabaseServiceMockRecorder) CreateEmployeeHistory(arg0, arg1, ar
 }
 
 // CreateOrganisation mocks base method.
-func (m *MockIDatabaseService) CreateOrganisation(arg0 string, arg1 int64) (int64, error) {
+func (m *MockIDatabaseService) CreateOrganisation(arg0 string) (int64, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "CreateOrganisation", arg0, arg1)
+	ret := m.ctrl.Call(m, "CreateOrganisation", arg0)
 	ret0, _ := ret[0].(int64)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
 
 // CreateOrganisation indicates an expected call of CreateOrganisation.
-func (mr *MockIDatabaseServiceMockRecorder) CreateOrganisation(arg0, arg1 any) *gomock.Call {
+func (mr *MockIDatabaseServiceMockRecorder) CreateOrganisation(arg0 any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CreateOrganisation", reflect.TypeOf((*MockIDatabaseService)(nil).CreateOrganisation), arg0, arg1)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CreateOrganisation", reflect.TypeOf((*MockIDatabaseService)(nil).CreateOrganisation), arg0)
+}
+
+// CreateRegistration mocks base method.
+func (m *MockIDatabaseService) CreateRegistration(arg0, arg1 string) (int64, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "CreateRegistration", arg0, arg1)
+	ret0, _ := ret[0].(int64)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// CreateRegistration indicates an expected call of CreateRegistration.
+func (mr *MockIDatabaseServiceMockRecorder) CreateRegistration(arg0, arg1 any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CreateRegistration", reflect.TypeOf((*MockIDatabaseService)(nil).CreateRegistration), arg0, arg1)
+}
+
+// CreateResetPassword mocks base method.
+func (m *MockIDatabaseService) CreateResetPassword(arg0, arg1 string, arg2 time.Duration) (bool, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "CreateResetPassword", arg0, arg1, arg2)
+	ret0, _ := ret[0].(bool)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// CreateResetPassword indicates an expected call of CreateResetPassword.
+func (mr *MockIDatabaseServiceMockRecorder) CreateResetPassword(arg0, arg1, arg2 any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CreateResetPassword", reflect.TypeOf((*MockIDatabaseService)(nil).CreateResetPassword), arg0, arg1, arg2)
 }
 
 // CreateTransaction mocks base method.
@@ -231,6 +261,36 @@ func (m *MockIDatabaseService) CreateTransaction(arg0 models.CreateTransaction, 
 func (mr *MockIDatabaseServiceMockRecorder) CreateTransaction(arg0, arg1 any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CreateTransaction", reflect.TypeOf((*MockIDatabaseService)(nil).CreateTransaction), arg0, arg1)
+}
+
+// CreateUser mocks base method.
+func (m *MockIDatabaseService) CreateUser(arg0, arg1 string) (int64, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "CreateUser", arg0, arg1)
+	ret0, _ := ret[0].(int64)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// CreateUser indicates an expected call of CreateUser.
+func (mr *MockIDatabaseServiceMockRecorder) CreateUser(arg0, arg1 any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CreateUser", reflect.TypeOf((*MockIDatabaseService)(nil).CreateUser), arg0, arg1)
+}
+
+// CreateVat mocks base method.
+func (m *MockIDatabaseService) CreateVat(arg0 models.CreateVat, arg1 int64) (int64, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "CreateVat", arg0, arg1)
+	ret0, _ := ret[0].(int64)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// CreateVat indicates an expected call of CreateVat.
+func (mr *MockIDatabaseServiceMockRecorder) CreateVat(arg0, arg1 any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CreateVat", reflect.TypeOf((*MockIDatabaseService)(nil).CreateVat), arg0, arg1)
 }
 
 // DeleteBankAccount mocks base method.
@@ -289,6 +349,34 @@ func (mr *MockIDatabaseServiceMockRecorder) DeleteRefreshToken(arg0, arg1 any) *
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "DeleteRefreshToken", reflect.TypeOf((*MockIDatabaseService)(nil).DeleteRefreshToken), arg0, arg1)
 }
 
+// DeleteRegistration mocks base method.
+func (m *MockIDatabaseService) DeleteRegistration(arg0 int64, arg1 string) error {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "DeleteRegistration", arg0, arg1)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// DeleteRegistration indicates an expected call of DeleteRegistration.
+func (mr *MockIDatabaseServiceMockRecorder) DeleteRegistration(arg0, arg1 any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "DeleteRegistration", reflect.TypeOf((*MockIDatabaseService)(nil).DeleteRegistration), arg0, arg1)
+}
+
+// DeleteResetPassword mocks base method.
+func (m *MockIDatabaseService) DeleteResetPassword(arg0 string) error {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "DeleteResetPassword", arg0)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// DeleteResetPassword indicates an expected call of DeleteResetPassword.
+func (mr *MockIDatabaseServiceMockRecorder) DeleteResetPassword(arg0 any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "DeleteResetPassword", reflect.TypeOf((*MockIDatabaseService)(nil).DeleteResetPassword), arg0)
+}
+
 // DeleteTransaction mocks base method.
 func (m *MockIDatabaseService) DeleteTransaction(arg0 int64, arg1 string) error {
 	m.ctrl.T.Helper()
@@ -301,6 +389,20 @@ func (m *MockIDatabaseService) DeleteTransaction(arg0 int64, arg1 string) error 
 func (mr *MockIDatabaseServiceMockRecorder) DeleteTransaction(arg0, arg1 any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "DeleteTransaction", reflect.TypeOf((*MockIDatabaseService)(nil).DeleteTransaction), arg0, arg1)
+}
+
+// DeleteVat mocks base method.
+func (m *MockIDatabaseService) DeleteVat(arg0 int64, arg1 string) error {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "DeleteVat", arg0, arg1)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// DeleteVat indicates an expected call of DeleteVat.
+func (mr *MockIDatabaseServiceMockRecorder) DeleteVat(arg0, arg1 any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "DeleteVat", reflect.TypeOf((*MockIDatabaseService)(nil).DeleteVat), arg0, arg1)
 }
 
 // GetBankAccount mocks base method.
@@ -319,18 +421,18 @@ func (mr *MockIDatabaseServiceMockRecorder) GetBankAccount(arg0, arg1 any) *gomo
 }
 
 // GetCategory mocks base method.
-func (m *MockIDatabaseService) GetCategory(arg0 string) (*models.Category, error) {
+func (m *MockIDatabaseService) GetCategory(arg0 int64, arg1 string) (*models.Category, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "GetCategory", arg0)
+	ret := m.ctrl.Call(m, "GetCategory", arg0, arg1)
 	ret0, _ := ret[0].(*models.Category)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
 
 // GetCategory indicates an expected call of GetCategory.
-func (mr *MockIDatabaseServiceMockRecorder) GetCategory(arg0 any) *gomock.Call {
+func (mr *MockIDatabaseServiceMockRecorder) GetCategory(arg0, arg1 any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetCategory", reflect.TypeOf((*MockIDatabaseService)(nil).GetCategory), arg0)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetCategory", reflect.TypeOf((*MockIDatabaseService)(nil).GetCategory), arg0, arg1)
 }
 
 // GetCurrency mocks base method.
@@ -453,19 +555,19 @@ func (mr *MockIDatabaseServiceMockRecorder) GetUserPasswordByEMail(arg0 any) *go
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetUserPasswordByEMail", reflect.TypeOf((*MockIDatabaseService)(nil).GetUserPasswordByEMail), arg0)
 }
 
-// IsOwnerOfEmployee mocks base method.
-func (m *MockIDatabaseService) IsOwnerOfEmployee(arg0 string, arg1 int64) (bool, error) {
+// GetVat mocks base method.
+func (m *MockIDatabaseService) GetVat(arg0 int64, arg1 string) (*models.Vat, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "IsOwnerOfEmployee", arg0, arg1)
-	ret0, _ := ret[0].(bool)
+	ret := m.ctrl.Call(m, "GetVat", arg0, arg1)
+	ret0, _ := ret[0].(*models.Vat)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
 
-// IsOwnerOfEmployee indicates an expected call of IsOwnerOfEmployee.
-func (mr *MockIDatabaseServiceMockRecorder) IsOwnerOfEmployee(arg0, arg1 any) *gomock.Call {
+// GetVat indicates an expected call of GetVat.
+func (mr *MockIDatabaseServiceMockRecorder) GetVat(arg0, arg1 any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "IsOwnerOfEmployee", reflect.TypeOf((*MockIDatabaseService)(nil).IsOwnerOfEmployee), arg0, arg1)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetVat", reflect.TypeOf((*MockIDatabaseService)(nil).GetVat), arg0, arg1)
 }
 
 // ListBankAccounts mocks base method.
@@ -484,9 +586,9 @@ func (mr *MockIDatabaseServiceMockRecorder) ListBankAccounts(arg0 any) *gomock.C
 }
 
 // ListCategories mocks base method.
-func (m *MockIDatabaseService) ListCategories(arg0, arg1 int64) ([]models.Category, int64, error) {
+func (m *MockIDatabaseService) ListCategories(arg0, arg1, arg2 int64) ([]models.Category, int64, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "ListCategories", arg0, arg1)
+	ret := m.ctrl.Call(m, "ListCategories", arg0, arg1, arg2)
 	ret0, _ := ret[0].([]models.Category)
 	ret1, _ := ret[1].(int64)
 	ret2, _ := ret[2].(error)
@@ -494,9 +596,9 @@ func (m *MockIDatabaseService) ListCategories(arg0, arg1 int64) ([]models.Catego
 }
 
 // ListCategories indicates an expected call of ListCategories.
-func (mr *MockIDatabaseServiceMockRecorder) ListCategories(arg0, arg1 any) *gomock.Call {
+func (mr *MockIDatabaseServiceMockRecorder) ListCategories(arg0, arg1, arg2 any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ListCategories", reflect.TypeOf((*MockIDatabaseService)(nil).ListCategories), arg0, arg1)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ListCategories", reflect.TypeOf((*MockIDatabaseService)(nil).ListCategories), arg0, arg1, arg2)
 }
 
 // ListCurrencies mocks base method.
@@ -624,19 +726,47 @@ func (mr *MockIDatabaseServiceMockRecorder) ListTransactions(arg0, arg1, arg2, a
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ListTransactions", reflect.TypeOf((*MockIDatabaseService)(nil).ListTransactions), arg0, arg1, arg2, arg3, arg4)
 }
 
-// RegisterUser mocks base method.
-func (m *MockIDatabaseService) RegisterUser(arg0, arg1 string) (int64, error) {
+// ListVats mocks base method.
+func (m *MockIDatabaseService) ListVats(arg0 int64) ([]models.Vat, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "RegisterUser", arg0, arg1)
-	ret0, _ := ret[0].(int64)
+	ret := m.ctrl.Call(m, "ListVats", arg0)
+	ret0, _ := ret[0].([]models.Vat)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
 
-// RegisterUser indicates an expected call of RegisterUser.
-func (mr *MockIDatabaseServiceMockRecorder) RegisterUser(arg0, arg1 any) *gomock.Call {
+// ListVats indicates an expected call of ListVats.
+func (mr *MockIDatabaseServiceMockRecorder) ListVats(arg0 any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "RegisterUser", reflect.TypeOf((*MockIDatabaseService)(nil).RegisterUser), arg0, arg1)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ListVats", reflect.TypeOf((*MockIDatabaseService)(nil).ListVats), arg0)
+}
+
+// ResetPassword mocks base method.
+func (m *MockIDatabaseService) ResetPassword(arg0, arg1 string) error {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "ResetPassword", arg0, arg1)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// ResetPassword indicates an expected call of ResetPassword.
+func (mr *MockIDatabaseServiceMockRecorder) ResetPassword(arg0, arg1 any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ResetPassword", reflect.TypeOf((*MockIDatabaseService)(nil).ResetPassword), arg0, arg1)
+}
+
+// SetUserCurrentOrganisation mocks base method.
+func (m *MockIDatabaseService) SetUserCurrentOrganisation(arg0, arg1 int64) error {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "SetUserCurrentOrganisation", arg0, arg1)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// SetUserCurrentOrganisation indicates an expected call of SetUserCurrentOrganisation.
+func (mr *MockIDatabaseServiceMockRecorder) SetUserCurrentOrganisation(arg0, arg1 any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "SetUserCurrentOrganisation", reflect.TypeOf((*MockIDatabaseService)(nil).SetUserCurrentOrganisation), arg0, arg1)
 }
 
 // StoreRefreshTokenID mocks base method.
@@ -668,17 +798,17 @@ func (mr *MockIDatabaseServiceMockRecorder) UpdateBankAccount(arg0, arg1, arg2 a
 }
 
 // UpdateCategory mocks base method.
-func (m *MockIDatabaseService) UpdateCategory(arg0 models.UpdateCategory, arg1 string) error {
+func (m *MockIDatabaseService) UpdateCategory(arg0 int64, arg1 models.UpdateCategory, arg2 string) error {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "UpdateCategory", arg0, arg1)
+	ret := m.ctrl.Call(m, "UpdateCategory", arg0, arg1, arg2)
 	ret0, _ := ret[0].(error)
 	return ret0
 }
 
 // UpdateCategory indicates an expected call of UpdateCategory.
-func (mr *MockIDatabaseServiceMockRecorder) UpdateCategory(arg0, arg1 any) *gomock.Call {
+func (mr *MockIDatabaseServiceMockRecorder) UpdateCategory(arg0, arg1, arg2 any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "UpdateCategory", reflect.TypeOf((*MockIDatabaseService)(nil).UpdateCategory), arg0, arg1)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "UpdateCategory", reflect.TypeOf((*MockIDatabaseService)(nil).UpdateCategory), arg0, arg1, arg2)
 }
 
 // UpdateCurrency mocks base method.
@@ -779,6 +909,20 @@ func (mr *MockIDatabaseServiceMockRecorder) UpdateTransaction(arg0, arg1, arg2 a
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "UpdateTransaction", reflect.TypeOf((*MockIDatabaseService)(nil).UpdateTransaction), arg0, arg1, arg2)
 }
 
+// UpdateVat mocks base method.
+func (m *MockIDatabaseService) UpdateVat(arg0 models.UpdateVat, arg1 int64, arg2 string) error {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "UpdateVat", arg0, arg1, arg2)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// UpdateVat indicates an expected call of UpdateVat.
+func (mr *MockIDatabaseServiceMockRecorder) UpdateVat(arg0, arg1, arg2 any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "UpdateVat", reflect.TypeOf((*MockIDatabaseService)(nil).UpdateVat), arg0, arg1, arg2)
+}
+
 // UpsertFiatRate mocks base method.
 func (m *MockIDatabaseService) UpsertFiatRate(arg0 models.CreateFiatRate) error {
 	m.ctrl.T.Helper()
@@ -821,4 +965,34 @@ func (m *MockIDatabaseService) UpsertForecastDetail(arg0 models.CreateForecastDe
 func (mr *MockIDatabaseServiceMockRecorder) UpsertForecastDetail(arg0, arg1, arg2 any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "UpsertForecastDetail", reflect.TypeOf((*MockIDatabaseService)(nil).UpsertForecastDetail), arg0, arg1, arg2)
+}
+
+// ValidateRegistration mocks base method.
+func (m *MockIDatabaseService) ValidateRegistration(arg0, arg1 string, arg2 time.Duration) (int64, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "ValidateRegistration", arg0, arg1, arg2)
+	ret0, _ := ret[0].(int64)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// ValidateRegistration indicates an expected call of ValidateRegistration.
+func (mr *MockIDatabaseServiceMockRecorder) ValidateRegistration(arg0, arg1, arg2 any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ValidateRegistration", reflect.TypeOf((*MockIDatabaseService)(nil).ValidateRegistration), arg0, arg1, arg2)
+}
+
+// ValidateResetPassword mocks base method.
+func (m *MockIDatabaseService) ValidateResetPassword(arg0, arg1 string, arg2 time.Duration) (int64, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "ValidateResetPassword", arg0, arg1, arg2)
+	ret0, _ := ret[0].(int64)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// ValidateResetPassword indicates an expected call of ValidateResetPassword.
+func (mr *MockIDatabaseServiceMockRecorder) ValidateResetPassword(arg0, arg1, arg2 any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ValidateResetPassword", reflect.TypeOf((*MockIDatabaseService)(nil).ValidateResetPassword), arg0, arg1, arg2)
 }

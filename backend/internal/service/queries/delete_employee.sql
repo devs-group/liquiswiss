@@ -1,4 +1,4 @@
-DELETE FROM go_employees
+DELETE FROM employees
 WHERE
     id = ?
-    AND owner = ?
+    AND organisation_id = (SELECT current_organisation FROM users u WHERE u.id = ?)

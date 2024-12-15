@@ -8,6 +8,7 @@ export default function useGlobalData() {
     const currencies = useState<CurrencyResponse[]>('currencies', () => []);
     const fiatRates = useState<FiatRateResponse[]>('fiatRates', () =>[]);
     const serverDate = useState<Date|null>('serverDate', () => null)
+    const showGlobalLoadingSpinner = useState<boolean>('showGlobalLoadingSpinner', () => false)
 
     const useFetchListCategories = async () => {
         const {data, error} = await useFetch<ListCategoryResponse>('/api/categories', {
@@ -75,5 +76,6 @@ export default function useGlobalData() {
         convertAmountToRate,
         useFetchGetServerTime,
         serverDate,
+        showGlobalLoadingSpinner,
     };
 }

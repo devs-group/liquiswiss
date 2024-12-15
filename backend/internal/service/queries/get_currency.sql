@@ -4,6 +4,6 @@ SELECT
     c.description,
     c.locale_code
 FROM
-    go_currencies AS c
+    currencies AS c
 WHERE
     c.id = ?

@@ -1,1 +1,3 @@
-SELECT id, name, email FROM go_users WHERE id = ?
+SELECT id, name, email, current_organisation
+FROM users
+WHERE id = ?

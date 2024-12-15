@@ -12,7 +12,7 @@
     <template #content>
       <div class="flex flex-col gap-2 text-sm">
         <p>{{employeeHistory.hoursPerMonth}} max. Stunden pro Monat</p>
-        <p>{{salaryFormatted}} {{employeeHistory.salaryCurrency.code}} pro Monat</p>
+        <p>{{ salaryFormatted }} {{ employeeHistory.currency.code }} pro Monat</p>
         <p>{{employeeHistory.vacationDaysPerYear}} Urlaubstage im Jahr</p>
         <p v-if="employeeHistory.toDate" class="text-orange-500">Bis {{toDateFormatted}}</p>
         <p v-if="isActive" class="bg-liqui-green p-2 font-bold text-center">Aktive Historie</p>
@@ -40,7 +40,7 @@ defineEmits<{
   'onClone': [employeeHistory: EmployeeHistoryResponse]
 }>()
 
-const salaryFormatted = computed(() => NumberToFormattedCurrency(AmountToFloat(props.employeeHistory!.salaryPerMonth), props.employeeHistory.salaryCurrency!.localeCode))
+const salaryFormatted = computed(() => NumberToFormattedCurrency(AmountToFloat(props.employeeHistory!.salaryPerMonth), props.employeeHistory.currency!.localeCode))
 const fromDateFormatted = computed(() => DateStringToFormattedDate(props.employeeHistory.fromDate))
 const toDateFormatted = computed(() => props.employeeHistory.toDate ? DateStringToFormattedDate(props.employeeHistory.toDate) : '')
 </script>

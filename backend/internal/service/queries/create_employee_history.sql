@@ -1,15 +1,15 @@
-INSERT INTO go_employee_history
+INSERT INTO employee_history
     (
      employee_id,
      hours_per_month,
      salary_per_month,
-     salary_currency,
+     currency_id,
      vacation_days_per_year,
      from_date,
      to_date
     )
 SELECT ?, ?, ?, ?, ?, ?, ?
-FROM go_employees e
+FROM employees e
 WHERE e.id = ?
-  AND e.owner = ?
+  AND e.organisation_id = (SELECT current_organisation FROM users u WHERE u.id = ?)
 LIMIT 1;

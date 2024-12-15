@@ -24,7 +24,7 @@ SELECT
     v.id,
     v.value,
     CONCAT(FORMAT(v.value / 100, IF(v.value % 10 = 0, 1, 2)), '%') AS formatted_value,
-    IF(v.owner IS NULL, false, true) AS can_edit,
+    IF(v.organisation_id IS NULL, false, true) AS can_edit,
     CASE
         WHEN r.type = 'single' THEN
             IF(r.end_date IS NULL OR r.start_date <= r.end_date,
@@ -81,13 +81,13 @@ SELECT
         END AS next_execution_date,
     COUNT(*) OVER () AS total_count
 FROM
-    go_transactions AS r
-    INNER JOIN go_categories c ON r.category = c.id
-    INNER JOIN go_currencies cur ON r.currency = cur.id
-    LEFT JOIN vats v ON r.vat = v.id
-    LEFT JOIN go_employees emp ON r.employee = emp.id
+    transactions AS r
+    INNER JOIN categories c ON r.category_id = c.id
+    INNER JOIN currencies cur ON r.currency_id = cur.id
+    LEFT JOIN vats v ON r.vat_id = v.id
+    LEFT JOIN employees emp ON r.employee_id = emp.id
 WHERE
-    r.owner = ?
+    r.organisation_id = (SELECT current_organisation FROM users u WHERE u.id = ?)
 ORDER BY
     {{.sortBy}} IS NULL,
     {{.sortBy}} {{.sortOrder}},

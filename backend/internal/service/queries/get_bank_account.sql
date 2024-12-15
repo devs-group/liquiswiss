@@ -7,8 +7,8 @@ SELECT
     cur.description,
     cur.locale_code
 FROM
-    go_bank_accounts AS ba
-INNER JOIN go_currencies cur ON ba.currency = cur.id
+    bank_accounts AS ba
+INNER JOIN currencies cur ON ba.currency_id = cur.id
 WHERE
     ba.id = ?
-    AND ba.owner = ?
+    AND ba.organisation_id = (SELECT current_organisation FROM users u WHERE u.id = ?)

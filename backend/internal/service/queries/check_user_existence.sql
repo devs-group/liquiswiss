@@ -1,1 +1,1 @@
-SELECT 1 FROM go_users WHERE id = ?
+SELECT 1 FROM users WHERE id = ?

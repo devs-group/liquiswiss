@@ -14,7 +14,7 @@
         <p v-else class="text-orange-500 font-bold">Kommende Daten:</p>
         <p>{{employee.hoursPerMonth}} Arbeitsstunden / Monat</p>
         <p>
-          {{salaryFormatted}} {{employee.salaryCurrency.code}} / Monat
+          {{ salaryFormatted }} {{ employee.currency.code }} / Monat
         </p>
         <p>
           {{employee.vacationDaysPerYear}} Urlaubstage / Jahr
@@ -47,5 +47,5 @@ defineEmits<{
   'onEdit': [employee: EmployeeResponse]
 }>()
 
-const salaryFormatted = computed(() => NumberToFormattedCurrency(AmountToFloat(props.employee!.salaryPerMonth), props.employee.salaryCurrency!.localeCode))
+const salaryFormatted = computed(() => NumberToFormattedCurrency(AmountToFloat(props.employee!.salaryPerMonth), props.employee.currency!.localeCode))
 </script>

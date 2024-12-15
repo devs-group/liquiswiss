@@ -68,6 +68,10 @@ import * as yup from "yup";
 import type {UserProfileFormData, UserPasswordFormData} from "~/models/auth";
 import {Config} from "~/config/config";
 
+useHead({
+  title: 'Konto',
+})
+
 const {user, updateProfile, updatePassword} = useAuth()
 
 const isSubmittingProfile = ref(false)
@@ -80,7 +84,7 @@ const passwordUpdateErrorMessage = ref('')
 const { defineField: defineFieldProfile, errors: errorsProfile, handleSubmit: handleSubmitProfile, meta: metaProfile, resetForm: resetFormProfile } = useForm({
   validationSchema: yup.object({
     name: yup.string().trim().required('Name wird benötigt'),
-    email: yup.string().email('Ungültiges E-Mail Format').trim().required('Name wird benötigt'),
+    email: yup.string().email('Ungültiges E-Mail Format').trim().required('E-Mail wird benötigt'),
   }),
   initialValues: {
     id: user.value?.id ?? undefined,
@@ -93,7 +97,7 @@ const { defineField: defineFieldPassword, errors: errorsPassword, handleSubmit: 
   validationSchema: yup.object({
     password: yup.string().when( {
       is: (val: string) => val.length > 0,
-      then: (schema) => schema.min(8, 'Bitte gib mind. 8 Zeichen ein').required('Passwort wird benötigt'),
+      then: (schema) => schema.min(8, 'Bitte geben Sie mind. 8 Zeichen ein').required('Passwort wird benötigt'),
       otherwise: (schema) => schema.notRequired(),
     }),
     passwordRepeat: yup.string().test('passwords-match', 'Passwörter stimmen nicht überein',(value, context) => {

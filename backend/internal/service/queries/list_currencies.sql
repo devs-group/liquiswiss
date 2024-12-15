@@ -5,6 +5,6 @@ SELECT
     c.locale_code,
     COUNT(*) OVER () AS total_count
 FROM
-    go_currencies AS c
+    currencies AS c
 LIMIT ?
 OFFSET ?

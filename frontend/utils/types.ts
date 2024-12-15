@@ -4,5 +4,8 @@ export type TransactionSortByType = typeof TransactionSortByOptions[number]
 export const EmployeeSortByOptions = ['name', 'hoursPerMonth', 'salaryPerMonth', 'vacationDaysPerYear', 'fromDate', 'toDate'] as const
 export type EmployeeSortByType = typeof EmployeeSortByOptions[number]
 
+export const OrganisationRoleOptions = ['owner', 'admin', 'editor', 'read-only'] as const
+export type OrganisationRoleType = typeof OrganisationRoleOptions[number]
+
 export const SortOrderOptions = ['ASC', 'DESC'] as const
 export type SortOrderType = typeof SortOrderOptions[number]

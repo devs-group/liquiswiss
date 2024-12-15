@@ -108,6 +108,10 @@ if (employee.value) {
       })
 }
 
+useHead({
+  title: `${employee.value ?? ''} Mitarbeitende`.trim(),
+})
+
 const { defineField, errors, handleSubmit, meta, resetForm } = useForm({
   validationSchema: yup.object({
     name: yup.string().trim().required('Name wird benötigt'),

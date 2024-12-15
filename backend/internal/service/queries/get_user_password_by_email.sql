@@ -1,1 +1,1 @@
-SELECT id, password FROM go_users WHERE email = ?
+SELECT id, password FROM users WHERE email = ?

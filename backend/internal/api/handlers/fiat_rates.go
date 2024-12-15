@@ -26,7 +26,7 @@ func GetFiatRate(dbService service.IDatabaseService, c *gin.Context) {
 
 	fiatRate, err := dbService.GetFiatRate(utils.BaseCurrency, targetCurrency)
 	if err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "Konnte Währung nicht finden"})
 		return
 	}
 

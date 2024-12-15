@@ -111,25 +111,25 @@ func CreateOrganisation(dbService service.IDatabaseService, c *gin.Context) {
 		return
 	}
 
-	organisationID, err := dbService.CreateOrganisation(payload.Name, userID)
+	organisationID, err := dbService.CreateOrganisation(payload.Name)
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 		return
 	}
 
-	err = dbService.AssignUserToOrganisation(userID, organisationID, "owner")
+	err = dbService.AssignUserToOrganisation(userID, organisationID, "owner", false)
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 		return
 	}
 
-	transaction, err := dbService.GetOrganisation(userID, fmt.Sprint(organisationID))
+	organisation, err := dbService.GetOrganisation(userID, fmt.Sprint(organisationID))
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 		return
 	}
 
-	c.JSON(http.StatusCreated, transaction)
+	c.JSON(http.StatusCreated, organisation)
 }
 
 func UpdateOrganisation(dbService service.IDatabaseService, c *gin.Context) {

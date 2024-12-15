@@ -1,2 +1,2 @@
-INSERT INTO liquiswiss.go_categories (name)
+INSERT INTO liquiswiss.categories (name)
 VALUES ('Telefon');

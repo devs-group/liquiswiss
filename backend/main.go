@@ -6,6 +6,7 @@ import (
 	"github.com/joho/godotenv"
 	"github.com/pressly/goose/v3"
 	"github.com/robfig/cron/v3"
+	"liquiswiss/config"
 	"liquiswiss/internal/api"
 	"liquiswiss/internal/db"
 	"liquiswiss/internal/middleware"
@@ -65,10 +66,12 @@ func main() {
 		panic(err)
 	}
 
+	cfg := config.GetConfig()
 	dbService := service.NewDatabaseService(conn)
 	fixerIOService := service.NewFixerIOService(dbService)
+	sendgridService := service.NewSendgridService(cfg.SendgridToken)
 	middleware.InjectUserService(dbService)
-	apiHandler := api.NewAPI(dbService)
+	apiHandler := api.NewAPI(dbService, sendgridService)
 
 	// Cronjob
 	c := cron.New()

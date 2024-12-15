@@ -11,6 +11,12 @@ import (
 )
 
 func ListCategories(dbService service.IDatabaseService, c *gin.Context) {
+	userID := c.GetInt64("userID")
+	if userID == 0 {
+		c.JSON(http.StatusUnauthorized, gin.H{"error": "Ungültiger Benutzer"})
+		return
+	}
+
 	limit, err := strconv.ParseInt(c.Query("limit"), 10, 64)
 	if err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
@@ -22,7 +28,7 @@ func ListCategories(dbService service.IDatabaseService, c *gin.Context) {
 		return
 	}
 
-	categories, totalCount, err := dbService.ListCategories(page, limit)
+	categories, totalCount, err := dbService.ListCategories(userID, page, limit)
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 		return
@@ -35,13 +41,19 @@ func ListCategories(dbService service.IDatabaseService, c *gin.Context) {
 }
 
 func GetCategory(dbService service.IDatabaseService, c *gin.Context) {
+	userID := c.GetInt64("userID")
+	if userID == 0 {
+		c.JSON(http.StatusUnauthorized, gin.H{"error": "Ungültiger Benutzer"})
+		return
+	}
+
 	id := c.Param("id")
 	if id == "" {
 		c.JSON(http.StatusBadRequest, gin.H{"error": "ID is missing"})
 		return
 	}
 
-	category, err := dbService.GetCategory(id)
+	category, err := dbService.GetCategory(userID, id)
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 		return
@@ -51,6 +63,12 @@ func GetCategory(dbService service.IDatabaseService, c *gin.Context) {
 }
 
 func CreateCategory(dbService service.IDatabaseService, c *gin.Context) {
+	userID := c.GetInt64("userID")
+	if userID == 0 {
+		c.JSON(http.StatusUnauthorized, gin.H{"error": "Ungültiger Benutzer"})
+		return
+	}
+
 	var payload models.CreateCategory
 	if err := c.BindJSON(&payload); err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
@@ -63,13 +81,13 @@ func CreateCategory(dbService service.IDatabaseService, c *gin.Context) {
 		return
 	}
 
-	categoryID, err := dbService.CreateCategory(payload)
+	categoryID, err := dbService.CreateCategory(&userID, payload)
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 		return
 	}
 
-	category, err := dbService.GetCategory(strconv.FormatInt(categoryID, 10))
+	category, err := dbService.GetCategory(userID, strconv.FormatInt(categoryID, 10))
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 		return
@@ -79,6 +97,12 @@ func CreateCategory(dbService service.IDatabaseService, c *gin.Context) {
 }
 
 func UpdateCategory(dbService service.IDatabaseService, c *gin.Context) {
+	userID := c.GetInt64("userID")
+	if userID == 0 {
+		c.JSON(http.StatusUnauthorized, gin.H{"error": "Ungültiger Benutzer"})
+		return
+	}
+
 	id := c.Param("id")
 	if id == "" {
 		c.JSON(http.StatusBadRequest, gin.H{"error": "ID is missing"})
@@ -97,13 +121,13 @@ func UpdateCategory(dbService service.IDatabaseService, c *gin.Context) {
 		return
 	}
 
-	err := dbService.UpdateCategory(payload, id)
+	err := dbService.UpdateCategory(userID, payload, id)
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 		return
 	}
 
-	category, err := dbService.GetCategory(id)
+	category, err := dbService.GetCategory(userID, id)
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 		return

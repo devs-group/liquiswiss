@@ -28,7 +28,7 @@ defineEmits<{
   'onClone': [transaction: EmployeeResponse]
 }>()
 
-const salaryFormatted = computed(() => props.employee.salaryPerMonth ? NumberToFormattedCurrency(AmountToFloat(props.employee.salaryPerMonth ?? 0), props.employee.salaryCurrency!.localeCode) : '-')
+const salaryFormatted = computed(() => props.employee.salaryPerMonth ? NumberToFormattedCurrency(AmountToFloat(props.employee.salaryPerMonth ?? 0), props.employee.currency!.localeCode) : '-')
 const fromDate = computed(() => props.employee.fromDate ? DateStringToFormattedDate(props.employee.fromDate) : '-')
 const toDate = computed(() => props.employee.toDate ? DateStringToFormattedDate(props.employee.toDate) : '-')
 </script>
