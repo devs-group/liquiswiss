@@ -109,7 +109,7 @@ if (employee.value) {
 }
 
 useHead({
-  title: `${employee.value ?? ''} Mitarbeitende`.trim(),
+  title: `${employee.value?.name ?? ''} Mitarbeitende`.trim(),
 })
 
 const { defineField, errors, handleSubmit, meta, resetForm } = useForm({
