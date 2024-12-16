@@ -12,8 +12,11 @@
         </div>
 
         <div class="col-span-full">
-          <Message v-if="organisationSubmitError.length" severity="error" :life="Config.MESSAGE_LIFE_TIME" :sticky="false" :closable="false">
-            {{organisationSubmitError}}
+          <Message v-if="organisationSubmitMessage.length" severity="success" :life="Config.MESSAGE_LIFE_TIME" :sticky="false" :closable="false">
+            {{organisationSubmitMessage}}
+          </Message>
+          <Message v-if="organisationSubmitErrorMessage.length" severity="error" :life="Config.MESSAGE_LIFE_TIME" :sticky="false" :closable="false">
+            {{organisationSubmitErrorMessage}}
           </Message>
         </div>
 
@@ -36,7 +39,8 @@ const {useFetchGetOrganisation, updateOrganisation} = useOrganisations()
 
 const organisation = ref<OrganisationResponse>()
 const organisationError = ref('')
-const organisationSubmitError = ref('')
+const organisationSubmitMessage = ref('')
+const organisationSubmitErrorMessage = ref('')
 const isSubmitting = ref(false)
 
 await useFetchGetOrganisation(Number.parseInt(route.params.id as string))
@@ -53,7 +57,7 @@ useHead({
   title: organisation.value?.name ?? '-',
 })
 
-const { defineField, errors, handleSubmit, meta } = useForm({
+const { defineField, errors, handleSubmit, meta, resetForm } = useForm({
   validationSchema: yup.object({
     name: yup.string().trim().required('Name wird benötigt'),
   }),
@@ -71,10 +75,15 @@ const onSubmit = handleSubmit((values) => {
   }
 
   isSubmitting.value = true
-  organisationSubmitError.value = ''
+  organisationSubmitMessage.value = ''
+  organisationSubmitErrorMessage.value = ''
   updateOrganisation(organisation.value.id, values)
+      .then(() => {
+        resetForm({values})
+        organisationSubmitMessage.value = 'Organisation wurde bearbeitet'
+      })
       .catch(() => {
-        organisationSubmitError.value = 'Konnte Organisation nicht aktualisieren'
+        organisationSubmitErrorMessage.value = 'Organisation konnte nicht bearbeitet werden'
       })
       .finally(() => {
         isSubmitting.value = false
