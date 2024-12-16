@@ -9,7 +9,7 @@
                 :options="organisations"
                 option-label="name"
                 option-value="id"
-                class="w-48 max-w-48"
+                class="w-56 max-w-56"
                 @change="onChangeOrganisation"
                 empty-message="Keine Organisationen gefunden"/>
       </div>
