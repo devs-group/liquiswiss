@@ -49,7 +49,8 @@ export default defineNuxtConfig({
     },
     experimental: {
         appManifest: true,
-        checkOutdatedBuildInterval: 15 * 1000,
+        // Every 5 minutes
+        checkOutdatedBuildInterval: 300 * 1000,
     },
     vite: {
         esbuild: {
