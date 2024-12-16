@@ -34,6 +34,16 @@ export default function useOrganisations() {
         }
     }
 
+    const useFetchGetOrganisation = async (organisationID: number) => {
+        const {data, error} = await useFetch<OrganisationResponse>(`/api/organisations/${organisationID}`, {
+            method: 'GET',
+        });
+        if (error.value) {
+            return Promise.reject('Fehler beim Laden der Organisation')
+        }
+        return data.value
+    }
+
     const getOrganisation = async (organisationID: number) => {
         try {
             return await $fetch<OrganisationResponse>(`/api/organisations/${organisationID}`, {
@@ -46,11 +56,12 @@ export default function useOrganisations() {
 
     const createOrganisation = async (payload: OrganisationFormData) => {
         try {
-            await $fetch<OrganisationResponse>(`/api/organisations`, {
+            const organisation = await $fetch<OrganisationResponse>(`/api/organisations`, {
                 method: 'POST',
                 body: payload,
             });
             await listOrganisations()
+            return organisation
         } catch (err) {
             return Promise.reject('Fehler beim Erstellen der Organisation')
         }
@@ -83,6 +94,7 @@ export default function useOrganisations() {
     return {
         useFetchListOrganisations,
         listOrganisations,
+        useFetchGetOrganisation,
         getOrganisation,
         createOrganisation,
         updateOrganisation,

@@ -6,7 +6,10 @@
         <Select @click.stop
                 v-if="user"
                 v-model="selectedOrganisationID"
-                :options="organisations" option-label="name" option-value="id"
+                :options="organisations"
+                option-label="name"
+                option-value="id"
+                class="w-48 max-w-48"
                 @change="onChangeOrganisation"
                 empty-message="Keine Organisationen gefunden"/>
       </div>
@@ -47,11 +50,11 @@ const items = ref<MenuItem[]>([
   { label: 'Mitarbeitende', icon: 'pi pi-users', routeName: RouteNames.EMPLOYEES },
   { label: 'Transaktionen', icon: 'pi pi-money-bill', routeName: RouteNames.TRANSACTIONS },
   { label: 'Bankkonten', icon: 'pi pi-building', routeName: RouteNames.BANK_ACCOUNTS },
-  { label: 'Konto', icon: 'pi pi-user', routeName: RouteNames.ACCOUNT },
+  { label: 'Einstellungen', icon: 'pi pi-cog', routeName: RouteNames.SETTINGS },
   { label: 'Abmelden', icon: 'pi pi-sign-out', command: async (event: MenuItemCommandEvent) => {
       confirm.require({
         header: 'Abmelden',
-        message: 'Möchtest du dich wirklich abmelden?',
+        message: 'Möchten Sie sich wirklich abmelden?',
         icon: 'pi pi-exclamation-triangle',
         rejectLabel: 'Nein',
         acceptLabel: 'Ja',

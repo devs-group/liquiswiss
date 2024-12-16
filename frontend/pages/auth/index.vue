@@ -83,7 +83,7 @@ const onLogin = handleSubmit(async (values) => {
         isLoading.value = false
         toast.add({
           summary: 'Fehler',
-          detail: `Login fehlgeschlagen, bitte prüfe deine Zugangsdaten`,
+          detail: `Login fehlgeschlagen, bitte prüfen Sie Ihre Zugangsdaten`,
           severity: 'error',
           life: Config.TOAST_LIFE_TIME,
         })

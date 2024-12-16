@@ -1,3 +1,5 @@
+import {RouteNames} from "~/config/routes";
+
 export const TransactionSortByOptions = ['name', 'startDate', 'endDate', 'amount', 'cycle', 'category', 'employee', 'nextExecutionDate'] as const
 export type TransactionSortByType = typeof TransactionSortByOptions[number]
 
@@ -9,3 +11,6 @@ export type OrganisationRoleType = typeof OrganisationRoleOptions[number]
 
 export const SortOrderOptions = ['ASC', 'DESC'] as const
 export type SortOrderType = typeof SortOrderOptions[number]
+
+export const SettingsTabOptions = [RouteNames.PROFILE, RouteNames.ORGANISATIONS] as const
+export type SettingsTabType = typeof SettingsTabOptions[number]

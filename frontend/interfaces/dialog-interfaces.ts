@@ -5,6 +5,7 @@ import type {
 } from "~/models/employee";
 import type {BankAccountResponse} from "~/models/bank-account";
 import type {VatResponse} from "~/models/vat";
+import type {OrganisationResponse} from "~/models/organisation";
 
 export interface IEmployeeFormDialog {
     close: () => {},
@@ -55,6 +56,16 @@ export interface IVatFormDialog {
         close: (vatId?: number) => any,
         data: {
             vat?: VatResponse
+        }
+    }
+}
+
+export interface IOrganisationFormDialog {
+    close: () => {},
+    value: {
+        close: () => any,
+        data: {
+            organisation?: OrganisationResponse
         }
     }
 }

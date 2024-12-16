@@ -34,7 +34,7 @@
 
       <ClientOnly>
         <div v-if="hasNoDataInCurrentMonth">
-          <Message size="small">Hinweis: In deiner Zeitzone ist es noch {{localMonth}}, für diesen Monat gibt es keine Prognosedaten mehr</Message>
+          <Message size="small">Hinweis: In Ihrer Zeitzone ist es noch {{localMonth}}, für diesen Monat gibt es keine Prognosedaten mehr</Message>
         </div>
       </ClientOnly>
 

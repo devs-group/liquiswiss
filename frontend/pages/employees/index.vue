@@ -22,7 +22,7 @@
 
     <div v-if="employees?.data.length" class="self-center">
       <Button v-if="!noMoreDataEmployees" severity="info" label="Mehr anzeigen" @click="onLoadMoreEmployees" :loading="isLoadingMore"/>
-      <p v-else class="text-xs opacity-60">Keine weiteren Mitarbeiter ...</p>
+      <p v-else class="text-xs opacity-60">Keine weiteren Mitarbeitenden ...</p>
     </div>
   </div>
 </template>

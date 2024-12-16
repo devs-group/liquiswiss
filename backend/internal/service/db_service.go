@@ -286,10 +286,12 @@ func (s *DatabaseService) UpdateProfile(payload models.UpdateUser, userID string
 		queryBuild = append(queryBuild, "name = ?")
 		args = append(args, *payload.Name)
 	}
-	if payload.Email != nil {
-		queryBuild = append(queryBuild, "email = ?")
-		args = append(args, *payload.Email)
-	}
+
+	// TODO: Disabled until email change logic is implemented
+	//if payload.Email != nil {
+	//	queryBuild = append(queryBuild, "email = ?")
+	//	args = append(args, *payload.Email)
+	//}
 
 	// Add WHERE clause
 	query += strings.Join(queryBuild, ", ")

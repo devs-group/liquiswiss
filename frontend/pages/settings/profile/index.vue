@@ -2,7 +2,7 @@
   <div class="flex flex-col gap-4">
     <div class="flex justify-between items-center gap-2">
       <hr class="h-0.5 bg-black flex-1"/>
-      <p class="text-xl">Dein Profil</p>
+      <p class="text-xl">Ihr Profil</p>
       <hr class="h-0.5 bg-black flex-1"/>
     </div>
 
@@ -17,6 +17,7 @@
       <div class="flex flex-col gap-2 col-span-full md:col-span-1">
         <label class="text-sm font-bold" for="email">E-Mail*</label>
         <InputText v-model="email" v-bind="emailProps"
+                   disabled
                    :class="{'p-invalid': errorsProfile['email']?.length}"
                    id="email" type="email"/>
         <small class="text-liqui-red">{{errorsProfile["email"] || '&nbsp;'}}</small>
@@ -67,10 +68,16 @@ import {useForm} from "vee-validate";
 import * as yup from "yup";
 import type {UserProfileFormData, UserPasswordFormData} from "~/models/auth";
 import {Config} from "~/config/config";
+import {RouteNames} from "~/config/routes";
+import type {ITabMenuItem} from "~/interfaces/prime-interfaces";
 
 useHead({
-  title: 'Konto',
+  title: 'Profil',
 })
+
+const items = ref<ITabMenuItem[]>([
+  {label: 'Profil', icon: 'pi pi-user', routeName: RouteNames.PROFILE}
+])
 
 const {user, updateProfile, updatePassword} = useAuth()
 

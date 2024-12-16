@@ -85,7 +85,7 @@ onMounted(() => {
       localStorage.removeItem(Constants.SESSION_EXPIRED_NAME)
       toast.add({
         summary: 'Info',
-        detail: `Deine Session ist aus Sicherheitsgründen abgelaufen. Bitte logge dich erneut ein.`,
+        detail: `Ihre Session ist aus Sicherheitsgründen abgelaufen. Bitte loggen Sie sich erneut ein.`,
         severity: 'info',
         life: Config.TOAST_LIFE_TIME,
       })

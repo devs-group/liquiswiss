@@ -1,6 +1,7 @@
 import {CreateSettingsCookie} from "~/utils/cookie-helper";
-import type {SortOrderType, TransactionSortByType} from "~/utils/types";
-import {SortOrderOptions, TransactionSortByOptions} from "~/utils/types";
+import type {SettingsTabType, SortOrderType, TransactionSortByType} from "~/utils/types";
+import {SettingsTabOptions, SortOrderOptions, TransactionSortByOptions} from "~/utils/types";
+import {RouteNames} from "~/config/routes";
 
 export default function useSettings() {
     const forecastShowRevenueDetails = useState('forecastShowRevenueDetails', () => false)
@@ -26,6 +27,9 @@ export default function useSettings() {
     const transactionDisplayCookie = CreateSettingsCookie('transaction-display')
     const transactionSortByCookie = CreateSettingsCookie('transaction-sort-by')
     const transactionSortOrderCookie = CreateSettingsCookie('transaction-sort-order')
+
+    const settingsTab = useState<SettingsTabType>('settingsTab', () => RouteNames.PROFILE)
+    const settingsTabCookie = CreateSettingsCookie('settings-tab')
 
     if (forecastShowRevenueDetailsCookie.value !== undefined) {
         const val = forecastShowRevenueDetailsCookie.value
@@ -130,6 +134,15 @@ export default function useSettings() {
         forecastMonths.value = 13
     }
 
+    if (settingsTabCookie.value !== undefined) {
+        const val = settingsTabCookie.value
+        if (val !== null && SettingsTabOptions.includes(val)) {
+            settingsTab.value = val
+        }
+    } else {
+        settingsTab.value = RouteNames.PROFILE
+    }
+
     const toggleTransactionDisplayType = () => {
         switch (transactionDisplay.value) {
             case 'grid':
@@ -185,6 +198,12 @@ export default function useSettings() {
         forecastMonthsCookie.value = value.toString()
     })
 
+    watch(settingsTab, (value) => {
+        if (value !== null && SettingsTabOptions.includes(value)) {
+            settingsTabCookie.value = value.toString()
+        }
+    })
+
     return {
         forecastShowRevenueDetails,
         forecastShowExpenseDetails,
@@ -198,5 +217,6 @@ export default function useSettings() {
         transactionDisplay,
         transactionSortBy,
         transactionSortOrder,
+        settingsTab,
     };
 }
