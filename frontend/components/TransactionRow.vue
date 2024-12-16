@@ -45,7 +45,7 @@ const vatFormatted = computed(() => {
     return '-'
   }
   const amount = NumberToFormattedCurrency(AmountToFloat(props.transaction.vatAmount), props.transaction.currency.localeCode)
-  return props.transaction.vatIncluded ? `inkl. ${amount} CHF` : `zzgl. ${amount} CHF`
+  return props.transaction.vatIncluded ? `inkl. ${amount} ${props.transaction.currency.code}` : `zzgl. ${amount} ${props.transaction.currency.code}`
 })
 const isRepeating = computed(() => props.transaction.type === TransactionType.Repeating)
 const cycle = computed(() => CycleTypeToOptions().find((ct) => ct.value === props.transaction.cycle)?.name ?? '')
