@@ -44,7 +44,7 @@ export interface IBankAccountFormDialog {
     value: {
         close: () => any,
         data: {
-            bankAccountID: number
+            isClone: boolean
             bankAccount?: BankAccountResponse
         }
     }

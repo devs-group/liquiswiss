@@ -34,7 +34,7 @@
       <small class="text-liqui-red">{{errors["currency"] || '&nbsp;'}}</small>
     </div>
 
-    <div v-if="!isCreate" class="flex justify-end col-span-full">
+    <div v-if="!isClone && !isCreate" class="flex justify-end col-span-full">
       <Button @click="onDeleteBankAccount" :loading="isLoading" label="Löschen" icon="pi pi-trash" severity="danger" size="small"/>
     </div>
 
@@ -69,7 +69,8 @@ const toast = useToast()
 // Data
 const isLoading = ref(false)
 const bankAccount = dialogRef.value.data?.bankAccount
-const isCreate = !bankAccount?.id
+const isClone = dialogRef.value.data?.isClone
+const isCreate = isClone || !bankAccount?.id
 const errorMessage = ref('')
 
 const { defineField, errors, handleSubmit, meta } = useForm({
@@ -79,7 +80,7 @@ const { defineField, errors, handleSubmit, meta } = useForm({
     currency: yup.number().required('Währung wird benötigt').typeError('Ungültige Währung'),
   }),
   initialValues: {
-    id: bankAccount?.id ?? undefined,
+    id: isClone ? undefined : bankAccount?.id ?? undefined,
     name: bankAccount?.name ?? '',
     amount: isNumber(bankAccount?.amount) ? AmountToFloat(bankAccount!.amount) : '',
     currency: bankAccount?.currency.id ?? null,

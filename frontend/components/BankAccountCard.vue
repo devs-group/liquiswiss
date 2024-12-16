@@ -3,7 +3,8 @@
     <template #title>
       <div class="flex items-center justify-between">
         <p class="truncate text-base">{{ bankAccount.name }}</p>
-        <div class="flex justify-end">
+        <div class="flex gap-2 justify-end">
+          <Button @click="$emit('onClone', bankAccount)" severity="help" icon="pi pi-copy" outlined rounded />
           <Button @click="$emit('onEdit', bankAccount)" icon="pi pi-pencil" outlined rounded />
         </div>
       </div>
@@ -41,6 +42,7 @@ const props = defineProps({
 
 defineEmits<{
   'onEdit': [bankAccount: BankAccountResponse]
+  'onClone': [bankAccount: BankAccountResponse]
 }>()
 
 const amountFormatted = computed(() => NumberToFormattedCurrency(AmountToFloat(props.bankAccount.amount), props.bankAccount.currency.localeCode))

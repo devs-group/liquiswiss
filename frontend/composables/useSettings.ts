@@ -1,6 +1,12 @@
 import {CreateSettingsCookie} from "~/utils/cookie-helper";
-import type {SettingsTabType, SortOrderType, TransactionSortByType} from "~/utils/types";
-import {SettingsTabOptions, SortOrderOptions, TransactionSortByOptions} from "~/utils/types";
+import type {
+    BankAccountSortByType,
+    DisplayType,
+    SettingsTabType,
+    SortOrderType,
+    TransactionSortByType
+} from "~/utils/types";
+import {BankAccountSortByOptions, SettingsTabOptions, SortOrderOptions, TransactionSortByOptions} from "~/utils/types";
 import {RouteNames} from "~/config/routes";
 
 export default function useSettings() {
@@ -14,19 +20,26 @@ export default function useSettings() {
     const forecastPerformanceCookie = CreateSettingsCookie('forecast-performance')
     const forecastMonthsCookie = CreateSettingsCookie('forecast-months')
 
-    const employeeDisplay = useState<'grid'|'list'>('employeeDisplay', () => 'grid')
+    const employeeDisplay = useState<DisplayType>('employeeDisplay', () => 'grid')
     const employeeSortBy = useState<EmployeeSortByType>('employeeSortBy', () => 'name')
     const employeeSortOrder = useState<SortOrderType>('employeeSortOrder', () => 'ASC')
     const employeeDisplayCookie = CreateSettingsCookie('employee-display')
     const employeeSortByCookie = CreateSettingsCookie('employee-sort-by')
     const employeeSortOrderCookie = CreateSettingsCookie('employee-sort-order')
 
-    const transactionDisplay = useState<'grid'|'list'>('transactionDisplay', () => 'grid')
+    const transactionDisplay = useState<DisplayType>('transactionDisplay', () => 'grid')
     const transactionSortBy = useState<TransactionSortByType>('transactionSortBy', () => 'name')
     const transactionSortOrder = useState<SortOrderType>('transactionSortOrder', () => 'ASC')
     const transactionDisplayCookie = CreateSettingsCookie('transaction-display')
     const transactionSortByCookie = CreateSettingsCookie('transaction-sort-by')
     const transactionSortOrderCookie = CreateSettingsCookie('transaction-sort-order')
+
+    const bankAccountDisplay = useState<DisplayType>('bankAccountDisplay', () => 'grid')
+    const bankAccountSortBy = useState<BankAccountSortByType>('bankAccountSortBy', () => 'name')
+    const bankAccountSortOrder = useState<SortOrderType>('bankAccountSortOrder', () => 'ASC')
+    const bankAccountDisplayCookie = CreateSettingsCookie('bank-account-display')
+    const bankAccountSortByCookie = CreateSettingsCookie('bank-account-sort-by')
+    const bankAccountSortOrderCookie = CreateSettingsCookie('bank-account-sort-order')
 
     const settingsTab = useState<SettingsTabType>('settingsTab', () => RouteNames.PROFILE)
     const settingsTabCookie = CreateSettingsCookie('settings-tab')
@@ -134,6 +147,33 @@ export default function useSettings() {
         forecastMonths.value = 13
     }
 
+    if (bankAccountDisplayCookie.value !== undefined) {
+        const val = bankAccountDisplayCookie.value
+        if (val == 'list' || val == 'grid') {
+            bankAccountDisplay.value = val
+        }
+    } else {
+        bankAccountDisplay.value = 'grid'
+    }
+
+    if (bankAccountSortByCookie.value !== undefined) {
+        const val = bankAccountSortByCookie.value as typeof bankAccountSortBy.value
+        if (BankAccountSortByOptions.includes(val)) {
+            bankAccountSortBy.value = val
+        }
+    } else {
+        bankAccountSortBy.value = 'name'
+    }
+
+    if (bankAccountSortOrderCookie.value !== undefined) {
+        const val = bankAccountSortOrderCookie.value as typeof bankAccountSortOrder.value
+        if (SortOrderOptions.includes(val)) {
+            bankAccountSortOrder.value = val
+        }
+    } else {
+        bankAccountSortOrder.value = 'ASC'
+    }
+
     if (settingsTabCookie.value !== undefined) {
         const val = settingsTabCookie.value
         if (val !== null && SettingsTabOptions.includes(val)) {
@@ -163,6 +203,17 @@ export default function useSettings() {
                 employeeDisplay.value = 'grid'
         }
         employeeDisplayCookie.value = employeeDisplay.value
+    };
+
+    const toggleBankAccountDisplayType = () => {
+        switch (bankAccountDisplay.value) {
+            case 'grid':
+                bankAccountDisplay.value = 'list'
+                break
+            case 'list':
+                bankAccountDisplay.value = 'grid'
+        }
+        bankAccountDisplayCookie.value = bankAccountDisplay.value
     };
 
     // Watchers
@@ -217,6 +268,10 @@ export default function useSettings() {
         transactionDisplay,
         transactionSortBy,
         transactionSortOrder,
+        toggleBankAccountDisplayType,
+        bankAccountDisplay,
+        bankAccountSortBy,
+        bankAccountSortOrder,
         settingsTab,
     };
 }
