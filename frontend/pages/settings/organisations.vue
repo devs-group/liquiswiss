@@ -8,8 +8,12 @@
 
     <Button @click="onCreateOrganisation" label="Organisation hinzufügen" class="self-end" icon="pi pi-building"/>
 
-    <div class="flex gap-2">
+    <div class="flex flex-col sm:flex-row gap-2">
       <Menu class="sm:!rounded-none sm:!border-t-0 sm:!border-b-0" :model="items">
+        <template #start>
+          <p class="p-4 pb-2 text-sm opacity-40 cursor-default">Organisation wählen</p>
+        </template>
+
         <template #item="{ item, props }">
           <router-link v-if="item.routeName" v-slot="{ href, navigate, isActive }" :to="{name: item.routeName, params: item.params}" custom>
             <a v-ripple :href="href" v-bind="props.action" @click="navigate">
