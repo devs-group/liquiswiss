@@ -48,7 +48,7 @@ const {organisations} = useOrganisations()
 const items = computed<MenuItem[]>(() => organisations.value.map(o => {
   return {
     label: o.name,
-    routeName: RouteNames.ORGANISATION_EDIT,
+    routeName: RouteNames.SETTINGS_ORGANISATION_EDIT,
     params: {id: o.id},
   }
 }))

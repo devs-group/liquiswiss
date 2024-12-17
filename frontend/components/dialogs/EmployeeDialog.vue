@@ -50,7 +50,7 @@ const onCreateEmployee = handleSubmit((values) => {
   createEmployee(values)
       .then(async (employeeID: number) => {
         dialogRef?.value.close()
-        navigateTo({name: RouteNames.EMPLOYEE_EDIT, params: {id: employeeID}})
+        navigateTo({name: RouteNames.EMPLOYEES_EDIT, params: {id: employeeID}})
         toast.add({
           summary: 'Erfolg',
           detail: `Mitarbeiter "${values.name}" wurde angelegt`,

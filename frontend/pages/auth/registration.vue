@@ -21,7 +21,7 @@
           </div>
 
           <p class="w-full text-sm text-right">
-            Konto vorhanden? Jetzt <NuxtLink :to="{name: RouteNames.LOGIN}" class="underline">anmelden</NuxtLink>
+            Konto vorhanden? Jetzt <NuxtLink :to="{name: RouteNames.AUTH_LOGIN}" class="underline">anmelden</NuxtLink>
           </p>
 
           <div class="flex justify-end gap-2 col-span-full">

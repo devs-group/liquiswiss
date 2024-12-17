@@ -21,7 +21,7 @@
           </div>
 
           <p class="w-full text-sm text-right">
-            <NuxtLink :to="{name: RouteNames.LOGIN}" class="underline">Zurück zum Login</NuxtLink>
+            <NuxtLink :to="{name: RouteNames.AUTH_LOGIN}" class="underline">Zurück zum Login</NuxtLink>
           </p>
 
           <div class="flex justify-end gap-2 col-span-full">
@@ -37,7 +37,7 @@
         </Message>
 
         <p class="w-full text-sm text-right">
-          <NuxtLink :to="{name: RouteNames.LOGIN}" class="underline">Zurück zum Login</NuxtLink>
+          <NuxtLink :to="{name: RouteNames.AUTH_LOGIN}" class="underline">Zurück zum Login</NuxtLink>
         </p>
       </div>
     </div>

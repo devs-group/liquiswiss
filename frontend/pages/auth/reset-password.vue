@@ -33,7 +33,7 @@
         Der Link zum Zurücksetzen des Passworts ist nicht mehr gültig.
         Bitte setzen Sie dass Passwort erneut zurück.
       </Message>
-      <NuxtLink :to="{name: RouteNames.LOGIN}" replace>
+      <NuxtLink :to="{name: RouteNames.AUTH_LOGIN}" replace>
         <Button label="Zum Login" severity="info"/>
       </NuxtLink>
     </div>
@@ -105,7 +105,7 @@ const onFinishResetPassword = handleSubmitPassword(async (values) => {
           severity: 'success',
           life: Config.TOAST_LIFE_TIME,
         })
-        await navigateTo({name: RouteNames.LOGIN, replace: true})
+        await navigateTo({name: RouteNames.AUTH_LOGIN, replace: true})
       })
       .catch(() => {
         toast.add({

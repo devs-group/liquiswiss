@@ -40,6 +40,7 @@ import {Config} from "~/config/config";
 const {logout, user, updateCurrentOrganisation} = useAuth()
 const {organisations} = useOrganisations()
 const {showGlobalLoadingSpinner} = useGlobalData()
+const {skipOrganisationSwitchQuestion} = useSettings()
 const confirm = useConfirm()
 const toast = useToast()
 
@@ -76,31 +77,37 @@ const onChangeOrganisation = (event: SelectChangeEvent) => {
     return
   }
   const newOrganisation = organisations.value.find(o => o.id === event.value)
-  confirm.require({
-    header: 'Organisation wechseln',
-    message: `Möchten Sie die Organisation auf "${newOrganisation!.name}" wechseln?`,
-    icon: 'pi pi-question-circle',
-    rejectLabel: 'Nein',
-    acceptLabel: 'Ja',
-    accept: async () => {
-      showGlobalLoadingSpinner.value = true
-      updateCurrentOrganisation({organisationId: newSelectedOrganisationID})
-          .then(() => {
-            reloadNuxtApp({force: true})
-          })
-          .catch(() => {
-            showGlobalLoadingSpinner.value = false
-            toast.add({
-              summary: 'Fehler',
-              detail: `Die Organisation konnte nicht geändert werden. Dies ist ein Systemfehler`,
-              severity: 'error',
-              life: Config.TOAST_LIFE_TIME,
-            })
-          })
-    },
-    reject: () => {
-      selectedOrganisationID.value = currentSelectedOrganisationID
-    }
-  })
+  if (skipOrganisationSwitchQuestion.value) {
+    updateOrganisation(newSelectedOrganisationID)
+  } else {
+    confirm.require({
+      header: 'Organisation wechseln',
+      message: `Möchten Sie die Organisation auf "${newOrganisation!.name}" wechseln?`,
+      icon: 'pi pi-question-circle',
+      rejectLabel: 'Nein',
+      acceptLabel: 'Ja',
+      accept: () => updateOrganisation(newSelectedOrganisationID),
+      reject: () => {
+        selectedOrganisationID.value = currentSelectedOrganisationID
+      }
+    })
+  }
+}
+
+const updateOrganisation = (newSelectedOrganisationID: number) => {
+  showGlobalLoadingSpinner.value = true
+  updateCurrentOrganisation({organisationId: newSelectedOrganisationID})
+      .then(() => {
+        reloadNuxtApp({force: true})
+      })
+      .catch(() => {
+        showGlobalLoadingSpinner.value = false
+        toast.add({
+          summary: 'Fehler',
+          detail: `Die Organisation konnte nicht geändert werden. Dies ist ein Systemfehler`,
+          severity: 'error',
+          life: Config.TOAST_LIFE_TIME,
+        })
+      })
 }
 </script>

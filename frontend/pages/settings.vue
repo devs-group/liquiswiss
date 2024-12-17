@@ -29,8 +29,9 @@ useHead({
 const {settingsTab} = useSettings()
 
 const items = ref<MenuItem[]>([
-  {label: 'Profil', icon: 'pi pi-user', routeName: RouteNames.PROFILE},
-  {label: 'Organisationen', icon: 'pi pi-building', routeName: RouteNames.ORGANISATIONS},
+  {label: 'Profil', icon: 'pi pi-user', routeName: RouteNames.SETTINGS_PROFILE},
+  {label: 'Organisationen', icon: 'pi pi-building', routeName: RouteNames.SETTINGS_ORGANISATIONS},
+  {label: 'App', icon: 'pi pi-mobile', routeName: RouteNames.SETTINGS_APP},
 ])
 
 const route = useRoute()

@@ -27,7 +27,7 @@
       <Message v-if="profileUpdateErrorMessage.length" severity="error" :life="Config.MESSAGE_LIFE_TIME" :sticky="false" :closable="false" class="col-span-full">{{profileUpdateErrorMessage}}</Message>
 
       <div class="flex justify-end gap-2 col-span-full">
-        <Button @click="onUpdateProfile" severity="info" :disabled="!metaProfile.valid || (metaProfile.valid && !metaProfile.dirty) || isSubmittingProfile" :loading="isSubmittingProfile" label="Profil aktualisieren" icon="pi pi-save" type="submit"/>
+        <Button @click="onUpdateProfile" :disabled="!metaProfile.valid || (metaProfile.valid && !metaProfile.dirty) || isSubmittingProfile" :loading="isSubmittingProfile" label="Profil aktualisieren" icon="pi pi-save" type="submit"/>
       </div>
     </form>
 
@@ -57,7 +57,7 @@
       <Message v-if="passwordUpdateErrorMessage.length" severity="error" :life="Config.MESSAGE_LIFE_TIME" :sticky="false" :closable="false" class="col-span-full">{{passwordUpdateErrorMessage}}</Message>
 
       <div class="flex justify-end gap-2 col-span-full">
-        <Button @click="onUpdatePassword" severity="info" :disabled="!metaPassword.valid || (metaPassword.valid && !metaPassword.dirty) || isSubmittingPassword" :loading="isSubmittingPassword" label="Neues Passwort setzen" icon="pi pi-save" type="submit"/>
+        <Button @click="onUpdatePassword" :disabled="!metaPassword.valid || (metaPassword.valid && !metaPassword.dirty) || isSubmittingPassword" :loading="isSubmittingPassword" label="Neues Passwort setzen" icon="pi pi-save" type="submit"/>
       </div>
     </form>
   </div>
@@ -74,10 +74,6 @@ import type {ITabMenuItem} from "~/interfaces/prime-interfaces";
 useHead({
   title: 'Profil',
 })
-
-const items = ref<ITabMenuItem[]>([
-  {label: 'Profil', icon: 'pi pi-user', routeName: RouteNames.PROFILE}
-])
 
 const {user, updateProfile, updatePassword} = useAuth()
 

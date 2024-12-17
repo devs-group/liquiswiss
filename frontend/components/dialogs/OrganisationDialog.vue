@@ -50,7 +50,7 @@ const onCreateOrganisation = handleSubmit((values) => {
   createOrganisation(values)
       .then(async (organisation) => {
         dialogRef?.value.close()
-        navigateTo({name: RouteNames.ORGANISATION_EDIT, params: {id: organisation.id}})
+        navigateTo({name: RouteNames.SETTINGS_ORGANISATION_EDIT, params: {id: organisation.id}})
         toast.add({
           summary: 'Erfolg',
           detail: `Organisation "${organisation.name}" wurde angelegt`,

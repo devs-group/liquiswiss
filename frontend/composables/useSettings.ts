@@ -1,12 +1,18 @@
 import {CreateSettingsCookie} from "~/utils/cookie-helper";
 import type {
-    BankAccountSortByType,
+    BankAccountSortByType, DarkModeType,
     DisplayType,
     SettingsTabType,
     SortOrderType,
     TransactionSortByType
 } from "~/utils/types";
-import {BankAccountSortByOptions, SettingsTabOptions, SortOrderOptions, TransactionSortByOptions} from "~/utils/types";
+import {
+    BankAccountSortByOptions,
+    DarkModeOptions, DisplayTypeOptions,
+    SettingsTabOptions,
+    SortOrderOptions,
+    TransactionSortByOptions
+} from "~/utils/types";
 import {RouteNames} from "~/config/routes";
 
 export default function useSettings() {
@@ -41,8 +47,13 @@ export default function useSettings() {
     const bankAccountSortByCookie = CreateSettingsCookie('bank-account-sort-by')
     const bankAccountSortOrderCookie = CreateSettingsCookie('bank-account-sort-order')
 
-    const settingsTab = useState<SettingsTabType>('settingsTab', () => RouteNames.PROFILE)
+    const settingsTab = useState<SettingsTabType>('settingsTab', () => RouteNames.SETTINGS_PROFILE)
     const settingsTabCookie = CreateSettingsCookie('settings-tab')
+
+    const skipOrganisationSwitchQuestion = useState<boolean>('skipOrganisationSwitchQuestion', () => false)
+    const skipOrganisationSwitchQuestionCookie = CreateSettingsCookie('skip-organisation-switch-question')
+    const darkModePreference = useState<DarkModeType>('darkModePreference', () => 'system')
+    const darkModePreferenceCookie = CreateSettingsCookie('dark-mode-preference')
 
     if (forecastShowRevenueDetailsCookie.value !== undefined) {
         const val = forecastShowRevenueDetailsCookie.value
@@ -75,8 +86,8 @@ export default function useSettings() {
     }
 
     if (employeeDisplayCookie.value !== undefined) {
-        const val = employeeDisplayCookie.value
-        if (val == 'list' || val == 'grid') {
+        const val = employeeDisplayCookie.value as DisplayType
+        if (val !== null && DisplayTypeOptions.includes(val)) {
             employeeDisplay.value = val
         }
     } else {
@@ -102,8 +113,8 @@ export default function useSettings() {
     }
 
     if (transactionDisplayCookie.value !== undefined) {
-        const val = transactionDisplayCookie.value
-        if (val == 'list' || val == 'grid') {
+        const val = transactionDisplayCookie.value as DisplayType
+        if (val !== null && DisplayTypeOptions.includes(val)) {
             transactionDisplay.value = val
         }
     } else {
@@ -148,8 +159,8 @@ export default function useSettings() {
     }
 
     if (bankAccountDisplayCookie.value !== undefined) {
-        const val = bankAccountDisplayCookie.value
-        if (val == 'list' || val == 'grid') {
+        const val = bankAccountDisplayCookie.value as DisplayType
+        if (val !== null && DisplayTypeOptions.includes(val)) {
             bankAccountDisplay.value = val
         }
     } else {
@@ -180,7 +191,29 @@ export default function useSettings() {
             settingsTab.value = val
         }
     } else {
-        settingsTab.value = RouteNames.PROFILE
+        settingsTab.value = RouteNames.SETTINGS_PROFILE
+    }
+
+    if (skipOrganisationSwitchQuestionCookie.value !== undefined) {
+        const val = skipOrganisationSwitchQuestionCookie.value
+        if (val !== null) {
+            if (typeof val === 'boolean') {
+                skipOrganisationSwitchQuestion.value = val
+            } else {
+                skipOrganisationSwitchQuestion.value = val === 'true'
+            }
+        }
+    } else {
+        skipOrganisationSwitchQuestion.value = false
+    }
+
+    if (darkModePreferenceCookie.value !== undefined) {
+        const val = darkModePreferenceCookie.value as DarkModeType
+        if (val !== null && DarkModeOptions.includes(val)) {
+            darkModePreference.value = val
+        }
+    } else {
+        darkModePreference.value = 'system'
     }
 
     const toggleTransactionDisplayType = () => {
@@ -255,6 +288,18 @@ export default function useSettings() {
         }
     })
 
+    watch(skipOrganisationSwitchQuestion, (value) => {
+        if (value !== null) {
+            skipOrganisationSwitchQuestionCookie.value = value.toString()
+        }
+    })
+
+    watch(darkModePreference, (value) => {
+        if (value !== null && DarkModeOptions.includes(value)) {
+            darkModePreferenceCookie.value = value.toString()
+        }
+    })
+
     return {
         forecastShowRevenueDetails,
         forecastShowExpenseDetails,
@@ -273,5 +318,7 @@ export default function useSettings() {
         bankAccountSortBy,
         bankAccountSortOrder,
         settingsTab,
+        skipOrganisationSwitchQuestion,
+        darkModePreference,
     };
 }

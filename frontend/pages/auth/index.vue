@@ -27,11 +27,11 @@
         </div>
 
         <p class="w-full text-sm text-left">
-          <NuxtLink :to="{name: RouteNames.FORGOT_PASSWORD}" class="underline">Passwort vergessen?</NuxtLink>
+          <NuxtLink :to="{name: RouteNames.AUTH_FORGOT_PASSWORD}" class="underline">Passwort vergessen?</NuxtLink>
         </p>
 
         <p class="w-full text-sm text-right">
-          Kein Konto? Jetzt <NuxtLink :to="{name: RouteNames.REGISTRATION}" class="underline">registrieren</NuxtLink>
+          Kein Konto? Jetzt <NuxtLink :to="{name: RouteNames.AUTH_REGISTRATION}" class="underline">registrieren</NuxtLink>
         </p>
 
         <div class="flex justify-end gap-2 col-span-full">

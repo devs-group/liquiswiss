@@ -1,19 +1,20 @@
 export const RouteNames = {
     HOME: 'index',
     EMPLOYEES: 'employees',
-    EMPLOYEE_EDIT: 'employees-id',
+    EMPLOYEES_EDIT: 'employees-id',
     TRANSACTIONS: 'transactions',
     FORECASTS: 'forecasts',
     BANK_ACCOUNTS: 'bank-accounts',
     SETTINGS: 'settings',
-    PROFILE: 'settings-profile',
-    ORGANISATIONS: 'settings-organisations',
-    ORGANISATION_EDIT: 'settings-organisations-id',
-    LOGIN: 'auth',
-    REGISTRATION: 'auth-registration',
-    FORGOT_PASSWORD: 'auth-forgot-password',
-    RESET_PASSWORD: 'auth-reset-password',
-    VALIDATE: 'auth-validate',
+    SETTINGS_PROFILE: 'settings-profile',
+    SETTINGS_ORGANISATIONS: 'settings-organisations',
+    SETTINGS_ORGANISATION_EDIT: 'settings-organisations-id',
+    SETTINGS_APP: 'settings-app',
+    AUTH_LOGIN: 'auth',
+    AUTH_REGISTRATION: 'auth-registration',
+    AUTH_FORGOT_PASSWORD: 'auth-forgot-password',
+    AUTH_RESET_PASSWORD: 'auth-reset-password',
+    AUTH_VALIDATE: 'auth-validate',
 }
 
 export const RoutePaths = {
@@ -22,9 +23,9 @@ export const RoutePaths = {
 };
 
 export const AuthRouteNames = [
-    RouteNames.LOGIN,
-    RouteNames.REGISTRATION,
-    RouteNames.VALIDATE,
-    RouteNames.FORGOT_PASSWORD,
-    RouteNames.RESET_PASSWORD,
+    RouteNames.AUTH_LOGIN,
+    RouteNames.AUTH_REGISTRATION,
+    RouteNames.AUTH_VALIDATE,
+    RouteNames.AUTH_FORGOT_PASSWORD,
+    RouteNames.AUTH_RESET_PASSWORD,
 ]

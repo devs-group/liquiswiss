@@ -2,7 +2,7 @@
 
 export default {
   content: [],
-  darkMode: 'media',
+  darkMode: 'class',
   theme: {
     extend: {
       colors: {

@@ -34,6 +34,7 @@ import {DateStringToFormattedDate} from "~/utils/format-helper";
 const {isAuthenticated, getAccessToken} = useAuth()
 const {useFetchListCurrencies, useFetchListCategories, useFetchListFiatRates, useFetchGetServerTime, serverDate, showGlobalLoadingSpinner} = useGlobalData()
 const {useFetchListOrganisations} = useOrganisations()
+const {isDarkMode, setDarkMode} = useDarkMode()
 const toast = useToast()
 const {hook} = useNuxtApp()
 const hasInitialLoadError = ref(false)
@@ -42,6 +43,7 @@ const updateAvailable = ref(false)
 useHead({
   titleTemplate: (title) => title ? `${title} - LiquiSwiss` : 'LiquiSwiss',
   bodyAttrs: () => ({class: 'bg-white dark:bg-zinc-900'}),
+  htmlAttrs: () => ({class: isDarkMode.value ? 'dark' : ''}),
 })
 
 const serverDateFormatted = computed(() => {

@@ -87,7 +87,7 @@ const onCreateEmployee = () => {
 }
 
 const onEditEmployee = (employee: EmployeeResponse) => {
-  navigateTo({name: RouteNames.EMPLOYEE_EDIT, params: {id: employee.id}})
+  navigateTo({name: RouteNames.EMPLOYEES_EDIT, params: {id: employee.id}})
 }
 
 const onLoadMoreEmployees = async (event: MouseEvent) => {

@@ -32,7 +32,7 @@
       <Message class="w-full" severity="error">
         Dieser Registrierungslink ist nicht mehr gültig. Bitte registrieren Sie sich erneut.
       </Message>
-      <NuxtLink :to="{name: RouteNames.REGISTRATION}" replace>
+      <NuxtLink :to="{name: RouteNames.AUTH_REGISTRATION}" replace>
         <Button label="Zur Registrierung" severity="info"/>
       </NuxtLink>
     </div>

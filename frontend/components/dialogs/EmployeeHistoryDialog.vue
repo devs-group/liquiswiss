@@ -103,10 +103,10 @@ const errorMessage = ref('')
 
 const { defineField, errors, handleSubmit, meta } = useForm({
   validationSchema: yup.object({
-    hoursPerMonth: yup.number().typeError('Bitte Zahl eingeben').min(0, 'Muss mindestens 0 sein'),
+    hoursPerMonth: yup.number().typeError('Bitte Zahl eingeben').min(0, 'Muss mindestens 0 sein').max(480, 'Kann maximal 480 sein'),
     salaryPerMonth: yup.number().typeError('Bitte Gehalt eingeben').min(0, 'Muss mindestens 0 sein'),
     currencyID: yup.number().required('Währung wird benötigt').typeError('Bitte gültige Währung eingeben'),
-    vacationDaysPerYear: yup.number().typeError('Bitte Zahl eingeben').min(0, 'Muss mindestens 0 sein'),
+    vacationDaysPerYear: yup.number().typeError('Bitte Zahl eingeben').min(0, 'Muss mindestens 0 sein').max(365, 'Kann maximal 365 sein'),
     fromDate: yup.date().typeError('Bitte Datum eingeben').required('Von wird benötigt'),
   }),
   initialValues: {

@@ -1,3 +1,5 @@
+import {type DarkModeType} from "~/utils/types";
+
 export interface User {
     id: number;
     name: string;
@@ -58,4 +60,9 @@ export interface UserPasswordFormData {
 
 export interface UserUpdateOrganisationFormData {
     organisationId: number;
+}
+
+export interface AppSettingsFormData {
+    skipOrgSwitchQuestion: boolean;
+    darkMode: DarkModeType;
 }

@@ -12,7 +12,7 @@ export default defineNuxtRouteMiddleware(async (to, from) => {
 
     const isOnAuthRoute = AuthRouteNames.includes(to.name as string)
     if (!isAuthenticated.value && !isOnAuthRoute) {
-        return navigateTo({ name: RouteNames.LOGIN}, { replace: true });
+        return navigateTo({ name: RouteNames.AUTH_LOGIN}, { replace: true });
     }
     if (isAuthenticated.value && isOnAuthRoute) {
         return navigateTo({ name: RouteNames.HOME }, { replace: true });
