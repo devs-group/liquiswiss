@@ -4,6 +4,10 @@ export default {
   content: [],
   darkMode: 'class',
   theme: {
+    fontFamily: {
+      sans: ['Inter', 'sans-serif'],
+      manrope: ['Manrope', 'sans-serif'],
+    },
     extend: {
       colors: {
         'primary': '#10b981',

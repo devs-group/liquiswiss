@@ -1,6 +1,6 @@
 <template>
   <div class="flex flex-col gap-4">
-    <Menubar :model="items">
+    <Menubar :model="items" class="justify-end sm:justify-start">
       <template #item="{ item, props }">
         <router-link v-if="item.routeName" v-slot="{ href, navigate, isActive }" :to="{name: item.routeName}" custom>
           <a v-ripple :href="href" v-bind="props.action" @click="navigate">
