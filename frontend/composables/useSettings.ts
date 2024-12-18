@@ -52,8 +52,6 @@ export default function useSettings() {
 
     const skipOrganisationSwitchQuestion = useState<boolean>('skipOrganisationSwitchQuestion', () => false)
     const skipOrganisationSwitchQuestionCookie = CreateSettingsCookie('skip-organisation-switch-question')
-    const darkModePreference = useState<DarkModeType>('darkModePreference', () => 'system')
-    const darkModePreferenceCookie = CreateSettingsCookie('dark-mode-preference')
 
     if (forecastShowRevenueDetailsCookie.value !== undefined) {
         const val = forecastShowRevenueDetailsCookie.value
@@ -207,15 +205,6 @@ export default function useSettings() {
         skipOrganisationSwitchQuestion.value = false
     }
 
-    if (darkModePreferenceCookie.value !== undefined) {
-        const val = darkModePreferenceCookie.value as DarkModeType
-        if (val !== null && DarkModeOptions.includes(val)) {
-            darkModePreference.value = val
-        }
-    } else {
-        darkModePreference.value = 'system'
-    }
-
     const toggleTransactionDisplayType = () => {
         switch (transactionDisplay.value) {
             case 'grid':
@@ -294,12 +283,6 @@ export default function useSettings() {
         }
     })
 
-    watch(darkModePreference, (value) => {
-        if (value !== null && DarkModeOptions.includes(value)) {
-            darkModePreferenceCookie.value = value.toString()
-        }
-    })
-
     return {
         forecastShowRevenueDetails,
         forecastShowExpenseDetails,
@@ -319,6 +302,5 @@ export default function useSettings() {
         bankAccountSortOrder,
         settingsTab,
         skipOrganisationSwitchQuestion,
-        darkModePreference,
     };
 }

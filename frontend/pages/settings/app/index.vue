@@ -23,11 +23,13 @@
       <div class="flex flex-col justify-center h-full col-span-full md:col-span-1 bg-zinc-100 dark:bg-zinc-800 p-2">
         <div class="flex items-center gap-2 col-span-full md:col-span-1">
           <label for="dark-mode">Farbmodus:</label>
-          <SelectButton v-model="darkModePreference"
-                        :options="darkModeOptions"
-                        option-label="label"
-                        option-value="value"
-          />
+          <ClientOnly>
+            <SelectButton v-model="colorMode.preference"
+                          :options="darkModeOptions"
+                          option-label="label"
+                          option-value="value"
+            />
+          </ClientOnly>
         </div>
       </div>
     </div>
@@ -43,9 +45,10 @@ useHead({
 
 const toast = useToast()
 
-const {skipOrganisationSwitchQuestion, darkModePreference} = useSettings()
+const colorMode = useColorMode()
+const {skipOrganisationSwitchQuestion} = useSettings()
 
-watch([skipOrganisationSwitchQuestion, darkModePreference], (value, oldValue) => {
+watch([skipOrganisationSwitchQuestion], (value, oldValue) => {
   if (value !== oldValue) {
     toast.add({
       summary: 'Erfolg',

@@ -3,7 +3,7 @@ import resolveConfig from "tailwindcss/resolveConfig";
 import tailwindConfig from '~/tailwind.config';
 
 export default function useCharts() {
-    const {isDarkMode} = useDarkMode()
+    const colorMode = useColorMode()
 
     const setChartData = (months: string[], saldos: number[]) => {
         return {
@@ -22,10 +22,11 @@ export default function useCharts() {
 
     const getChartOptions = () => {
         const config = resolveConfig(tailwindConfig)
+        const isDarkMode = colorMode.value == 'dark'
 
-        const textColor = isDarkMode.value ? config.theme.colors.white : config.theme.colors.black;
-        const textColorSecondary = isDarkMode.value ? config.theme.colors.white : config.theme.colors.black;
-        const surfaceBorder = isDarkMode.value ? config.theme.colors.zinc["700"] : config.theme.colors.zinc["100"];
+        const textColor = isDarkMode ? config.theme.colors.white : config.theme.colors.black;
+        const textColorSecondary = isDarkMode ? config.theme.colors.white : config.theme.colors.black;
+        const surfaceBorder = isDarkMode ? config.theme.colors.zinc["700"] : config.theme.colors.zinc["100"];
 
         return {
             maintainAspectRatio: false,
@@ -51,7 +52,7 @@ export default function useCharts() {
                         color: textColorSecondary,
                     },
                     grid: {
-                        color: ({ tick }) => tick.value == 0 ? config.theme.colors.red["600"] : isDarkMode.value ? config.theme.colors.zinc["700"] : config.theme.colors.zinc["100"],
+                        color: ({ tick }) => tick.value == 0 ? config.theme.colors.red["600"] : isDarkMode ? config.theme.colors.zinc["700"] : config.theme.colors.zinc["100"],
                         lineWidth: ({ tick }) => tick.value == 0 ? 3 : 1
                     },
                     beginAtZero: true,

@@ -34,6 +34,7 @@ export default defineNuxtConfig({
     modules: [
         '@primevue/nuxt-module',
         '@nuxtjs/tailwindcss',
+        '@nuxtjs/color-mode',
     ],
     primevue: {
         options: {
@@ -46,6 +47,11 @@ export default defineNuxtConfig({
                 }
             },
         },
+    },
+    colorMode: {
+        classSuffix: '',
+        storage: 'localStorage',
+        storageKey: 'dark-mode-preference',
     },
     tailwindcss: {
         viewer: false,
