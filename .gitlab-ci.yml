@@ -4,6 +4,7 @@ services:
   - docker:dind
 
 stages:
+  - lint
   - build
   - deploy
 
@@ -11,6 +12,19 @@ before_script:
   - if [ -z "${REGISTRY_USER_NAME}" ]; then REGISTRY_USER_NAME=gitlab-ci-token; fi
   - if [ -z "${REGISTRY_SECRET}" ]; then REGISTRY_SECRET=${CI_JOB_TOKEN}; fi
   - docker login -u ${REGISTRY_USER_NAME} -p ${REGISTRY_SECRET} ${CI_REGISTRY}
+
+lint-nuxt:
+  stage: lint
+  image: node:20.11.0
+  before_script:
+    - cd frontend
+    - npm install
+  script:
+    - npm run lint .
+  rules:
+    - if: $CI_COMMIT_BRANCH != "main"
+      changes:
+      - frontend/**/*
 
 build-nuxt:
   stage: build
@@ -21,7 +35,7 @@ build-nuxt:
     - docker push ${IMAGE}
   rules:
     - if: $CI_COMMIT_BRANCH == "main"
-    - changes:
+      changes:
       - frontend/**/*
 
 build-backend:
@@ -33,7 +47,7 @@ build-backend:
     - docker push ${IMAGE}
   rules:
     - if: $CI_COMMIT_BRANCH == "main"
-    - changes:
+      changes:
       - backend/**/*
 
 deploy:
@@ -46,5 +60,5 @@ deploy:
     - apk add curl
   script:
     - sh ./.deploy/deploy.sh
-  only:
-    - main
+  rules:
+    - if: $CI_COMMIT_BRANCH == "main"
