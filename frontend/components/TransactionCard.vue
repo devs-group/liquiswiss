@@ -2,44 +2,70 @@
   <Card>
     <template #title>
       <div class="flex items-center justify-between">
-        <p class="truncate text-base">{{transaction.name}}</p>
+        <p class="truncate text-base">
+          {{ transaction.name }}
+        </p>
         <div class="flex gap-2 justify-end">
-          <Button @click="$emit('onClone', transaction)" severity="help" icon="pi pi-copy" outlined rounded />
-          <Button @click="$emit('onEdit', transaction)" icon="pi pi-pencil" outlined rounded />
+          <Button
+            severity="help"
+            icon="pi pi-copy"
+            outlined
+            rounded
+            @click="$emit('onClone', transaction)"
+          />
+          <Button
+            icon="pi pi-pencil"
+            outlined
+            rounded
+            @click="$emit('onEdit', transaction)"
+          />
         </div>
       </div>
     </template>
     <template #content>
       <div class="flex flex-col text-sm">
         <p>Start: {{ startDate }}</p>
-        <p>Nächste {{getNextLabel}}: {{ nextExecutionDate }}</p>
-        <p v-if="isRepeating && endDate">Ende: {{ endDate }}</p>
-        <p class="flex flex-wrap gap-1">
-          Betrag: <span class="font-bold" :class="{'text-liqui-red': !isRevenue, 'text-liqui-green': isRevenue}">{{amountFormatted}} {{transaction.currency.code}}</span>
+        <p>Nächste {{ getNextLabel }}: {{ nextExecutionDate }}</p>
+        <p v-if="isRepeating && endDate">
+          Ende: {{ endDate }}
         </p>
-        <p v-if="isRepeating">Wiederkehrend: {{cycle}}</p>
-        <p v-else>Einmalig</p>
-        <p class="truncate">Kategorie: {{transaction.category.name}}</p>
-        <p v-if="transaction.employee">Mitarbeiter: {{transaction.employee.name}}</p>
+        <p class="flex flex-wrap gap-1">
+          Betrag: <span
+            class="font-bold"
+            :class="{ 'text-liqui-red': !isRevenue, 'text-liqui-green': isRevenue }"
+          >{{ amountFormatted }} {{ transaction.currency.code }}</span>
+        </p>
+        <p v-if="isRepeating">
+          Wiederkehrend: {{ cycle }}
+        </p>
+        <p v-else>
+          Einmalig
+        </p>
+        <p class="truncate">
+          Kategorie: {{ transaction.category.name }}
+        </p>
+        <p v-if="transaction.employee">
+          Mitarbeiter: {{ transaction.employee.name }}
+        </p>
       </div>
     </template>
   </Card>
 </template>
 
 <script setup lang="ts">
-import type {TransactionResponse} from "~/models/transaction";
-import {TransactionType} from "~/config/enums";
+import type { TransactionResponse } from '~/models/transaction'
+import { TransactionType } from '~/config/enums'
 
 const props = defineProps({
   transaction: {
     type: Object as PropType<TransactionResponse>,
     required: true,
-  }
+  },
 })
 
 defineEmits<{
-  'onEdit': [transaction: TransactionResponse]
-  'onClone': [transaction: TransactionResponse]
+  onEdit: [transaction: TransactionResponse]
+  onClone: [transaction: TransactionResponse]
 }>()
 
 const isRevenue = computed(() => props.transaction.amount >= 0)
@@ -48,6 +74,6 @@ const endDate = computed(() => props.transaction.endDate ? DateStringToFormatted
 const nextExecutionDate = computed(() => props.transaction.nextExecutionDate ? DateStringToFormattedDate(props.transaction.nextExecutionDate) : '')
 const amountFormatted = computed(() => NumberToFormattedCurrency(AmountToFloat(props.transaction.amount), props.transaction.currency.localeCode))
 const isRepeating = computed(() => props.transaction.type === TransactionType.Repeating)
-const cycle = computed(() => CycleTypeToOptions().find((ct) => ct.value === props.transaction.cycle)?.name ?? '')
+const cycle = computed(() => CycleTypeToOptions().find(ct => ct.value === props.transaction.cycle)?.name ?? '')
 const getNextLabel = computed(() => isRevenue.value ? 'Gutschrift' : 'Belastung')
 </script>

@@ -1,68 +1,129 @@
 <template>
-  <form @submit.prevent id="bank-account-form" class="grid grid-cols-2 gap-2">
+  <form
+    id="bank-account-form"
+    class="grid grid-cols-2 gap-2"
+    @submit.prevent
+  >
     <div class="flex flex-col gap-2 col-span-full">
-      <label class="text-sm font-bold" for="name">Name *</label>
-      <InputText v-model="name" v-bind="nameProps"
-                 :class="{'p-invalid': errors['name']?.length}"
-                 id="name" type="text"/>
-      <small class="text-liqui-red">{{errors["name"] || '&nbsp;'}}</small>
+      <label
+        class="text-sm font-bold"
+        for="name"
+      >Name *</label>
+      <InputText
+        v-bind="nameProps"
+        id="name"
+        v-model="name"
+        :class="{ 'p-invalid': errors['name']?.length }"
+        type="text"
+      />
+      <small class="text-liqui-red">{{ errors["name"] || '&nbsp;' }}</small>
     </div>
 
     <div class="flex flex-col gap-2 col-span-full md:col-span-1">
       <div class="flex items-center gap-2">
-        <label class="text-sm font-bold" for="name">Kontostand *</label>
-        <i class="pi pi-info-circle text-liqui-blue" v-tooltip.top="'Negatives Vorzeichen möglich'"></i>
+        <label
+          class="text-sm font-bold"
+          for="name"
+        >Kontostand *</label>
+        <i
+          v-tooltip.top="'Negatives Vorzeichen möglich'"
+          class="pi pi-info-circle text-liqui-blue"
+        />
       </div>
       <div class="flex item-center gap-2">
-        <InputText v-model="amount" v-bind="amountProps"
-                   @input="onParseAmount"
-                   class="flex-1"
-                   :class="{'p-invalid': errors['amount']?.length}"
-                   id="name" type="text"/>
-        <AmountInvertButton @invert-amount="onInvertAmount" :amount="amount"/>
+        <InputText
+          v-bind="amountProps"
+          id="name"
+          v-model="amount"
+          class="flex-1"
+          :class="{ 'p-invalid': errors['amount']?.length }"
+          type="text"
+          @input="onParseAmount"
+        />
+        <AmountInvertButton
+          :amount="amount"
+          @invert-amount="onInvertAmount"
+        />
       </div>
-      <small class="text-liqui-red">{{errors["amount"] || '&nbsp;'}}</small>
+      <small class="text-liqui-red">{{ errors["amount"] || '&nbsp;' }}</small>
     </div>
 
     <div class="flex flex-col gap-2 col-span-full md:col-span-1">
-      <label class="text-sm font-bold" for="name">Währung *</label>
-      <Select v-model="currency" v-bind="currencyProps" empty-message="Keine Währungen gefunden"
-                :options="currencies" option-label="code" option-value="id"
-                placeholder="Bitte wählen"
-                :class="{'p-invalid': errors['currency']?.length}"
-                id="name" type="text"/>
-      <small class="text-liqui-red">{{errors["currency"] || '&nbsp;'}}</small>
+      <label
+        class="text-sm font-bold"
+        for="name"
+      >Währung *</label>
+      <Select
+        v-bind="currencyProps"
+        id="name"
+        v-model="currency"
+        empty-message="Keine Währungen gefunden"
+        :options="currencies"
+        option-label="code"
+        option-value="id"
+        placeholder="Bitte wählen"
+        :class="{ 'p-invalid': errors['currency']?.length }"
+        type="text"
+      />
+      <small class="text-liqui-red">{{ errors["currency"] || '&nbsp;' }}</small>
     </div>
 
-    <div v-if="!isClone && !isCreate" class="flex justify-end col-span-full">
-      <Button @click="onDeleteBankAccount" :loading="isLoading" label="Löschen" icon="pi pi-trash" severity="danger" size="small"/>
+    <div
+      v-if="!isClone && !isCreate"
+      class="flex justify-end col-span-full"
+    >
+      <Button
+        :loading="isLoading"
+        label="Löschen"
+        icon="pi pi-trash"
+        severity="danger"
+        size="small"
+        @click="onDeleteBankAccount"
+      />
     </div>
 
-    <hr class="my-4 col-span-full"/>
+    <hr class="my-4 col-span-full">
 
-    <Message v-if="errorMessage.length" severity="error" :closable="false" class="col-span-full">{{errorMessage}}</Message>
+    <Message
+      v-if="errorMessage.length"
+      severity="error"
+      :closable="false"
+      class="col-span-full"
+    >
+      {{ errorMessage }}
+    </Message>
 
     <div class="flex justify-end gap-2 col-span-full">
-      <Button @click="onSubmit" :disabled="!meta.valid || isLoading" :loading="isLoading" label="Speichern" icon="pi pi-save" type="submit"/>
-      <Button @click="dialogRef?.close()" :loading="isLoading" label="Abbrechen" severity="secondary"/>
+      <Button
+        :disabled="!meta.valid || isLoading"
+        :loading="isLoading"
+        label="Speichern"
+        icon="pi pi-save"
+        type="submit"
+        @click="onSubmit"
+      />
+      <Button
+        :loading="isLoading"
+        label="Abbrechen"
+        severity="secondary"
+        @click="dialogRef?.close()"
+      />
     </div>
   </form>
 </template>
 
 <script setup lang="ts">
-import type {IBankAccountFormDialog} from "~/interfaces/dialog-interfaces";
-import {useForm} from "vee-validate";
-import * as yup from 'yup';
-import {Config} from "~/config/config";
-import type {BankAccountFormData} from "~/models/bank-account";
-import {parseNumberInput, scrollToParentBottom} from "~/utils/element-helper";
-import {isNumber} from "~/utils/number-helper";
-import AmountInvertButton from "~/components/AmountInvertButton.vue";
+import { useForm } from 'vee-validate'
+import * as yup from 'yup'
+import type { IBankAccountFormDialog } from '~/interfaces/dialog-interfaces'
+import { Config } from '~/config/config'
+import type { BankAccountFormData } from '~/models/bank-account'
+import AmountInvertButton from '~/components/AmountInvertButton.vue'
 
-const dialogRef = inject<IBankAccountFormDialog>('dialogRef')!;
+const dialogRef = inject<IBankAccountFormDialog>('dialogRef')!
 
-const {createBankAccount, updateBankAccount, deleteBankAccount} = useBankAccounts()
-const {currencies} = useGlobalData()
+const { createBankAccount, updateBankAccount, deleteBankAccount } = useBankAccounts()
+const { currencies } = useGlobalData()
 const confirm = useConfirm()
 const toast = useToast()
 
@@ -84,8 +145,8 @@ const { defineField, errors, handleSubmit, meta } = useForm({
     name: bankAccount?.name ?? '',
     amount: isNumber(bankAccount?.amount) ? AmountToFloat(bankAccount!.amount) : '',
     currency: bankAccount?.currency.id ?? null,
-  } as BankAccountFormData
-});
+  } as BankAccountFormData,
+})
 
 const [name, nameProps] = defineField('name')
 const [amount, amountProps] = defineField('amount')
@@ -103,48 +164,49 @@ const onSubmit = handleSubmit((values) => {
 
   if (isCreate) {
     createBankAccount(values)
-        .then(() => {
-          dialogRef.value.close()
-          toast.add({
-            summary: 'Erfolg',
-            detail: `Bankkonto "${values.name}" wurde angelegt`,
-            severity: 'success',
-            life: Config.TOAST_LIFE_TIME,
-          })
+      .then(() => {
+        dialogRef.value.close()
+        toast.add({
+          summary: 'Erfolg',
+          detail: `Bankkonto "${values.name}" wurde angelegt`,
+          severity: 'success',
+          life: Config.TOAST_LIFE_TIME,
         })
-        .catch(() => {
-          errorMessage.value = 'Bankkonto konnte nicht angelegt werden'
-          nextTick(() => {
-            scrollToParentBottom('bank-account-form')
-          });
+      })
+      .catch(() => {
+        errorMessage.value = 'Bankkonto konnte nicht angelegt werden'
+        nextTick(() => {
+          scrollToParentBottom('bank-account-form')
         })
-        .finally(() => {
-          isLoading.value = false
-        })
-  } else {
+      })
+      .finally(() => {
+        isLoading.value = false
+      })
+  }
+  else {
     updateBankAccount(values)
-        .then(() => {
-          dialogRef.value.close()
-          toast.add({
-            summary: 'Erfolg',
-            detail: `Bankkonto "${values.name}" wurde bearbeitet`,
-            severity: 'success',
-            life: Config.TOAST_LIFE_TIME,
-          })
+      .then(() => {
+        dialogRef.value.close()
+        toast.add({
+          summary: 'Erfolg',
+          detail: `Bankkonto "${values.name}" wurde bearbeitet`,
+          severity: 'success',
+          life: Config.TOAST_LIFE_TIME,
         })
-        .catch(() => {
-          errorMessage.value = 'Bankkonto konnte nicht bearbeitet werden'
-          nextTick(() => {
-            scrollToParentBottom('bank-account-form')
-          });
+      })
+      .catch(() => {
+        errorMessage.value = 'Bankkonto konnte nicht bearbeitet werden'
+        nextTick(() => {
+          scrollToParentBottom('bank-account-form')
         })
-        .finally(() => {
-          isLoading.value = false
-        })
+      })
+      .finally(() => {
+        isLoading.value = false
+      })
   }
 })
 
-const onDeleteBankAccount = (event: MouseEvent) => {
+const onDeleteBankAccount = () => {
   confirm.require({
     header: 'Löschen',
     message: 'Bankkonto vollständig löschen?',
@@ -155,29 +217,29 @@ const onDeleteBankAccount = (event: MouseEvent) => {
       if (bankAccount) {
         isLoading.value = true
         deleteBankAccount(bankAccount.id)
-            .then(() => {
-              toast.add({
-                summary: 'Erfolg',
-                detail: `Bankkonto "${bankAccount.name}" wurde gelöscht`,
-                severity: 'success',
-                life: Config.TOAST_LIFE_TIME,
-              })
-              dialogRef.value.close()
+          .then(() => {
+            toast.add({
+              summary: 'Erfolg',
+              detail: `Bankkonto "${bankAccount.name}" wurde gelöscht`,
+              severity: 'success',
+              life: Config.TOAST_LIFE_TIME,
             })
-            .catch(() => {
-              errorMessage.value = 'Bankkonto konnte nicht gelöscht werden'
-              nextTick(() => {
-                scrollToParentBottom('bank-account-form')
-              });
+            dialogRef.value.close()
+          })
+          .catch(() => {
+            errorMessage.value = 'Bankkonto konnte nicht gelöscht werden'
+            nextTick(() => {
+              scrollToParentBottom('bank-account-form')
             })
-            .finally(() => {
-              isLoading.value = false
-            })
+          })
+          .finally(() => {
+            isLoading.value = false
+          })
       }
     },
     reject: () => {
-    }
-  });
+    },
+  })
 }
 
 const onInvertAmount = () => {

@@ -1,64 +1,64 @@
-import type {CycleType, TransactionType} from "~/config/enums";
-import type {CategoryResponse, Strapi_RelationResponse_Category} from "~/models/category";
-import type {CurrencyResponse, Strapi_RelationResponse_Currency} from "~/models/currency";
-import type {PaginationResponse} from "~/models/pagination";
-import type {VatResponse} from "~/models/vat";
+import type { CycleType, TransactionType } from '~/config/enums'
+import type { CategoryResponse, Strapi_RelationResponse_Category } from '~/models/category'
+import type { CurrencyResponse, Strapi_RelationResponse_Currency } from '~/models/currency'
+import type { PaginationResponse } from '~/models/pagination'
+import type { VatResponse } from '~/models/vat'
 
 export interface StrapiTransaction {
-    id?: number;
-    attributes: {
-        name: string;
-        category?: number|Strapi_RelationResponse_Category;
-        currency?: number|Strapi_RelationResponse_Currency;
-        type?: TransactionType;
-        amount: number,
-        cycle?: CycleType,
-        start: Date|string,
-        end?: Date|string,
-        createdAt: string;
-        updatedAt: string;
-        publishedAt: string;
-    }
+  id?: number
+  attributes: {
+    name: string
+    category?: number | Strapi_RelationResponse_Category
+    currency?: number | Strapi_RelationResponse_Currency
+    type?: TransactionType
+    amount: number
+    cycle?: CycleType
+    start: Date | string
+    end?: Date | string
+    createdAt: string
+    updatedAt: string
+    publishedAt: string
+  }
 }
 
 export interface TransactionResponse {
-    id: number;
-    name: string;
-    amount: number;
-    vat: VatResponse | null;
-    vatAmount: number;
-    vatIncluded: boolean;
-    cycle: CycleTypeToStringDefinition | null;
-    type: TransactionTypeToStringDefinition;
-    startDate: string;
-    endDate: string | null;
-    nextExecutionDate: string | null;
-    category: CategoryResponse;
-    currency: CurrencyResponse;
-    employee: TransactionEmployeeResponse | null;
+  id: number
+  name: string
+  amount: number
+  vat: VatResponse | null
+  vatAmount: number
+  vatIncluded: boolean
+  cycle: CycleTypeToStringDefinition | null
+  type: TransactionTypeToStringDefinition
+  startDate: string
+  endDate: string | null
+  nextExecutionDate: string | null
+  category: CategoryResponse
+  currency: CurrencyResponse
+  employee: TransactionEmployeeResponse | null
 }
 
 export interface TransactionEmployeeResponse {
-    id: number;
-    name: string;
+  id: number
+  name: string
 }
 
 export interface ListTransactionResponse {
-    data: TransactionResponse[];
-    pagination: PaginationResponse;
+  data: TransactionResponse[]
+  pagination: PaginationResponse
 }
 
 export interface TransactionFormData {
-    id: number;
-    name: string;
-    amount: number;
-    vat?: number;
-    vatIncluded: boolean;
-    cycle?: CycleTypeToStringDefinition;
-    type: TransactionTypeToStringDefinition;
-    startDate: Date;
-    endDate?: Date;
-    category: number;
-    currency: number;
-    employee: number;
+  id: number
+  name: string
+  amount: number
+  vat?: number
+  vatIncluded: boolean
+  cycle?: CycleTypeToStringDefinition
+  type: TransactionTypeToStringDefinition
+  startDate: Date
+  endDate?: Date
+  category: number
+  currency: number
+  employee: number
 }

@@ -2,27 +2,50 @@
   <Card>
     <template #title>
       <div class="flex items-center justify-between">
-        <p class="truncate text-base">Von {{fromDateFormatted}}</p>
+        <p class="truncate text-base">
+          Von {{ fromDateFormatted }}
+        </p>
         <div class="flex gap-2 justify-end">
-          <Button @click="$emit('onClone', employeeHistory)" severity="help" icon="pi pi-copy" outlined rounded />
-          <Button @click="$emit('onEdit', employeeHistory)" icon="pi pi-pencil" outlined rounded />
+          <Button
+            severity="help"
+            icon="pi pi-copy"
+            outlined
+            rounded
+            @click="$emit('onClone', employeeHistory)"
+          />
+          <Button
+            icon="pi pi-pencil"
+            outlined
+            rounded
+            @click="$emit('onEdit', employeeHistory)"
+          />
         </div>
       </div>
     </template>
     <template #content>
       <div class="flex flex-col gap-2 text-sm">
-        <p>{{employeeHistory.hoursPerMonth}} max. Stunden pro Monat</p>
+        <p>{{ employeeHistory.hoursPerMonth }} max. Stunden pro Monat</p>
         <p>{{ salaryFormatted }} {{ employeeHistory.currency.code }} pro Monat</p>
-        <p>{{employeeHistory.vacationDaysPerYear}} Urlaubstage im Jahr</p>
-        <p v-if="employeeHistory.toDate" class="text-orange-500">Bis {{toDateFormatted}}</p>
-        <p v-if="isActive" class="bg-liqui-green p-2 font-bold text-center">Aktive Historie</p>
+        <p>{{ employeeHistory.vacationDaysPerYear }} Urlaubstage im Jahr</p>
+        <p
+          v-if="employeeHistory.toDate"
+          class="text-orange-500"
+        >
+          Bis {{ toDateFormatted }}
+        </p>
+        <p
+          v-if="isActive"
+          class="bg-liqui-green p-2 font-bold text-center"
+        >
+          Aktive Historie
+        </p>
       </div>
     </template>
   </Card>
 </template>
 
 <script setup lang="ts">
-import type {EmployeeHistoryResponse} from "~/models/employee";
+import type { EmployeeHistoryResponse } from '~/models/employee'
 
 const props = defineProps({
   employeeHistory: {
@@ -32,12 +55,12 @@ const props = defineProps({
   isActive: {
     type: Boolean,
     required: true,
-  }
+  },
 })
 
 defineEmits<{
-  'onEdit': [employeeHistory: EmployeeHistoryResponse]
-  'onClone': [employeeHistory: EmployeeHistoryResponse]
+  onEdit: [employeeHistory: EmployeeHistoryResponse]
+  onClone: [employeeHistory: EmployeeHistoryResponse]
 }>()
 
 const salaryFormatted = computed(() => NumberToFormattedCurrency(AmountToFloat(props.employeeHistory!.salaryPerMonth), props.employeeHistory.currency!.localeCode))

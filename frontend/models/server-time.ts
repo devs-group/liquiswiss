@@ -1,3 +1,3 @@
 export interface ServerTimeResponse {
-    date: string
+  date: string
 }

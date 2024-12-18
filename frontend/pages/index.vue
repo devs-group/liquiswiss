@@ -1,182 +1,298 @@
 <template>
-  <Message v-if="bankAccountsErrorMessage.length" severity="error" :closable="false" class="col-span-full">{{bankAccountsErrorMessage}}</Message>
-  <Message v-if="forecastDetailsErrorMessage.length" severity="error" :closable="false" class="col-span-full">{{forecastDetailsErrorMessage}}</Message>
-  <Message v-if="forecastCalculateErrorMessage.length" severity="error" :closable="false" class="col-span-full">{{forecastCalculateErrorMessage}}</Message>
-  <Message v-if="forecastErrorMessage.length" severity="error" :closable="false" class="col-span-full">{{forecastErrorMessage}}</Message>
-  <div v-else class="flex flex-col gap-4">
-    <div class="flex flex-col gap-4">
-      <div class="grid grid-cols-1 sm:grid-cols-3 gap-2">
-        <div class="flex items-center gap-2">
-          <p class="text-sm">Zeitraum:</p>
-          <Select v-model="forecastMonths"
-                    :options="monthChoices" option-label="label" option-value="value"
-                    empty-message="Keine Auswahl gefunden"
+  <div class="flex flex-col gap-2">
+    <Message
+      v-if="bankAccountsErrorMessage.length"
+      severity="error"
+      :closable="false"
+      class="col-span-full"
+    >
+      {{ bankAccountsErrorMessage }}
+    </Message>
+    <Message
+      v-if="forecastDetailsErrorMessage.length"
+      severity="error"
+      :closable="false"
+      class="col-span-full"
+    >
+      {{ forecastDetailsErrorMessage }}
+    </Message>
+    <Message
+      v-if="forecastCalculateErrorMessage.length"
+      severity="error"
+      :closable="false"
+      class="col-span-full"
+    >
+      {{ forecastCalculateErrorMessage }}
+    </Message>
+    <Message
+      v-if="forecastErrorMessage.length"
+      severity="error"
+      :closable="false"
+      class="col-span-full"
+    >
+      {{ forecastErrorMessage }}
+    </Message>
+    <div
+      v-else
+      class="flex flex-col gap-4"
+    >
+      <div class="flex flex-col gap-4">
+        <div class="grid grid-cols-1 sm:grid-cols-3 gap-2">
+          <div class="flex items-center gap-2">
+            <p class="text-sm">
+              Zeitraum:
+            </p>
+            <Select
+              v-model="forecastMonths"
+              :options="monthChoices"
+              option-label="label"
+              option-value="value"
+              empty-message="Keine Auswahl gefunden"
+            />
+          </div>
+          <div class="flex items-center gap-2">
+            <p class="text-sm">
+              Performance ({{ forecastPerformance }}%):
+            </p>
+            <Slider
+              v-model="forecastPerformance"
+              class="w-56"
+            />
+          </div>
+        </div>
+
+        <div class="flex flex-col items-end gap-1">
+          <Button
+            :disabled="isLoading"
+            label="Neu berechnen"
+            size="small"
+            @click="onCalculateForecast"
           />
+          <p class="text-xs">
+            Zuletzt berechnet am
+            <span>
+              <ClientOnly>
+                {{ latestUpdate }}
+                <template #fallback>...</template>
+              </ClientOnly>
+            </span>
+          </p>
         </div>
-        <div class="flex items-center gap-2">
-          <p class="text-sm">Performance ({{forecastPerformance}}%): </p>
-          <Slider v-model="forecastPerformance" class="w-56" />
-        </div>
-      </div>
 
-      <div class="flex flex-col items-end gap-1">
-        <Button @click="onCalculateForecast" :disabled="isLoading" label="Neu berechnen" size="small"/>
-        <p class="text-xs">
-          Zuletzt berechnet am
-          <span>
-            <ClientOnly>
-              {{latestUpdate}}
-              <template #fallback>...</template>
-            </ClientOnly>
-          </span>
-        </p>
-      </div>
-
-      <ClientOnly>
-        <div v-if="hasNoDataInCurrentMonth">
-          <Message size="small">Hinweis: In Ihrer Zeitzone ist es noch {{localMonth}}, für diesen Monat gibt es keine Prognosedaten mehr</Message>
-        </div>
-      </ClientOnly>
-
-      <div class="relative flex flex-col overflow-x-auto pb-2">
-        <div class="grid grid-cols-12 items-center">
-          <div class="flex items-center col-span-full">
-            <div class="border-t border-b border-l border-zinc-600 dark:border-zinc-400 bg-zinc-300 dark:bg-zinc-700 p-2 min-w-28">
-              <p class="text-xs">&nbsp;</p>
-            </div>
-            <div v-for="month in months" class="border-t border-b border-l last:border-r border-zinc-600 dark:border-zinc-400 bg-zinc-300 dark:bg-zinc-700 p-2 min-w-40">
-              <p class="text-xs text-center font-bold">{{ month }}</p>
-            </div>
+        <ClientOnly>
+          <div v-if="hasNoDataInCurrentMonth">
+            <Message size="small">
+              Hinweis: In Ihrer Zeitzone ist es noch {{ localMonth }}, für diesen Monat gibt es keine Prognosedaten mehr
+            </Message>
           </div>
+        </ClientOnly>
 
-          <div class="flex items-center col-span-full">
-            <div @click="onToggleRevenueDetails" class="flex gap-1 cursor-pointer border-b border-l border-zinc-600 dark:border-zinc-400 bg-zinc-300 dark:bg-zinc-700 p-2 min-w-28">
-              <p class="text-xs">Einnahmen</p>
-              <i class="pi" :class="{'pi-sort-down': forecastShowRevenueDetails, 'pi-sort-up': !forecastShowRevenueDetails}"></i>
-            </div>
-            <div v-for="revenue in revenues" class="border-b border-l last:border-r border-zinc-600 dark:border-zinc-400 bg-liqui-green p-2 min-w-40">
-              <p class="text-xs text-center">
-                {{revenue.formatted}} CHF
-              </p>
-            </div>
-          </div>
-
-          <template v-if="forecastShowRevenueDetails">
-            <div v-for="category of revenueCategories" class="flex items-center col-span-full">
-              <div class="flex gap-1 cursor-default border-b border-l border-zinc-600 dark:border-zinc-400 bg-zinc-300 dark:bg-zinc-700 p-1 min-w-28">
-                <p class="w-full text-xs text-right">{{category}}</p>
+        <div class="relative flex flex-col overflow-x-auto pb-2">
+          <div class="grid grid-cols-12 items-center">
+            <div class="flex items-center col-span-full">
+              <div class="border-t border-b border-l border-zinc-600 dark:border-zinc-400 bg-zinc-300 dark:bg-zinc-700 p-2 min-w-28">
+                <p class="text-xs">
+                  &nbsp;
+                </p>
               </div>
-              <div v-for="data in forecastDetails" class="border-b border-l last:border-r border-zinc-600 dark:border-zinc-400 bg-zinc-100 dark:bg-zinc-800 p-1 min-w-40">
-                <p class="text-xs text-center">
-                  {{getCategoryAmount(data, category, 'revenue')}} CHF
+              <div
+                v-for="month in months"
+                :key="month"
+                class="border-t border-b border-l last:border-r border-zinc-600 dark:border-zinc-400 bg-zinc-300 dark:bg-zinc-700 p-2 min-w-40"
+              >
+                <p class="text-xs text-center font-bold">
+                  {{ month }}
                 </p>
               </div>
             </div>
-          </template>
 
-          <div class="flex items-center col-span-full">
-            <div @click="onToggleExpenseDetails" class="flex gap-1 cursor-pointer border-b border-l border-zinc-600 dark:border-zinc-400 bg-zinc-300 dark:bg-zinc-700 p-2 min-w-28">
-              <p class="text-xs">Ausgaben</p>
-              <i class="pi" :class="{'pi-sort-down': forecastShowExpenseDetails, 'pi-sort-up': !forecastShowExpenseDetails}"></i>
-            </div>
-            <div v-for="expense in expenses" class="border-b border-l last:border-r border-zinc-600 dark:border-zinc-400 bg-liqui-red p-2 min-w-40">
-              <p class="text-xs text-center">
-                {{expense.formatted}} CHF
-              </p>
-            </div>
-          </div>
-
-          <template v-if="forecastShowExpenseDetails">
-            <div v-for="category of expenseCategories" class="flex items-center col-span-full">
-              <div class="flex gap-1 cursor-default border-b border-l border-zinc-600 dark:border-zinc-400 bg-zinc-300 dark:bg-zinc-700 p-1 min-w-28">
-                <p class="w-full text-xs text-right">{{category}}</p>
+            <div class="flex items-center col-span-full">
+              <div
+                class="flex gap-1 cursor-pointer border-b border-l border-zinc-600 dark:border-zinc-400 bg-zinc-300 dark:bg-zinc-700 p-2 min-w-28"
+                @click="onToggleRevenueDetails"
+              >
+                <p class="text-xs">
+                  Einnahmen
+                </p>
+                <i
+                  class="pi"
+                  :class="{ 'pi-sort-down': forecastShowRevenueDetails, 'pi-sort-up': !forecastShowRevenueDetails }"
+                />
               </div>
-              <div v-for="data in forecastDetails" class="border-b border-l last:border-r border-zinc-600 dark:border-zinc-400 bg-zinc-100 dark:bg-zinc-800 p-1 min-w-40">
+              <div
+                v-for="(revenue, i) in revenues"
+                :key="i"
+                class="border-b border-l last:border-r border-zinc-600 dark:border-zinc-400 bg-liqui-green p-2 min-w-40"
+              >
                 <p class="text-xs text-center">
-                  {{getCategoryAmount(data, category, 'expense')}} CHF
+                  {{ revenue.formatted }} CHF
                 </p>
               </div>
             </div>
-          </template>
 
-          <div class="flex items-center col-span-full">
-            <div class="cursor-default border-b border-l border-zinc-600 dark:border-zinc-400 bg-zinc-300 dark:bg-zinc-700 p-2 min-w-28">
-              <p class="text-xs">Cashflow</p>
-            </div>
-            <div v-for="cashflow in cashflows" class="border-b border-l last:border-r border-zinc-600 dark:border-zinc-400 p-2 min-w-40"
-                 :class="{'text-liqui-red': cashflow.amount < 0, 'text-liqui-green': cashflow.amount > 0}">
-              <p class="text-xs text-center">
-                {{cashflow.formatted}} CHF
-              </p>
-            </div>
-          </div>
+            <template v-if="forecastShowRevenueDetails">
+              <div
+                v-for="category of revenueCategories"
+                :key="category"
+                class="flex items-center col-span-full"
+              >
+                <div class="flex gap-1 cursor-default border-b border-l border-zinc-600 dark:border-zinc-400 bg-zinc-300 dark:bg-zinc-700 p-1 min-w-28">
+                  <p class="w-full text-xs text-right">
+                    {{ category }}
+                  </p>
+                </div>
+                <div
+                  v-for="data in forecastDetails"
+                  :key="data.forecastID"
+                  class="border-b border-l last:border-r border-zinc-600 dark:border-zinc-400 bg-zinc-100 dark:bg-zinc-800 p-1 min-w-40"
+                >
+                  <p class="text-xs text-center">
+                    {{ getCategoryAmount(data, category, 'revenue') }} CHF
+                  </p>
+                </div>
+              </div>
+            </template>
 
-          <div class="flex items-center col-span-full">
-            <div class="cursor-default border-b border-l border-zinc-600 dark:border-zinc-400 bg-zinc-300 dark:bg-zinc-700 p-2 min-w-28">
-              <p class="text-xs">Endsaldo</p>
+            <div class="flex items-center col-span-full">
+              <div
+                class="flex gap-1 cursor-pointer border-b border-l border-zinc-600 dark:border-zinc-400 bg-zinc-300 dark:bg-zinc-700 p-2 min-w-28"
+                @click="onToggleExpenseDetails"
+              >
+                <p class="text-xs">
+                  Ausgaben
+                </p>
+                <i
+                  class="pi"
+                  :class="{ 'pi-sort-down': forecastShowExpenseDetails, 'pi-sort-up': !forecastShowExpenseDetails }"
+                />
+              </div>
+              <div
+                v-for="(expense, i) in expenses"
+                :key="i"
+                class="border-b border-l last:border-r border-zinc-600 dark:border-zinc-400 bg-liqui-red p-2 min-w-40"
+              >
+                <p class="text-xs text-center">
+                  {{ expense.formatted }} CHF
+                </p>
+              </div>
             </div>
-            <div v-for="saldo in saldos" class="border-b border-l last:border-r border-zinc-600 dark:border-zinc-400 p-2 min-w-40"
-                 :class="{'bg-liqui-red': saldo.amount < 0, 'bg-liqui-green': saldo.amount > 0}">
-              <p class="text-xs text-center font-bold truncate">
-                {{saldo.formatted}} CHF
-              </p>
+
+            <template v-if="forecastShowExpenseDetails">
+              <div
+                v-for="category of expenseCategories"
+                :key="category"
+                class="flex items-center col-span-full"
+              >
+                <div class="flex gap-1 cursor-default border-b border-l border-zinc-600 dark:border-zinc-400 bg-zinc-300 dark:bg-zinc-700 p-1 min-w-28">
+                  <p class="w-full text-xs text-right">
+                    {{ category }}
+                  </p>
+                </div>
+                <div
+                  v-for="data in forecastDetails"
+                  :key="data.forecastID"
+                  class="border-b border-l last:border-r border-zinc-600 dark:border-zinc-400 bg-zinc-100 dark:bg-zinc-800 p-1 min-w-40"
+                >
+                  <p class="text-xs text-center">
+                    {{ getCategoryAmount(data, category, 'expense') }} CHF
+                  </p>
+                </div>
+              </div>
+            </template>
+
+            <div class="flex items-center col-span-full">
+              <div class="cursor-default border-b border-l border-zinc-600 dark:border-zinc-400 bg-zinc-300 dark:bg-zinc-700 p-2 min-w-28">
+                <p class="text-xs">
+                  Cashflow
+                </p>
+              </div>
+              <div
+                v-for="(cashflow, i) in cashflows"
+                :key="i"
+                class="border-b border-l last:border-r border-zinc-600 dark:border-zinc-400 p-2 min-w-40"
+                :class="{ 'text-liqui-red': cashflow.amount < 0, 'text-liqui-green': cashflow.amount > 0 }"
+              >
+                <p class="text-xs text-center">
+                  {{ cashflow.formatted }} CHF
+                </p>
+              </div>
+            </div>
+
+            <div class="flex items-center col-span-full">
+              <div class="cursor-default border-b border-l border-zinc-600 dark:border-zinc-400 bg-zinc-300 dark:bg-zinc-700 p-2 min-w-28">
+                <p class="text-xs">
+                  Endsaldo
+                </p>
+              </div>
+              <div
+                v-for="(saldo, i) in saldos"
+                :key="i"
+                class="border-b border-l last:border-r border-zinc-600 dark:border-zinc-400 p-2 min-w-40"
+                :class="{ 'bg-liqui-red': saldo.amount < 0, 'bg-liqui-green': saldo.amount > 0 }"
+              >
+                <p class="text-xs text-center font-bold truncate">
+                  {{ saldo.formatted }} CHF
+                </p>
+              </div>
             </div>
           </div>
         </div>
       </div>
+
+      <div class="bg-zinc-50 dark:bg-zinc-800">
+        <ClientOnly>
+          <Chart
+            type="line"
+            :data="chartData"
+            :options="chartOptions"
+            class="h-80"
+          />
+          <template #fallback>
+            <Skeleton class="!h-80" />
+          </template>
+        </ClientOnly>
+      </div>
+
+      <FullProgressSpinner :show="isLoading" />
     </div>
-
-    <div class="bg-zinc-50 dark:bg-zinc-800">
-      <ClientOnly>
-        <Chart type="line" :data="chartData" :options="chartOptions" class="h-80"/>
-        <template #fallback>
-          <Skeleton class="!h-80"/>
-        </template>
-      </ClientOnly>
-    </div>
-
-    <FullProgressSpinner :show="isLoading"/>
-
   </div>
 </template>
 
 <script setup lang="ts">
-import Chart from "primevue/chart";
-import useCharts from "~/composables/useCharts";
-import {Constants} from "~/utils/constants";
-import type {ForecastDetailResponse} from "~/models/forecast";
-import FullProgressSpinner from "~/components/FullProgressSpinner.vue";
-import {DateStringToFormattedDateTime} from "~/utils/format-helper";
+import Chart from 'primevue/chart'
+import useCharts from '~/composables/useCharts'
+import type { ForecastDetailResponse } from '~/models/forecast'
+import FullProgressSpinner from '~/components/FullProgressSpinner.vue'
 
 useHead({
   title: 'Prognose',
 })
 
-const utcFormatter = new Intl.DateTimeFormat(Constants.BASE_LOCALE_CODE, { month: 'long', year: '2-digit', timeZone: 'UTC' });
-const localFormatter = new Intl.DateTimeFormat(Constants.BASE_LOCALE_CODE, { month: 'long', year: '2-digit' });
+const utcFormatter = new Intl.DateTimeFormat(Constants.BASE_LOCALE_CODE, { month: 'long', year: '2-digit', timeZone: 'UTC' })
+const localFormatter = new Intl.DateTimeFormat(Constants.BASE_LOCALE_CODE, { month: 'long', year: '2-digit' })
 const monthChoices = [
   {
     label: '6 Monate',
-    value: 6
+    value: 6,
   },
   {
     label: '12 Monate',
-    value: 13
+    value: 13,
   },
   {
     label: '24 Monate',
-    value: 25
+    value: 25,
   },
   {
     label: '36 Monate',
-    value: 37
-  }
+    value: 37,
+  },
 ]
 
-const {useFetchListForecast, listForecasts, useFetchListForecastDetails, listForecastDetails, forecasts, forecastDetails, calculateForecast} = useForecasts()
-const {useFetchListBankAccounts, totalBankSaldoInCHF} = useBankAccounts()
-const {forecastPerformance, forecastMonths, forecastShowRevenueDetails, forecastShowExpenseDetails} = useSettings()
-const {setChartData, getChartOptions} = useCharts()
+const { useFetchListForecast, listForecasts, useFetchListForecastDetails, listForecastDetails, forecasts, forecastDetails, calculateForecast } = useForecasts()
+const { useFetchListBankAccounts, totalBankSaldoInCHF } = useBankAccounts()
+const { forecastPerformance, forecastMonths, forecastShowRevenueDetails, forecastShowExpenseDetails } = useSettings()
+const { setChartData, getChartOptions } = useCharts()
 
 const bankAccountsErrorMessage = ref('')
 const forecastErrorMessage = ref('')
@@ -184,26 +300,26 @@ const forecastDetailsErrorMessage = ref('')
 const forecastCalculateErrorMessage = ref('')
 
 await useFetchListForecast(forecastMonths.value)
-    .catch(reason => {
-      forecastErrorMessage.value = reason
-    })
+  .catch((reason) => {
+    forecastErrorMessage.value = reason
+  })
 
 await useFetchListBankAccounts()
-    .catch(reason => {
-      bankAccountsErrorMessage.value = reason
-    })
+  .catch((reason) => {
+    bankAccountsErrorMessage.value = reason
+  })
 
 if (forecastShowRevenueDetails.value || forecastShowExpenseDetails.value) {
   await useFetchListForecastDetails(forecastMonths.value)
-      .catch(reason => {
-        forecastDetailsErrorMessage.value = reason
-      })
+    .catch((reason) => {
+      forecastDetailsErrorMessage.value = reason
+    })
 }
 
 const isLoading = ref(false)
 const chartData = computed(() => setChartData(
-    months.value,
-    saldos.value.map(s => AmountToFloat(s.amount)),
+  months.value,
+  saldos.value.map(s => AmountToFloat(s.amount)),
 ))
 const chartOptions = computed(() => getChartOptions())
 
@@ -225,24 +341,24 @@ const hasNoDataInCurrentMonth = computed(() => {
 const onCalculateForecast = () => {
   isLoading.value = true
   calculateForecast()
-      .then(async () => {
-        await listForecasts(forecastMonths.value)
-            .then(async () => {
-              if (forecastShowRevenueDetails.value || forecastShowExpenseDetails.value) {
-                await listForecastDetails(forecastMonths.value)
-                    .catch(reason => {
-                      forecastDetailsErrorMessage.value = reason
-                    })
-              }
-            })
-            .catch(reason => {
-              forecastErrorMessage.value = reason
-            })
-      })
-      .catch(reason => {
-        forecastCalculateErrorMessage.value = reason
-      })
-      .finally(() => isLoading.value = false)
+    .then(async () => {
+      await listForecasts(forecastMonths.value)
+        .then(async () => {
+          if (forecastShowRevenueDetails.value || forecastShowExpenseDetails.value) {
+            await listForecastDetails(forecastMonths.value)
+              .catch((reason) => {
+                forecastDetailsErrorMessage.value = reason
+              })
+          }
+        })
+        .catch((reason) => {
+          forecastErrorMessage.value = reason
+        })
+    })
+    .catch((reason) => {
+      forecastCalculateErrorMessage.value = reason
+    })
+    .finally(() => isLoading.value = false)
 }
 
 const onToggleRevenueDetails = () => {
@@ -250,10 +366,10 @@ const onToggleRevenueDetails = () => {
   if (forecastShowRevenueDetails.value) {
     isLoading.value = true
     listForecastDetails(forecastMonths.value)
-        .catch(reason => {
-          forecastDetailsErrorMessage.value = reason
-        })
-        .finally(() => isLoading.value = false)
+      .catch((reason) => {
+        forecastDetailsErrorMessage.value = reason
+      })
+      .finally(() => isLoading.value = false)
   }
 }
 
@@ -262,14 +378,14 @@ const onToggleExpenseDetails = async () => {
   if (forecastShowExpenseDetails.value) {
     isLoading.value = true
     await listForecastDetails(forecastMonths.value)
-        .catch(reason => {
-          forecastDetailsErrorMessage.value = reason
-        })
-        .finally(() => isLoading.value = false)
+      .catch((reason) => {
+        forecastDetailsErrorMessage.value = reason
+      })
+      .finally(() => isLoading.value = false)
   }
 }
 
-const getCategoryAmount = (data: ForecastDetailResponse, category: string, type: 'revenue'|'expense') => {
+const getCategoryAmount = (data: ForecastDetailResponse, category: string, type: 'revenue' | 'expense') => {
   const amount = data[type].find(e => e.name == category)?.amount ?? 0
   return NumberToFormattedCurrency(AmountToFloat(amount), Constants.BASE_LOCALE_CODE)
 }
@@ -277,35 +393,35 @@ const getCategoryAmount = (data: ForecastDetailResponse, category: string, type:
 watch(forecastMonths, (value) => {
   isLoading.value = true
   listForecasts(value)
-      .then(async () => {
-        if (forecastShowRevenueDetails.value || forecastShowExpenseDetails.value) {
-          await listForecastDetails(value)
-              .catch(reason => {
-                forecastDetailsErrorMessage.value = reason
-              })
-        }
-      })
-      .catch(reason => {
-        forecastErrorMessage.value = reason
-      })
-      .finally(() => isLoading.value = false)
+    .then(async () => {
+      if (forecastShowRevenueDetails.value || forecastShowExpenseDetails.value) {
+        await listForecastDetails(value)
+          .catch((reason) => {
+            forecastDetailsErrorMessage.value = reason
+          })
+      }
+    })
+    .catch((reason) => {
+      forecastErrorMessage.value = reason
+    })
+    .finally(() => isLoading.value = false)
 })
 
 const revenueCategories = computed(() => {
   return Array.from(new Set(
-      forecastDetails.value.flatMap(data => [
-        ...data.revenue.map(r => r.name),
-      ])
+    forecastDetails.value.flatMap(data => [
+      ...data.revenue.map(r => r.name),
+    ]),
   )).sort((a, b) => a.localeCompare(b))
 })
 const expenseCategories = computed(() => {
   return Array.from(new Set(
-      forecastDetails.value.flatMap(data => [
-        ...data.expense.map(e => e.name),
-      ])
+    forecastDetails.value.flatMap(data => [
+      ...data.expense.map(e => e.name),
+    ]),
   )).sort((a, b) => a.localeCompare(b))
 })
-const revenues = computed(() => forecasts.value.map(f => {
+const revenues = computed(() => forecasts.value.map((f) => {
   const revenue = f.data.revenue * (forecastPerformance.value / 100)
   return {
     amount: revenue,
@@ -328,7 +444,7 @@ const cashflows = computed(() => {
 })
 const saldos = computed(() => {
   let totalBankSaldo = totalBankSaldoInCHF.value
-  return cashflows.value.map(c => {
+  return cashflows.value.map((c) => {
     totalBankSaldo += c.amount
     return {
       amount: totalBankSaldo,

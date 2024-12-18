@@ -1,5 +1,5 @@
 export default defineEventHandler(async () => {
-    return {
-        date: new Date()
-    }
+  return {
+    date: new Date(),
+  }
 })

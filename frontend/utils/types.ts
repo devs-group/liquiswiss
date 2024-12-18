@@ -1,4 +1,4 @@
-import {RouteNames} from "~/config/routes";
+import { RouteNames } from '~/config/routes'
 
 export const TransactionSortByOptions = ['name', 'startDate', 'endDate', 'amount', 'cycle', 'category', 'employee', 'nextExecutionDate'] as const
 export type TransactionSortByType = typeof TransactionSortByOptions[number]

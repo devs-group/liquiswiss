@@ -1,5 +1,5 @@
-import {FetchError} from "ofetch";
+import type { FetchError } from 'ofetch'
 
-export const IsAbortedError = (error: FetchError|null) => {
-    return error?.cause && (error.cause as { name: string }).name === "AbortError"
+export const IsAbortedError = (error: FetchError | null) => {
+  return error?.cause && (error.cause as { name: string }).name === 'AbortError'
 }

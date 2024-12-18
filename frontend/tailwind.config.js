@@ -10,8 +10,8 @@ export default {
     },
     extend: {
       colors: {
-        'primary': '#10b981',
-        'help': '#a855f7',
+        primary: '#10b981',
+        help: '#a855f7',
       },
       gridTemplateColumns: {
         'transactions': 'minmax(14rem, 1fr), 7rem, 7rem, 7rem, minmax(10rem, 1fr), 10rem, 10rem, 10rem, 12rem',
@@ -19,8 +19,8 @@ export default {
         'bank-accounts': '18rem, minmax(14rem, 1fr)',
       },
       maxWidth: {
-        screen: '100vw'
-      }
+        screen: '100vw',
+      },
     },
   },
   plugins: [],

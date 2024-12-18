@@ -1,5 +1,5 @@
 export interface TimeOff {
-    personId: number;
-    category: 'vacation' | 'sickness' | 'other';
-    hours: number;
+  personId: number
+  category: 'vacation' | 'sickness' | 'other'
+  hours: number
 }
