@@ -303,6 +303,15 @@
         show-button-bar
         :class="{ 'p-invalid': errors['endDate']?.length }"
       />
+      <Message
+        v-if="endDateErrorMessage.length"
+        severity="warn"
+        size="small"
+        :sticky="false"
+        :closable="true"
+      >
+        {{ endDateErrorMessage }}
+      </Message>
       <small class="text-liqui-red">{{ errors["endDate"] || '&nbsp;' }}</small>
     </div>
     <span
@@ -312,7 +321,7 @@
 
     <div
       v-if="!isClone && !isCreate"
-      class="flex justify-end col-span-full"
+      class="flex justify-end gap-2 col-span-full"
     >
       <Button
         :loading="isLoading"
@@ -321,6 +330,15 @@
         severity="danger"
         size="small"
         @click="onDeleteTransaction"
+      />
+      <Button
+        v-tooltip.top="'Setzt Werte zurück auf den vorherigen Status'"
+        :loading="isLoading"
+        label="Zurücksetzen"
+        icon="pi pi-reset"
+        severity="secondary"
+        size="small"
+        @click="onResetForm"
       />
     </div>
 
@@ -386,6 +404,7 @@ const isCreate = isClone || !transaction?.id
 const errorMessage = ref('')
 const employeesErrorMessage = ref('')
 const vatsErrorMessage = ref('')
+const endDateErrorMessage = ref('')
 
 listEmployees(false)
   .catch(() => {
@@ -403,7 +422,7 @@ listVats()
     isLoadingVats.value = false
   })
 
-const { defineField, errors, handleSubmit, meta, setFieldValue } = useForm({
+const { defineField, errors, handleSubmit, meta, setFieldValue, resetForm } = useForm({
   validationSchema: yup.object({
     name: yup.string().trim().required('Name wird benötigt'),
     amount: yup.number().required('Betrag wird benötigt').typeError('Ungültiger Betrag'),
@@ -444,6 +463,13 @@ const [endDate, endDateProps] = defineField('endDate')
 const [category, categoryProps] = defineField('category')
 const [currency, currencyProps] = defineField('currency')
 const [employee, employeeProps] = defineField('employee')
+
+watch(startDate, (value) => {
+  if (endDate.value && value > endDate.value) {
+    endDate.value = undefined
+    endDateErrorMessage.value = `Das "Bis" Datum wurde entfernt, da das "Von" Datum nach diesem liegt`
+  }
+})
 
 const onSubmit = handleSubmit((values) => {
   isLoading.value = true
@@ -540,6 +566,10 @@ const onDeleteTransaction = () => {
     reject: () => {
     },
   })
+}
+
+const onResetForm = () => {
+  resetForm()
 }
 
 const onCreateVat = () => {
