@@ -1,6 +1,6 @@
 package models
 
-type RegistrationMail struct {
+type SendgridMail struct {
 	Subject    string `json:"subject"`
 	PreHeader  string `json:"preHeader"`
 	Hello      string `json:"hello"`

@@ -5,16 +5,17 @@ import (
 )
 
 type Config struct {
-	WebHost       string
-	DBUser        string
-	DBPassword    string
-	DBHost        string
-	DBPort        string
-	DBName        string
-	JWTKey        []byte
-	SendgridToken string
-	FixerIOURl    string
-	FixerIOKey    string
+	WebHost            string
+	DBUser             string
+	DBPassword         string
+	DBHost             string
+	DBPort             string
+	DBName             string
+	JWTKey             []byte
+	SendgridToken      string
+	SendgridTemplateID string
+	FixerIOURl         string
+	FixerIOKey         string
 }
 
 func GetConfig() Config {
@@ -29,7 +30,8 @@ func GetConfig() Config {
 
 		JWTKey: []byte(getEnv("JWT_KEY", "")),
 
-		SendgridToken: getEnv("SEND_GRID_TOKEN", ""),
+		SendgridToken:      getEnv("SEND_GRID_TOKEN", ""),
+		SendgridTemplateID: getEnv("SEND_GRID_TEMPLATE_ID", ""),
 
 		FixerIOURl: getEnv("FIXER_IO_URL", ""),
 		FixerIOKey: getEnv("FIXER_IO_KEY", ""),

@@ -77,8 +77,8 @@ func (s SendgridService) SendRegistrationMail(email, code string) error {
 			Name:    "",
 			Address: email,
 		},
-		utils.RegistrationMailTemplate,
-		models.RegistrationMail{
+		cfg.SendgridTemplateID,
+		models.SendgridMail{
 			Subject:   "Bestätigen Sie Ihre E-Mail",
 			PreHeader: "Nur noch ein kleiner Schritt bevor Sie LiquiSwiss nutzen können ...",
 			Hello:     "Willkommen bei LiquiSwiss 🇨🇭",
@@ -113,8 +113,8 @@ func (s SendgridService) SendPasswordResetMail(email, code string) error {
 			Name:    "",
 			Address: email,
 		},
-		utils.RegistrationMailTemplate,
-		models.RegistrationMail{
+		cfg.SendgridTemplateID,
+		models.SendgridMail{
 			Subject:   "Anfrage zum Zurücksetzen des Passworts",
 			PreHeader: "",
 			Hello:     "Guten Tag! 👋",

@@ -26,6 +26,19 @@ lint-nuxt:
       changes:
       - frontend/**/*
 
+test-backend:
+  stage: lint
+  image: golang:1.23.3-alpine
+  before_script:
+    - cd backend
+    - go get
+  script:
+    - go test ./...
+  rules:
+    - if: $CI_COMMIT_BRANCH != "main"
+      changes:
+      - backend/**/*
+
 build-nuxt:
   stage: build
   variables:
