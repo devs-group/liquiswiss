@@ -2,6 +2,8 @@
 
 Liquidity Planning
 
+[Landing Page](https://liquiswiss.ch/)
+
 # Configuration
 
 > We are planning to add [Mailpit](https://mailpit.axllent.org/) for local e-mail testing and replace fixer.io with a
