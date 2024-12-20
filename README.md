@@ -14,7 +14,8 @@ Liquidity Planning
 2. Copy the [backend/.env.example](backend/.env.example) into the same directory and name it `.env`
     - The `WEB_HOST` is set to http://localhost:3000 and works for local dev
     - THE `JWT_KEY` can be anything for local development but make sure to set it for [production](#production)
-    - Set your credentials for [MariaDB](https://hub.docker.com/_/mariadb) and make sure they match [.env.example](.env.example)
+    - Set your credentials for [MariaDB](https://hub.docker.com/_/mariadb) and make sure they
+      match [.env.example](.env.example)
     - Set your Token for [SendGrid](https://app.sendgrid.com/)
         - This requires you to have an account with SendGrid
             - Create an API key [here](https://app.sendgrid.com/settings/api_keys)
@@ -22,7 +23,7 @@ Liquidity Planning
             - The template for LiquiSwiss looks like this:
             - ![sendgrid.png](.readme/sendgrid.png "Dynamic Template")
             - The values to submit can be found in [this model](backend/pkg/models/mail.go)
-            - You can find the useage in the [SendgridService](backend/internal/service/sendgrid_service.go)
+            - You can find the usage in the [SendgridService](backend/internal/service/sendgrid_service.go)
     - Set your credentials for [Fixer](https://fixer.io/)
         - This requires you to have an account with Fixer
         - Copy the API key that you find in the [Dashboard](https://fixer.io/dashboard)
@@ -41,31 +42,18 @@ For production make sure you define the proper values for your envs (no matter i
 
 Look at the [Nuxt 3 documentation](https://nuxt.com/docs/getting-started/introduction) to learn more.
 
+> Make sure you are in the [frontend](frontend) directory for all the following actions
+
 ## Setup
 
-```bash
-cd frontend
+```
 npm install
-
-or
-
-docker compose build (if you have docker)
 ```
 
 ## Development Server
 
-```bash
-cd frontend
-npm run dev
-
-or
-
-cd frontend
-npm run dev-host (to expose host and be able to connect from another device)
-
-or
-
-docker compose up -d (if you have docker)
+```
+npm run dev or npm run dev-host (to expose host and be able to connect from another device)
 ```
 
 # Backend (Golang)
@@ -74,7 +62,7 @@ docker compose up -d (if you have docker)
 
 ## Setup
 
-```bash
+```
 go get OR go mod tidy
 ```
 
@@ -82,7 +70,7 @@ go get OR go mod tidy
 
 1. Install [Air](https://github.com/cosmtrek/air): `go install github.com/cosmtrek/air@latest`
 
-```bash
+```
 air
 ```
 
@@ -100,7 +88,7 @@ air
 1. Install [Mockgen](https://github.com/uber-go/mock) with `go install go.uber.org/mock/mockgen@latest` to generate
    mocks
     - There are `go generate` commands already in the files so you can simply do `go generate ./...`
-1. You can run all tests with `go test ./...`
+2. You can run all tests with `go test ./...`
 
 # Production
 
