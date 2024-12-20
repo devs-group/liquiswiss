@@ -1,0 +1,118 @@
+name: CI/CD Pipeline
+
+on:
+  push:
+    paths:
+      - '.github/**'
+      - 'frontend/**'
+      - 'backend/**'
+
+jobs:
+  lint-nuxt:
+    name: Lint Nuxt
+    runs-on: self-hosted
+    #    if: github.ref != 'refs/heads/main'
+    container:
+      image: node:20.11.0
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Install dependencies
+        working-directory: frontend
+        run: npm install
+
+      - name: Run Nuxt lint
+        working-directory: frontend
+        run: npm run lint .
+
+  test-backend:
+    name: Test Backend
+    runs-on: self-hosted
+    #    if: github.ref != 'refs/heads/main'
+    container:
+      image: golang:1.23.3-alpine
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Install dependencies
+        working-directory: backend
+        run: go get
+
+      - name: Run Backend Tests
+        working-directory: backend
+        run: go test ./...
+
+  build-nuxt:
+    name: Build Nuxt
+    runs-on: self-hosted
+    needs: [ lint-nuxt, test-backend ]
+    if: github.ref == 'refs/heads/main'
+    env:
+      IMAGE: ghcr.io/${{ github.repository }}/nuxt:latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Log in to Docker registry
+        run: echo "${{ secrets.GITHUB_TOKEN }}" | docker login ghcr.io -u ${{ github.actor }} --password-stdin
+
+      - name: Build and Tag Docker Image
+        run: docker build -f ./.deploy/nuxt/Dockerfile -t ${{ env.IMAGE }} ./
+
+  build-backend:
+    name: Build Backend
+    runs-on: self-hosted
+    needs: [ lint-nuxt, test-backend ]
+    if: github.ref == 'refs/heads/main'
+    env:
+      IMAGE: ghcr.io/${{ github.repository }}/backend:latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Log in to Docker registry
+        run: echo "${{ secrets.GITHUB_TOKEN }}" | docker login ghcr.io -u ${{ github.actor }} --password-stdin
+
+      - name: Build and Tag Docker Image
+        run: docker build -f ./.deploy/backend/Dockerfile -t ${{ env.IMAGE }} ./
+
+  push-images:
+    name: Push Images
+    runs-on: self-hosted
+    needs: [ build-nuxt, build-backend ]
+    if: github.ref == 'refs/heads/main'
+    steps:
+      - name: Log in to Docker registry
+        run: echo "${{ secrets.GITHUB_TOKEN }}" | docker login ghcr.io -u ${{ github.actor }} --password-stdin
+
+      - name: Push Nuxt Image
+        env:
+          IMAGE: ghcr.io/${{ github.repository }}/nuxt:latest
+        run: docker push ${{ env.IMAGE }}
+
+      - name: Push Backend Image
+        env:
+          IMAGE: ghcr.io/${{ github.repository }}/backend:latest
+        run: docker push ${{ env.IMAGE }}
+
+  deploy:
+    name: Deploy to Production
+    runs-on: self-hosted
+    needs: [ push-images ]
+    if: github.ref == 'refs/heads/main'
+    env:
+      DEPLOY_URL: ${{ secrets.DEPLOY_URL }}
+      DEPLOY_TOKEN: ${{ secrets.DEPLOY_TOKEN }}
+    container:
+      image: alpine:latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Install curl
+        run: apk add --no-cache curl
+
+      - name: Deploy Application
+        run: sh ./.deploy/deploy.sh
