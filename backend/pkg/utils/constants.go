@@ -17,6 +17,4 @@ const (
 	RefreshTokenName = "liq-refresh-token"
 
 	BaseCurrency = "CHF"
-
-	RegistrationMailTemplate = "d-7b6d32452f134c6583bc09260ab26275"
 )
