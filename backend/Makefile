@@ -1,6 +1,5 @@
 goose-up:
 	goose --dir internal/db/migrations mysql liquiswiss:password@/liquiswiss up
-	echo "RUN THE mocks.sql as well"
 goose-up-1:
 	goose --dir internal/db/migrations mysql liquiswiss:password@/liquiswiss up-by-one
 goose-down:
