@@ -89,9 +89,3 @@ air
    mocks
     - There are `go generate` commands already in the files so you can simply do `go generate ./...`
 2. You can run all tests with `go test ./...`
-
-# Production
-
-Build the application for production:
-
-Every push or merge to master will trigger an automatic deployment via Gitlab Pipeline
