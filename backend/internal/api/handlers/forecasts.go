@@ -263,8 +263,9 @@ func CalculateForecasts(dbService service.IDatabaseService, c *gin.Context) {
 				if forecastMap[monthKey] == nil {
 					initForecastMapKey(forecastMap, monthKey)
 				}
+				fiatRate := models.GetFiatRateFromCurrency(fiatRates, *history.Currency.Code)
 				// Must be minus here
-				salaryPerMonth := -int64(history.SalaryPerMonth)
+				salaryPerMonth := -models.CalculateAmountWithFiatRate(int64(history.SalaryPerMonth), fiatRate)
 				forecastMap[monthKey]["expense"] += salaryPerMonth
 				addForecastDetail(forecastDetailMap, monthKey, "Gehälter", salaryPerMonth)
 			}
