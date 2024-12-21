@@ -7,10 +7,18 @@ on:
       - 'frontend/**'
       - 'backend/**'
 
+env:
+  NUXT_IMAGE: ghcr.io/${{ github.repository }}/nuxt:latest
+  NUXT_IMAGE_ARTIFACT: nuxt-image
+  NUXT_IMAGE_ZIP_FILE: nuxt-image.tar.gz
+  BACKEND_IMAGE: ghcr.io/${{ github.repository }}/backend:latest
+  BACKEND_IMAGE_ARTIFACT: backend-image
+  BACKEND_IMAGE_ZIP_FILE: backend-image.tar.gz
+
 jobs:
   lint-nuxt:
     name: Lint Nuxt
-    runs-on: self-hosted
+    runs-on: ubuntu-latest
     #    if: github.ref != 'refs/heads/main'
     container:
       image: node:20.11.0
@@ -28,7 +36,7 @@ jobs:
 
   test-backend:
     name: Test Backend
-    runs-on: self-hosted
+    runs-on: ubuntu-latest
     #    if: github.ref != 'refs/heads/main'
     container:
       image: golang:1.23.3-alpine
@@ -46,11 +54,9 @@ jobs:
 
   build-nuxt:
     name: Build Nuxt
-    runs-on: self-hosted
+    runs-on: ubuntu-latest
     needs: [ lint-nuxt, test-backend ]
     if: github.ref == 'refs/heads/main'
-    env:
-      IMAGE: ghcr.io/${{ github.repository }}/nuxt:latest
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
@@ -59,11 +65,20 @@ jobs:
         run: echo "${{ secrets.GITHUB_TOKEN }}" | docker login ghcr.io -u ${{ github.actor }} --password-stdin
 
       - name: Build and Tag Docker Image
-        run: docker build -f ./.deploy/nuxt/Dockerfile -t ${{ env.IMAGE }} ./
+        run: docker build -f ./.deploy/nuxt/Dockerfile -t ${{ env.NUXT_IMAGE }} ./
+
+      - name: Save Nuxt Image as Tarball
+        run: docker save ${{ env.NUXT_IMAGE }} | gzip > ${{ env.NUXT_IMAGE_ZIP_FILE }}
+
+      - name: Upload Nuxt Image as Artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: ${{ env.NUXT_IMAGE_ARTIFACT }}
+          path: ${{ env.NUXT_IMAGE_ZIP_FILE }}
 
   build-backend:
     name: Build Backend
-    runs-on: self-hosted
+    runs-on: ubuntu-latest
     needs: [ lint-nuxt, test-backend ]
     if: github.ref == 'refs/heads/main'
     env:
@@ -76,30 +91,51 @@ jobs:
         run: echo "${{ secrets.GITHUB_TOKEN }}" | docker login ghcr.io -u ${{ github.actor }} --password-stdin
 
       - name: Build and Tag Docker Image
-        run: docker build -f ./.deploy/backend/Dockerfile -t ${{ env.IMAGE }} ./
+        run: docker build -f ./.deploy/backend/Dockerfile -t ${{ env.BACKEND_IMAGE }} ./
+
+      - name: Save Nuxt Image as Tarball
+        run: docker save ${{ env.BACKEND_IMAGE }} | gzip > ${{ env.BACKEND_IMAGE_ZIP_FILE }}
+
+      - name: Upload Nuxt Image as Artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: ${{ env.BACKEND_IMAGE_ARTIFACT }}
+          path: ${{ env.BACKEND_IMAGE_ZIP_FILE }}
 
   push-images:
     name: Push Images
-    runs-on: self-hosted
+    runs-on: ubuntu-latest
     needs: [ build-nuxt, build-backend ]
     if: github.ref == 'refs/heads/main'
     steps:
+      - name: Download Nuxt Image Artifact
+        uses: actions/download-artifact@v4
+        with:
+          name: ${{ env.NUXT_IMAGE_ARTIFACT }}
+
+      - name: Download Backend Image Artifact
+        uses: actions/download-artifact@v4
+        with:
+          name: ${{ env.BACKEND_IMAGE_ARTIFACT }}
+
+      - name: Load Nuxt Image
+        run: gunzip < ${{ env.NUXT_IMAGE_ZIP_FILE }} | docker load
+
+      - name: Load Backend Image
+        run: gunzip < ${{ env.BACKEND_IMAGE_ZIP_FILE }} | docker load
+
       - name: Log in to Docker registry
         run: echo "${{ secrets.GITHUB_TOKEN }}" | docker login ghcr.io -u ${{ github.actor }} --password-stdin
 
       - name: Push Nuxt Image
-        env:
-          IMAGE: ghcr.io/${{ github.repository }}/nuxt:latest
-        run: docker push ${{ env.IMAGE }}
+        run: docker push ${{ env.NUXT_IMAGE }}
 
       - name: Push Backend Image
-        env:
-          IMAGE: ghcr.io/${{ github.repository }}/backend:latest
-        run: docker push ${{ env.IMAGE }}
+        run: docker push ${{ env.BACKEND_IMAGE }}
 
   deploy:
     name: Deploy to Production
-    runs-on: self-hosted
+    runs-on: ubuntu-latest
     needs: [ push-images ]
     if: github.ref == 'refs/heads/main'
     env:
