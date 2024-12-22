@@ -158,7 +158,7 @@ export default function useEmployees() {
         method: 'POST',
         body: {
           ...payload,
-          salaryPerMonth: AmountToInteger(payload.salaryPerMonth),
+          salary: AmountToInteger(payload.salary),
           fromDate: DateToApiFormat(payload.fromDate),
           toDate: payload.toDate ? DateToApiFormat(payload.toDate) : undefined,
         },
@@ -176,7 +176,7 @@ export default function useEmployees() {
         method: 'PATCH',
         body: {
           ...payload,
-          salaryPerMonth: AmountToInteger(payload.salaryPerMonth),
+          salary: AmountToInteger(payload.salary),
           fromDate: DateToApiFormat(payload.fromDate),
           toDate: payload.toDate ? DateToApiFormat(payload.toDate) : undefined,
         },

@@ -34,7 +34,7 @@
         </p>
         <p>{{ employee.hoursPerMonth }} Arbeitsstunden / Monat</p>
         <p>
-          {{ salaryFormatted }} {{ employee.currency.code }} / Monat
+          {{ salaryFormatted }} {{ employee.currency?.code }} / {{ cycle }}
         </p>
         <p>
           {{ employee.vacationDaysPerYear }} Urlaubstage / Jahr
@@ -72,5 +72,6 @@ defineEmits<{
   onEdit: [employee: EmployeeResponse]
 }>()
 
-const salaryFormatted = computed(() => NumberToFormattedCurrency(AmountToFloat(props.employee!.salaryPerMonth), props.employee.currency!.localeCode))
+const salaryFormatted = computed(() => NumberToFormattedCurrency(AmountToFloat(props.employee.salary!), props.employee.currency!.localeCode))
+const cycle = computed(() => CycleTypeToOptions().find(ct => ct.value === props.employee.cycle)?.name ?? '')
 </script>

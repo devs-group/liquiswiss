@@ -96,8 +96,6 @@ func CreateOrganisation(dbService service.IDatabaseService, c *gin.Context) {
 		return
 	}
 
-	// TODO: Check if user already has organisation?
-
 	var payload models.CreateOrganisation
 	if err := c.BindJSON(&payload); err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})

@@ -10,7 +10,7 @@
       />
     </div>
     <p>{{ employee.hoursPerMonth || '-' }}</p>
-    <p>{{ salaryFormatted || '-' }}</p>
+    <p>{{ salaryFormatted || '-' }} / {{ cycle }}</p>
     <p>{{ employee.vacationDaysPerYear || '-' }}</p>
     <p>{{ fromDate }}</p>
     <p class="!border-r">
@@ -34,7 +34,8 @@ defineEmits<{
   onClone: [transaction: EmployeeResponse]
 }>()
 
-const salaryFormatted = computed(() => props.employee.salaryPerMonth ? NumberToFormattedCurrency(AmountToFloat(props.employee.salaryPerMonth ?? 0), props.employee.currency!.localeCode) : '-')
+const salaryFormatted = computed(() => props.employee.salary ? NumberToFormattedCurrency(AmountToFloat(props.employee.salary ?? 0), props.employee.currency!.localeCode) : '-')
 const fromDate = computed(() => props.employee.fromDate ? DateStringToFormattedDate(props.employee.fromDate) : '-')
 const toDate = computed(() => props.employee.toDate ? DateStringToFormattedDate(props.employee.toDate) : '-')
+const cycle = computed(() => CycleTypeToOptions().find(ct => ct.value === props.employee.cycle)?.name ?? '')
 </script>

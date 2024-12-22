@@ -10,7 +10,8 @@ export interface EmployeeResponse {
   id: number
   name: string
   hoursPerMonth: number | null
-  salaryPerMonth: number | null
+  salary: number | null
+  cycle: CycleTypeToStringDefinition | null
   currency: CurrencyResponse | null
   vacationDaysPerYear?: number | null
   fromDate?: string | null
@@ -27,7 +28,8 @@ export interface ListEmployeeResponse {
 export interface EmployeeHistoryFormData {
   id: number
   hoursPerMonth: number
-  salaryPerMonth: number
+  salary: number
+  cycle: CycleTypeToStringDefinition
   currencyID: number
   vacationDaysPerYear: number
   fromDate: Date
@@ -38,7 +40,8 @@ export interface EmployeeHistoryResponse {
   id: number
   employeeID: string
   hoursPerMonth: number
-  salaryPerMonth: number
+  salary: number
+  cycle: CycleTypeToStringDefinition
   currency: CurrencyResponse
   vacationDaysPerYear: number
   fromDate: string

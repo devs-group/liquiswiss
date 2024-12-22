@@ -255,19 +255,83 @@ func CalculateForecasts(dbService service.IDatabaseService, c *gin.Context) {
 				toDate = time.Time(*history.ToDate)
 			}
 
-			for current := fromDate; !current.After(toDate); current = utils.GetNextDate(fromDate, current, 1) {
-				if current.Before(today) {
-					continue
+			fiatRate := models.GetFiatRateFromCurrency(fiatRates, *history.Currency.Code)
+			// Must be minus here
+			salary := -models.CalculateAmountWithFiatRate(int64(history.Salary), fiatRate)
+
+			switch history.Cycle {
+			case "daily":
+				for current := fromDate; !current.After(toDate); current = current.AddDate(0, 0, 1) {
+					if current.Before(today) {
+						continue
+					}
+					monthKey := getYearMonth(current)
+					if forecastMap[monthKey] == nil {
+						initForecastMapKey(forecastMap, monthKey)
+					}
+					forecastMap[monthKey]["expense"] += salary
+					addForecastDetail(forecastDetailMap, monthKey, "Gehälter", salary)
 				}
-				monthKey := getYearMonth(current)
-				if forecastMap[monthKey] == nil {
-					initForecastMapKey(forecastMap, monthKey)
+			case "weekly":
+				for current := fromDate; !current.After(toDate); current = current.AddDate(0, 0, 7) {
+					if current.Before(today) {
+						continue
+					}
+					monthKey := getYearMonth(current)
+					if forecastMap[monthKey] == nil {
+						initForecastMapKey(forecastMap, monthKey)
+					}
+					forecastMap[monthKey]["expense"] += salary
+					addForecastDetail(forecastDetailMap, monthKey, "Gehälter", salary)
 				}
-				fiatRate := models.GetFiatRateFromCurrency(fiatRates, *history.Currency.Code)
-				// Must be minus here
-				salaryPerMonth := -models.CalculateAmountWithFiatRate(int64(history.SalaryPerMonth), fiatRate)
-				forecastMap[monthKey]["expense"] += salaryPerMonth
-				addForecastDetail(forecastDetailMap, monthKey, "Gehälter", salaryPerMonth)
+			case "monthly":
+				for current := fromDate; !current.After(toDate); current = utils.GetNextDate(fromDate, current, 1) {
+					if current.Before(today) {
+						continue
+					}
+					monthKey := getYearMonth(current)
+					if forecastMap[monthKey] == nil {
+						initForecastMapKey(forecastMap, monthKey)
+					}
+					forecastMap[monthKey]["expense"] += salary
+					addForecastDetail(forecastDetailMap, monthKey, "Gehälter", salary)
+				}
+			case "quarterly":
+				for current := fromDate; !current.After(toDate); current = utils.GetNextDate(fromDate, current, 3) {
+					if current.Before(today) {
+						continue
+					}
+					monthKey := getYearMonth(current)
+					if forecastMap[monthKey] == nil {
+						initForecastMapKey(forecastMap, monthKey)
+					}
+					forecastMap[monthKey]["expense"] += salary
+					addForecastDetail(forecastDetailMap, monthKey, "Gehälter", salary)
+				}
+			case "biannually":
+				for current := fromDate; !current.After(toDate); current = utils.GetNextDate(fromDate, current, 6) {
+					if current.Before(today) {
+						continue
+					}
+					monthKey := getYearMonth(current)
+					if forecastMap[monthKey] == nil {
+						initForecastMapKey(forecastMap, monthKey)
+					}
+					forecastMap[monthKey]["expense"] += salary
+					addForecastDetail(forecastDetailMap, monthKey, "Gehälter", salary)
+				}
+			case "yearly":
+				for current := fromDate; !current.After(toDate); current = utils.GetNextDate(fromDate, current, 12) {
+					if current.Before(today) {
+						continue
+					}
+					monthKey := getYearMonth(current)
+					if forecastMap[monthKey] == nil {
+						initForecastMapKey(forecastMap, monthKey)
+					}
+					forecastMap[monthKey]["expense"] += salary
+					addForecastDetail(forecastDetailMap, monthKey, "Gehälter", salary)
+				}
 			}
 		}
 	}

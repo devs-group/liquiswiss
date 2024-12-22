@@ -88,7 +88,7 @@ func main() {
 		logger.Logger.Debug("Skipping Fiat Rates because we are not on Production")
 	}
 
-	// TODO: REMOVE ME BEFORE RELEASE
+	// TODO: Replace this with admin at some point
 	err = dbService.ApplyMocks()
 	if err != nil {
 		logger.Logger.Warnf("Failed to apply mocks: %v", err)

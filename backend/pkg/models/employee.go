@@ -8,7 +8,8 @@ type Employee struct {
 	ID                  int64         `db:"id" json:"id"`
 	Name                string        `db:"name" json:"name"`
 	HoursPerMonth       *uint16       `db:"-" json:"hoursPerMonth"`
-	SalaryPerMonth      *uint64       `db:"-" json:"salaryPerMonth"`
+	Salary              *uint64       `db:"-" json:"salary"`
+	Cycle               *string       `db:"-" json:"cycle"`
 	Currency            *Currency     `db:"-" json:"currency"`
 	VacationDaysPerYear *uint16       `db:"-" json:"vacationDaysPerYear"`
 	FromDate            *types.AsDate `db:"-" json:"fromDate"`

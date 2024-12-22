@@ -890,7 +890,7 @@ func (s *DatabaseService) ListEmployees(userID int64, page int64, limit int64, s
 	employees := make([]models.Employee, 0)
 	var totalCount int64
 	sortByMap := map[string]string{
-		"name": "e.name", "hoursPerMonth": "h.hours_per_month", "salaryPerMonth": "h.salary_per_month", "vacationDaysPerYear": "h.vacation_days_per_year",
+		"name": "e.name", "hoursPerMonth": "h.hours_per_month", "salary": "h.salary", "vacationDaysPerYear": "h.vacation_days_per_year",
 		"fromDate": "h.from_date", "toDate": "h.to_date",
 	}
 
@@ -922,9 +922,10 @@ func (s *DatabaseService) ListEmployees(userID int64, page int64, limit int64, s
 		employee.Currency = &models.Currency{}
 
 		err := rows.Scan(
-			&employee.ID, &employee.Name, &employee.HoursPerMonth, &employee.SalaryPerMonth,
+			&employee.ID, &employee.Name, &employee.HoursPerMonth, &employee.Salary, &employee.Cycle,
 			&employee.Currency.ID, &employee.Currency.LocaleCode, &employee.Currency.Description,
-			&employee.Currency.Code, &employee.VacationDaysPerYear, &fromDate, &toDate, &isInFuture, &totalCount,
+			&employee.Currency.Code, &employee.VacationDaysPerYear,
+			&fromDate, &toDate, &isInFuture, &totalCount,
 		)
 		if err != nil {
 			return nil, 0, err
@@ -974,10 +975,12 @@ func (s *DatabaseService) ListEmployeeHistory(userID int64, employeeID string, p
 		employeeHistory.Currency = models.Currency{}
 
 		err := rows.Scan(
-			&employeeHistory.ID, &employeeHistory.EmployeeID, &employeeHistory.HoursPerMonth, &employeeHistory.SalaryPerMonth,
+			&employeeHistory.ID, &employeeHistory.EmployeeID, &employeeHistory.HoursPerMonth,
+			&employeeHistory.Salary, &employeeHistory.Cycle,
 			&employeeHistory.Currency.ID, &employeeHistory.Currency.LocaleCode, &employeeHistory.Currency.Description,
 			&employeeHistory.Currency.Code,
-			&employeeHistory.VacationDaysPerYear, &fromDate, &toDate, &totalCount,
+			&employeeHistory.VacationDaysPerYear,
+			&fromDate, &toDate, &totalCount,
 		)
 		if err != nil {
 			return nil, 0, err
@@ -1039,9 +1042,10 @@ func (s *DatabaseService) GetEmployee(userID int64, id string) (*models.Employee
 	}
 
 	err = s.db.QueryRow(string(query), id, userID).Scan(
-		&employee.ID, &employee.Name, &employee.HoursPerMonth, &employee.SalaryPerMonth,
+		&employee.ID, &employee.Name, &employee.HoursPerMonth, &employee.Salary, &employee.Cycle,
 		&employee.Currency.ID, &employee.Currency.LocaleCode, &employee.Currency.Description,
-		&employee.Currency.Code, &employee.VacationDaysPerYear, &fromDate, &toDate, &isInFuture, &employee.HistoryID,
+		&employee.Currency.Code, &employee.VacationDaysPerYear,
+		&fromDate, &toDate, &isInFuture, &employee.HistoryID,
 	)
 	if err != nil {
 		return nil, err
@@ -1078,9 +1082,11 @@ func (s *DatabaseService) GetEmployeeHistory(userID int64, historyID string) (*m
 	}
 
 	err = s.db.QueryRow(string(query), historyID, userID).Scan(
-		&employeeHistory.ID, &employeeHistory.EmployeeID, &employeeHistory.HoursPerMonth, &employeeHistory.SalaryPerMonth,
+		&employeeHistory.ID, &employeeHistory.EmployeeID, &employeeHistory.HoursPerMonth,
+		&employeeHistory.Salary, &employeeHistory.Cycle,
 		&employeeHistory.Currency.ID, &employeeHistory.Currency.LocaleCode, &employeeHistory.Currency.Description,
-		&employeeHistory.Currency.Code, &employeeHistory.VacationDaysPerYear, &fromDate, &toDate,
+		&employeeHistory.Currency.Code, &employeeHistory.VacationDaysPerYear,
+		&fromDate, &toDate,
 	)
 	if err != nil {
 		return nil, err
@@ -1172,7 +1178,8 @@ func (s *DatabaseService) CreateEmployeeHistory(payload models.CreateEmployeeHis
 	}
 
 	res, err := stmt.Exec(
-		employeeID, payload.HoursPerMonth, payload.SalaryPerMonth, payload.CurrencyID, payload.VacationDaysPerYear,
+		employeeID, payload.HoursPerMonth, payload.Salary, payload.Cycle,
+		payload.CurrencyID, payload.VacationDaysPerYear,
 		fromDate, toDate, employeeID, userID,
 	)
 	if err != nil {
@@ -1191,10 +1198,11 @@ func (s *DatabaseService) CreateEmployeeHistory(payload models.CreateEmployeeHis
 	// Fetch and adjust previous entry if required
 	var previous models.EmployeeHistory
 	if err := tx.QueryRow(`
-        SELECT id, from_date, to_date FROM employee_history 
-        WHERE employee_id = ? AND from_date < ? AND (to_date IS NULL OR to_date >= ?) AND id != ?
+        SELECT id, from_date, to_date, cycle FROM employee_history 
+        WHERE employee_id = ? AND from_date < ? AND id != ?
         ORDER BY from_date DESC LIMIT 1
-    `, employeeID, payload.FromDate, payload.FromDate, historyID).Scan(&previous.ID, &previous.FromDate, &previous.ToDate); err != nil && err != sql.ErrNoRows {
+    `, employeeID, payload.FromDate, historyID).
+		Scan(&previous.ID, &previous.FromDate, &previous.ToDate, &previous.Cycle); err != nil && err != sql.ErrNoRows {
 		return 0, err
 	}
 
@@ -1216,7 +1224,7 @@ func (s *DatabaseService) CreateEmployeeHistory(payload models.CreateEmployeeHis
 
 		if needsAdjustment {
 			previousFromDate := time.Time(previous.FromDate)
-			newToDate := utils.GetNextAvailableDate(previousFromDate, currentFromDate)
+			newToDate := utils.GetNextAvailableDate(previousFromDate, currentFromDate, previous.Cycle)
 			logger.Logger.Debugf("Adjusting previous history entry to: %s", newToDate)
 			_, err := tx.Exec(`
             UPDATE employee_history SET to_date = ? WHERE id = ?
@@ -1233,7 +1241,8 @@ func (s *DatabaseService) CreateEmployeeHistory(payload models.CreateEmployeeHis
 	   SELECT id, from_date, to_date FROM employee_history
        WHERE employee_id = ? AND from_date > ? AND id != ?
 	   ORDER BY from_date ASC LIMIT 1
-	`, employeeID, payload.FromDate, historyID).Scan(&next.ID, &next.FromDate, &next.ToDate); err != nil && err != sql.ErrNoRows {
+	`, employeeID, payload.FromDate, historyID).
+		Scan(&next.ID, &next.FromDate, &next.ToDate); err != nil && err != sql.ErrNoRows {
 		return 0, err
 	}
 
@@ -1259,7 +1268,7 @@ func (s *DatabaseService) CreateEmployeeHistory(payload models.CreateEmployeeHis
 			if err != nil {
 				return 0, err
 			}
-			newToDate := utils.GetNextAvailableDate(currentFromDate, nextFromDate)
+			newToDate := utils.GetNextAvailableDate(currentFromDate, nextFromDate, payload.Cycle)
 			logger.Logger.Debugf("Adjusting current history entry to: %s", newToDate)
 			_, err = tx.Exec(`
             UPDATE employee_history SET to_date = ? WHERE id = ?
@@ -1333,9 +1342,9 @@ func (s *DatabaseService) UpdateEmployeeHistory(payload models.UpdateEmployeeHis
 		queryBuild = append(queryBuild, "hours_per_month = ?")
 		args = append(args, *payload.HoursPerMonth)
 	}
-	if payload.SalaryPerMonth != nil {
-		queryBuild = append(queryBuild, "salary_per_month = ?")
-		args = append(args, *payload.SalaryPerMonth)
+	if payload.Salary != nil {
+		queryBuild = append(queryBuild, "salary = ?")
+		args = append(args, *payload.Salary)
 	}
 	if payload.CurrencyID != nil {
 		queryBuild = append(queryBuild, "currency_id = ?")
@@ -1364,6 +1373,9 @@ func (s *DatabaseService) UpdateEmployeeHistory(payload models.UpdateEmployeeHis
 	} else {
 		args = append(args, nil)
 	}
+	// Cycle is always submitted
+	queryBuild = append(queryBuild, "cycle = ?")
+	args = append(args, payload.Cycle)
 
 	// Add WHERE clause
 	query += strings.Join(queryBuild, ", ")
@@ -1384,39 +1396,28 @@ func (s *DatabaseService) UpdateEmployeeHistory(payload models.UpdateEmployeeHis
 	// Fetch and adjust previous entry if required
 	var previous models.EmployeeHistory
 	if err := tx.QueryRow(`
-        SELECT id, from_date, to_date FROM employee_history 
-        WHERE employee_id = ? AND from_date < ? AND (to_date IS NULL OR to_date >= ?) AND id != ?
+        SELECT id, from_date, to_date, cycle FROM employee_history 
+        WHERE employee_id = ? AND from_date < ? AND id != ?
         ORDER BY from_date DESC LIMIT 1
-    `, employeeID, payload.FromDate, payload.FromDate, historyID).Scan(&previous.ID, &previous.FromDate, &previous.ToDate); err != nil && err != sql.ErrNoRows {
+    `, employeeID, payload.FromDate, historyID).
+		Scan(&previous.ID, &previous.FromDate, &previous.ToDate, &previous.Cycle); err != nil && err != sql.ErrNoRows {
 		return err
 	}
-
 	if previous.ID != 0 {
 		logger.Logger.Debugf("Checking previous history entry")
 		currentFromDate, err := time.Parse(utils.InternalDateFormat, *payload.FromDate)
 		if err != nil {
 			return err
 		}
-		needsAdjustment := false
-		if previous.ToDate == nil {
-			needsAdjustment = true
-		} else {
-			previousToDate := time.Time(*previous.ToDate)
-			if !previousToDate.Before(currentFromDate) {
-				needsAdjustment = true
-			}
-		}
-
-		if needsAdjustment {
-			previousFromDate := time.Time(previous.FromDate)
-			newToDate := utils.GetNextAvailableDate(previousFromDate, currentFromDate)
-			logger.Logger.Debugf("Adjusting previous history entry to: %s", newToDate)
-			_, err := tx.Exec(`
-            UPDATE employee_history SET to_date = ? WHERE id = ?
-        `, newToDate, previous.ID)
-			if err != nil {
-				return err
-			}
+		previousFromDate := time.Time(previous.FromDate)
+		newToDate := utils.GetNextAvailableDate(previousFromDate, currentFromDate, previous.Cycle)
+		logger.Logger.Debugf("Adjusting previous history entry (ID: %d) toDate to: %s", previous.ID, newToDate)
+		_, err = tx.Exec(`
+				UPDATE employee_history SET to_date = ? WHERE id = ?
+			`, newToDate, previous.ID)
+		if err != nil {
+			logger.Logger.Error(err)
+			return err
 		}
 	}
 
@@ -1429,37 +1430,20 @@ func (s *DatabaseService) UpdateEmployeeHistory(payload models.UpdateEmployeeHis
 	`, employeeID, payload.FromDate, historyID).Scan(&next.ID, &next.FromDate, &next.ToDate); err != nil && err != sql.ErrNoRows {
 		return err
 	}
-
 	if next.ID != 0 {
 		logger.Logger.Debugf("Checking next history entry")
-		needsAdjustment := false
-
-		nextFromDate := time.Time(next.FromDate)
-		if payload.ToDate == nil {
-			needsAdjustment = true
-		} else {
-			currentToDate, err := time.Parse(utils.InternalDateFormat, *payload.ToDate)
-			if err != nil {
-				return err
-			}
-			if !currentToDate.Before(nextFromDate) {
-				needsAdjustment = true
-			}
+		currentFromDate, err := time.Parse(utils.InternalDateFormat, *payload.FromDate)
+		if err != nil {
+			return err
 		}
-
-		if needsAdjustment {
-			currentFromDate, err := time.Parse(utils.InternalDateFormat, *payload.FromDate)
-			if err != nil {
-				return err
-			}
-			newToDate := utils.GetNextAvailableDate(currentFromDate, nextFromDate)
-			logger.Logger.Debugf("Adjusting current history entry to: %s", newToDate)
-			_, err = tx.Exec(`
-            UPDATE employee_history SET to_date = ? WHERE id = ?
-        `, newToDate, historyID)
-			if err != nil {
-				return err
-			}
+		nextFromDate := time.Time(next.FromDate)
+		newToDate := utils.GetNextAvailableDate(currentFromDate, nextFromDate, payload.Cycle)
+		logger.Logger.Debugf("Adjusting current history entry (ID: %d) toDate to: %s", historyID, newToDate)
+		_, err = tx.Exec(`
+				UPDATE employee_history SET to_date = ? WHERE id = ?
+			`, newToDate, historyID)
+		if err != nil {
+			return err
 		}
 	}
 
@@ -1536,11 +1520,11 @@ func (s *DatabaseService) DeleteEmployeeHistory(toDeleteEmployeeHistory *models.
 	currentFromDateFormatted := currentFromDate.Format(utils.InternalDateFormat)
 	var previous models.EmployeeHistory
 	if err := tx.QueryRow(`
-        SELECT id, from_date, to_date FROM employee_history 
+        SELECT id, from_date, to_date, cycle FROM employee_history 
         WHERE employee_id = ? AND from_date < ? AND id != ?
         ORDER BY from_date DESC LIMIT 1
     `, toDeleteEmployeeHistory.EmployeeID, currentFromDateFormatted, toDeleteEmployeeHistory.ID,
-	).Scan(&previous.ID, &previous.FromDate, &previous.ToDate); err != nil && err != sql.ErrNoRows {
+	).Scan(&previous.ID, &previous.FromDate, &previous.ToDate, &previous.Cycle); err != nil && err != sql.ErrNoRows {
 		return err
 	}
 	var next models.EmployeeHistory
@@ -1556,11 +1540,20 @@ func (s *DatabaseService) DeleteEmployeeHistory(toDeleteEmployeeHistory *models.
 	if previous.ID != 0 && next.ID != 0 {
 		previousFromDate := time.Time(previous.FromDate)
 		nextFromDate := time.Time(next.FromDate)
-		newToDate := utils.GetNextAvailableDate(previousFromDate, nextFromDate)
-		logger.Logger.Debugf("Adjusting previous history entry to: %s", newToDate)
+		newToDate := utils.GetNextAvailableDate(previousFromDate, nextFromDate, previous.Cycle)
+		logger.Logger.Debugf("Adjusting previous history entry (ID: %d) toDate to: %s", previous.ID, newToDate)
 		_, err := tx.Exec(`
-            UPDATE employee_history SET to_date = ? WHERE id = ?
-        `, newToDate, previous.ID)
+		   UPDATE employee_history SET to_date = ? WHERE id = ?
+		`, newToDate, previous.ID)
+		if err != nil {
+			return err
+		}
+	} else if previous.ID != 0 && next.ID == 0 {
+		// If there is no next remove the toDate from the latest
+		logger.Logger.Debugf("Adjusting previous history entry (ID: %d) toDate to: NULL", previous.ID)
+		_, err := tx.Exec(`
+		   UPDATE employee_history SET to_date = ? WHERE id = ?
+		`, nil, previous.ID)
 		if err != nil {
 			return err
 		}

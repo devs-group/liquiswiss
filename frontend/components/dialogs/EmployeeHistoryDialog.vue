@@ -43,22 +43,22 @@
         <label
           class="text-sm font-bold"
           for="salary-per-month"
-        >Lohnkosten pro Monat*</label>
+        >Lohnkosten*</label>
         <i
           v-tooltip.top="'Bruttolohn + Arbeitgeberkosten'"
           class="pi pi-info-circle"
         />
       </div>
       <InputText
-        v-bind="salaryPerMonthProps"
+        v-bind="salaryProps"
         id="salary-per-month"
-        v-model="salaryPerMonth"
-        :class="{ 'p-invalid': errors['salaryPerMonth']?.length }"
+        v-model="salary"
+        :class="{ 'p-invalid': errors['salary']?.length }"
         type="text"
         :disabled="isLoading"
         @input="onParseAmount"
       />
-      <small class="text-liqui-red">{{ errors["salaryPerMonth"] || '&nbsp;' }}</small>
+      <small class="text-liqui-red">{{ errors["salary"] || '&nbsp;' }}</small>
     </div>
 
     <div class="flex flex-col gap-2 col-span-full md:col-span-1">
@@ -95,8 +95,6 @@
       <DatePicker
         v-model="fromDate"
         v-bind="fromDateProps"
-        :min-date="getDisabledPreviousDate"
-        :max-date="getDisabledNextDate"
         date-format="dd.mm.yy"
         show-icon
         show-button-bar
@@ -104,6 +102,26 @@
         :disabled="isLoading"
       />
       <small class="text-liqui-red">{{ errors["fromDate"] || '&nbsp;' }}</small>
+    </div>
+
+    <div class="flex flex-col gap-2 col-span-full md:col-span-1">
+      <label
+        class="text-sm font-bold"
+        for="name"
+      >Zahlungszyklus*</label>
+      <Select
+        v-bind="cycleProps"
+        id="name"
+        v-model="cycle"
+        empty-message="Keine Zyklen gefunden"
+        :options="CycleTypeToOptions()"
+        option-label="name"
+        option-value="value"
+        placeholder="Bitte wählen"
+        :class="{ 'p-invalid': errors['cycle']?.length }"
+        type="text"
+      />
+      <small class="text-liqui-red">{{ errors["cycle"] || '&nbsp;' }}</small>
     </div>
 
     <div class="flex flex-col gap-2 col-span-full md:col-span-1">
@@ -173,10 +191,11 @@ import * as yup from 'yup'
 import type { IHistoryFormDialog } from '~/interfaces/dialog-interfaces'
 import { Config } from '~/config/config'
 import type { EmployeeHistoryFormData } from '~/models/employee'
+import { CycleType } from '~/config/enums'
 
 const dialogRef = inject<IHistoryFormDialog>('dialogRef')!
 
-const { employeeHistories, createEmployeeHistory, updateEmployeeHistory, deleteEmployeeHistory } = useEmployees()
+const { createEmployeeHistory, updateEmployeeHistory, deleteEmployeeHistory } = useEmployees()
 const { currencies } = useGlobalData()
 const confirm = useConfirm()
 const toast = useToast()
@@ -192,58 +211,33 @@ const errorMessage = ref('')
 const { defineField, errors, handleSubmit, meta } = useForm({
   validationSchema: yup.object({
     hoursPerMonth: yup.number().typeError('Bitte Zahl eingeben').min(0, 'Muss mindestens 0 sein').max(480, 'Kann maximal 480 sein'),
-    salaryPerMonth: yup.number().typeError('Bitte Gehalt eingeben').min(0, 'Muss mindestens 0 sein'),
+    salary: yup.number().typeError('Bitte Gehalt eingeben').min(0, 'Muss mindestens 0 sein'),
     currencyID: yup.number().required('Währung wird benötigt').typeError('Bitte gültige Währung eingeben'),
     vacationDaysPerYear: yup.number().typeError('Bitte Zahl eingeben').min(0, 'Muss mindestens 0 sein').max(365, 'Kann maximal 365 sein'),
     fromDate: yup.date().typeError('Bitte Datum eingeben').required('Von wird benötigt'),
+    cycle: yup.string().required('Zahlungs-Zyklus wird benötigt'),
   }),
   initialValues: {
     id: isClone ? undefined : employeeHistory?.id ?? undefined,
     hoursPerMonth: employeeHistory?.hoursPerMonth ?? 0,
-    salaryPerMonth: isNumber(employeeHistory?.salaryPerMonth) ? AmountToFloat(employeeHistory!.salaryPerMonth) : 0,
+    salary: isNumber(employeeHistory?.salary) ? AmountToFloat(employeeHistory!.salary) : 0,
     currencyID: employeeHistory?.currency.id ?? null,
     vacationDaysPerYear: employeeHistory?.vacationDaysPerYear ?? 0,
     fromDate: employeeHistory?.fromDate ? DateToUTCDate(employeeHistory.fromDate) : null,
+    cycle: employeeHistory?.cycle ?? CycleType.Monthly,
   } as EmployeeHistoryFormData,
 })
 
 const [hoursPerMonth, hoursPerMonthProps] = defineField('hoursPerMonth')
-const [salaryPerMonth, salaryPerMonthProps] = defineField('salaryPerMonth')
+const [salary, salaryProps] = defineField('salary')
 const [currencyID, currencyIDProps] = defineField('currencyID')
 const [vacationDaysPerYear, vacationDaysPerYearProps] = defineField('vacationDaysPerYear')
 const [fromDate, fromDateProps] = defineField('fromDate')
-
-const getDisabledPreviousDate = computed(() => {
-  const fromDate = employeeHistory?.fromDate ? DateToUTCDate(employeeHistory?.fromDate) : DateToUTCDate(new Date())
-  const otherFutureHistories = employeeHistories.value.data
-    .filter(h => h.id !== employeeHistory?.id && h.toDate && DateToUTCDate(h.toDate) <= fromDate)
-    .map(h => DateToUTCDate(h.toDate!))
-    .sort((a, b) => b.getTime() - a.getTime())
-  if (otherFutureHistories.length > 0) {
-    const previousLockedDate = otherFutureHistories[0]
-    previousLockedDate.setDate(previousLockedDate.getDate() + 1)
-    return previousLockedDate
-  }
-  return undefined
-})
-
-const getDisabledNextDate = computed(() => {
-  const fromDate = employeeHistory?.fromDate ? DateToUTCDate(employeeHistory?.fromDate) : DateToUTCDate(new Date())
-  const otherFutureHistories = employeeHistories.value.data
-    .filter(h => h.id !== employeeHistory?.id && DateToUTCDate(h.fromDate) >= fromDate)
-    .map(h => DateToUTCDate(h.fromDate))
-    .sort((a, b) => a.getTime() - b.getTime())
-  if (otherFutureHistories.length > 0) {
-    const nextLockedDate = otherFutureHistories[0]
-    nextLockedDate.setDate(nextLockedDate.getDate() - 1)
-    return nextLockedDate
-  }
-  return undefined
-})
+const [cycle, cycleProps] = defineField('cycle')
 
 const onParseAmount = (event: Event) => {
   if (event instanceof InputEvent) {
-    parseNumberInput(event, salaryPerMonth, false)
+    parseNumberInput(event, salary, false)
   }
 }
 

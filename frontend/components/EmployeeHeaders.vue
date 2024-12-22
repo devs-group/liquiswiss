@@ -20,12 +20,12 @@
     </div>
     <div
       class="flex items-center gap-2 cursor-pointer hover:bg-zinc-50 hover:dark:bg-zinc-700 transition-colors duration-300"
-      @click="onSort('salaryPerMonth')"
+      @click="onSort('salary')"
     >
       <p class="truncate">
-        Lohn / Monat
+        Lohn
       </p>
-      <i :class="getSortIcon('salaryPerMonth')" />
+      <i :class="getSortIcon('salary')" />
     </div>
     <div
       class="flex items-center gap-2 cursor-pointer hover:bg-zinc-50 hover:dark:bg-zinc-700 transition-colors duration-300"

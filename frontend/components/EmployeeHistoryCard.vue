@@ -24,8 +24,8 @@
     </template>
     <template #content>
       <div class="flex flex-col gap-2 text-sm">
-        <p>{{ employeeHistory.hoursPerMonth }} max. Stunden pro Monat</p>
-        <p>{{ salaryFormatted }} {{ employeeHistory.currency.code }} pro Monat</p>
+        <p>{{ employeeHistory.hoursPerMonth }} Arbeitsstunden / Monat</p>
+        <p>{{ salaryFormatted }} {{ employeeHistory.currency.code }} / {{ cycle }}</p>
         <p>{{ employeeHistory.vacationDaysPerYear }} Urlaubstage im Jahr</p>
         <p
           v-if="employeeHistory.toDate"
@@ -63,7 +63,8 @@ defineEmits<{
   onClone: [employeeHistory: EmployeeHistoryResponse]
 }>()
 
-const salaryFormatted = computed(() => NumberToFormattedCurrency(AmountToFloat(props.employeeHistory!.salaryPerMonth), props.employeeHistory.currency!.localeCode))
+const salaryFormatted = computed(() => NumberToFormattedCurrency(AmountToFloat(props.employeeHistory!.salary), props.employeeHistory.currency!.localeCode))
 const fromDateFormatted = computed(() => DateStringToFormattedDate(props.employeeHistory.fromDate))
 const toDateFormatted = computed(() => props.employeeHistory.toDate ? DateStringToFormattedDate(props.employeeHistory.toDate) : '')
+const cycle = computed(() => CycleTypeToOptions().find(ct => ct.value === props.employeeHistory.cycle)?.name ?? '')
 </script>
