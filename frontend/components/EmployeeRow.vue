@@ -10,7 +10,7 @@
       />
     </div>
     <p>{{ employee.hoursPerMonth || '-' }}</p>
-    <p>{{ salaryFormatted || '-' }} / {{ cycle }}</p>
+    <p>{{ salaryFormatted || '-' }} {{ employee.currency.code }} / {{ cycle }}</p>
     <p>{{ employee.vacationDaysPerYear || '-' }}</p>
     <p>{{ fromDate }}</p>
     <p class="!border-r">
