@@ -52,7 +52,7 @@ export interface IVatFormDialog {
   value: {
     close: (vatId?: number) => number | undefined
     data: {
-      vat?: VatResponse
+      vatToEdit?: VatResponse
     }
   }
 }

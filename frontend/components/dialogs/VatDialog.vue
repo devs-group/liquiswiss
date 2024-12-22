@@ -62,7 +62,7 @@ const dialogRef = inject<IVatFormDialog>('dialogRef')!
 const { vats, createVat, updateVat } = useVat()
 const toast = useToast()
 
-const vat = dialogRef.value.data?.vat
+const vat = dialogRef.value.data?.vatToEdit
 const isCreate = !vat?.id
 const isLoading = ref(false)
 const errorMessage = ref('')
