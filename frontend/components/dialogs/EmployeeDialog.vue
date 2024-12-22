@@ -29,7 +29,6 @@
 
     <div class="flex justify-end gap-2 col-span-full">
       <Button
-        severity="info"
         :disabled="!meta.valid || isLoading"
         :loading="isLoading"
         label="Speichern"

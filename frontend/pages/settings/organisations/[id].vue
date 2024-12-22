@@ -55,7 +55,7 @@
             label="Speichern"
             type="submit"
             :loading="isSubmitting"
-            :disabled="!meta.valid || isSubmitting"
+            :disabled="!meta.valid || (meta.valid && !meta.dirty) || isSubmitting"
             @click="onSubmit"
           />
         </div>

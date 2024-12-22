@@ -79,7 +79,6 @@
 
       <div class="flex justify-end gap-2 col-span-full">
         <Button
-          severity="info"
           :disabled="!meta.valid || (meta.valid && !meta.dirty) || isSubmitting"
           :loading="isSubmitting"
           label="Speichern"
