@@ -146,7 +146,7 @@ export default function useAuth() {
 
   const updateCurrentOrganisation = async (payload: UserUpdateOrganisationFormData) => {
     try {
-      user.value = await $fetch<User>(`/api/profile/organisation`, {
+      await $fetch<User>(`/api/profile/organisation`, {
         method: 'PATCH',
         body: payload,
       })
