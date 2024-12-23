@@ -12,21 +12,21 @@
     "postinstall": "nuxt prepare"
   },
   "devDependencies": {
-    "@nuxt/eslint": "^0.7.3",
+    "@nuxt/eslint": "^0.7.4",
     "@nuxtjs/color-mode": "^3.5.2",
     "@nuxtjs/tailwindcss": "^6.12.2",
-    "@primevue/nuxt-module": "^4.2.3",
+    "@primevue/nuxt-module": "^4.2.5",
     "nuxt": "^3.14.1592",
     "vue": "^3.4.14",
-    "vue-router": "^4.4.5"
+    "vue-router": "^4.5.0"
   },
   "dependencies": {
-    "@primevue/themes": "^4.2.3",
-    "@vee-validate/nuxt": "^4.14.7",
+    "@primevue/themes": "^4.2.5",
+    "@vee-validate/nuxt": "^4.15.0",
     "chart.js": "^3.9.1",
     "primeicons": "^6.0.1",
     "primevue": "^4.2.3",
     "vee-validate": "^4.12.4",
-    "yup": "^1.4.0"
+    "yup": "^1.6.1"
   }
 }
