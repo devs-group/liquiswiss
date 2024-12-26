@@ -2,8 +2,8 @@
 
 Liquidity Planning
 
-[Landing Page](https://liquiswiss.ch/)
-[Discord](https://discord.gg/7ckBNzskYh)
+- [Landing Page](https://liquiswiss.ch/)
+- [Discord](https://discord.gg/7ckBNzskYh)
 
 # Configuration
 
