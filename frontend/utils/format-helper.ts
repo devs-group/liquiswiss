@@ -17,6 +17,11 @@ export const DateToUTCDate = (date: string | Date) => {
   return new Date(dateToFormat.toLocaleDateString('en-US', { timeZone: 'UTC' }))
 }
 
+export const DateToEuropeZurichDate = (date: string | Date) => {
+  const dateToFormat = date instanceof Date ? date : new Date(date)
+  return new Date(dateToFormat.toLocaleDateString('en-US', { timeZone: 'Europe/Zurich' }))
+}
+
 export const DateToApiFormat = (date: string | Date) => {
   const dateToFormat = date instanceof Date ? date : new Date(date)
 

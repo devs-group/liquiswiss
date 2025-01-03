@@ -4,14 +4,15 @@ import (
 	"database/sql"
 	"fmt"
 	"github.com/gin-gonic/gin"
-	"liquiswiss/internal/service"
+	"liquiswiss/internal/service/db_service"
+	"liquiswiss/internal/service/forecast_service"
 	"liquiswiss/pkg/models"
 	"liquiswiss/pkg/utils"
 	"net/http"
 	"strconv"
 )
 
-func ListTransactions(dbService service.IDatabaseService, c *gin.Context) {
+func ListTransactions(dbService db_service.IDatabaseService, c *gin.Context) {
 	userID := c.GetInt64("userID")
 	if userID == 0 {
 		c.JSON(http.StatusUnauthorized, gin.H{"error": "Ungültiger Benutzer"})
@@ -55,15 +56,15 @@ func ListTransactions(dbService service.IDatabaseService, c *gin.Context) {
 	})
 }
 
-func GetTransaction(dbService service.IDatabaseService, c *gin.Context) {
+func GetTransaction(dbService db_service.IDatabaseService, c *gin.Context) {
 	userID := c.GetInt64("userID")
 	if userID == 0 {
 		c.JSON(http.StatusUnauthorized, gin.H{"error": "Ungültiger Benutzer"})
 		return
 	}
 
-	transactionID := c.Param("transactionID")
-	if transactionID == "" {
+	transactionID, err := strconv.ParseInt(c.Param("transactionID"), 10, 64)
+	if err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"error": "Es fehlt die ID"})
 		return
 	}
@@ -72,7 +73,7 @@ func GetTransaction(dbService service.IDatabaseService, c *gin.Context) {
 	if err != nil {
 		switch err {
 		case sql.ErrNoRows:
-			c.JSON(http.StatusNotFound, gin.H{"error": fmt.Sprintf("Keine Transaktion gefunden mit ID: %s", transactionID)})
+			c.JSON(http.StatusNotFound, gin.H{"error": fmt.Sprintf("Keine Transaktion gefunden mit ID: %d", transactionID)})
 			return
 		default:
 			c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
@@ -90,7 +91,7 @@ func GetTransaction(dbService service.IDatabaseService, c *gin.Context) {
 	c.JSON(http.StatusOK, transaction)
 }
 
-func CreateTransaction(dbService service.IDatabaseService, c *gin.Context) {
+func CreateTransaction(dbService db_service.IDatabaseService, forecastService forecast_service.IForecastService, c *gin.Context) {
 	userID := c.GetInt64("userID")
 	if userID == 0 {
 		c.JSON(http.StatusUnauthorized, gin.H{"error": "Ungültiger Benutzer"})
@@ -116,26 +117,30 @@ func CreateTransaction(dbService service.IDatabaseService, c *gin.Context) {
 		return
 	}
 
-	transaction, err := dbService.GetTransaction(userID, fmt.Sprint(transactionID))
+	transaction, err := dbService.GetTransaction(userID, transactionID)
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 		return
 	}
 
-	CalculateForecasts(dbService, c)
+	// Recalculate Forecast
+	_, err = forecastService.CalculateForecast(userID)
+	if err != nil {
+		return
+	}
 
 	c.JSON(http.StatusCreated, transaction)
 }
 
-func UpdateTransaction(dbService service.IDatabaseService, c *gin.Context) {
+func UpdateTransaction(dbService db_service.IDatabaseService, forecastService forecast_service.IForecastService, c *gin.Context) {
 	userID := c.GetInt64("userID")
 	if userID == 0 {
 		c.JSON(http.StatusUnauthorized, gin.H{"error": "Ungültiger Benutzer"})
 		return
 	}
 
-	transactionID := c.Param("transactionID")
-	if transactionID == "" {
+	transactionID, err := strconv.ParseInt(c.Param("transactionID"), 10, 64)
+	if err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"error": "Es fehlt die ID"})
 		return
 	}
@@ -185,25 +190,29 @@ func UpdateTransaction(dbService service.IDatabaseService, c *gin.Context) {
 		return
 	}
 
-	CalculateForecasts(dbService, c)
+	// Recalculate Forecast
+	_, err = forecastService.CalculateForecast(userID)
+	if err != nil {
+		return
+	}
 
 	c.JSON(http.StatusOK, transaction)
 }
 
-func DeleteTransaction(dbService service.IDatabaseService, c *gin.Context) {
+func DeleteTransaction(dbService db_service.IDatabaseService, forecastService forecast_service.IForecastService, c *gin.Context) {
 	userID := c.GetInt64("userID")
 	if userID == 0 {
 		c.JSON(http.StatusUnauthorized, gin.H{"error": "Ungültiger Benutzer"})
 		return
 	}
 
-	transactionID := c.Param("transactionID")
-	if transactionID == "" {
+	transactionID, err := strconv.ParseInt(c.Param("transactionID"), 10, 64)
+	if err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"error": "Es fehlt die ID"})
 		return
 	}
 
-	_, err := dbService.GetTransaction(userID, transactionID)
+	_, err = dbService.GetTransaction(userID, transactionID)
 	if err != nil {
 		c.Status(http.StatusNotFound)
 		return
@@ -215,7 +224,11 @@ func DeleteTransaction(dbService service.IDatabaseService, c *gin.Context) {
 		return
 	}
 
-	CalculateForecasts(dbService, c)
+	// Recalculate Forecast
+	_, err = forecastService.CalculateForecast(userID)
+	if err != nil {
+		return
+	}
 
 	c.Status(http.StatusNoContent)
 }

@@ -4,13 +4,14 @@ import (
 	"database/sql"
 	"fmt"
 	"github.com/gin-gonic/gin"
-	"liquiswiss/internal/service"
+	"liquiswiss/internal/service/db_service"
 	"liquiswiss/pkg/models"
 	"liquiswiss/pkg/utils"
 	"net/http"
+	"strconv"
 )
 
-func ListVats(dbService service.IDatabaseService, c *gin.Context) {
+func ListVats(dbService db_service.IDatabaseService, c *gin.Context) {
 	userID := c.GetInt64("userID")
 	if userID == 0 {
 		c.JSON(http.StatusUnauthorized, gin.H{"error": "Ungültiger Benutzer"})
@@ -33,15 +34,15 @@ func ListVats(dbService service.IDatabaseService, c *gin.Context) {
 	c.JSON(http.StatusOK, vats)
 }
 
-func GetVat(dbService service.IDatabaseService, c *gin.Context) {
+func GetVat(dbService db_service.IDatabaseService, c *gin.Context) {
 	userID := c.GetInt64("userID")
 	if userID == 0 {
 		c.JSON(http.StatusUnauthorized, gin.H{"error": "Ungültiger Benutzer"})
 		return
 	}
 
-	vatID := c.Param("vatID")
-	if vatID == "" {
+	vatID, err := strconv.ParseInt(c.Param("vatID"), 10, 64)
+	if err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"error": "Es fehlt die ID"})
 		return
 	}
@@ -50,7 +51,7 @@ func GetVat(dbService service.IDatabaseService, c *gin.Context) {
 	if err != nil {
 		switch err {
 		case sql.ErrNoRows:
-			c.JSON(http.StatusNotFound, gin.H{"error": fmt.Sprintf("Keine Mehrwersteuer gefunden mit ID: %s", vatID)})
+			c.JSON(http.StatusNotFound, gin.H{"error": fmt.Sprintf("Keine Mehrwertsteuer gefunden mit ID: %d", vatID)})
 			return
 		default:
 			c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
@@ -68,7 +69,7 @@ func GetVat(dbService service.IDatabaseService, c *gin.Context) {
 	c.JSON(http.StatusOK, vat)
 }
 
-func CreateVat(dbService service.IDatabaseService, c *gin.Context) {
+func CreateVat(dbService db_service.IDatabaseService, c *gin.Context) {
 	userID := c.GetInt64("userID")
 	if userID == 0 {
 		c.JSON(http.StatusUnauthorized, gin.H{"error": "Ungültiger Benutzer"})
@@ -94,7 +95,7 @@ func CreateVat(dbService service.IDatabaseService, c *gin.Context) {
 		return
 	}
 
-	vat, err := dbService.GetVat(userID, fmt.Sprint(vatID))
+	vat, err := dbService.GetVat(userID, vatID)
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 		return
@@ -103,20 +104,20 @@ func CreateVat(dbService service.IDatabaseService, c *gin.Context) {
 	c.JSON(http.StatusCreated, vat)
 }
 
-func UpdateVat(dbService service.IDatabaseService, c *gin.Context) {
+func UpdateVat(dbService db_service.IDatabaseService, c *gin.Context) {
 	userID := c.GetInt64("userID")
 	if userID == 0 {
 		c.JSON(http.StatusUnauthorized, gin.H{"error": "Ungültiger Benutzer"})
 		return
 	}
 
-	vatID := c.Param("vatID")
-	if vatID == "" {
+	vatID, err := strconv.ParseInt(c.Param("vatID"), 10, 64)
+	if err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"error": "Es fehlt die ID"})
 		return
 	}
 
-	_, err := dbService.GetVat(userID, vatID)
+	_, err = dbService.GetVat(userID, vatID)
 	if err != nil {
 		c.JSON(http.StatusNotFound, gin.H{"error": err.Error()})
 		return
@@ -150,20 +151,20 @@ func UpdateVat(dbService service.IDatabaseService, c *gin.Context) {
 	c.JSON(http.StatusOK, vat)
 }
 
-func DeleteVat(dbService service.IDatabaseService, c *gin.Context) {
+func DeleteVat(dbService db_service.IDatabaseService, c *gin.Context) {
 	userID := c.GetInt64("userID")
 	if userID == 0 {
 		c.JSON(http.StatusUnauthorized, gin.H{"error": "Ungültiger Benutzer"})
 		return
 	}
 
-	vatID := c.Param("vatID")
-	if vatID == "" {
+	vatID, err := strconv.ParseInt(c.Param("vatID"), 10, 64)
+	if err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"error": "Es fehlt die ID"})
 		return
 	}
 
-	_, err := dbService.GetVat(userID, vatID)
+	_, err = dbService.GetVat(userID, vatID)
 	if err != nil {
 		c.Status(http.StatusNotFound)
 		return

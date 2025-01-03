@@ -319,29 +319,6 @@
       class="hidden md:block"
     />
 
-    <div
-      v-if="!isClone && !isCreate"
-      class="flex justify-end gap-2 col-span-full"
-    >
-      <Button
-        :loading="isLoading"
-        label="Löschen"
-        icon="pi pi-trash"
-        severity="danger"
-        size="small"
-        @click="onDeleteTransaction"
-      />
-      <Button
-        v-tooltip.top="'Setzt Werte zurück auf den vorherigen Status'"
-        :loading="isLoading"
-        label="Zurücksetzen"
-        icon="pi pi-reset"
-        severity="secondary"
-        size="small"
-        @click="onResetForm"
-      />
-    </div>
-
     <hr class="my-4 col-span-full">
 
     <Message
@@ -357,7 +334,7 @@
       <Button
         :disabled="!meta.valid || isLoading"
         :loading="isLoading"
-        label="Speichern"
+        :label="isClone ? 'Klonen' : 'Speichern'"
         icon="pi pi-save"
         type="submit"
         @click="onSubmit"
@@ -365,8 +342,16 @@
       <Button
         :loading="isLoading"
         label="Abbrechen"
-        severity="secondary"
+        severity="contrast"
         @click="dialogRef?.close()"
+      />
+      <Button
+        v-if="!isCreate"
+        :disabled="isLoading"
+        severity="danger"
+        size="small"
+        icon="pi pi-trash"
+        @click="onDeleteTransaction"
       />
     </div>
   </form>
@@ -422,7 +407,7 @@ listVats()
     isLoadingVats.value = false
   })
 
-const { defineField, errors, handleSubmit, meta, setFieldValue, resetForm } = useForm({
+const { defineField, errors, handleSubmit, meta, setFieldValue } = useForm({
   validationSchema: yup.object({
     name: yup.string().trim().required('Name wird benötigt'),
     amount: yup.number().required('Betrag wird benötigt').typeError('Ungültiger Betrag'),
@@ -566,10 +551,6 @@ const onDeleteTransaction = () => {
     reject: () => {
     },
   })
-}
-
-const onResetForm = () => {
-  resetForm()
 }
 
 const onCreateVat = () => {

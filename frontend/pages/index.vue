@@ -137,7 +137,7 @@
                 class="flex items-center col-span-full"
               >
                 <div class="flex gap-1 cursor-default border-b border-l border-zinc-600 dark:border-zinc-400 bg-zinc-300 dark:bg-zinc-700 p-1 min-w-28">
-                  <p class="w-full text-xs text-right">
+                  <p class="w-full text-xs text-right truncate">
                     {{ category }}
                   </p>
                 </div>
@@ -184,7 +184,7 @@
                 class="flex items-center col-span-full"
               >
                 <div class="flex gap-1 cursor-default border-b border-l border-zinc-600 dark:border-zinc-400 bg-zinc-300 dark:bg-zinc-700 p-1 min-w-28">
-                  <p class="w-full text-xs text-right">
+                  <p class="w-full text-xs text-right truncate">
                     {{ category }}
                   </p>
                 </div>

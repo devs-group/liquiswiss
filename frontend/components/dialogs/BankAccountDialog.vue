@@ -68,20 +68,6 @@
       <small class="text-liqui-red">{{ errors["currency"] || '&nbsp;' }}</small>
     </div>
 
-    <div
-      v-if="!isClone && !isCreate"
-      class="flex justify-end col-span-full"
-    >
-      <Button
-        :loading="isLoading"
-        label="Löschen"
-        icon="pi pi-trash"
-        severity="danger"
-        size="small"
-        @click="onDeleteBankAccount"
-      />
-    </div>
-
     <hr class="my-4 col-span-full">
 
     <Message
@@ -97,7 +83,7 @@
       <Button
         :disabled="!meta.valid || isLoading"
         :loading="isLoading"
-        label="Speichern"
+        :label="isClone ? 'Klonen' : 'Speichern'"
         icon="pi pi-save"
         type="submit"
         @click="onSubmit"
@@ -105,8 +91,16 @@
       <Button
         :loading="isLoading"
         label="Abbrechen"
-        severity="secondary"
+        severity="contrast"
         @click="dialogRef?.close()"
+      />
+      <Button
+        v-if="!isCreate"
+        :disabled="isLoading"
+        severity="danger"
+        size="small"
+        icon="pi pi-trash"
+        @click="onDeleteBankAccount"
       />
     </div>
   </form>

@@ -33,10 +33,13 @@ services:
     restart: always
     ports:
       - '3306:3306'
-    environment:
-      MARIADB_ROOT_PASSWORD: password
-      MARIADB_USER: liquiswiss
-      MARIADB_PASSWORD: password
-      MARIADB_DATABASE: liquiswiss
+    env_file: .env
     volumes:
       - ./db_data:/var/lib/mysql
+
+  phpmyadmin:
+    image: phpmyadmin:5.2.1-apache
+    restart: always
+    ports:
+      - '8082:80'
+    env_file: .env

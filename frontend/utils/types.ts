@@ -23,3 +23,6 @@ export type DarkModeType = typeof DarkModeOptions[number]
 
 export const DisplayTypeOptions = ['grid', 'list'] as const
 export type DisplayType = typeof DisplayTypeOptions[number]
+
+export const GroupingTypeOptions = ['ungrouped', 'grouped'] as const
+export type GroupingType = typeof GroupingTypeOptions[number]

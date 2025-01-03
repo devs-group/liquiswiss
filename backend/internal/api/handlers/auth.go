@@ -1,10 +1,10 @@
 package handlers
 
 import (
-	"fmt"
 	"github.com/gin-gonic/gin"
 	"golang.org/x/crypto/bcrypt"
-	"liquiswiss/internal/service"
+	"liquiswiss/internal/service/db_service"
+	"liquiswiss/internal/service/sendgrid_service"
 	"liquiswiss/pkg/auth"
 	"liquiswiss/pkg/logger"
 	"liquiswiss/pkg/models"
@@ -12,7 +12,7 @@ import (
 	"net/http"
 )
 
-func CreateRegistration(dbService service.IDatabaseService, sendgridService service.ISendgridService, c *gin.Context) {
+func CreateRegistration(dbService db_service.IDatabaseService, sendgridService sendgrid_service.ISendgridService, c *gin.Context) {
 	var payload models.CreateRegistration
 	if err := c.BindJSON(&payload); err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
@@ -53,7 +53,7 @@ func CreateRegistration(dbService service.IDatabaseService, sendgridService serv
 }
 
 // CheckRegistrationCode simply checks if the submitted data are valid
-func CheckRegistrationCode(dbService service.IDatabaseService, c *gin.Context) {
+func CheckRegistrationCode(dbService db_service.IDatabaseService, c *gin.Context) {
 	var payload models.CheckRegistrationCode
 	if err := c.BindJSON(&payload); err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
@@ -76,7 +76,7 @@ func CheckRegistrationCode(dbService service.IDatabaseService, c *gin.Context) {
 }
 
 // FinishRegistration uses the (hopefully) valid data along with the password to create a full user
-func FinishRegistration(dbService service.IDatabaseService, c *gin.Context) {
+func FinishRegistration(dbService db_service.IDatabaseService, c *gin.Context) {
 	var payload models.FinishRegistration
 	if err := c.BindJSON(&payload); err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
@@ -135,7 +135,7 @@ func FinishRegistration(dbService service.IDatabaseService, c *gin.Context) {
 		return
 	}
 
-	user, err := dbService.GetProfile(fmt.Sprint(userId))
+	user, err := dbService.GetProfile(userId)
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 		return
@@ -169,7 +169,7 @@ func FinishRegistration(dbService service.IDatabaseService, c *gin.Context) {
 	c.JSON(http.StatusOK, user)
 }
 
-func Login(dbService service.IDatabaseService, c *gin.Context) {
+func Login(dbService db_service.IDatabaseService, c *gin.Context) {
 	var payload models.Login
 	if err := c.BindJSON(&payload); err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
@@ -194,7 +194,7 @@ func Login(dbService service.IDatabaseService, c *gin.Context) {
 		return
 	}
 
-	user, err := dbService.GetProfile(fmt.Sprint(loginUser.ID))
+	user, err := dbService.GetProfile(loginUser.ID)
 	if err != nil {
 		c.Status(http.StatusInternalServerError)
 		return
@@ -231,14 +231,14 @@ func Login(dbService service.IDatabaseService, c *gin.Context) {
 	c.JSON(http.StatusOK, user)
 }
 
-func Logout(dbService service.IDatabaseService, c *gin.Context) {
+func Logout(dbService db_service.IDatabaseService, c *gin.Context) {
 	clearRefreshTokenFromDatabase(dbService, c)
 	auth.ClearAuthCookies(c)
 	c.Status(http.StatusOK)
 }
 
 // ForgotPassword creates a password reset for the user
-func ForgotPassword(dbService service.IDatabaseService, sendgridService service.ISendgridService, c *gin.Context) {
+func ForgotPassword(dbService db_service.IDatabaseService, sendgridService sendgrid_service.ISendgridService, c *gin.Context) {
 	var payload models.ForgotPassword
 	if err := c.BindJSON(&payload); err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
@@ -276,7 +276,7 @@ func ForgotPassword(dbService service.IDatabaseService, sendgridService service.
 }
 
 // ResetPassword resets the users password
-func ResetPassword(dbService service.IDatabaseService, c *gin.Context) {
+func ResetPassword(dbService db_service.IDatabaseService, c *gin.Context) {
 	var payload models.ResetPassword
 	if err := c.BindJSON(&payload); err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
@@ -316,7 +316,7 @@ func ResetPassword(dbService service.IDatabaseService, c *gin.Context) {
 }
 
 // CheckResetPasswordCode checks if the user can reset the password
-func CheckResetPasswordCode(dbService service.IDatabaseService, c *gin.Context) {
+func CheckResetPasswordCode(dbService db_service.IDatabaseService, c *gin.Context) {
 	var payload models.CheckResetPasswordCode
 	if err := c.BindJSON(&payload); err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
@@ -338,7 +338,7 @@ func CheckResetPasswordCode(dbService service.IDatabaseService, c *gin.Context) 
 	c.Status(http.StatusOK)
 }
 
-func clearRefreshTokenFromDatabase(dbService service.IDatabaseService, c *gin.Context) {
+func clearRefreshTokenFromDatabase(dbService db_service.IDatabaseService, c *gin.Context) {
 	refreshToken, err := c.Cookie(utils.RefreshTokenName)
 	if err == nil && refreshToken != "" {
 		// Verify the refresh token to get its claims (e.g., the tokenID and userID)

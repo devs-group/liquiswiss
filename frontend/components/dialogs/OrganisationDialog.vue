@@ -39,7 +39,7 @@
       <Button
         :loading="isLoading"
         label="Abbrechen"
-        severity="secondary"
+        severity="contrast"
         @click="dialogRef?.close()"
       />
     </div>

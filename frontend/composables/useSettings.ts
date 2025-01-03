@@ -1,16 +1,15 @@
-import type {
-  BankAccountSortByType,
-  DisplayType,
-  SettingsTabType,
-  SortOrderType,
-  TransactionSortByType,
-} from '~/utils/types'
 import {
   BankAccountSortByOptions,
+  type BankAccountSortByType,
+  type DisplayType,
   DisplayTypeOptions,
+  GroupingTypeOptions,
   SettingsTabOptions,
+  type SettingsTabType,
   SortOrderOptions,
+  type SortOrderType,
   TransactionSortByOptions,
+  type TransactionSortByType,
 } from '~/utils/types'
 import { RouteNames } from '~/config/routes'
 
@@ -45,6 +44,11 @@ export default function useSettings() {
   const bankAccountDisplayCookie = CreateSettingsCookie('bank-account-display')
   const bankAccountSortByCookie = CreateSettingsCookie('bank-account-sort-by')
   const bankAccountSortOrderCookie = CreateSettingsCookie('bank-account-sort-order')
+
+  const costOverviewDisplay = useState<DisplayType>('costOverviewDisplay', () => 'grid')
+  const costOverviewDisplayCookie = CreateSettingsCookie('cost-overview-display')
+  const costOverviewGrouping = useState<GroupingType>('costOverviewGrouping', () => 'ungrouped')
+  const costOverviewGroupingCookie = CreateSettingsCookie('cost-overview-grouping')
 
   const settingsTab = useState<SettingsTabType>('settingsTab', () => RouteNames.SETTINGS_PROFILE)
   const settingsTabCookie = CreateSettingsCookie('settings-tab')
@@ -197,6 +201,26 @@ export default function useSettings() {
     bankAccountSortOrder.value = 'ASC'
   }
 
+  if (costOverviewDisplayCookie.value !== undefined) {
+    const val = costOverviewDisplayCookie.value as DisplayType
+    if (val !== null && DisplayTypeOptions.includes(val)) {
+      costOverviewDisplay.value = val
+    }
+  }
+  else {
+    costOverviewDisplay.value = 'grid'
+  }
+
+  if (costOverviewGroupingCookie.value !== undefined) {
+    const val = costOverviewGroupingCookie.value as GroupingType
+    if (val !== null && GroupingTypeOptions.includes(val)) {
+      costOverviewGrouping.value = val
+    }
+  }
+  else {
+    costOverviewGrouping.value = 'ungrouped'
+  }
+
   if (settingsTabCookie.value !== undefined) {
     const val = settingsTabCookie.value
     if (val !== null && SettingsTabOptions.includes(val)) {
@@ -253,6 +277,28 @@ export default function useSettings() {
         bankAccountDisplay.value = 'grid'
     }
     bankAccountDisplayCookie.value = bankAccountDisplay.value
+  }
+
+  const toggleCostOverviewDisplayType = () => {
+    switch (costOverviewDisplay.value) {
+      case 'grid':
+        costOverviewDisplay.value = 'list'
+        break
+      case 'list':
+        costOverviewDisplay.value = 'grid'
+    }
+    costOverviewDisplayCookie.value = costOverviewDisplay.value
+  }
+
+  const toggleCostOverviewGroupingType = () => {
+    switch (costOverviewGrouping.value) {
+      case 'ungrouped':
+        costOverviewGrouping.value = 'grouped'
+        break
+      case 'grouped':
+        costOverviewGrouping.value = 'ungrouped'
+    }
+    costOverviewGroupingCookie.value = costOverviewGrouping.value
   }
 
   // Watchers
@@ -317,6 +363,10 @@ export default function useSettings() {
     bankAccountDisplay,
     bankAccountSortBy,
     bankAccountSortOrder,
+    toggleCostOverviewDisplayType,
+    costOverviewDisplay,
+    toggleCostOverviewGroupingType,
+    costOverviewGrouping,
     settingsTab,
     skipOrganisationSwitchQuestion,
   }

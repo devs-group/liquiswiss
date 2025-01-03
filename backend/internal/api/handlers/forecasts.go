@@ -2,7 +2,8 @@ package handlers
 
 import (
 	"github.com/gin-gonic/gin"
-	"liquiswiss/internal/service"
+	"liquiswiss/internal/service/db_service"
+	"liquiswiss/internal/service/forecast_service"
 	"liquiswiss/pkg/models"
 	"liquiswiss/pkg/utils"
 	"net/http"
@@ -10,7 +11,7 @@ import (
 	"time"
 )
 
-func ListForecasts(dbService service.IDatabaseService, c *gin.Context) {
+func ListForecasts(dbService db_service.IDatabaseService, c *gin.Context) {
 	userID := c.GetInt64("userID")
 	if userID == 0 {
 		c.JSON(http.StatusUnauthorized, gin.H{"error": "Ungültiger Benutzer"})
@@ -39,7 +40,7 @@ func ListForecasts(dbService service.IDatabaseService, c *gin.Context) {
 	c.JSON(http.StatusOK, forecasts)
 }
 
-func ListForecastDetails(dbService service.IDatabaseService, c *gin.Context) {
+func ListForecastDetails(dbService db_service.IDatabaseService, c *gin.Context) {
 	userID := c.GetInt64("userID")
 	if userID == 0 {
 		c.JSON(http.StatusUnauthorized, gin.H{"error": "Ungültiger Benutzer"})
@@ -68,338 +69,21 @@ func ListForecastDetails(dbService service.IDatabaseService, c *gin.Context) {
 	c.JSON(http.StatusOK, forecastDetails)
 }
 
-func CalculateForecasts(dbService service.IDatabaseService, c *gin.Context) {
+func CalculateForecasts(forecastService forecast_service.IForecastService, c *gin.Context) {
 	userID := c.GetInt64("userID")
 	if userID == 0 {
 		c.JSON(http.StatusUnauthorized, gin.H{"error": "Ungültiger Benutzer"})
 		return
 	}
 
-	page := int64(1)
-	limit := int64(100000)
-	sortBy := "name"
-	sortOrder := "ASC"
-
-	transactions, _, err := dbService.ListTransactions(userID, page, limit, sortBy, sortOrder)
+	// Recalculate Forecast
+	foreCasts, err := forecastService.CalculateForecast(userID)
 	if err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
-		return
-	}
-
-	fiatRates, err := dbService.ListFiatRates(utils.BaseCurrency)
-	if err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
-		return
-	}
-
-	today := utils.GetTodayAsUTC()
-	maxEndDate := today.AddDate(3, 0, 0)
-	// We include the whole final month, otherwise the results might be confusing
-	lastDayOfMaxEndDate := time.Date(maxEndDate.Year(), maxEndDate.Month()+1, 0, 23, 59, 59, 999999999, maxEndDate.Location())
-
-	// We need a map for revenues and expenses
-	forecastMap := make(map[string]map[string]int64)
-	forecastDetailMap := make(map[string]*models.ForecastDetails)
-	for _, transaction := range transactions {
-		fiatRate := models.GetFiatRateFromCurrency(fiatRates, *transaction.Currency.Code)
-		amount := models.CalculateAmountWithFiatRate(transaction.Amount, fiatRate)
-		if transaction.Vat != nil && !transaction.VatIncluded {
-			amount = models.CalculateAmountWithFiatRate(transaction.Amount+transaction.VatAmount, fiatRate)
-		}
-
-		if transaction.Type == "single" {
-			startDate := time.Time(transaction.StartDate)
-			if startDate.Before(today) {
-				continue
-			}
-			monthKey := getYearMonth(startDate)
-			if forecastMap[monthKey] == nil {
-				initForecastMapKey(forecastMap, monthKey)
-			}
-			if amount > 0 {
-				forecastMap[monthKey]["revenue"] += amount
-				addForecastDetail(forecastDetailMap, monthKey, transaction.Category.Name, amount)
-			} else if amount < 0 {
-				forecastMap[monthKey]["expense"] += amount
-				addForecastDetail(forecastDetailMap, monthKey, transaction.Category.Name, amount)
-			}
-		} else {
-			startDate := time.Time(transaction.StartDate)
-			endDate := lastDayOfMaxEndDate
-			if transaction.EndDate != nil {
-				endDate = time.Time(*transaction.EndDate)
-			}
-			switch *transaction.Cycle {
-			case "daily":
-				for current := startDate; !current.After(endDate); current = current.AddDate(0, 0, 1) {
-					if current.Before(today) {
-						continue
-					}
-					monthKey := getYearMonth(current)
-					if forecastMap[monthKey] == nil {
-						initForecastMapKey(forecastMap, monthKey)
-					}
-					if amount > 0 {
-						forecastMap[monthKey]["revenue"] += amount
-						addForecastDetail(forecastDetailMap, monthKey, transaction.Category.Name, amount)
-					} else if amount < 0 {
-						forecastMap[monthKey]["expense"] += amount
-						addForecastDetail(forecastDetailMap, monthKey, transaction.Category.Name, amount)
-					}
-				}
-			case "weekly":
-				for current := startDate; !current.After(endDate); current = current.AddDate(0, 0, 7) {
-					if current.Before(today) {
-						continue
-					}
-					monthKey := getYearMonth(current)
-					if forecastMap[monthKey] == nil {
-						initForecastMapKey(forecastMap, monthKey)
-					}
-					if amount > 0 {
-						forecastMap[monthKey]["revenue"] += amount
-						addForecastDetail(forecastDetailMap, monthKey, transaction.Category.Name, amount)
-					} else if amount < 0 {
-						forecastMap[monthKey]["expense"] += amount
-						addForecastDetail(forecastDetailMap, monthKey, transaction.Category.Name, amount)
-					}
-				}
-			case "monthly":
-				for current := startDate; !current.After(endDate); current = utils.GetNextDate(startDate, current, 1) {
-					if current.Before(today) {
-						continue
-					}
-					monthKey := getYearMonth(current)
-					if forecastMap[monthKey] == nil {
-						initForecastMapKey(forecastMap, monthKey)
-					}
-					if amount > 0 {
-						forecastMap[monthKey]["revenue"] += amount
-						addForecastDetail(forecastDetailMap, monthKey, transaction.Category.Name, amount)
-					} else if amount < 0 {
-						forecastMap[monthKey]["expense"] += amount
-						addForecastDetail(forecastDetailMap, monthKey, transaction.Category.Name, amount)
-					}
-				}
-			case "quarterly":
-				for current := startDate; !current.After(endDate); current = utils.GetNextDate(startDate, current, 3) {
-					if current.Before(today) {
-						continue
-					}
-					monthKey := getYearMonth(current)
-					if forecastMap[monthKey] == nil {
-						initForecastMapKey(forecastMap, monthKey)
-					}
-					if amount > 0 {
-						forecastMap[monthKey]["revenue"] += amount
-						addForecastDetail(forecastDetailMap, monthKey, transaction.Category.Name, amount)
-					} else if amount < 0 {
-						forecastMap[monthKey]["expense"] += amount
-						addForecastDetail(forecastDetailMap, monthKey, transaction.Category.Name, amount)
-					}
-				}
-			case "biannually":
-				for current := startDate; !current.After(endDate); current = utils.GetNextDate(startDate, current, 6) {
-					if current.Before(today) {
-						continue
-					}
-					monthKey := getYearMonth(current)
-					if forecastMap[monthKey] == nil {
-						initForecastMapKey(forecastMap, monthKey)
-					}
-					if amount > 0 {
-						forecastMap[monthKey]["revenue"] += amount
-						addForecastDetail(forecastDetailMap, monthKey, transaction.Category.Name, amount)
-					} else if amount < 0 {
-						forecastMap[monthKey]["expense"] += amount
-						addForecastDetail(forecastDetailMap, monthKey, transaction.Category.Name, amount)
-					}
-				}
-			case "yearly":
-				for current := startDate; !current.After(endDate); current = utils.GetNextDate(startDate, current, 12) {
-					if current.Before(today) {
-						continue
-					}
-					monthKey := getYearMonth(current)
-					if forecastMap[monthKey] == nil {
-						initForecastMapKey(forecastMap, monthKey)
-					}
-					if amount > 0 {
-						forecastMap[monthKey]["revenue"] += amount
-						addForecastDetail(forecastDetailMap, monthKey, transaction.Category.Name, amount)
-					} else if amount < 0 {
-						forecastMap[monthKey]["expense"] += amount
-						addForecastDetail(forecastDetailMap, monthKey, transaction.Category.Name, amount)
-					}
-				}
-			}
-		}
-	}
-
-	// Collect the employee expenses now
-	employees, _, err := dbService.ListEmployees(userID, page, limit, sortBy, sortOrder)
-	if err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
-		return
-	}
-	for _, employee := range employees {
-		employeeHistories, _, err := dbService.ListEmployeeHistory(userID, strconv.FormatInt(employee.ID, 10), page, limit)
-		if err != nil {
-			c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
-			return
-		}
-		for _, history := range employeeHistories {
-			fromDate := time.Time(history.FromDate)
-			toDate := lastDayOfMaxEndDate
-			if history.ToDate != nil {
-				toDate = time.Time(*history.ToDate)
-			}
-
-			fiatRate := models.GetFiatRateFromCurrency(fiatRates, *history.Currency.Code)
-			// Must be minus here
-			salary := -models.CalculateAmountWithFiatRate(int64(history.Salary), fiatRate)
-
-			switch history.Cycle {
-			case "daily":
-				for current := fromDate; !current.After(toDate); current = current.AddDate(0, 0, 1) {
-					if current.Before(today) {
-						continue
-					}
-					monthKey := getYearMonth(current)
-					if forecastMap[monthKey] == nil {
-						initForecastMapKey(forecastMap, monthKey)
-					}
-					forecastMap[monthKey]["expense"] += salary
-					addForecastDetail(forecastDetailMap, monthKey, "Gehälter", salary)
-				}
-			case "weekly":
-				for current := fromDate; !current.After(toDate); current = current.AddDate(0, 0, 7) {
-					if current.Before(today) {
-						continue
-					}
-					monthKey := getYearMonth(current)
-					if forecastMap[monthKey] == nil {
-						initForecastMapKey(forecastMap, monthKey)
-					}
-					forecastMap[monthKey]["expense"] += salary
-					addForecastDetail(forecastDetailMap, monthKey, "Gehälter", salary)
-				}
-			case "monthly":
-				for current := fromDate; !current.After(toDate); current = utils.GetNextDate(fromDate, current, 1) {
-					if current.Before(today) {
-						continue
-					}
-					monthKey := getYearMonth(current)
-					if forecastMap[monthKey] == nil {
-						initForecastMapKey(forecastMap, monthKey)
-					}
-					forecastMap[monthKey]["expense"] += salary
-					addForecastDetail(forecastDetailMap, monthKey, "Gehälter", salary)
-				}
-			case "quarterly":
-				for current := fromDate; !current.After(toDate); current = utils.GetNextDate(fromDate, current, 3) {
-					if current.Before(today) {
-						continue
-					}
-					monthKey := getYearMonth(current)
-					if forecastMap[monthKey] == nil {
-						initForecastMapKey(forecastMap, monthKey)
-					}
-					forecastMap[monthKey]["expense"] += salary
-					addForecastDetail(forecastDetailMap, monthKey, "Gehälter", salary)
-				}
-			case "biannually":
-				for current := fromDate; !current.After(toDate); current = utils.GetNextDate(fromDate, current, 6) {
-					if current.Before(today) {
-						continue
-					}
-					monthKey := getYearMonth(current)
-					if forecastMap[monthKey] == nil {
-						initForecastMapKey(forecastMap, monthKey)
-					}
-					forecastMap[monthKey]["expense"] += salary
-					addForecastDetail(forecastDetailMap, monthKey, "Gehälter", salary)
-				}
-			case "yearly":
-				for current := fromDate; !current.After(toDate); current = utils.GetNextDate(fromDate, current, 12) {
-					if current.Before(today) {
-						continue
-					}
-					monthKey := getYearMonth(current)
-					if forecastMap[monthKey] == nil {
-						initForecastMapKey(forecastMap, monthKey)
-					}
-					forecastMap[monthKey]["expense"] += salary
-					addForecastDetail(forecastDetailMap, monthKey, "Gehälter", salary)
-				}
-			}
-		}
-	}
-
-	_, err = dbService.ClearForecasts(userID)
-	if err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
-		return
-	}
-
-	for monthKey, forecast := range forecastMap {
-		revenue := forecast["revenue"]
-		expense := forecast["expense"]
-		forecastID, err := dbService.UpsertForecast(models.CreateForecast{
-			Month:    monthKey,
-			Revenue:  revenue,
-			Expense:  expense,
-			Cashflow: revenue + expense,
-		}, userID)
-		if err != nil {
-			c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
-			return
-		}
-
-		// Upsert the details along with the forecast
-		forecastDetail := forecastDetailMap[monthKey]
-		revenueList := make([]models.ForecastDetailRevenueExpense, 0)
-		expenseList := make([]models.ForecastDetailRevenueExpense, 0)
-		for name, amount := range forecastDetail.Revenue {
-			revenueList = append(revenueList, models.ForecastDetailRevenueExpense{
-				Name:   name,
-				Amount: amount,
-			})
-		}
-		for name, amount := range forecastDetail.Expense {
-			expenseList = append(expenseList, models.ForecastDetailRevenueExpense{
-				Name:   name,
-				Amount: amount,
-			})
-		}
-		_, err = dbService.UpsertForecastDetail(models.CreateForecastDetail{
-			Month:      monthKey,
-			Revenue:    revenueList,
-			Expense:    expenseList,
-			ForecastID: forecastID,
-		}, userID, forecastID)
-		if err != nil {
-			c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
-			return
-		}
-	}
-
-	forecasts, err := dbService.ListForecasts(userID, 37)
-	if err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
-		return
-	}
-
-	validator := utils.GetValidator()
-	if err := validator.Var(forecasts, "dive"); err != nil {
-		// Return validation errors
-		c.JSON(http.StatusBadRequest, gin.H{"error": "Ungültige Daten", "details": err.Error()})
 		return
 	}
 
 	c.JSON(http.StatusOK, map[string]interface{}{
-		"forecast": forecasts,
-		"details":  forecastDetailMap,
+		"forecast": foreCasts,
 	})
 }
 

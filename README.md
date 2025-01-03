@@ -5,7 +5,7 @@ Liquidity Planning
 - [Landing Page](https://liquiswiss.ch/)
 - [Discord](https://discord.gg/7ckBNzskYh)
 
-# Configuration
+## Configuration
 
 > We are planning to add [Mailpit](https://mailpit.axllent.org/) for local e-mail testing and replace fixer.io with a
 > local mock
@@ -30,6 +30,14 @@ Liquidity Planning
         - Copy the API key that you find in the [Dashboard](https://fixer.io/dashboard)
 3. Copy the [fronted/.env.example](frontend/.env.example) into the same directory and name it `.env`
     - The `NUXT_API_HOST` works fine for local dev but must be changed for production
+
+## Admin
+
+We are using [phpMyAdmin](https://www.phpmyadmin.net/) with Docker to provide an interface to the database.
+
+- Check out the [.env.example](.env.example) to see the values you can set (all starting with `PMA_`). You can find more
+  information [here](https://hub.docker.com/_/phpmyadmin)
+- You can check out your database (locally) at: http://localhost:8082/
 
 ## Production
 
@@ -78,6 +86,7 @@ air
 ## Migrations
 
 - Create Migration: `goose --dir internal/db/migrations create <name-of-migration> sql`
+    - Follow up with: `goose --dir internal/db/migrations fix` to apply sequential numbering
 - Apply Migration: `goose --dir internal/db/migrations mysql liquiswiss:password@/liquiswiss up`
 - Rollback Migration: `goose --dir internal/db/migrations mysql liquiswiss:password@/liquiswiss down`
 - Or check out the [Makefile](backend/Makefile)

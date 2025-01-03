@@ -1,9 +1,11 @@
-export const AmountToInteger = (amount: number) => {
-  return Math.round(amount * 100)
+export const AmountToInteger = (amount: number, precision: number = 2): number => {
+  const factor = Math.pow(10, precision)
+  return Math.round(amount * factor)
 }
 
-export const AmountToFloat = (amount: number) => {
-  return Math.round(amount / 100 * 100) / 100
+export const AmountToFloat = (amount: number, precision: number = 2): number => {
+  const factor = Math.pow(10, precision)
+  return amount / factor
 }
 
 export const isNumber = (value: unknown): boolean => {
