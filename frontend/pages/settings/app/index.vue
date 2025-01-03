@@ -47,6 +47,7 @@
 
 <script setup lang="ts">
 import { Config } from '~/config/config'
+import { RouteNames } from '~/config/routes'
 
 useHead({
   title: 'App Einstellungen',
@@ -55,7 +56,11 @@ useHead({
 const toast = useToast()
 
 const colorMode = useColorMode()
-const { skipOrganisationSwitchQuestion } = useSettings()
+const { skipOrganisationSwitchQuestion, settingsTab } = useSettings()
+
+onMounted(() => {
+  settingsTab.value = RouteNames.SETTINGS_APP
+})
 
 watch([skipOrganisationSwitchQuestion], (value, oldValue) => {
   if (value !== oldValue) {

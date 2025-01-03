@@ -16,3 +16,7 @@ export const SettingsCookieProps = {
   secure: true,
   sameSite: 'lax',
 } as CookieOptions
+
+export const Fallbacks = {
+  CostLabel: '<Kein Label>',
+}

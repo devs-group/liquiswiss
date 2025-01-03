@@ -4,14 +4,14 @@ import (
 	"database/sql"
 	"fmt"
 	"github.com/gin-gonic/gin"
-	"liquiswiss/internal/service"
+	"liquiswiss/internal/service/db_service"
 	"liquiswiss/pkg/models"
 	"liquiswiss/pkg/utils"
 	"net/http"
 	"strconv"
 )
 
-func ListTransactions(dbService service.IDatabaseService, c *gin.Context) {
+func ListTransactions(dbService db_service.IDatabaseService, c *gin.Context) {
 	userID := c.GetInt64("userID")
 	if userID == 0 {
 		c.JSON(http.StatusUnauthorized, gin.H{"error": "Ungültiger Benutzer"})
@@ -55,7 +55,7 @@ func ListTransactions(dbService service.IDatabaseService, c *gin.Context) {
 	})
 }
 
-func GetTransaction(dbService service.IDatabaseService, c *gin.Context) {
+func GetTransaction(dbService db_service.IDatabaseService, c *gin.Context) {
 	userID := c.GetInt64("userID")
 	if userID == 0 {
 		c.JSON(http.StatusUnauthorized, gin.H{"error": "Ungültiger Benutzer"})
@@ -90,7 +90,7 @@ func GetTransaction(dbService service.IDatabaseService, c *gin.Context) {
 	c.JSON(http.StatusOK, transaction)
 }
 
-func CreateTransaction(dbService service.IDatabaseService, c *gin.Context) {
+func CreateTransaction(dbService db_service.IDatabaseService, c *gin.Context) {
 	userID := c.GetInt64("userID")
 	if userID == 0 {
 		c.JSON(http.StatusUnauthorized, gin.H{"error": "Ungültiger Benutzer"})
@@ -127,7 +127,7 @@ func CreateTransaction(dbService service.IDatabaseService, c *gin.Context) {
 	c.JSON(http.StatusCreated, transaction)
 }
 
-func UpdateTransaction(dbService service.IDatabaseService, c *gin.Context) {
+func UpdateTransaction(dbService db_service.IDatabaseService, c *gin.Context) {
 	userID := c.GetInt64("userID")
 	if userID == 0 {
 		c.JSON(http.StatusUnauthorized, gin.H{"error": "Ungültiger Benutzer"})
@@ -190,7 +190,7 @@ func UpdateTransaction(dbService service.IDatabaseService, c *gin.Context) {
 	c.JSON(http.StatusOK, transaction)
 }
 
-func DeleteTransaction(dbService service.IDatabaseService, c *gin.Context) {
+func DeleteTransaction(dbService db_service.IDatabaseService, c *gin.Context) {
 	userID := c.GetInt64("userID")
 	if userID == 0 {
 		c.JSON(http.StatusUnauthorized, gin.H{"error": "Ungültiger Benutzer"})

@@ -8,7 +8,7 @@
       <label
         class="text-sm font-bold"
         for="hours-per-month"
-      >Arbeitsstunden pro Monat*</label>
+      >Arbeitsstunden pro Monat *</label>
       <InputText
         v-bind="hoursPerMonthProps"
         id="hours-per-month"
@@ -25,7 +25,7 @@
       <label
         class="text-sm font-bold"
         for="vacation-days-per-year"
-      >Urlaubstage pro Jahr*</label>
+      >Urlaubstage pro Jahr *</label>
       <InputText
         v-bind="vacationDaysPerYearProps"
         id="vacation-days-per-year"
@@ -43,15 +43,15 @@
         <label
           class="text-sm font-bold"
           for="salary-per-month"
-        >Lohnkosten*</label>
+        >Bruttolohn *</label>
         <i
-          v-tooltip.top="'Bruttolohn + Arbeitgeberkosten'"
+          v-tooltip.top="'Empfehlung: Bruttolohn angeben und Lohnkosten separat erfassen'"
           class="pi pi-info-circle"
         />
       </div>
       <InputText
         v-bind="salaryProps"
-        id="salary-per-month"
+        id="salary"
         v-model="salary"
         :class="{ 'p-invalid': errors['salary']?.length }"
         type="text"
@@ -65,10 +65,10 @@
       <label
         class="text-sm font-bold"
         for="salary-currencyID"
-      >Währung des Lohns*</label>
+      >Währung des Lohns *</label>
       <Select
         v-bind="currencyIDProps"
-        id="salary-currency-id"
+        id="currency-id"
         v-model="currencyID"
         empty-message="Keine Währungen gefunden"
         :disabled="isLoading"
@@ -86,9 +86,9 @@
         <label
           class="text-sm font-bold"
           for="vacation-days-per-year"
-        >Von*</label>
+        >Von *</label>
         <i
-          v-tooltip.top="'Ab wann gelten diese Daten?'"
+          v-tooltip.top="'Das &quot;Bis&quot; Datum wird automatisch berechnet'"
           class="pi pi-info-circle"
         />
       </div>
@@ -108,10 +108,10 @@
       <label
         class="text-sm font-bold"
         for="name"
-      >Zahlungszyklus*</label>
+      >Zahlungszyklus *</label>
       <Select
         v-bind="cycleProps"
-        id="name"
+        id="cycle"
         v-model="cycle"
         empty-message="Keine Zyklen gefunden"
         :options="CycleTypeToOptions()"
@@ -124,35 +124,31 @@
       <small class="text-liqui-red">{{ errors["cycle"] || '&nbsp;' }}</small>
     </div>
 
-    <div class="flex flex-col gap-2 col-span-full md:col-span-1">
-      <div class="flex items-center gap-2">
-        <label
-          class="text-sm font-bold"
-          for="vacation-days-per-year"
-        >Bis</label>
-        <i
-          v-tooltip.top="'Bis wann gelten diese Daten?'"
-          class="pi pi-info-circle"
-        />
-      </div>
-      <Message severity="secondary">
-        Wird automatisch berechnet...
-      </Message>
-    </div>
-
-    <div
-      v-if="!isClone && !isCreate"
-      class="flex justify-end col-span-full"
+    <Message
+      v-if="isClone && EmployeeHistoryUtils.hasCosts(employeeHistory!)"
+      severity="warn"
+      size="small"
+      class="col-span-full"
     >
-      <Button
-        :disabled="isLoading"
-        label="Löschen"
-        severity="danger"
-        size="small"
-        icon="pi pi-trash"
-        @click="onDeleteEmployeeHistory"
-      />
-    </div>
+      Achtung: Lohnkosten werden aktuell nicht geklont, diese können nachträglich separat übertragen werden
+    </Message>
+    <Message
+      v-else-if="isCreate"
+      severity="info"
+      size="small"
+      class="col-span-full"
+    >
+      Lohnkosten können separat, direkt nach dem Erstellen hinzugefügt werden
+    </Message>
+
+    <Message
+      v-if="!isCreate && employeeHistory?.withSeparateCosts"
+      severity="info"
+      size="small"
+      class="col-span-full"
+    >
+      Hinweis: Für diese Historie werden Lohnkosten separat geführt
+    </Message>
 
     <hr class="my-4 col-span-full">
 
@@ -169,7 +165,7 @@
       <Button
         :disabled="!meta.valid || isLoading"
         :loading="isLoading"
-        label="Speichern"
+        :label="isClone ? 'Klonen' : 'Speichern'"
         icon="pi pi-save"
         type="submit"
         @click="onSubmit"
@@ -177,9 +173,21 @@
       <Button
         :disabled="isLoading"
         label="Abbrechen"
-        severity="secondary"
+        severity="contrast"
         @click="dialogRef.close()"
       />
+      <div
+        v-if="!isCreate"
+        class="flex justify-end col-span-full"
+      >
+        <Button
+          :disabled="isLoading"
+          severity="danger"
+          size="small"
+          icon="pi pi-trash"
+          @click="onDeleteEmployeeHistory"
+        />
+      </div>
     </div>
   </form>
 </template>
@@ -189,12 +197,13 @@ import { useForm } from 'vee-validate'
 import * as yup from 'yup'
 import type { IHistoryFormDialog } from '~/interfaces/dialog-interfaces'
 import { Config } from '~/config/config'
-import type { EmployeeHistoryFormData } from '~/models/employee'
+import type { EmployeeHistoryPUTFormData } from '~/models/employee'
 import { CycleType } from '~/config/enums'
+import { EmployeeHistoryUtils } from '~/utils/models/employee-history-utils'
 
 const dialogRef = inject<IHistoryFormDialog>('dialogRef')!
 
-const { createEmployeeHistory, updateEmployeeHistory, deleteEmployeeHistory } = useEmployees()
+const { createEmployeeHistory, updateEmployeeHistory, deleteEmployeeHistory } = useEmployeeHistories()
 const { currencies } = useGlobalData()
 const confirm = useConfirm()
 const toast = useToast()
@@ -202,9 +211,9 @@ const toast = useToast()
 // Data
 const isLoading = ref(false)
 const employeeID = dialogRef.value.data!.employeeID
-const employeeHistory = dialogRef.value.data!.employeeHistory
-const isClone = dialogRef.value.data?.isClone
-const isCreate = isClone || !employeeHistory?.id
+const employeeHistory = ref(dialogRef.value.data!.employeeHistory)
+const isClone = ref(dialogRef.value.data?.isClone)
+const isCreate = computed(() => isClone.value || !employeeHistory.value?.id)
 const errorMessage = ref('')
 
 const { defineField, errors, handleSubmit, meta } = useForm({
@@ -217,14 +226,14 @@ const { defineField, errors, handleSubmit, meta } = useForm({
     cycle: yup.string().required('Zahlungs-Zyklus wird benötigt'),
   }),
   initialValues: {
-    id: isClone ? undefined : employeeHistory?.id ?? undefined,
-    hoursPerMonth: employeeHistory?.hoursPerMonth ?? 0,
-    salary: isNumber(employeeHistory?.salary) ? AmountToFloat(employeeHistory!.salary) : 0,
-    currencyID: employeeHistory?.currency.id ?? null,
-    vacationDaysPerYear: employeeHistory?.vacationDaysPerYear ?? 0,
-    fromDate: employeeHistory?.fromDate ? DateToUTCDate(employeeHistory.fromDate) : null,
-    cycle: employeeHistory?.cycle ?? CycleType.Monthly,
-  } as EmployeeHistoryFormData,
+    id: isClone.value ? undefined : employeeHistory.value?.id ?? undefined,
+    hoursPerMonth: employeeHistory.value?.hoursPerMonth ?? 0,
+    salary: isNumber(employeeHistory.value?.salary) ? AmountToFloat(employeeHistory.value!.salary) : 0,
+    currencyID: employeeHistory.value?.currency.id ?? null,
+    vacationDaysPerYear: employeeHistory.value?.vacationDaysPerYear ?? 0,
+    fromDate: employeeHistory.value?.fromDate ? DateToUTCDate(employeeHistory.value.fromDate) : null,
+    cycle: employeeHistory.value?.cycle ?? CycleType.Monthly,
+  } as EmployeeHistoryPUTFormData,
 })
 
 const [hoursPerMonth, hoursPerMonthProps] = defineField('hoursPerMonth')
@@ -245,7 +254,7 @@ const onSubmit = handleSubmit((values) => {
   errorMessage.value = ''
   values.fromDate.setMinutes(values.fromDate.getMinutes() - values.fromDate.getTimezoneOffset())
 
-  if (isCreate) {
+  if (isCreate.value) {
     createEmployeeHistory(employeeID, values)
       .then(() => {
         dialogRef.value.close(true)
@@ -297,9 +306,9 @@ const onDeleteEmployeeHistory = () => {
     rejectLabel: 'Nein',
     acceptLabel: 'Ja',
     accept: () => {
-      if (employeeHistory) {
+      if (employeeHistory.value) {
         isLoading.value = true
-        deleteEmployeeHistory(employeeID, employeeHistory.id)
+        deleteEmployeeHistory(employeeID, employeeHistory.value.id)
           .then(() => {
             toast.add({
               summary: 'Erfolg',

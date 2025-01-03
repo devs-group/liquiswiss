@@ -1,6 +1,6 @@
 <template>
   <div
-    class="flex flex-col gap-2 items-center justify-center bg-white dark:bg-black !bg-opacity-50 backdrop-blur-sm fixed top-0 left-0 right-0 bottom-0 opacity-0 z-50 pointer-events-none transition-opacity duration-300"
+    class="flex flex-col gap-2 items-center justify-center bg-white dark:bg-black !bg-opacity-50 backdrop-blur-sm fixed top-0 left-0 right-0 bottom-0 opacity-0 z-[9999] pointer-events-none transition-opacity duration-300"
     :class="{ 'opacity-100 pointer-events-auto': showInternal }"
   >
     <ProgressSpinner />

@@ -1,7 +1,7 @@
 package handlers
 
 import (
-	"liquiswiss/internal/service"
+	"liquiswiss/internal/service/db_service"
 	"liquiswiss/pkg/models"
 	"liquiswiss/pkg/utils"
 	"net/http"
@@ -10,7 +10,7 @@ import (
 	"github.com/gin-gonic/gin"
 )
 
-func ListCategories(dbService service.IDatabaseService, c *gin.Context) {
+func ListCategories(dbService db_service.IDatabaseService, c *gin.Context) {
 	userID := c.GetInt64("userID")
 	if userID == 0 {
 		c.JSON(http.StatusUnauthorized, gin.H{"error": "Ungültiger Benutzer"})
@@ -40,7 +40,7 @@ func ListCategories(dbService service.IDatabaseService, c *gin.Context) {
 	})
 }
 
-func GetCategory(dbService service.IDatabaseService, c *gin.Context) {
+func GetCategory(dbService db_service.IDatabaseService, c *gin.Context) {
 	userID := c.GetInt64("userID")
 	if userID == 0 {
 		c.JSON(http.StatusUnauthorized, gin.H{"error": "Ungültiger Benutzer"})
@@ -62,7 +62,7 @@ func GetCategory(dbService service.IDatabaseService, c *gin.Context) {
 	c.JSON(http.StatusOK, category)
 }
 
-func CreateCategory(dbService service.IDatabaseService, c *gin.Context) {
+func CreateCategory(dbService db_service.IDatabaseService, c *gin.Context) {
 	userID := c.GetInt64("userID")
 	if userID == 0 {
 		c.JSON(http.StatusUnauthorized, gin.H{"error": "Ungültiger Benutzer"})
@@ -96,7 +96,7 @@ func CreateCategory(dbService service.IDatabaseService, c *gin.Context) {
 	c.JSON(http.StatusCreated, category)
 }
 
-func UpdateCategory(dbService service.IDatabaseService, c *gin.Context) {
+func UpdateCategory(dbService db_service.IDatabaseService, c *gin.Context) {
 	userID := c.GetInt64("userID")
 	if userID == 0 {
 		c.JSON(http.StatusUnauthorized, gin.H{"error": "Ungültiger Benutzer"})

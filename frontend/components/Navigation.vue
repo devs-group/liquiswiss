@@ -68,7 +68,7 @@ const { skipOrganisationSwitchQuestion } = useSettings()
 const confirm = useConfirm()
 const toast = useToast()
 
-const selectedOrganisationID = ref<number | null>(user.value?.currentOrganisationId ?? null)
+const selectedOrganisationID = ref<number | null>(user.value?.currentOrganisationID ?? null)
 
 const items = ref<MenuItem[]>([
   { label: 'Prognose', icon: 'pi pi-chart-line', routeName: RouteNames.HOME },
@@ -94,7 +94,7 @@ const items = ref<MenuItem[]>([
 ])
 
 const onChangeOrganisation = (event: SelectChangeEvent) => {
-  const currentSelectedOrganisationID = user.value?.currentOrganisationId ?? null
+  const currentSelectedOrganisationID = user.value?.currentOrganisationID ?? null
   const newSelectedOrganisationID = selectedOrganisationID.value
   if (newSelectedOrganisationID === currentSelectedOrganisationID || newSelectedOrganisationID == null) {
     // Selection hasn't changed

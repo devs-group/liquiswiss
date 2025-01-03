@@ -3,7 +3,7 @@ package handlers
 import (
 	"database/sql"
 	"fmt"
-	"liquiswiss/internal/service"
+	"liquiswiss/internal/service/db_service"
 	"liquiswiss/pkg/models"
 	"liquiswiss/pkg/utils"
 	"net/http"
@@ -12,7 +12,7 @@ import (
 	"github.com/gin-gonic/gin"
 )
 
-func ListOrganisations(dbService service.IDatabaseService, c *gin.Context) {
+func ListOrganisations(dbService db_service.IDatabaseService, c *gin.Context) {
 	userID := c.GetInt64("userID")
 	if userID == 0 {
 		c.JSON(http.StatusUnauthorized, gin.H{"error": "Ungültiger Benutzer"})
@@ -54,7 +54,7 @@ func ListOrganisations(dbService service.IDatabaseService, c *gin.Context) {
 	})
 }
 
-func GetOrganisation(dbService service.IDatabaseService, c *gin.Context) {
+func GetOrganisation(dbService db_service.IDatabaseService, c *gin.Context) {
 	userID := c.GetInt64("userID")
 	if userID == 0 {
 		c.JSON(http.StatusUnauthorized, gin.H{"error": "Ungültiger Benutzer"})
@@ -89,7 +89,7 @@ func GetOrganisation(dbService service.IDatabaseService, c *gin.Context) {
 	c.JSON(http.StatusOK, organisation)
 }
 
-func CreateOrganisation(dbService service.IDatabaseService, c *gin.Context) {
+func CreateOrganisation(dbService db_service.IDatabaseService, c *gin.Context) {
 	userID := c.GetInt64("userID")
 	if userID == 0 {
 		c.JSON(http.StatusUnauthorized, gin.H{"error": "Ungültiger Benutzer"})
@@ -130,7 +130,7 @@ func CreateOrganisation(dbService service.IDatabaseService, c *gin.Context) {
 	c.JSON(http.StatusCreated, organisation)
 }
 
-func UpdateOrganisation(dbService service.IDatabaseService, c *gin.Context) {
+func UpdateOrganisation(dbService db_service.IDatabaseService, c *gin.Context) {
 	userID := c.GetInt64("userID")
 	if userID == 0 {
 		c.JSON(http.StatusUnauthorized, gin.H{"error": "Ungültiger Benutzer"})

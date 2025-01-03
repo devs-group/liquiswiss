@@ -15,6 +15,8 @@ func InitValidator() {
 	validate.RegisterValidation("endDateGTEStartDate", validateEndDate)
 	validate.RegisterValidation("fromDateGTEToDate", validateToDate)
 	validate.RegisterAlias("allowedCycles", `oneof='daily' 'weekly' 'monthly' 'quarterly' 'biannually' 'yearly'`)
+	validate.RegisterAlias("allowedCostCycles", `oneof='once' 'daily' 'weekly' 'monthly' 'quarterly' 'biannually' 'yearly'`)
+	validate.RegisterAlias("allowedCostAmountTypes", `oneof='fixed' 'percentage'`)
 }
 
 func GetValidator() *validator.Validate {

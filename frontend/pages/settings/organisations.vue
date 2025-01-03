@@ -74,9 +74,8 @@ useHead({
 })
 
 const dialog = useDialog()
-const route = useRoute()
+const { settingsTab } = useSettings()
 const { organisations } = useOrganisations()
-const { user } = useAuth()
 
 const items = computed<MenuItem[]>(() => organisations.value.map((o) => {
   return {
@@ -95,10 +94,14 @@ const onCreateOrganisation = () => {
   })
 }
 
-if (route.name === RouteNames.SETTINGS_ORGANISATIONS) {
-  // Redirect to subpage
-  if (user.value?.currentOrganisationId) {
-    await navigateTo({ name: RouteNames.SETTINGS_ORGANISATION_EDIT, params: { id: user.value.currentOrganisationId }, replace: true })
-  }
-}
+onMounted(() => {
+  settingsTab.value = RouteNames.SETTINGS_ORGANISATIONS
+})
+
+definePageMeta({
+  redirect: () => {
+    const { user } = useAuth()
+    return { name: RouteNames.SETTINGS_ORGANISATION_EDIT, params: { id: user.value!.currentOrganisationID }, replace: true }
+  },
+})
 </script>

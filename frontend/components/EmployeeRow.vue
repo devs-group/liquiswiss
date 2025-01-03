@@ -10,8 +10,15 @@
       />
     </div>
     <p>{{ employee.hoursPerMonth || '-' }}</p>
-    <p>{{ salaryFormatted || '-' }} {{ employee.currency.code }} / {{ cycle }}</p>
-    <p>{{ employee.vacationDaysPerYear || '-' }}</p>
+    <p v-if="hasHistoryData">
+      {{ salaryFormatted || '-' }} {{ employee.currency.code }} / {{ cycle }}
+    </p>
+    <p v-else>
+      -
+    </p>
+    <p>
+      {{ employee.vacationDaysPerYear || '-' }}
+    </p>
     <p>{{ fromDate }}</p>
     <p class="!border-r">
       {{ toDate }}
@@ -21,6 +28,7 @@
 
 <script setup lang="ts">
 import type { EmployeeResponse } from '~/models/employee'
+import { EmployeeUtils } from '~/utils/models/employee-utils'
 
 const props = defineProps({
   employee: {
@@ -34,8 +42,19 @@ defineEmits<{
   onClone: [transaction: EmployeeResponse]
 }>()
 
-const salaryFormatted = computed(() => props.employee.salary ? NumberToFormattedCurrency(AmountToFloat(props.employee.salary ?? 0), props.employee.currency!.localeCode) : '-')
-const fromDate = computed(() => props.employee.fromDate ? DateStringToFormattedDate(props.employee.fromDate) : '-')
-const toDate = computed(() => props.employee.toDate ? DateStringToFormattedDate(props.employee.toDate) : '-')
-const cycle = computed(() => CycleTypeToOptions().find(ct => ct.value === props.employee.cycle)?.name ?? '')
+const salaryFormatted = computed(
+  () => EmployeeUtils.salaryFormatted(props.employee),
+)
+const fromDate = computed(
+  () => EmployeeUtils.fromDate(props.employee),
+)
+const toDate = computed(
+  () => EmployeeUtils.toDate(props.employee),
+)
+const cycle = computed(
+  () => EmployeeUtils.cycle(props.employee),
+)
+const hasHistoryData = computed(
+  () => EmployeeUtils.hasHistoryData(props.employee),
+)
 </script>

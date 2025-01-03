@@ -2,7 +2,7 @@ package handlers
 
 import (
 	"github.com/gin-gonic/gin"
-	"liquiswiss/internal/service"
+	"liquiswiss/internal/service/db_service"
 	"liquiswiss/pkg/models"
 	"liquiswiss/pkg/utils"
 	"net/http"
@@ -10,7 +10,7 @@ import (
 	"time"
 )
 
-func ListForecasts(dbService service.IDatabaseService, c *gin.Context) {
+func ListForecasts(dbService db_service.IDatabaseService, c *gin.Context) {
 	userID := c.GetInt64("userID")
 	if userID == 0 {
 		c.JSON(http.StatusUnauthorized, gin.H{"error": "Ungültiger Benutzer"})
@@ -39,7 +39,7 @@ func ListForecasts(dbService service.IDatabaseService, c *gin.Context) {
 	c.JSON(http.StatusOK, forecasts)
 }
 
-func ListForecastDetails(dbService service.IDatabaseService, c *gin.Context) {
+func ListForecastDetails(dbService db_service.IDatabaseService, c *gin.Context) {
 	userID := c.GetInt64("userID")
 	if userID == 0 {
 		c.JSON(http.StatusUnauthorized, gin.H{"error": "Ungültiger Benutzer"})
@@ -68,7 +68,7 @@ func ListForecastDetails(dbService service.IDatabaseService, c *gin.Context) {
 	c.JSON(http.StatusOK, forecastDetails)
 }
 
-func CalculateForecasts(dbService service.IDatabaseService, c *gin.Context) {
+func CalculateForecasts(dbService db_service.IDatabaseService, c *gin.Context) {
 	userID := c.GetInt64("userID")
 	if userID == 0 {
 		c.JSON(http.StatusUnauthorized, gin.H{"error": "Ungültiger Benutzer"})

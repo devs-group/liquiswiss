@@ -156,11 +156,13 @@ import { useForm } from 'vee-validate'
 import * as yup from 'yup'
 import type { UserPasswordFormData, UserProfileFormData } from '~/models/auth'
 import { Config } from '~/config/config'
+import { RouteNames } from '~/config/routes'
 
 useHead({
   title: 'Profil',
 })
 
+const { settingsTab } = useSettings()
 const { user, updateProfile, updatePassword } = useAuth()
 
 const isSubmittingProfile = ref(false)
@@ -169,6 +171,10 @@ const profileUpdateErrorMessage = ref('')
 const isSubmittingPassword = ref(false)
 const passwordUpdateMessage = ref('')
 const passwordUpdateErrorMessage = ref('')
+
+onMounted(() => {
+  settingsTab.value = RouteNames.SETTINGS_PROFILE
+})
 
 const { defineField: defineFieldProfile, errors: errorsProfile, handleSubmit: handleSubmitProfile, meta: metaProfile, resetForm: resetFormProfile } = useForm({
   validationSchema: yup.object({

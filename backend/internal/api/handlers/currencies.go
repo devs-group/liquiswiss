@@ -1,7 +1,7 @@
 package handlers
 
 import (
-	"liquiswiss/internal/service"
+	"liquiswiss/internal/service/db_service"
 	"liquiswiss/pkg/models"
 	"liquiswiss/pkg/utils"
 	"net/http"
@@ -10,7 +10,7 @@ import (
 	"github.com/gin-gonic/gin"
 )
 
-func ListCurrencies(dbService service.IDatabaseService, c *gin.Context) {
+func ListCurrencies(dbService db_service.IDatabaseService, c *gin.Context) {
 	limit, err := strconv.ParseInt(c.Query("limit"), 10, 64)
 	if err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
@@ -34,7 +34,7 @@ func ListCurrencies(dbService service.IDatabaseService, c *gin.Context) {
 	})
 }
 
-func GetCurrency(dbService service.IDatabaseService, c *gin.Context) {
+func GetCurrency(dbService db_service.IDatabaseService, c *gin.Context) {
 	id := c.Param("id")
 	if id == "" {
 		c.JSON(http.StatusBadRequest, gin.H{"error": "ID is missing"})
@@ -50,7 +50,7 @@ func GetCurrency(dbService service.IDatabaseService, c *gin.Context) {
 	c.JSON(http.StatusOK, currency)
 }
 
-func CreateCurrency(dbService service.IDatabaseService, c *gin.Context) {
+func CreateCurrency(dbService db_service.IDatabaseService, c *gin.Context) {
 	var payload models.CreateCurrency
 	if err := c.BindJSON(&payload); err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
@@ -78,7 +78,7 @@ func CreateCurrency(dbService service.IDatabaseService, c *gin.Context) {
 	c.JSON(http.StatusCreated, currency)
 }
 
-func UpdateCurrency(dbService service.IDatabaseService, c *gin.Context) {
+func UpdateCurrency(dbService db_service.IDatabaseService, c *gin.Context) {
 	id := c.Param("id")
 	if id == "" {
 		c.JSON(http.StatusBadRequest, gin.H{"error": "ID is missing"})

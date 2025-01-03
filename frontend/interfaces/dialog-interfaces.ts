@@ -1,5 +1,10 @@
 import type { TransactionResponse } from '~/models/transaction'
-import type { EmployeeHistoryResponse, EmployeeResponse } from '~/models/employee'
+import type {
+  EmployeeHistoryCostLabelResponse,
+  EmployeeHistoryCostResponse,
+  EmployeeHistoryResponse,
+  EmployeeResponse,
+} from '~/models/employee'
 import type { BankAccountResponse } from '~/models/bank-account'
 import type { VatResponse } from '~/models/vat'
 import type { OrganisationResponse } from '~/models/organisation'
@@ -22,6 +27,26 @@ export interface IHistoryFormDialog {
       isClone: boolean
       employeeID: number
       employeeHistory?: EmployeeHistoryResponse
+    }
+  }
+}
+
+export interface IHistoryCostOverviewDialog {
+  close: (requiresRefresh: boolean) => unknown
+  value: {
+    close: (data: boolean) => boolean
+    data: {
+      employeeHistory: EmployeeHistoryResponse
+    }
+  }
+}
+
+export interface IHistoryCostCopyDialog {
+  close: () => object
+  value: {
+    close: (data: boolean) => boolean
+    data: {
+      employeeHistory: EmployeeHistoryResponse
     }
   }
 }
@@ -63,6 +88,28 @@ export interface IOrganisationFormDialog {
     close: () => void
     data: {
       organisation?: OrganisationResponse
+    }
+  }
+}
+
+export interface IEmployeeHistoryCostFormDialog {
+  close: (requiresRefresh: boolean) => unknown
+  value: {
+    close: (historyCostId?: number) => number | undefined
+    data: {
+      isClone: boolean
+      employeeHistory: EmployeeHistoryResponse
+      employeeCostToEdit?: EmployeeHistoryCostResponse
+    }
+  }
+}
+
+export interface IEmployeeHistoryCostLabelFormDialog {
+  close: () => object
+  value: {
+    close: (historyCostId?: number) => number | undefined
+    data: {
+      employeeCostLabelToEdit?: EmployeeHistoryCostLabelResponse
     }
   }
 }
