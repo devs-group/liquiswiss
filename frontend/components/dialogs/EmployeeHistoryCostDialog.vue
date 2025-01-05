@@ -10,7 +10,7 @@
       Ausführung der Lohnzahlung am
       {{ employeeHistory.nextExecutionDate ? DateStringToFormattedDate(employeeHistory.nextExecutionDate) : 'Keine weitere' }}
       über
-      {{ NumberToFormattedCurrency(AmountToFloat(employeeHistory.salary), employeeHistory.currency.code) }} {{ employeeHistory.currency.code }}
+      {{ NumberToFormattedCurrency(AmountToFloat(employeeHistory.salary), employeeHistory.currency.localeCode) }} {{ employeeHistory.currency.code }}
     </Message>
 
     <div class="col-span-full flex flex-col gap-2">

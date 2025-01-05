@@ -45,9 +45,6 @@
         </div>
         <template v-if="!isInactive">
           <p v-if="isOnce">
-            Gesamt: {{ nextCostFormatted }} {{ employeeHistory.currency.code }}
-          </p>
-          <p v-else>
             Gesamt: {{ nextCostFormatted }} {{ employeeHistory.currency.code }} {{ getNextCostExecutionDateHint }}
           </p>
         </template>
