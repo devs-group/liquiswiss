@@ -2,8 +2,8 @@ package main
 
 import (
 	"embed"
-	"fmt"
 	"github.com/joho/godotenv"
+	"github.com/pkg/errors"
 	"github.com/pressly/goose/v3"
 	"github.com/robfig/cron/v3"
 	"liquiswiss/config"
@@ -18,6 +18,7 @@ import (
 	"liquiswiss/pkg/utils"
 	"net/http"
 	"os"
+	"strconv"
 )
 
 //go:embed internal/db/migrations/*.sql
@@ -31,10 +32,40 @@ func main() {
 	if !utils.IsProduction() {
 		err := godotenv.Load()
 		if err != nil {
-			panic(fmt.Sprintf("Error loading .env file: %v", err))
+			logger.Logger.Errorf("Error loading .env file: %v", err)
+			os.Exit(1)
 		}
 	}
 
+	args := os.Args
+	if len(args) > 1 {
+		switch args[1] {
+		case "goose-down-to-and-up":
+			if len(args) != 3 {
+				logger.Logger.Info("Usage: liquiswiss goose-down-to-and-up [version]")
+				os.Exit(1)
+			}
+			version, err := strconv.Atoi(args[2])
+			if err != nil {
+				logger.Logger.Errorf("Invalid version: %v\n", err)
+				os.Exit(1)
+			}
+			err = runGooseDownToAndUp(version)
+			if err != nil {
+				logger.Logger.Error(err)
+				os.Exit(1)
+			}
+			os.Exit(0)
+		default:
+			logger.Logger.Errorf("Unknown command: %s\n", args[1])
+			os.Exit(1)
+		}
+	}
+
+	runApp()
+}
+
+func runApp() {
 	// Global Validator
 	utils.InitValidator()
 
@@ -94,4 +125,31 @@ func main() {
 		logger.Logger.Error("Failed to start api:", err)
 		os.Exit(1)
 	}
+}
+
+func runGooseDownToAndUp(version int) error {
+	conn, err := db.Connect()
+	if err != nil {
+		return errors.Wrapf(err, "Failed to connect to database: %v", err)
+	}
+	defer conn.Close()
+
+	goose.SetBaseFS(embedMigrations)
+
+	if err := goose.SetDialect("mysql"); err != nil {
+		return errors.Wrapf(err, "Failed to set Goose dialect: %v", err)
+	}
+
+	// Run Goose Down to the specified version
+	if err := goose.DownTo(conn, "internal/db/migrations", int64(version)); err != nil {
+		return errors.Wrapf(err, "Failed to run goose down-to: %v", err)
+	}
+
+	// Run Goose Up to apply all migrations
+	if err := goose.Up(conn, "internal/db/migrations"); err != nil {
+		return errors.Wrapf(err, "Failed to run goose up: %v", err)
+	}
+
+	logger.Logger.Info("Goose migrations down-to and up completed successfully")
+	return nil
 }
