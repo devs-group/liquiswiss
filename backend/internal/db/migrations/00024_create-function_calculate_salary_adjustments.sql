@@ -17,6 +17,8 @@ BEGIN
                     WHEN ehc.distribution_type = distribution_type AND ehc.amount_type = 'percentage'
                         THEN
                         CASE
+                            WHEN ehc.cycle IN ('once') THEN
+                                (salary * ehc.amount / 100000)
                             WHEN ehc.cycle IN ('daily', 'weekly') THEN
                                 (salary * ehc.amount / 100000) * ehc.relative_offset
                             WHEN ehc.cycle = 'monthly' THEN
@@ -67,6 +69,8 @@ BEGIN
                     WHEN ehc.distribution_type = distribution_type AND ehc.amount_type = 'fixed'
                         THEN
                         CASE
+                            WHEN ehc.cycle IN ('once') THEN
+                                ehc.amount
                             WHEN ehc.cycle IN ('daily', 'weekly') THEN
                                 ehc.amount * ehc.relative_offset
                             WHEN ehc.cycle = 'monthly' THEN
