@@ -10,7 +10,10 @@ import (
 	"liquiswiss/internal/api"
 	"liquiswiss/internal/db"
 	"liquiswiss/internal/middleware"
-	"liquiswiss/internal/service"
+	"liquiswiss/internal/service/db_service"
+	"liquiswiss/internal/service/fixer_io_service"
+	"liquiswiss/internal/service/forecast_service"
+	"liquiswiss/internal/service/sendgrid_service"
 	"liquiswiss/pkg/logger"
 	"liquiswiss/pkg/utils"
 	"net/http"
@@ -67,11 +70,12 @@ func main() {
 	}
 
 	cfg := config.GetConfig()
-	dbService := service.NewDatabaseService(conn)
-	fixerIOService := service.NewFixerIOService(dbService)
-	sendgridService := service.NewSendgridService(cfg.SendgridToken)
+	dbService := db_service.NewDatabaseService(conn)
+	fixerIOService := fixer_io_service.NewFixerIOService(&dbService)
+	sendgridService := sendgrid_service.NewSendgridService(cfg.SendgridToken)
+	forecastService := forecast_service.NewForecastService(&dbService)
 	middleware.InjectUserService(dbService)
-	apiHandler := api.NewAPI(dbService, sendgridService)
+	apiHandler := api.NewAPI(dbService, sendgridService, forecastService)
 
 	// Cronjob
 	c := cron.New()
@@ -82,17 +86,7 @@ func main() {
 	}
 	c.Start()
 
-	if utils.IsProduction() {
-		go fixerIOService.FetchFiatRates()
-	} else {
-		logger.Logger.Debug("Skipping Fiat Rates because we are not on Production")
-	}
-
-	// TODO: Replace this with admin at some point
-	err = dbService.ApplyMocks()
-	if err != nil {
-		logger.Logger.Warnf("Failed to apply mocks: %v", err)
-	}
+	go fixerIOService.FetchFiatRates()
 
 	err = http.ListenAndServe(":8080", apiHandler.Router)
 	if err != nil {

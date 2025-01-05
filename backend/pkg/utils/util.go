@@ -30,3 +30,7 @@ func StructToMap[T any](r T) (map[string]interface{}, error) {
 
 	return templateData, nil
 }
+
+func StringAsPointer(s string) *string {
+	return &s
+}

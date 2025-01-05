@@ -4,7 +4,7 @@ export interface User {
   id: number
   name: string
   email: string
-  currentOrganisationId: number
+  currentOrganisationID: number
 }
 
 export interface RegistrationFormData {

@@ -115,7 +115,7 @@
 
     <div
       v-if="employeeHistories?.data.length"
-      class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4"
+      class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 2xl:grid-cols-4 gap-4"
     >
       <EmployeeHistoryCard
         v-for="employeeHistory in employeeHistories.data"
@@ -174,26 +174,24 @@ import * as yup from 'yup'
 import type { DynamicDialogCloseOptions } from 'primevue/dynamicdialogoptions'
 import { ModalConfig } from '~/config/dialog-props'
 import { Config } from '~/config/config'
-import type {
-  EmployeeFormData,
-  EmployeeHistoryResponse,
-  EmployeeResponse,
-} from '~/models/employee'
+import type { EmployeeFormData, EmployeeHistoryResponse, EmployeeResponse } from '~/models/employee'
 import { RouteNames } from '~/config/routes'
 import EmployeeHistoryDialog from '~/components/dialogs/EmployeeHistoryDialog.vue'
 import EmployeeHistoryCard from '~/components/EmployeeHistoryCard.vue'
 
 const {
-  employeeHistories,
-  noMoreDataEmployeeHistories,
-  pageEmployeeHistories,
   useFetchGetEmployee,
   getEmployee,
   updateEmployee,
   deleteEmployee,
+} = useEmployees()
+const {
+  employeeHistories,
+  noMoreDataEmployeeHistories,
+  pageEmployeeHistories,
   useFetchListEmployeeHistory,
   listEmployeeHistory,
-} = useEmployees()
+} = useEmployeeHistories()
 const dialog = useDialog()
 const toast = useToast()
 const route = useRoute()

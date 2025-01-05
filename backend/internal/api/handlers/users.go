@@ -5,20 +5,20 @@ import (
 	"fmt"
 	"github.com/gin-gonic/gin"
 	"golang.org/x/crypto/bcrypt"
-	"liquiswiss/internal/service"
+	"liquiswiss/internal/service/db_service"
 	"liquiswiss/pkg/models"
 	"liquiswiss/pkg/utils"
 	"net/http"
 )
 
-func GetProfile(dbService service.IDatabaseService, c *gin.Context) {
+func GetProfile(dbService db_service.IDatabaseService, c *gin.Context) {
 	userID := c.GetInt64("userID")
 	if userID == 0 {
 		c.JSON(http.StatusUnauthorized, gin.H{"error": "Ungültiger Benutzer"})
 		return
 	}
 
-	user, err := dbService.GetProfile(fmt.Sprint(userID))
+	user, err := dbService.GetProfile(userID)
 	if err != nil {
 		switch err {
 		case sql.ErrNoRows:
@@ -40,7 +40,7 @@ func GetProfile(dbService service.IDatabaseService, c *gin.Context) {
 	c.JSON(http.StatusOK, user)
 }
 
-func UpdateProfile(dbService service.IDatabaseService, c *gin.Context) {
+func UpdateProfile(dbService db_service.IDatabaseService, c *gin.Context) {
 	userID := c.GetInt64("userID")
 	if userID == 0 {
 		c.JSON(http.StatusUnauthorized, gin.H{"error": "Ungültiger Benutzer"})
@@ -60,13 +60,13 @@ func UpdateProfile(dbService service.IDatabaseService, c *gin.Context) {
 		return
 	}
 
-	err := dbService.UpdateProfile(payload, fmt.Sprint(userID))
+	err := dbService.UpdateProfile(payload, userID)
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 		return
 	}
 
-	user, err := dbService.GetProfile(fmt.Sprint(userID))
+	user, err := dbService.GetProfile(userID)
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 		return
@@ -75,7 +75,7 @@ func UpdateProfile(dbService service.IDatabaseService, c *gin.Context) {
 	c.JSON(http.StatusOK, user)
 }
 
-func UpdatePassword(dbService service.IDatabaseService, c *gin.Context) {
+func UpdatePassword(dbService db_service.IDatabaseService, c *gin.Context) {
 	userID := c.GetInt64("userID")
 	if userID == 0 {
 		c.JSON(http.StatusUnauthorized, gin.H{"error": "Ungültiger Benutzer"})
@@ -101,7 +101,7 @@ func UpdatePassword(dbService service.IDatabaseService, c *gin.Context) {
 		return
 	}
 
-	err = dbService.UpdatePassword(string(encryptedPassword), fmt.Sprint(userID))
+	err = dbService.UpdatePassword(string(encryptedPassword), userID)
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 		return
@@ -110,7 +110,7 @@ func UpdatePassword(dbService service.IDatabaseService, c *gin.Context) {
 	c.Status(http.StatusOK)
 }
 
-func SetUserCurrentOrganisation(dbService service.IDatabaseService, c *gin.Context) {
+func SetUserCurrentOrganisation(dbService db_service.IDatabaseService, c *gin.Context) {
 	userID := c.GetInt64("userID")
 	if userID == 0 {
 		c.JSON(http.StatusUnauthorized, gin.H{"error": "Ungültiger Benutzer"})
@@ -139,7 +139,7 @@ func SetUserCurrentOrganisation(dbService service.IDatabaseService, c *gin.Conte
 	c.Status(http.StatusOK)
 }
 
-func GetAccessToken(dbService service.IDatabaseService, c *gin.Context) {
+func GetAccessToken(dbService db_service.IDatabaseService, c *gin.Context) {
 	// This does nothing it's simply for the user to get a refresh token
 	c.Status(http.StatusNoContent)
 }

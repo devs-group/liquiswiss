@@ -33,7 +33,10 @@
     />
   </div>
   <DynamicDialog />
-  <ConfirmDialog :draggable="false" />
+  <ConfirmDialog
+    :draggable="false"
+    :breakpoints="confirmBreakpoints"
+  />
   <Toast position="bottom-center" />
   <NuxtLoadingIndicator
     :height="4"
@@ -44,6 +47,7 @@
 </template>
 
 <script setup lang="ts">
+import type { ConfirmDialogBreakpoints } from 'primevue'
 import useAuth from '~/composables/useAuth'
 import { Config } from '~/config/config'
 
@@ -59,6 +63,8 @@ useHead({
   titleTemplate: title => title ? `${title} - LiquiSwiss` : 'LiquiSwiss',
   bodyAttrs: () => ({ class: 'bg-white dark:bg-zinc-900' }),
 })
+
+const confirmBreakpoints = { '639px': '90vw' } as ConfirmDialogBreakpoints
 
 const serverDateFormatted = computed(() => {
   return serverDate.value ? DateStringToFormattedDate(serverDate.value) : ''

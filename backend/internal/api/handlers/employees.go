@@ -2,10 +2,8 @@ package handlers
 
 import (
 	"database/sql"
-	"errors"
 	"fmt"
-	"liquiswiss/internal/service"
-	"liquiswiss/pkg/logger"
+	"liquiswiss/internal/service/db_service"
 	"liquiswiss/pkg/models"
 	"liquiswiss/pkg/utils"
 	"net/http"
@@ -14,7 +12,7 @@ import (
 	"github.com/gin-gonic/gin"
 )
 
-func ListEmployees(dbService service.IDatabaseService, c *gin.Context) {
+func ListEmployees(dbService db_service.IDatabaseService, c *gin.Context) {
 	userID := c.GetInt64("userID")
 	if userID == 0 {
 		c.JSON(http.StatusUnauthorized, gin.H{"error": "Ungültiger Benutzer"})
@@ -57,96 +55,15 @@ func ListEmployees(dbService service.IDatabaseService, c *gin.Context) {
 	})
 }
 
-func ListEmployeeHistory(dbService service.IDatabaseService, c *gin.Context) {
+func GetEmployee(dbService db_service.IDatabaseService, c *gin.Context) {
 	userID := c.GetInt64("userID")
 	if userID == 0 {
 		c.JSON(http.StatusUnauthorized, gin.H{"error": "Ungültiger Benutzer"})
 		return
 	}
 
-	employeeID := c.Param("employeeID")
-	if employeeID == "" {
-		c.JSON(http.StatusBadRequest, gin.H{"error": "Es fehlt die ID"})
-		return
-	}
-
-	limit, err := strconv.ParseInt(c.Query("limit"), 10, 64)
+	employeeID, err := strconv.ParseInt(c.Param("employeeID"), 10, 64)
 	if err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
-		return
-	}
-	page, err := strconv.ParseInt(c.Query("page"), 10, 64)
-	if err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
-		return
-	}
-
-	employeeHistories, totalCount, err := dbService.ListEmployeeHistory(userID, employeeID, page, limit)
-	if err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
-		return
-	}
-
-	validator := utils.GetValidator()
-	if err := validator.Var(employeeHistories, "dive"); err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"error": "Ungültige Daten", "details": err.Error()})
-		return
-	}
-
-	totalPages := totalCount / limit
-	if totalCount%limit != 0 {
-		totalPages++
-	}
-
-	c.JSON(http.StatusOK, models.ListResponse[models.EmployeeHistory]{
-		Data:       employeeHistories,
-		Pagination: models.CalculatePagination(page, limit, totalCount),
-	})
-}
-
-func GetEmployeesPagination(dbService service.IDatabaseService, c *gin.Context) {
-	userID := c.GetInt64("userID")
-	if userID == 0 {
-		c.JSON(http.StatusUnauthorized, gin.H{"error": "Ungültiger Benutzer"})
-		return
-	}
-
-	limit, err := strconv.ParseInt(c.Query("limit"), 10, 64)
-	if err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
-		return
-	}
-	page, err := strconv.ParseInt(c.Query("page"), 10, 64)
-	if err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
-		return
-	}
-
-	totalCount, err := dbService.CountEmployees(userID, page, limit)
-	if err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
-		return
-	}
-
-	totalPages := totalCount / limit
-	if totalCount%limit != 0 {
-		totalPages++
-	}
-
-	c.JSON(http.StatusOK, models.PaginationResponse{
-		Pagination: models.CalculatePagination(page, limit, totalCount),
-	})
-}
-
-func GetEmployee(dbService service.IDatabaseService, c *gin.Context) {
-	userID := c.GetInt64("userID")
-	if userID == 0 {
-		c.JSON(http.StatusUnauthorized, gin.H{"error": "Ungültiger Benutzer"})
-		return
-	}
-
-	employeeID := c.Param("employeeID")
-	if employeeID == "" {
 		c.JSON(http.StatusBadRequest, gin.H{"error": "Es fehlt die ID"})
 		return
 	}
@@ -155,7 +72,7 @@ func GetEmployee(dbService service.IDatabaseService, c *gin.Context) {
 	if err != nil {
 		switch err {
 		case sql.ErrNoRows:
-			c.JSON(http.StatusNotFound, gin.H{"error": fmt.Sprintf("Kein Mitarbeiter gefunden mit ID: %s", employeeID)})
+			c.JSON(http.StatusNotFound, gin.H{"error": fmt.Sprintf("Kein Mitarbeiter gefunden mit ID: %d", employeeID)})
 			return
 		default:
 			c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
@@ -172,42 +89,7 @@ func GetEmployee(dbService service.IDatabaseService, c *gin.Context) {
 	c.JSON(http.StatusOK, employee)
 }
 
-func GetEmployeeHistory(dbService service.IDatabaseService, c *gin.Context) {
-	userID := c.GetInt64("userID")
-	if userID == 0 {
-		c.JSON(http.StatusUnauthorized, gin.H{"error": "Ungültiger Benutzer"})
-		return
-	}
-
-	historyID := c.Param("historyID")
-	if historyID == "" {
-		c.JSON(http.StatusBadRequest, gin.H{"error": "Es fehlt die ID"})
-		return
-	}
-
-	employeeHistory, err := dbService.GetEmployeeHistory(userID, historyID)
-	if err != nil {
-		switch err {
-		case sql.ErrNoRows:
-			c.Status(http.StatusNotFound)
-			return
-		default:
-			logger.Logger.Error(err)
-			c.Status(http.StatusInternalServerError)
-			return
-		}
-	}
-
-	validator := utils.GetValidator()
-	if err := validator.Struct(employeeHistory); err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"error": "Ungültige Daten"})
-		return
-	}
-
-	c.JSON(http.StatusOK, employeeHistory)
-}
-
-func CreateEmployee(dbService service.IDatabaseService, c *gin.Context) {
+func CreateEmployee(dbService db_service.IDatabaseService, c *gin.Context) {
 	userID := c.GetInt64("userID")
 	if userID == 0 {
 		c.JSON(http.StatusUnauthorized, gin.H{"error": "Ungültiger Benutzer"})
@@ -232,7 +114,7 @@ func CreateEmployee(dbService service.IDatabaseService, c *gin.Context) {
 		return
 	}
 
-	employee, err := dbService.GetEmployee(userID, fmt.Sprint(employeeID))
+	employee, err := dbService.GetEmployee(userID, employeeID)
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 		return
@@ -241,62 +123,15 @@ func CreateEmployee(dbService service.IDatabaseService, c *gin.Context) {
 	c.JSON(http.StatusCreated, employee)
 }
 
-func CreateEmployeeHistory(dbService service.IDatabaseService, c *gin.Context) {
+func UpdateEmployee(dbService db_service.IDatabaseService, c *gin.Context) {
 	userID := c.GetInt64("userID")
 	if userID == 0 {
 		c.JSON(http.StatusUnauthorized, gin.H{"error": "Ungültiger Benutzer"})
 		return
 	}
 
-	employeeID := c.Param("employeeID")
-	if employeeID == "" {
-		c.JSON(http.StatusBadRequest, gin.H{"error": "Es fehlt die ID"})
-		return
-	}
-
-	var payload models.CreateEmployeeHistory
-	if err := c.BindJSON(&payload); err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
-		return
-	}
-
-	validator := utils.GetValidator()
-	if err := validator.Struct(payload); err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"error": "Ungültige Daten", "details": err.Error()})
-		return
-	}
-
-	historyID, err := dbService.CreateEmployeeHistory(payload, userID, employeeID)
+	employeeID, err := strconv.ParseInt(c.Param("employeeID"), 10, 64)
 	if err != nil {
-		if errors.Is(err, sql.ErrNoRows) {
-			c.Status(http.StatusNotFound)
-			return
-		}
-		logger.Logger.Error(err)
-		c.JSON(http.StatusInternalServerError, gin.H{"error": "Beim Erstellen des Eintrags ist ein Fehler aufgetreten"})
-		return
-	}
-
-	employeeHistory, err := dbService.GetEmployeeHistory(userID, fmt.Sprint(historyID))
-	if err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
-		return
-	}
-
-	CalculateForecasts(dbService, c)
-
-	c.JSON(http.StatusCreated, employeeHistory)
-}
-
-func UpdateEmployee(dbService service.IDatabaseService, c *gin.Context) {
-	userID := c.GetInt64("userID")
-	if userID == 0 {
-		c.JSON(http.StatusUnauthorized, gin.H{"error": "Ungültiger Benutzer"})
-		return
-	}
-
-	employeeID := c.Param("employeeID")
-	if employeeID == "" {
 		c.JSON(http.StatusBadRequest, gin.H{"error": "Es fehlt die ID"})
 		return
 	}
@@ -339,83 +174,15 @@ func UpdateEmployee(dbService service.IDatabaseService, c *gin.Context) {
 	c.JSON(http.StatusOK, employee)
 }
 
-func UpdateEmployeeHistory(dbService service.IDatabaseService, c *gin.Context) {
+func DeleteEmployee(dbService db_service.IDatabaseService, c *gin.Context) {
 	userID := c.GetInt64("userID")
 	if userID == 0 {
 		c.JSON(http.StatusUnauthorized, gin.H{"error": "Ungültiger Benutzer"})
 		return
 	}
 
-	historyID := c.Param("historyID")
-	if historyID == "" {
-		c.JSON(http.StatusBadRequest, gin.H{"error": "Es fehlt die ID"})
-		return
-	}
-
-	existingEmployeeHistory, err := dbService.GetEmployeeHistory(userID, historyID)
+	employeeID, err := strconv.ParseInt(c.Param("employeeID"), 10, 64)
 	if err != nil {
-		c.Status(http.StatusNotFound)
-		return
-	}
-
-	var payload models.UpdateEmployeeHistory
-	if err := c.BindJSON(&payload); err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
-		return
-	}
-
-	if payload.HoursPerMonth == nil {
-		hoursPerMonth := existingEmployeeHistory.HoursPerMonth
-		payload.HoursPerMonth = &hoursPerMonth
-	}
-	if payload.Salary == nil {
-		salary := existingEmployeeHistory.Salary
-		payload.Salary = &salary
-	}
-	if payload.CurrencyID == nil {
-		payload.CurrencyID = existingEmployeeHistory.Currency.ID
-	}
-	if payload.VacationDaysPerYear == nil {
-		vacationDaysPerYear := existingEmployeeHistory.VacationDaysPerYear
-		payload.VacationDaysPerYear = &vacationDaysPerYear
-	}
-	if payload.FromDate == nil {
-		fromDate := existingEmployeeHistory.FromDate.ToString()
-		payload.FromDate = &fromDate
-	}
-
-	validator := utils.GetValidator()
-	if err := validator.Struct(payload); err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"error": "Ungültige Daten", "details": err.Error()})
-		return
-	}
-
-	err = dbService.UpdateEmployeeHistory(payload, existingEmployeeHistory.EmployeeID, historyID)
-	if err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
-		return
-	}
-
-	employee, err := dbService.GetEmployeeHistory(userID, historyID)
-	if err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
-		return
-	}
-
-	CalculateForecasts(dbService, c)
-
-	c.JSON(http.StatusOK, employee)
-}
-
-func DeleteEmployee(dbService service.IDatabaseService, c *gin.Context) {
-	userID := c.GetInt64("userID")
-	if userID == 0 {
-		c.JSON(http.StatusUnauthorized, gin.H{"error": "Ungültiger Benutzer"})
-		return
-	}
-
-	employeeID := c.Param("employeeID")
-	if employeeID == "" {
 		c.JSON(http.StatusBadRequest, gin.H{"error": "Es fehlt die ID"})
 		return
 	}
@@ -435,32 +202,36 @@ func DeleteEmployee(dbService service.IDatabaseService, c *gin.Context) {
 	c.Status(http.StatusNoContent)
 }
 
-func DeleteEmployeeHistory(dbService service.IDatabaseService, c *gin.Context) {
+func GetEmployeesPagination(dbService db_service.IDatabaseService, c *gin.Context) {
 	userID := c.GetInt64("userID")
 	if userID == 0 {
 		c.JSON(http.StatusUnauthorized, gin.H{"error": "Ungültiger Benutzer"})
 		return
 	}
 
-	historyID := c.Param("historyID")
-	if historyID == "" {
-		c.JSON(http.StatusBadRequest, gin.H{"error": "Es fehlt die ID"})
-		return
-	}
-
-	existingEmployeeHistory, err := dbService.GetEmployeeHistory(userID, historyID)
+	limit, err := strconv.ParseInt(c.Query("limit"), 10, 64)
 	if err != nil {
-		c.Status(http.StatusNotFound)
+		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		return
+	}
+	page, err := strconv.ParseInt(c.Query("page"), 10, 64)
+	if err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 		return
 	}
 
-	err = dbService.DeleteEmployeeHistory(existingEmployeeHistory, userID)
+	totalCount, err := dbService.CountEmployees(userID, page, limit)
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 		return
 	}
 
-	CalculateForecasts(dbService, c)
+	totalPages := totalCount / limit
+	if totalCount%limit != 0 {
+		totalPages++
+	}
 
-	c.Status(http.StatusNoContent)
+	c.JSON(http.StatusOK, models.PaginationResponse{
+		Pagination: models.CalculatePagination(page, limit, totalCount),
+	})
 }

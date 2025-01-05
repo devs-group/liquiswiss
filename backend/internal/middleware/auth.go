@@ -1,7 +1,7 @@
 package middleware
 
 import (
-	"liquiswiss/internal/service"
+	"liquiswiss/internal/service/db_service"
 	"liquiswiss/pkg/auth"
 	"liquiswiss/pkg/logger"
 	"liquiswiss/pkg/models"
@@ -11,7 +11,7 @@ import (
 	"github.com/gin-gonic/gin"
 )
 
-var databaseService service.IDatabaseService
+var databaseService db_service.IDatabaseService
 
 func AuthMiddleware(c *gin.Context) {
 	var accessClaims *auth.Claims
@@ -68,7 +68,7 @@ func AuthMiddleware(c *gin.Context) {
 		accessClaims = newAccessClaims
 	}
 
-	exists, err := databaseService.CheckUserExistance(accessClaims.UserID)
+	exists, err := databaseService.CheckUserExistence(accessClaims.UserID)
 	if err != nil {
 		auth.ClearAuthCookies(c)
 		// TODO: Report as exception to Sentry
@@ -88,6 +88,6 @@ func AuthMiddleware(c *gin.Context) {
 	c.Next()
 }
 
-func InjectUserService(s service.IDatabaseService) {
+func InjectUserService(s db_service.IDatabaseService) {
 	databaseService = s
 }

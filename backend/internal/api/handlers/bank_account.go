@@ -4,13 +4,14 @@ import (
 	"database/sql"
 	"fmt"
 	"github.com/gin-gonic/gin"
-	"liquiswiss/internal/service"
+	"liquiswiss/internal/service/db_service"
 	"liquiswiss/pkg/models"
 	"liquiswiss/pkg/utils"
 	"net/http"
+	"strconv"
 )
 
-func ListBankAccounts(dbService service.IDatabaseService, c *gin.Context) {
+func ListBankAccounts(dbService db_service.IDatabaseService, c *gin.Context) {
 	userID := c.GetInt64("userID")
 	if userID == 0 {
 		c.JSON(http.StatusUnauthorized, gin.H{"error": "Ungültiger Benutzer"})
@@ -33,15 +34,15 @@ func ListBankAccounts(dbService service.IDatabaseService, c *gin.Context) {
 	c.JSON(http.StatusOK, bankAccounts)
 }
 
-func GetBankAccount(dbService service.IDatabaseService, c *gin.Context) {
+func GetBankAccount(dbService db_service.IDatabaseService, c *gin.Context) {
 	userID := c.GetInt64("userID")
 	if userID == 0 {
 		c.JSON(http.StatusUnauthorized, gin.H{"error": "Ungültiger Benutzer"})
 		return
 	}
 
-	bankAccountID := c.Param("bankAccountID")
-	if bankAccountID == "" {
+	bankAccountID, err := strconv.ParseInt(c.Param("bankAccountID"), 10, 64)
+	if err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"error": "Es fehlt die ID"})
 		return
 	}
@@ -50,7 +51,7 @@ func GetBankAccount(dbService service.IDatabaseService, c *gin.Context) {
 	if err != nil {
 		switch err {
 		case sql.ErrNoRows:
-			c.JSON(http.StatusNotFound, gin.H{"error": fmt.Sprintf("Kein Bankkonto gefunden mit ID: %s", bankAccountID)})
+			c.JSON(http.StatusNotFound, gin.H{"error": fmt.Sprintf("Kein Bankkonto gefunden mit ID: %d", bankAccountID)})
 			return
 		default:
 			c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
@@ -68,7 +69,7 @@ func GetBankAccount(dbService service.IDatabaseService, c *gin.Context) {
 	c.JSON(http.StatusOK, bankAccount)
 }
 
-func CreateBankAccount(dbService service.IDatabaseService, c *gin.Context) {
+func CreateBankAccount(dbService db_service.IDatabaseService, c *gin.Context) {
 	userID := c.GetInt64("userID")
 	if userID == 0 {
 		c.JSON(http.StatusUnauthorized, gin.H{"error": "Ungültiger Benutzer"})
@@ -94,7 +95,7 @@ func CreateBankAccount(dbService service.IDatabaseService, c *gin.Context) {
 		return
 	}
 
-	bankAccount, err := dbService.GetBankAccount(userID, fmt.Sprint(bankAccountID))
+	bankAccount, err := dbService.GetBankAccount(userID, bankAccountID)
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 		return
@@ -103,20 +104,20 @@ func CreateBankAccount(dbService service.IDatabaseService, c *gin.Context) {
 	c.JSON(http.StatusCreated, bankAccount)
 }
 
-func UpdateBankAccount(dbService service.IDatabaseService, c *gin.Context) {
+func UpdateBankAccount(dbService db_service.IDatabaseService, c *gin.Context) {
 	userID := c.GetInt64("userID")
 	if userID == 0 {
 		c.JSON(http.StatusUnauthorized, gin.H{"error": "Ungültiger Benutzer"})
 		return
 	}
 
-	bankAccountID := c.Param("bankAccountID")
-	if bankAccountID == "" {
+	bankAccountID, err := strconv.ParseInt(c.Param("bankAccountID"), 10, 64)
+	if err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"error": "Es fehlt die ID"})
 		return
 	}
 
-	_, err := dbService.GetBankAccount(userID, bankAccountID)
+	_, err = dbService.GetBankAccount(userID, bankAccountID)
 	if err != nil {
 		c.JSON(http.StatusNotFound, gin.H{"error": err.Error()})
 		return
@@ -150,20 +151,20 @@ func UpdateBankAccount(dbService service.IDatabaseService, c *gin.Context) {
 	c.JSON(http.StatusOK, bankAccount)
 }
 
-func DeleteBankAccount(dbService service.IDatabaseService, c *gin.Context) {
+func DeleteBankAccount(dbService db_service.IDatabaseService, c *gin.Context) {
 	userID := c.GetInt64("userID")
 	if userID == 0 {
 		c.JSON(http.StatusUnauthorized, gin.H{"error": "Ungültiger Benutzer"})
 		return
 	}
 
-	bankAccountID := c.Param("bankAccountID")
-	if bankAccountID == "" {
+	bankAccountID, err := strconv.ParseInt(c.Param("bankAccountID"), 10, 64)
+	if err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"error": "Es fehlt die ID"})
 		return
 	}
 
-	_, err := dbService.GetBankAccount(userID, bankAccountID)
+	_, err = dbService.GetBankAccount(userID, bankAccountID)
 	if err != nil {
 		c.Status(http.StatusNotFound)
 		return

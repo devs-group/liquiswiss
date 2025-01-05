@@ -6,7 +6,7 @@
     <div class="col-span-2 flex flex-col gap-2">
       <label
         class="text-sm font-bold"
-        for="name"
+        for="value"
       >Prozentualer Wert *</label>
       <InputText
         v-bind="valueProps"

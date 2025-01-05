@@ -19,6 +19,14 @@ func (cd AsDate) ToString() string {
 	return formattedDate
 }
 
+// ToFormattedTime returns either a formatted string date or an empty string
+func (cd *AsDate) ToFormattedTime(format string) string {
+	if cd != nil {
+		return time.Time(*cd).Format(format)
+	}
+	return ""
+}
+
 // UnmarshalJSON parses the date from "YYYY-MM-DD" format for JSON deserialization
 func (cd *AsDate) UnmarshalJSON(data []byte) error {
 	// Remove the quotes from the string if necessary

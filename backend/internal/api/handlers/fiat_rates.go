@@ -2,12 +2,12 @@ package handlers
 
 import (
 	"github.com/gin-gonic/gin"
-	"liquiswiss/internal/service"
+	"liquiswiss/internal/service/db_service"
 	"liquiswiss/pkg/utils"
 	"net/http"
 )
 
-func ListFiatRates(dbService service.IDatabaseService, c *gin.Context) {
+func ListFiatRates(dbService db_service.IDatabaseService, c *gin.Context) {
 	fiatRates, err := dbService.ListFiatRates(utils.BaseCurrency)
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
@@ -17,7 +17,7 @@ func ListFiatRates(dbService service.IDatabaseService, c *gin.Context) {
 	c.JSON(http.StatusOK, fiatRates)
 }
 
-func GetFiatRate(dbService service.IDatabaseService, c *gin.Context) {
+func GetFiatRate(dbService db_service.IDatabaseService, c *gin.Context) {
 	targetCurrency := c.Param("currency")
 	if targetCurrency == "" {
 		c.JSON(http.StatusBadRequest, gin.H{"error": "Target Currency is missing"})

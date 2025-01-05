@@ -7,6 +7,7 @@
     "dev": "nuxt dev",
     "dev-host": "nuxt dev --host",
     "lint": "eslint .",
+    "lint:fix": "eslint . --fix",
     "generate": "nuxt generate",
     "preview": "nuxt preview",
     "postinstall": "nuxt prepare"

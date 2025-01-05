@@ -2,6 +2,7 @@ import type { CategoryResponse, ListCategoryResponse } from '~/models/category'
 import type { CurrencyResponse, ListCurrencyResponse } from '~/models/currency'
 import type { FiatRateResponse } from '~/models/fiat-rate'
 import type { ServerTimeResponse } from '~/models/server-time'
+import { DateToEuropeZurichDate } from '~/utils/format-helper'
 
 export default function useGlobalData() {
   const categories = useState<CategoryResponse[]>('catgegories', () => [])
@@ -55,7 +56,7 @@ export default function useGlobalData() {
     if (error.value) {
       return Promise.reject('Serverzeit konnte nicht geladen werden')
     }
-    serverDate.value = data.value?.date ? new Date(data.value!.date) : null
+    serverDate.value = data.value?.date ? DateToEuropeZurichDate(data.value!.date) : null
   }
 
   const convertAmountToRate = (amount: number, currency: string) => {

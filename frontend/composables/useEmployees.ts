@@ -1,26 +1,16 @@
 import type { FetchError } from 'ofetch'
-import type {
-  EmployeeFormData,
-  EmployeeHistoryFormData,
-  EmployeeHistoryResponse,
-  EmployeeResponse,
-  ListEmployeeHistoryResponse,
-  ListEmployeeResponse,
-} from '~/models/employee'
+import type { EmployeeFormData, EmployeeResponse, ListEmployeeResponse } from '~/models/employee'
 import { DefaultListResponse } from '~/models/default-data'
 
 export default function useEmployees() {
   const limitEmployees = useState('limitEmployees', () => 20)
   const pageEmployees = useState('pageEmployees', () => 1)
   const noMoreDataEmployees = useState('noMoreDataEmployees', () => false)
-  const limitEmployeeHistories = useState('limitEmployeeHistories', () => 20)
-  const pageEmployeeHistories = useState('pageEmployeeHistories', () => 1)
-  const noMoreDataEmployeeHistories = useState('noMoreDataEmployeeHistories', () => false)
   const employees = useState<ListEmployeeResponse>('employees', () => DefaultListResponse())
-  const employeeHistories = useState<ListEmployeeHistoryResponse>('employeeHistories', () => DefaultListResponse())
 
   const { employeeSortBy, employeeSortOrder } = useSettings()
 
+  // Employees
   const useFetchListEmployees = async () => {
     const { data, error } = await useFetch<ListEmployeeResponse>('/api/employees', {
       method: 'GET',
@@ -122,84 +112,6 @@ export default function useEmployees() {
     }
   }
 
-  const useFetchListEmployeeHistory = async (employeeID: number) => {
-    const { data, error } = await useFetch<ListEmployeeHistoryResponse>(`/api/employees/${employeeID}/history`, {
-      method: 'GET',
-      query: {
-        page: pageEmployeeHistories.value,
-        limit: limitEmployeeHistories.value,
-      },
-    })
-    if (error.value) {
-      return Promise.reject('Fehler beim Laden der Historie')
-    }
-    setEmployeeHistories(data.value, false)
-  }
-
-  const listEmployeeHistory = async (employeeID: number) => {
-    try {
-      const data = await $fetch<ListEmployeeHistoryResponse>(`/api/employees/${employeeID}/history`, {
-        method: 'GET',
-        query: {
-          page: pageEmployeeHistories.value,
-          limit: limitEmployeeHistories.value,
-        },
-      })
-      setEmployeeHistories(data, false)
-    }
-    catch {
-      return Promise.reject('Fehler beim Laden der Historie')
-    }
-  }
-
-  const createEmployeeHistory = async (employeeID: number, payload: EmployeeHistoryFormData) => {
-    try {
-      await $fetch<EmployeeHistoryResponse>(`/api/employees/${employeeID}/history`, {
-        method: 'POST',
-        body: {
-          ...payload,
-          salary: AmountToInteger(payload.salary),
-          fromDate: DateToApiFormat(payload.fromDate),
-          toDate: payload.toDate ? DateToApiFormat(payload.toDate) : undefined,
-        },
-      })
-      await listEmployeeHistory(employeeID)
-    }
-    catch {
-      return Promise.reject('Fehler beim Erstellen der Historie')
-    }
-  }
-
-  const updateEmployeeHistory = async (employeeID: number, payload: EmployeeHistoryFormData) => {
-    try {
-      await $fetch<EmployeeHistoryResponse>(`/api/employees/history/${payload.id}`, {
-        method: 'PATCH',
-        body: {
-          ...payload,
-          salary: AmountToInteger(payload.salary),
-          fromDate: DateToApiFormat(payload.fromDate),
-          toDate: payload.toDate ? DateToApiFormat(payload.toDate) : undefined,
-        },
-      })
-      await listEmployeeHistory(employeeID)
-    }
-    catch {
-      return Promise.reject('Fehler beim Aktualisieren der Historie')
-    }
-  }
-
-  const deleteEmployeeHistory = async (employeeID: number, employeeHistoryID: number) => {
-    try {
-      await $fetch(`/api/employees/history/${employeeHistoryID}`, {
-        method: 'DELETE',
-      })
-      await listEmployeeHistory(employeeID)
-    }
-    catch {
-      return Promise.reject('Fehler beim Löschen der Historie')
-    }
-  }
-
   const setEmployees = (data: ListEmployeeResponse | null, append: boolean) => {
     if (data) {
       if (append) {
@@ -216,45 +128,18 @@ export default function useEmployees() {
     }
   }
 
-  const setEmployeeHistories = (data: ListEmployeeHistoryResponse | null, append: boolean) => {
-    if (data) {
-      if (append) {
-        employeeHistories.value!.data = employeeHistories.value!.data.concat(data.data ?? [])
-        employeeHistories.value!.pagination = data.pagination
-      }
-      else {
-        employeeHistories.value = data
-      }
-      noMoreDataEmployeeHistories.value = employeeHistories.value.pagination.totalRemaining == 0
-    }
-    else {
-      employeeHistories.value = DefaultListResponse()
-    }
-  }
-
   return {
     employees,
     limitEmployees,
     pageEmployees,
     noMoreDataEmployees,
-    employeeHistories,
-    limitEmployeeHistories,
-    pageEmployeeHistories,
-    noMoreDataEmployeeHistories,
     useFetchListEmployees,
     listEmployees,
-    // getEmployeesPagination,
     useFetchGetEmployee,
     getEmployee,
     createEmployee,
     updateEmployee,
     deleteEmployee,
-    useFetchListEmployeeHistory,
-    listEmployeeHistory,
-    createEmployeeHistory,
-    updateEmployeeHistory,
-    deleteEmployeeHistory,
     setEmployees,
-    setEmployeeHistories,
   }
 }

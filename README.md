@@ -5,7 +5,7 @@ Liquidity Planning
 - [Landing Page](https://liquiswiss.ch/)
 - [Discord](https://discord.gg/7ckBNzskYh)
 
-# Configuration
+## Configuration
 
 > We are planning to add [Mailpit](https://mailpit.axllent.org/) for local e-mail testing and replace fixer.io with a
 > local mock
@@ -31,13 +31,13 @@ Liquidity Planning
 3. Copy the [fronted/.env.example](frontend/.env.example) into the same directory and name it `.env`
     - The `NUXT_API_HOST` works fine for local dev but must be changed for production
 
-## Production
+## Admin
 
-For production make sure you define the proper values for your envs (no matter in which way you provide them)
+We are using [phpMyAdmin](https://www.phpmyadmin.net/) with Docker to provide an interface to the database.
 
-- `WEB_HOST` - Reflects your Frontend URL (eg. https://yourdomain.com)
-- `JWT_KEY` - Should be a long and secure password
-- `NUXT_API_HOST` - Reflects your Backend URL (eg https://api.yourdomain.com)
+- Check out the [.env.example](.env.example) to see the values you can set (all starting with `PMA_`). You can find more
+  information [here](https://hub.docker.com/_/phpmyadmin)
+- You can check out your database (locally) at: http://localhost:8082/
 
 # Frontend (Nuxt 3)
 
@@ -78,6 +78,7 @@ air
 ## Migrations
 
 - Create Migration: `goose --dir internal/db/migrations create <name-of-migration> sql`
+    - Follow up with: `goose --dir internal/db/migrations fix` to apply sequential numbering
 - Apply Migration: `goose --dir internal/db/migrations mysql liquiswiss:password@/liquiswiss up`
 - Rollback Migration: `goose --dir internal/db/migrations mysql liquiswiss:password@/liquiswiss down`
 - Or check out the [Makefile](backend/Makefile)
@@ -86,7 +87,21 @@ air
 
 > Make sure you are in the [backend](backend) directory
 
+> Make sure you spin up the test database with `docker compose up`
+
 1. Install [Mockgen](https://github.com/uber-go/mock) with `go install go.uber.org/mock/mockgen@latest` to generate
    mocks
     - There are `go generate` commands already in the files so you can simply do `go generate ./...`
-2. You can run all tests with `go test ./...`
+2. You can run all tests with `go test ./...` locally
+3. Locally the [.env.local.testing](backend/.env.local.testing) is used
+4. For the Github Action the [.env.github.testing](backend/.env.github.testing) is used
+   - Check out the [ci.yml](.github/workflows/ci.yml) and check for the service used in the **test-backend** job
+   - The environment variable `TESTING_ENVIRONMENT` determines which .env file to use
+
+# Production
+
+For production make sure you define the proper values for your envs (no matter in which way you provide them)
+
+- `WEB_HOST` - Reflects your Frontend URL (eg. https://yourdomain.com)
+- `JWT_KEY` - Should be a long and secure password
+- `NUXT_API_HOST` - Reflects your Backend URL (eg https://api.yourdomain.com)

@@ -3,7 +3,7 @@ package handlers
 import (
 	"database/sql"
 	"fmt"
-	"liquiswiss/internal/service"
+	"liquiswiss/internal/service/db_service"
 	"liquiswiss/pkg/models"
 	"liquiswiss/pkg/utils"
 	"net/http"
@@ -12,7 +12,7 @@ import (
 	"github.com/gin-gonic/gin"
 )
 
-func ListOrganisations(dbService service.IDatabaseService, c *gin.Context) {
+func ListOrganisations(dbService db_service.IDatabaseService, c *gin.Context) {
 	userID := c.GetInt64("userID")
 	if userID == 0 {
 		c.JSON(http.StatusUnauthorized, gin.H{"error": "Ungültiger Benutzer"})
@@ -54,24 +54,24 @@ func ListOrganisations(dbService service.IDatabaseService, c *gin.Context) {
 	})
 }
 
-func GetOrganisation(dbService service.IDatabaseService, c *gin.Context) {
+func GetOrganisation(dbService db_service.IDatabaseService, c *gin.Context) {
 	userID := c.GetInt64("userID")
 	if userID == 0 {
 		c.JSON(http.StatusUnauthorized, gin.H{"error": "Ungültiger Benutzer"})
 		return
 	}
 
-	id := c.Param("id")
-	if id == "" {
-		c.JSON(http.StatusBadRequest, gin.H{"error": "Es fehlt die ID"})
+	organisationID, err := strconv.ParseInt(c.Param("organisationID"), 10, 64)
+	if err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "Es fehlt die organisationID"})
 		return
 	}
 
-	organisation, err := dbService.GetOrganisation(userID, id)
+	organisation, err := dbService.GetOrganisation(userID, organisationID)
 	if err != nil {
 		switch err {
 		case sql.ErrNoRows:
-			c.JSON(http.StatusNotFound, gin.H{"error": fmt.Sprintf("Keine Organisation gefunden mit ID: %s", id)})
+			c.JSON(http.StatusNotFound, gin.H{"error": fmt.Sprintf("Keine Organisation gefunden mit ID: %d", organisationID)})
 			return
 		default:
 			c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
@@ -89,7 +89,7 @@ func GetOrganisation(dbService service.IDatabaseService, c *gin.Context) {
 	c.JSON(http.StatusOK, organisation)
 }
 
-func CreateOrganisation(dbService service.IDatabaseService, c *gin.Context) {
+func CreateOrganisation(dbService db_service.IDatabaseService, c *gin.Context) {
 	userID := c.GetInt64("userID")
 	if userID == 0 {
 		c.JSON(http.StatusUnauthorized, gin.H{"error": "Ungültiger Benutzer"})
@@ -121,7 +121,7 @@ func CreateOrganisation(dbService service.IDatabaseService, c *gin.Context) {
 		return
 	}
 
-	organisation, err := dbService.GetOrganisation(userID, fmt.Sprint(organisationID))
+	organisation, err := dbService.GetOrganisation(userID, organisationID)
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 		return
@@ -130,20 +130,20 @@ func CreateOrganisation(dbService service.IDatabaseService, c *gin.Context) {
 	c.JSON(http.StatusCreated, organisation)
 }
 
-func UpdateOrganisation(dbService service.IDatabaseService, c *gin.Context) {
+func UpdateOrganisation(dbService db_service.IDatabaseService, c *gin.Context) {
 	userID := c.GetInt64("userID")
 	if userID == 0 {
 		c.JSON(http.StatusUnauthorized, gin.H{"error": "Ungültiger Benutzer"})
 		return
 	}
 
-	id := c.Param("id")
-	if id == "" {
-		c.JSON(http.StatusBadRequest, gin.H{"error": "Es fehlt die ID"})
+	organisationID, err := strconv.ParseInt(c.Param("organisationID"), 10, 64)
+	if err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "Es fehlt die organisationID"})
 		return
 	}
 
-	existingOrganisation, err := dbService.GetOrganisation(userID, id)
+	existingOrganisation, err := dbService.GetOrganisation(userID, organisationID)
 	if err != nil {
 		c.Status(http.StatusNotFound)
 		return
@@ -173,13 +173,13 @@ func UpdateOrganisation(dbService service.IDatabaseService, c *gin.Context) {
 		return
 	}
 
-	err = dbService.UpdateOrganisation(payload, userID, id)
+	err = dbService.UpdateOrganisation(payload, userID, organisationID)
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 		return
 	}
 
-	transaction, err := dbService.GetOrganisation(userID, id)
+	transaction, err := dbService.GetOrganisation(userID, organisationID)
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 		return

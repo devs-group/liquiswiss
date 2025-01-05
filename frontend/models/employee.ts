@@ -1,11 +1,13 @@
 import type { PaginationResponse } from '~/models/pagination'
 import type { CurrencyResponse } from '~/models/currency'
+import type {
+  CostCycleTypeToStringDefinition,
+  CycleTypeToStringDefinition,
+  EmployeeCostDistributionTypeToStringDefinition,
+  EmployeeCostTypeToStringDefinition,
+} from '~/utils/enum-helper'
 
-export interface EmployeeFormData {
-  id: number
-  name: string
-}
-
+// Response
 export interface EmployeeResponse {
   id: number
   name: string
@@ -20,25 +22,30 @@ export interface EmployeeResponse {
   historyID: number | null
 }
 
-export interface ListEmployeeResponse {
-  data: EmployeeResponse[]
-  pagination: PaginationResponse
+export interface EmployeeHistoryCostLabelResponse {
+  id: number
+  name: string
 }
 
-export interface EmployeeHistoryFormData {
+export interface EmployeeHistoryCostResponse {
   id: number
-  hoursPerMonth: number
-  salary: number
-  cycle: CycleTypeToStringDefinition
-  currencyID: number
-  vacationDaysPerYear: number
-  fromDate: Date
-  toDate?: Date
+  label: EmployeeHistoryCostLabelResponse | null
+  cycle: CostCycleTypeToStringDefinition
+  amountType: EmployeeCostTypeToStringDefinition
+  amount: number
+  distributionType: EmployeeCostDistributionTypeToStringDefinition
+  calculatedAmount: number
+  relativeOffset: number
+  targetDate: string | null
+  previousExecutionDate: Date
+  nextExecutionDate: Date
+  nextCost: number
+  employeeHistoryID: number
 }
 
 export interface EmployeeHistoryResponse {
   id: number
-  employeeID: string
+  employeeID: number
   hoursPerMonth: number
   salary: number
   cycle: CycleTypeToStringDefinition
@@ -46,6 +53,74 @@ export interface EmployeeHistoryResponse {
   vacationDaysPerYear: number
   fromDate: string
   toDate: string | null
+  withSeparateCosts: boolean
+  nextExecutionDate: string | null
+  employeeDeductions: number
+  employerCosts: number
+}
+
+// Form
+export interface EmployeeFormData {
+  id: number
+  name: string
+}
+
+export interface EmployeeHistoryCostLabelFormData {
+  id: number
+  name: string
+}
+
+export interface EmployeeHistoryCostFormData {
+  id: number
+  labelID?: number
+  cycle: CostCycleTypeToStringDefinition
+  amountType: EmployeeCostTypeToStringDefinition
+  amount: number
+  relativeOffset: number
+  distributionType: EmployeeCostDistributionTypeToStringDefinition
+  targetDate?: Date
+}
+
+export interface EmployeeHistoryCostCopyFormData {
+  ids: number[]
+}
+
+export interface EmployeeHistoryPUTFormData {
+  id: number
+  hoursPerMonth: number
+  salary: number
+  cycle: CycleTypeToStringDefinition
+  currencyID: number
+  vacationDaysPerYear: number
+  fromDate: Date
+  withSeparateCosts: boolean
+}
+
+export interface EmployeeHistoryPATCHFormData {
+  id: number
+  hoursPerMonth?: number
+  salary?: number
+  cycle: CycleTypeToStringDefinition
+  currencyID?: number
+  vacationDaysPerYear?: number
+  fromDate?: Date
+  withSeparateCosts?: boolean
+}
+
+// List Response
+export interface ListEmployeeResponse {
+  data: EmployeeResponse[]
+  pagination: PaginationResponse
+}
+
+export interface ListEmployeeHistoryCostResponse {
+  data: EmployeeHistoryCostResponse[]
+  pagination: PaginationResponse
+}
+
+export interface ListEmployeeHistoryCostLabelResponse {
+  data: EmployeeHistoryCostLabelResponse[]
+  pagination: PaginationResponse
 }
 
 export interface ListEmployeeHistoryResponse {
