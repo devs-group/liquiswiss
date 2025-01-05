@@ -6,25 +6,15 @@ import (
 	"errors"
 	"liquiswiss/internal/api"
 	"liquiswiss/internal/service/mocks"
-	"liquiswiss/pkg/utils"
 	"net/http"
 	"net/http/httptest"
-	"os"
 	"testing"
 
-	"github.com/gin-gonic/gin"
 	"github.com/stretchr/testify/assert"
 	"go.uber.org/mock/gomock"
 )
 
-func TestMain(m *testing.M) {
-	utils.InitValidator()
-	code := m.Run()
-	os.Exit(code)
-}
-
 func TestRegistrationSuccessful(t *testing.T) {
-	gin.SetMode(gin.TestMode)
 	ctrl := gomock.NewController(t)
 	defer ctrl.Finish()
 
@@ -68,7 +58,6 @@ func TestRegistrationSuccessful(t *testing.T) {
 }
 
 func TestRegistrationCreationFails(t *testing.T) {
-	gin.SetMode(gin.TestMode)
 	ctrl := gomock.NewController(t)
 	defer ctrl.Finish()
 
@@ -109,7 +98,6 @@ func TestRegistrationCreationFails(t *testing.T) {
 }
 
 func TestRegistrationEmailFails(t *testing.T) {
-	gin.SetMode(gin.TestMode)
 	ctrl := gomock.NewController(t)
 	defer ctrl.Finish()
 

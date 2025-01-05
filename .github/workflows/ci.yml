@@ -37,9 +37,24 @@ jobs:
   test-backend:
     name: Test Backend
     runs-on: ubuntu-latest
+    services:
+      database-testing:
+        image: mariadb:10.6.16
+        options: >-
+          --health-cmd "healthcheck.sh --connect --innodb_initialized"
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+        env:
+          MARIADB_USER: "test"
+          MARIADB_PASSWORD: "test"
+          MARIADB_DATABASE: "test"
+          MARIADB_ROOT_PASSWORD: "test"
     #    if: github.ref != 'refs/heads/main'
     container:
       image: golang:1.23.3-alpine
+    env:
+      TESTING_ENVIRONMENT: "github"
     steps:
       - name: Checkout code
         uses: actions/checkout@v4

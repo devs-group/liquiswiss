@@ -37,6 +37,17 @@ services:
     volumes:
       - ./db_data:/var/lib/mysql
 
+  database-testing:
+    image: mariadb:10.6.16
+    restart: always
+    ports:
+      - '3307:3306'
+    environment:
+      MARIADB_USER: "test"
+      MARIADB_PASSWORD: "test"
+      MARIADB_DATABASE: "test"
+      MARIADB_ROOT_PASSWORD: "test"
+
   phpmyadmin:
     image: phpmyadmin:5.2.1-apache
     restart: always
