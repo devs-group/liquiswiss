@@ -44,7 +44,7 @@
           </p>
         </div>
         <template v-if="!isInactive">
-          <p v-if="isOnce">
+          <p>
             Gesamt: {{ nextCostFormatted }} {{ employeeHistory.currency.code }} {{ getNextCostExecutionDateHint }}
           </p>
         </template>
@@ -85,9 +85,6 @@ defineEmits<{
 
 const isFixed = computed(
   () => EmployeeHistoryCostUtils.isFixed(props.employeeHistoryCost),
-)
-const isOnce = computed(
-  () => EmployeeHistoryCostUtils.isOnce(props.employeeHistoryCost),
 )
 const isInactive = computed(
   () => EmployeeHistoryCostUtils.isInactive(props.employeeHistoryCost),
