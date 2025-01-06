@@ -17,5 +17,5 @@ CREATE TABLE refresh_tokens (
 
 -- +goose Down
 -- +goose StatementBegin
-DROP TABLE refresh_tokens;
+DROP TABLE IF EXISTS refresh_tokens;
 -- +goose StatementEnd
