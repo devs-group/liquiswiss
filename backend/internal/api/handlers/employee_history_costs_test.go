@@ -250,3 +250,150 @@ func TestEmployeeHistoryCosts(t *testing.T) {
 		})
 	}
 }
+
+func TestEmployeeHistoryCostDeductions(t *testing.T) {
+	conn := SetupTestEnvironment(t)
+	defer conn.Close()
+
+	dbService := db_service.NewDatabaseService(conn)
+
+	// Preparations
+	user, _, err := CreateUserWithOrganisation(
+		dbService, "John Doe", "test", "Test Organisation",
+	)
+	assert.NoError(t, err)
+
+	employee, err := CreateEmployee(dbService, user.ID, "Tom Riddle")
+	assert.NoError(t, err)
+
+	currency, err := CreateCurrency(dbService, "CHF", "Swiss Franc", "de-CH")
+	assert.NoError(t, err)
+
+	// Tests
+	historyID, err := dbService.CreateEmployeeHistory(models.CreateEmployeeHistory{
+		HoursPerMonth: 160,
+		// Salary of 10'000.00 CHF
+		Salary:              10000 * 100,
+		Cycle:               "monthly",
+		CurrencyID:          *currency.ID,
+		VacationDaysPerYear: 25,
+		FromDate:            "2025-01-26",
+		ToDate:              nil,
+		// We want to test separate costs
+		WithSeparateCosts: true,
+	}, user.ID, employee.ID)
+	assert.NoError(t, err)
+
+	history, err := dbService.GetEmployeeHistory(user.ID, historyID)
+	assert.NoError(t, err)
+
+	type TestCase struct {
+		Description                string
+		DatabaseTime               string
+		ExpectedEmployeeDeductions uint64
+		CreateData                 models.CreateEmployeeHistoryCost
+	}
+
+	testCases := []TestCase{
+		{
+			Description:                "Once with fixed amount",
+			DatabaseTime:               "2025-01-01",
+			ExpectedEmployeeDeductions: 500 * 100,
+			CreateData: models.CreateEmployeeHistoryCost{
+				Cycle:            "once",
+				AmountType:       "fixed",
+				Amount:           500 * 100,
+				DistributionType: "employee",
+				RelativeOffset:   1,
+				TargetDate:       utils.StringAsPointer("2025-01-15"),
+			},
+		},
+		{
+			Description:                "Once with percentage amount",
+			DatabaseTime:               "2025-01-01",
+			ExpectedEmployeeDeductions: 2000 * 100,
+			CreateData: models.CreateEmployeeHistoryCost{
+				Cycle:            "once",
+				AmountType:       "percentage",
+				Amount:           20 * 1000,
+				DistributionType: "employee",
+				RelativeOffset:   1,
+				TargetDate:       utils.StringAsPointer("2025-01-15"),
+			},
+		},
+		{
+			Description:                "Daily fixed",
+			DatabaseTime:               "2025-01-01",
+			ExpectedEmployeeDeductions: 1250 * 100 * 6,
+			CreateData: models.CreateEmployeeHistoryCost{
+				Cycle:            "daily",
+				AmountType:       "fixed",
+				Amount:           1250 * 100,
+				DistributionType: "employee",
+				RelativeOffset:   6,
+				TargetDate:       nil,
+			},
+		},
+		{
+			Description:                "Weekly fixed",
+			DatabaseTime:               "2025-01-01",
+			ExpectedEmployeeDeductions: 1250 * 100 * 6,
+			CreateData: models.CreateEmployeeHistoryCost{
+				Cycle:            "weekly",
+				AmountType:       "fixed",
+				Amount:           1250 * 100,
+				DistributionType: "employee",
+				RelativeOffset:   6,
+				TargetDate:       nil,
+			},
+		},
+		{
+			Description:                "Monthly fixed",
+			DatabaseTime:               "2025-01-01",
+			ExpectedEmployeeDeductions: 1250 * 100,
+			CreateData: models.CreateEmployeeHistoryCost{
+				Cycle:            "monthly",
+				AmountType:       "fixed",
+				Amount:           1250 * 100,
+				DistributionType: "employee",
+				RelativeOffset:   3,
+				TargetDate:       nil,
+			},
+		},
+		{
+			Description:                "Quarterly fixed",
+			DatabaseTime:               "2025-01-01",
+			ExpectedEmployeeDeductions: 41667,
+			CreateData: models.CreateEmployeeHistoryCost{
+				Cycle:            "quarterly",
+				AmountType:       "fixed",
+				Amount:           1250 * 100,
+				DistributionType: "employee",
+				RelativeOffset:   3,
+				TargetDate:       nil,
+			},
+		},
+	}
+
+	for _, testCase := range testCases {
+		t.Run(testCase.Description, func(t *testing.T) {
+			historyCostID, err := dbService.CreateEmployeeHistoryCost(testCase.CreateData, user.ID, history.ID)
+			assert.NoError(t, err)
+
+			err = SetDatabaseTime(conn, testCase.DatabaseTime)
+			assert.NoError(t, err)
+
+			historyCost, err := dbService.GetEmployeeHistoryCost(user.ID, historyCostID)
+			assert.NoError(t, err)
+
+			// Check deduction
+			updatedHistory, err := dbService.GetEmployeeHistory(user.ID, historyID)
+			assert.NoError(t, err)
+
+			assert.Equal(t, int64(testCase.ExpectedEmployeeDeductions), int64(updatedHistory.EmployeeDeductions))
+
+			err = dbService.DeleteEmployeeHistoryCost(historyCost.ID, user.ID)
+			assert.NoError(t, err)
+		})
+	}
+}
