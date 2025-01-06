@@ -213,6 +213,22 @@ func TestEmployeeHistoryExecutionDates(t *testing.T) {
 				WithSeparateCosts:   false,
 			},
 		},
+		{
+			Description:  "Month end edge case",
+			DatabaseTime: "2025-01-01",
+			// Chicken or Egg, we decided to not handle the month edge case yet
+			ExpectedExecutionDate: "2024-10-31",
+			CreateData: models.CreateEmployeeHistory{
+				HoursPerMonth:       160,
+				Salary:              salary,
+				Cycle:               "monthly",
+				CurrencyID:          *currency.ID,
+				VacationDaysPerYear: 25,
+				FromDate:            "2024-01-31",
+				ToDate:              utils.StringAsPointer("2024-11-30"),
+				WithSeparateCosts:   false,
+			},
+		},
 	}
 
 	for _, testCase := range testCases {

@@ -15,6 +15,7 @@ CREATE FUNCTION calculate_cost_execution_date(
     DETERMINISTIC
 BEGIN
     DECLARE history_execution DATE;
+    DECLARE last_possible_execution_date DATE;
     DECLARE cost_execution_date DATE;
 
     -- Calculate the relevant execution date for the history cycle
@@ -40,37 +41,69 @@ BEGIN
         END IF;
     END IF;
 
+    SET last_possible_execution_date = CASE cost_cycle
+        WHEN 'daily' THEN DATE_ADD(history_execution, INTERVAL relative_offset DAY)
+        WHEN 'weekly' THEN DATE_ADD(history_execution, INTERVAL relative_offset WEEK)
+        WHEN 'monthly' THEN DATE_ADD(history_execution, INTERVAL relative_offset MONTH)
+        WHEN 'quarterly' THEN DATE_ADD(history_execution, INTERVAL relative_offset * 3 MONTH)
+        WHEN 'biannually' THEN DATE_ADD(history_execution, INTERVAL relative_offset * 6 MONTH)
+        WHEN 'yearly' THEN DATE_ADD(history_execution, INTERVAL relative_offset YEAR)
+    END;
+
     -- Handle target_date logic
     IF target_date IS NOT NULL THEN
         SET cost_execution_date = target_date;
         -- Forward logic: Handle next cost execution
         IF history_execution >= target_date THEN
-            SET cost_execution_date = target_date;
             -- Incrementally calculate the next execution date
             CASE cost_cycle
                 WHEN 'daily' THEN
-                    WHILE cost_execution_date <= curr_date DO
-                        SET cost_execution_date = DATE_ADD(cost_execution_date, INTERVAL relative_offset DAY);
+                    cost_loop: WHILE cost_execution_date <= curr_date DO
+                        SET @next_temp_cost_execution_date = DATE_ADD(cost_execution_date, INTERVAL relative_offset DAY);
+                        IF @next_temp_cost_execution_date > last_possible_execution_date THEN
+                            LEAVE cost_loop;
+                        END IF;
+                        SET cost_execution_date = @next_temp_cost_execution_date;
                     END WHILE;
                 WHEN 'weekly' THEN
-                    WHILE cost_execution_date <= curr_date DO
-                        SET cost_execution_date = DATE_ADD(cost_execution_date, INTERVAL relative_offset WEEK);
+                    cost_loop: WHILE cost_execution_date <= curr_date DO
+                        SET @next_temp_cost_execution_date = DATE_ADD(cost_execution_date, INTERVAL relative_offset WEEK);
+                        IF @next_temp_cost_execution_date > last_possible_execution_date THEN
+                            LEAVE cost_loop;
+                        END IF;
+                        SET cost_execution_date = @next_temp_cost_execution_date;
                     END WHILE;
                 WHEN 'monthly' THEN
-                    WHILE cost_execution_date <= curr_date DO
-                        SET cost_execution_date = DATE_ADD(cost_execution_date, INTERVAL relative_offset MONTH);
+                    cost_loop: WHILE cost_execution_date <= curr_date DO
+                        SET @next_temp_cost_execution_date = DATE_ADD(cost_execution_date, INTERVAL relative_offset MONTH);
+                        IF @next_temp_cost_execution_date > last_possible_execution_date THEN
+                            LEAVE cost_loop;
+                        END IF;
+                        SET cost_execution_date = @next_temp_cost_execution_date;
                     END WHILE;
                 WHEN 'quarterly' THEN
-                    WHILE cost_execution_date <= curr_date DO
-                        SET cost_execution_date = DATE_ADD(cost_execution_date, INTERVAL relative_offset * 3 MONTH);
+                    cost_loop: WHILE cost_execution_date <= curr_date DO
+                        SET @next_temp_cost_execution_date = DATE_ADD(cost_execution_date, INTERVAL relative_offset * 3 MONTH);
+                        IF @next_temp_cost_execution_date > last_possible_execution_date THEN
+                            LEAVE cost_loop;
+                        END IF;
+                        SET cost_execution_date = @next_temp_cost_execution_date;
                     END WHILE;
                 WHEN 'biannually' THEN
-                    WHILE cost_execution_date <= curr_date DO
-                        SET cost_execution_date = DATE_ADD(cost_execution_date, INTERVAL relative_offset * 6 MONTH);
+                    cost_loop: WHILE cost_execution_date <= curr_date DO
+                        SET @next_temp_cost_execution_date = DATE_ADD(cost_execution_date, INTERVAL relative_offset * 6 MONTH);
+                        IF @next_temp_cost_execution_date > last_possible_execution_date THEN
+                            LEAVE cost_loop;
+                        END IF;
+                        SET cost_execution_date = @next_temp_cost_execution_date;
                     END WHILE;
                 WHEN 'yearly' THEN
-                    WHILE cost_execution_date <= curr_date DO
-                        SET cost_execution_date = DATE_ADD(cost_execution_date, INTERVAL relative_offset YEAR);
+                    cost_loop: WHILE cost_execution_date <= curr_date DO
+                        SET @next_temp_cost_execution_date = DATE_ADD(cost_execution_date, INTERVAL relative_offset YEAR);
+                        IF @next_temp_cost_execution_date > last_possible_execution_date THEN
+                            LEAVE cost_loop;
+                        END IF;
+                        SET cost_execution_date = @next_temp_cost_execution_date;
                     END WHILE;
             END CASE;
         END IF;
@@ -124,6 +157,12 @@ BEGIN
             RETURN cost_execution_date;
         END IF;
     END IF;
+
+    -- The previous one becomes the last here
+    IF curr_date > cost_execution_date THEN
+        RETURN cost_execution_date;
+    END IF;
+
     CASE cost_cycle
         WHEN 'daily' THEN
             SET cost_execution_date = DATE_SUB(cost_execution_date, INTERVAL relative_offset DAY);

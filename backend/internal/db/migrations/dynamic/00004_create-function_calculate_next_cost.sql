@@ -19,6 +19,7 @@ BEGIN
     DECLARE full_cost BIGINT DEFAULT 0;
     DECLARE span_start DATE;
     DECLARE span_end DATE;
+    DECLARE next_history_execution DATE;
 
     IF cost_cycle = 'once' THEN
         -- The cost occurs only once, based on the target_date
@@ -37,29 +38,29 @@ BEGIN
         END IF;
     END IF;
 
-    -- Step 1: Determine span start and end based on curr_date and target_date
+    SET next_history_execution = calculate_next_history_execution_date(
+        type,
+        from_date,
+        to_date,
+        cycle,
+        curr_date
+    );
+
     IF target_date IS NULL THEN
-        -- curr_date is after or equal to history start date
-        SET span_start = calculate_next_history_execution_date(
-            type,
-            from_date,
-            to_date,
-            cycle,
-            curr_date
-        );
+        SET span_start = next_history_execution;
         SET span_end = calculate_cost_execution_date(
             type,
             from_date,
             to_date,
             cycle,
-            NULL, -- No target_date
+            -- No target_date
+            NULL,
             cost_cycle,
             relative_offset,
             curr_date,
             TRUE
         );
     ELSE
-        -- If target_date is NOT NULL, calculate normally
         IF curr_date < target_date THEN
             -- Current date is before the target date
             SET span_start = calculate_cost_execution_date(
@@ -72,7 +73,7 @@ BEGIN
                 relative_offset,
                 curr_date,
                 FALSE
-            ); -- Calculate previous execution date
+            );
             SET span_end = target_date;
         ELSE
             -- Current date is on or after the target date
@@ -98,6 +99,17 @@ BEGIN
                 curr_date,
                 FALSE
             );
+            IF next_history_execution < curr_date AND span_end > next_history_execution THEN
+                -- Make sure we don't overshoot the history execution for the next costs
+                SET span_end = CASE cost_cycle
+                    WHEN 'daily' THEN DATE_ADD(next_history_execution, INTERVAL 1 DAY)
+                    WHEN 'weekly' THEN DATE_ADD(next_history_execution, INTERVAL 1 WEEK)
+                    WHEN 'monthly' THEN DATE_ADD(next_history_execution, INTERVAL 1 MONTH)
+                    WHEN 'quarterly' THEN DATE_ADD(next_history_execution, INTERVAL 3 MONTH)
+                    WHEN 'biannually' THEN DATE_ADD(next_history_execution, INTERVAL 6 MONTH)
+                    WHEN 'yearly' THEN DATE_ADD(next_history_execution, INTERVAL 1 YEAR)
+                END;
+            END IF;
         END IF;
     END IF;
 
@@ -112,7 +124,6 @@ BEGIN
         RETURN full_cost;
     END IF;
 
-    -- Step 2: Iterate over the span and calculate costs
     span_loop: WHILE span_start < span_end DO
         SET @next_span_start = CASE cost_cycle
             WHEN 'daily' THEN DATE_ADD(span_start, INTERVAL 1 DAY)
