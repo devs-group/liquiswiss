@@ -77,10 +77,21 @@ air
 
 ## Migrations
 
-- Create Migration: `goose --dir internal/db/migrations create <name-of-migration> sql`
-    - Follow up with: `goose --dir internal/db/migrations fix` to apply sequential numbering
-- Apply Migration: `goose --dir internal/db/migrations mysql liquiswiss:password@/liquiswiss up`
-- Rollback Migration: `goose --dir internal/db/migrations mysql liquiswiss:password@/liquiswiss down`
+We differentiate between static and dynamic migrations whereas **static migrations** are all migrations that
+actually hold data later and a migration down would lead to data loss such as table creation or alterations.
+
+Dynamic migrations are stored functions, views or triggers, basically things that can be removed entirely and reapplied.
+
+> The placeholder <directory> must either be replaced by "static" or "dynamic" (without quotes)
+
+- Create Migration: `goose --dir internal/db/migrations/<directory> create <name-of-migration> sql`
+    - Follow up with: `goose --dir internal/db/migrations/<directory> fix` to apply sequential numbering
+
+> We run auto migrations on each app start. Since "air" will restart the app on any changes also in the .sql files
+> the migrations will apply automatically but it might be helpful sometimes to rollback and reapply.
+
+- Apply Migration: `goose --dir internal/db/migrations/<directory> mysql liquiswiss:password@/liquiswiss up`
+- Rollback Migration: `goose --dir internal/db/migrations/<directory> mysql liquiswiss:password@/liquiswiss down`
 - Or check out the [Makefile](backend/Makefile)
 
 ## Tests
@@ -95,8 +106,8 @@ air
 2. You can run all tests with `go test ./...` locally
 3. Locally the [.env.local.testing](backend/.env.local.testing) is used
 4. For the Github Action the [.env.github.testing](backend/.env.github.testing) is used
-   - Check out the [ci.yml](.github/workflows/ci.yml) and check for the service used in the **test-backend** job
-   - The environment variable `TESTING_ENVIRONMENT` determines which .env file to use
+    - Check out the [ci.yml](.github/workflows/ci.yml) and check for the service used in the **test-backend** job
+    - The environment variable `TESTING_ENVIRONMENT` determines which .env file to use
 
 # Production
 

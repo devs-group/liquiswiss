@@ -14,12 +14,6 @@ import (
 	"testing"
 )
 
-// To suppress Goose logs
-type noopLogger struct{}
-
-func (n noopLogger) Printf(format string, v ...interface{}) {}
-func (n noopLogger) Fatalf(format string, v ...interface{}) {}
-
 func TestMain(m *testing.M) {
 	utils.InitValidator()
 	gin.SetMode(gin.TestMode)
@@ -154,20 +148,25 @@ func SetDatabaseTime(conn *sql.DB, simulatedTime string) error {
 }
 
 func migrateDatabase(t *testing.T, conn *sql.DB) {
-	migrationDir := "../../../internal/db/migrations"
+	migrationDirs := []string{
+		"../../../internal/db/migrations/static",
+		"../../../internal/db/migrations/dynamic",
+	}
 
 	// Configure Goose
 	goose.SetBaseFS(nil)
-	goose.SetLogger(noopLogger{})
+	goose.SetLogger(goose.NopLogger())
 	if err := goose.SetDialect("mysql"); err != nil {
 		t.Fatalf("Failed to set Goose dialect: %v", err)
 	}
 
-	// Apply migrations
-	if err := goose.DownTo(conn, migrationDir, 0); err != nil {
-		t.Fatalf("Failed to roll back migrations: %v", err)
-	}
-	if err := goose.Up(conn, migrationDir); err != nil {
-		t.Fatalf("Failed to apply migrations: %v", err)
+	for _, dir := range migrationDirs {
+		// Apply migrations
+		if err := goose.DownTo(conn, dir, 0, goose.WithNoVersioning()); err != nil {
+			t.Fatalf("Failed to roll back migrations: %v", err)
+		}
+		if err := goose.Up(conn, dir, goose.WithNoVersioning()); err != nil {
+			t.Fatalf("Failed to apply migrations: %v", err)
+		}
 	}
 }

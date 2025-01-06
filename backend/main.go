@@ -18,11 +18,13 @@ import (
 	"liquiswiss/pkg/utils"
 	"net/http"
 	"os"
-	"strconv"
 )
 
-//go:embed internal/db/migrations/*.sql
-var embedMigrations embed.FS
+//go:embed internal/db/migrations/static/*.sql
+var staticMigrations embed.FS
+
+//go:embed internal/db/migrations/dynamic/*.sql
+var dynamicMigrations embed.FS
 
 func main() {
 	// Init global logger
@@ -37,31 +39,6 @@ func main() {
 		}
 	}
 
-	args := os.Args
-	if len(args) > 1 {
-		switch args[1] {
-		case "goose-down-to-and-up":
-			if len(args) != 3 {
-				logger.Logger.Info("Usage: liquiswiss goose-down-to-and-up [version]")
-				os.Exit(1)
-			}
-			version, err := strconv.Atoi(args[2])
-			if err != nil {
-				logger.Logger.Errorf("Invalid version: %v\n", err)
-				os.Exit(1)
-			}
-			err = runGooseDownToAndUp(version)
-			if err != nil {
-				logger.Logger.Error(err)
-				os.Exit(1)
-			}
-			os.Exit(0)
-		default:
-			logger.Logger.Errorf("Unknown command: %s\n", args[1])
-			os.Exit(1)
-		}
-	}
-
 	runApp()
 }
 
@@ -71,33 +48,22 @@ func runApp() {
 
 	conn, err := db.Connect()
 	if err != nil {
-		logger.Logger.Error("Failed to connect to database:", err)
+		logger.Logger.Error(err)
 		os.Exit(1)
 	}
 	defer conn.Close()
 
-	// Do automigrations
-	goose.SetBaseFS(embedMigrations)
-
-	if err := goose.SetDialect("mysql"); err != nil {
-		logger.Logger.Errorf("Failed to setup validator: %v", err)
-		panic(err)
-	}
-
-	gooseConn, err := db.Connect()
+	// Run auto migrations
+	err = runStaticMigrations()
 	if err != nil {
-		logger.Logger.Errorf("Failed to connect to database as SQL for Goose: %v", err)
-		panic(err)
+		logger.Logger.Error(err)
+		os.Exit(1)
 	}
 
-	if err := goose.Up(gooseConn, "internal/db/migrations"); err != nil {
-		logger.Logger.Errorf("Failed to apply migrations: %v", err.Error())
-		panic(err)
-	}
-	err = gooseConn.Close()
+	err = runDynamicMigrations()
 	if err != nil {
-		logger.Logger.Errorf("Failed to close temporary Goose DB connection: %v", err)
-		panic(err)
+		logger.Logger.Error(err)
+		os.Exit(1)
 	}
 
 	cfg := config.GetConfig()
@@ -127,29 +93,58 @@ func runApp() {
 	}
 }
 
-func runGooseDownToAndUp(version int) error {
-	conn, err := db.Connect()
-	if err != nil {
-		return errors.Wrapf(err, "Failed to connect to database: %v", err)
-	}
-	defer conn.Close()
+func runStaticMigrations() error {
+	logger.Logger.Info("Running static migrations...")
 
-	goose.SetBaseFS(embedMigrations)
+	goose.SetBaseFS(staticMigrations)
 
 	if err := goose.SetDialect("mysql"); err != nil {
-		return errors.Wrapf(err, "Failed to set Goose dialect: %v", err)
+		return errors.Wrapf(err, `failed to set goose dialect to "mysql"`)
 	}
 
-	// Run Goose Down to the specified version
-	if err := goose.DownTo(conn, "internal/db/migrations", int64(version)); err != nil {
-		return errors.Wrapf(err, "Failed to run goose down-to: %v", err)
+	gooseConn, err := db.Connect()
+	if err != nil {
+		return errors.Wrapf(err, "failed to connect to database as SQL for Goose")
 	}
 
-	// Run Goose Up to apply all migrations
-	if err := goose.Up(conn, "internal/db/migrations"); err != nil {
-		return errors.Wrapf(err, "Failed to run goose up: %v", err)
+	if err := goose.Up(gooseConn, "internal/db/migrations/static"); err != nil {
+		return errors.Wrapf(err, "failed to apply static migrations")
 	}
 
-	logger.Logger.Info("Goose migrations down-to and up completed successfully")
+	err = gooseConn.Close()
+	if err != nil {
+		return errors.Wrapf(err, "failed to close temporary Goose DB connection")
+	}
+	return nil
+}
+
+func runDynamicMigrations() error {
+	logger.Logger.Info("Running dynamic migrations...")
+
+	goose.SetBaseFS(dynamicMigrations)
+
+	if err := goose.SetDialect("mysql"); err != nil {
+		return errors.Wrapf(err, `failed to set goose dialect to "mysql"`)
+	}
+
+	gooseConn, err := db.Connect()
+	if err != nil {
+		return errors.Wrapf(err, "failed to connect to database as SQL for Goose")
+	}
+
+	goose.SetLogger(goose.NopLogger())
+	if err := goose.DownTo(gooseConn, "internal/db/migrations/dynamic", 0, goose.WithNoVersioning()); err != nil {
+		return errors.Wrapf(err, "failed to revert dynamic migrations")
+	}
+
+	goose.SetLogger(logger.StdLogger{})
+	if err := goose.Up(gooseConn, "internal/db/migrations/dynamic", goose.WithNoVersioning()); err != nil {
+		return errors.Wrapf(err, "failed to apply dynmic migrations")
+	}
+
+	err = gooseConn.Close()
+	if err != nil {
+		return errors.Wrapf(err, "failed to close temporary Goose DB connection")
+	}
 	return nil
 }
