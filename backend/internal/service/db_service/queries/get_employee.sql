@@ -18,5 +18,5 @@ FROM employees e
 LEFT JOIN ranked_employee_histories h ON e.id = h.employee_id AND h.rn = 1
 LEFT JOIN currencies c ON h.currency_id = c.id
 WHERE e.id = ?
-  AND e.organisation_id = get_current_organisation(?)
+  AND e.organisation_id = get_current_user_organisation_id(?)
 LIMIT 1;

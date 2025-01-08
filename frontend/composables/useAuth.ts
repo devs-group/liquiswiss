@@ -11,6 +11,7 @@ import type {
   UserProfileFormData,
   UserUpdateOrganisationFormData,
 } from '~/models/auth'
+import { Constants } from '~/utils/constants'
 
 export default function useAuth() {
   const user = useState<User | null>('user')
@@ -158,10 +159,25 @@ export default function useAuth() {
 
   const isAuthenticated = computed(() => !!user.value)
 
+  const getOrganisationCurrencyID = computed(() => {
+    return user.value?.currency.id ?? null
+  })
+
+  const getOrganisationCurrencyCode = computed(() => {
+    return user.value?.currency.code ?? Constants.BASE_CURRENCY
+  })
+
+  const getOrganisationCurrencyLocaleCode = computed(() => {
+    return user.value?.currency.localeCode ?? Constants.BASE_LOCALE_CODE
+  })
+
   return {
     user,
     hasFetchedInitially,
     isAuthenticated,
+    getOrganisationCurrencyID,
+    getOrganisationCurrencyCode,
+    getOrganisationCurrencyLocaleCode,
     login,
     registration,
     registrationCheckCode,

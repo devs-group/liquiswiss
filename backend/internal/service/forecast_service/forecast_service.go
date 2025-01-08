@@ -3,6 +3,7 @@ package forecast_service
 
 import (
 	"liquiswiss/internal/service/db_service"
+	"liquiswiss/internal/service/user_service"
 	"liquiswiss/pkg/models"
 	"liquiswiss/pkg/utils"
 	"time"
@@ -17,12 +18,14 @@ type IForecastService interface {
 }
 
 type ForecastService struct {
-	dbService db_service.IDatabaseService
+	dbService   db_service.IDatabaseService
+	userService user_service.IUserService
 }
 
-func NewForecastService(dbService *db_service.IDatabaseService) IForecastService {
+func NewForecastService(dbService *db_service.IDatabaseService, userService *user_service.IUserService) IForecastService {
 	return &ForecastService{
-		dbService: *dbService,
+		dbService:   *dbService,
+		userService: *userService,
 	}
 }
 
@@ -32,12 +35,20 @@ func (f *ForecastService) CalculateForecast(userID int64) ([]models.Forecast, er
 	sortBy := "name"
 	sortOrder := "ASC"
 
+	organisation, err := f.userService.GetCurrentOrganisation(userID)
+	if err != nil {
+		return nil, err
+	}
+
+	// Set the organisation wide default currency as base
+	baseCurrency := *organisation.Currency.Code
+
 	transactions, _, err := f.dbService.ListTransactions(userID, page, limit, sortBy, sortOrder)
 	if err != nil {
 		return nil, err
 	}
 
-	fiatRates, err := f.dbService.ListFiatRates(utils.BaseCurrency)
+	fiatRates, err := f.dbService.ListFiatRates(baseCurrency)
 	if err != nil {
 		return nil, err
 	}
@@ -51,7 +62,7 @@ func (f *ForecastService) CalculateForecast(userID int64) ([]models.Forecast, er
 	forecastMap := make(map[string]map[string]int64)
 	forecastDetailMap := make(map[string]*models.ForecastDetails)
 	for _, transaction := range transactions {
-		fiatRate := models.GetFiatRateFromCurrency(fiatRates, *transaction.Currency.Code)
+		fiatRate := models.GetFiatRateFromCurrency(fiatRates, baseCurrency, *transaction.Currency.Code)
 		amount := models.CalculateAmountWithFiatRate(transaction.Amount, fiatRate)
 		if transaction.Vat != nil && !transaction.VatIncluded {
 			amount = models.CalculateAmountWithFiatRate(transaction.Amount+transaction.VatAmount, fiatRate)
@@ -203,7 +214,7 @@ func (f *ForecastService) CalculateForecast(userID int64) ([]models.Forecast, er
 				toDate = time.Time(*history.ToDate)
 			}
 
-			fiatRate := models.GetFiatRateFromCurrency(fiatRates, *history.Currency.Code)
+			fiatRate := models.GetFiatRateFromCurrency(fiatRates, baseCurrency, *history.Currency.Code)
 			// Must be minus here
 			netSalary := history.Salary
 			if history.WithSeparateCosts {

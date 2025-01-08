@@ -93,16 +93,18 @@ type IDatabaseService interface {
 	CreateCategory(userID *int64, payload models.CreateCategory) (int64, error)
 	UpdateCategory(userID int64, payload models.UpdateCategory, categoryID int64) error
 
-	ListCurrencies(page int64, limit int64) ([]models.Currency, int64, error)
+	ListCurrencies(userID int64, page int64, limit int64) ([]models.Currency, int64, error)
 	GetCurrency(currencyID int64) (*models.Currency, error)
 	CreateCurrency(payload models.CreateCurrency) (int64, error)
 	UpdateCurrency(payload models.UpdateCurrency, currencyID int64) error
+	CountCurrencies() (int64, error)
 
 	StoreRefreshTokenID(userID int64, tokenId string, expirationTime time.Time, deviceName string) error
 	CheckRefreshToken(tokenID string, userID int64) (bool, error)
 	DeleteRefreshToken(tokenID string, userID int64) error
 
 	ListFiatRates(base string) ([]models.FiatRate, error)
+	CountUniqueCurrenciesInFiatRates() (int64, error)
 	GetFiatRate(base, target string) (*models.FiatRate, error)
 	UpsertFiatRate(payload models.CreateFiatRate) error
 }

@@ -161,9 +161,9 @@ func UpdateOrganisation(dbService db_service.IDatabaseService, c *gin.Context) {
 		return
 	}
 
-	if payload.Name == nil {
-		startDate := existingOrganisation.Name
-		payload.Name = &startDate
+	if utils.IsStructEmpty(&payload) {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "Keine Daten übermittelt"})
+		return
 	}
 
 	validator := utils.GetValidator()
@@ -179,13 +179,13 @@ func UpdateOrganisation(dbService db_service.IDatabaseService, c *gin.Context) {
 		return
 	}
 
-	transaction, err := dbService.GetOrganisation(userID, organisationID)
+	organisation, err := dbService.GetOrganisation(userID, organisationID)
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 		return
 	}
 
-	c.JSON(http.StatusOK, transaction)
+	c.JSON(http.StatusOK, organisation)
 }
 
 // hasEditingPermission is a simple method to check if the current user can edit the Organisation

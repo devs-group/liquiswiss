@@ -1,10 +1,12 @@
 import type { DarkModeType } from '~/utils/types'
+import type { CurrencyResponse } from '~/models/currency'
 
 export interface User {
   id: number
   name: string
   email: string
   currentOrganisationID: number
+  currency: CurrencyResponse
 }
 
 export interface RegistrationFormData {

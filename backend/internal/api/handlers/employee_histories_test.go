@@ -16,15 +16,15 @@ func TestEmployeeHistoryExecutionDates(t *testing.T) {
 	dbService := db_service.NewDatabaseService(conn)
 
 	// Preparations
+	currency, err := CreateCurrency(dbService, "CHF", "Swiss Franc", "de-CH")
+	assert.NoError(t, err)
+
 	user, _, err := CreateUserWithOrganisation(
 		dbService, "John Doe", "test", "Test Organisation",
 	)
 	assert.NoError(t, err)
 
 	employee, err := CreateEmployee(dbService, user.ID, "Tom Riddle")
-	assert.NoError(t, err)
-
-	currency, err := CreateCurrency(dbService, "CHF", "Swiss Franc", "de-CH")
 	assert.NoError(t, err)
 
 	// Tests

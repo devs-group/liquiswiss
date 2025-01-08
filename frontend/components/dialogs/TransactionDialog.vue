@@ -78,8 +78,10 @@
         id="name"
         v-model="currency"
         empty-message="Keine Währungen gefunden"
+        filter
+        empty-filter-message="Keine Resultate gefunden"
         :options="currencies"
-        option-label="code"
+        :option-label="getCurrencyLabel"
         option-value="id"
         placeholder="Bitte wählen"
         :class="{ 'p-invalid': errors['currency']?.length }"
@@ -100,7 +102,7 @@
         />
         <div class="flex-1" />
         <small
-          v-if="selectedCurrencyCode && selectedCurrencyCode != Constants.BASE_CURRENCY"
+          v-if="selectedCurrencyCode && selectedCurrencyCode != getOrganisationCurrencyCode"
           class="text-zinc-600 dark:text-zinc-400"
         >{{ amountInBaseCurrency }}</small>
       </div>
@@ -371,10 +373,11 @@ import type { VatResponse } from '~/models/vat'
 
 const dialogRef = inject<ITransactionFormDialog>('dialogRef')!
 
+const { getOrganisationCurrencyID, getOrganisationCurrencyCode, getOrganisationCurrencyLocaleCode } = useAuth()
 const { createTransaction, updateTransaction, deleteTransaction } = useTransactions()
 const { employees, listEmployees } = useEmployees()
 const { vats, listVats, deleteVat } = useVat()
-const { categories, currencies, convertAmountToRate } = useGlobalData()
+const { categories, currencies, getCurrencyLabel, convertAmountToRate } = useGlobalData()
 const confirm = useConfirm()
 const dialog = useDialog()
 const toast = useToast()
@@ -432,7 +435,7 @@ const { defineField, errors, handleSubmit, meta, setFieldValue } = useForm({
     startDate: transaction?.startDate ? DateToUTCDate(transaction?.startDate) : null,
     endDate: transaction?.endDate ? DateToUTCDate(transaction?.endDate) : undefined,
     category: transaction?.category.id ?? null,
-    currency: transaction?.currency.id ?? null,
+    currency: transaction?.currency.id ?? getOrganisationCurrencyID.value,
     employee: transaction?.employee?.id ?? null,
   } as TransactionFormData,
 })
@@ -637,6 +640,6 @@ const amountInBaseCurrency = computed(() => {
   if (selectedCurrencyCode.value) {
     baseAmount = convertAmountToRate(amount.value, selectedCurrencyCode.value)
   }
-  return `~ ${NumberToFormattedCurrency(baseAmount, Constants.BASE_LOCALE_CODE)} ${Constants.BASE_CURRENCY}`
+  return `~ ${NumberToFormattedCurrency(baseAmount, getOrganisationCurrencyLocaleCode.value)} ${getOrganisationCurrencyCode.value}`
 })
 </script>

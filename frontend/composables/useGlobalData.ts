@@ -39,8 +39,8 @@ export default function useGlobalData() {
     currencies.value = data.value?.data ?? []
   }
 
-  const useFetchListFiatRates = async () => {
-    const { data, error } = await useFetch<FiatRateResponse[]>('/api/fiat-rates', {
+  const useFetchListFiatRates = async (baseCurrency: string) => {
+    const { data, error } = await useFetch<FiatRateResponse[]>(`/api/fiat-rates/${baseCurrency}`, {
       method: 'GET',
     })
     if (error.value) {
@@ -67,10 +67,15 @@ export default function useGlobalData() {
     return amount
   }
 
+  const getCurrencyLabel = (currency: CurrencyResponse) => {
+    return `${currency.code} - ${currency.description}`
+  }
+
   return {
     categories,
     useFetchListCategories,
     currencies,
+    getCurrencyLabel,
     useFetchListCurrencies,
     fiatRates,
     useFetchListFiatRates,

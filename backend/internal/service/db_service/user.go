@@ -15,7 +15,16 @@ func (s *DatabaseService) GetProfile(userID int64) (*models.User, error) {
 		return nil, err
 	}
 
-	err = s.db.QueryRow(string(query), userID).Scan(&user.ID, &user.Name, &user.Email, &user.CurrentOrganisationID)
+	err = s.db.QueryRow(string(query), userID).Scan(
+		&user.ID,
+		&user.Name,
+		&user.Email,
+		&user.CurrentOrganisationID,
+		&user.Currency.ID,
+		&user.Currency.Code,
+		&user.Currency.Description,
+		&user.Currency.LocaleCode,
+	)
 	if err != nil {
 		return nil, err
 	}

@@ -6,6 +6,7 @@ import (
 	"liquiswiss/internal/service/db_service"
 	"liquiswiss/internal/service/forecast_service"
 	"liquiswiss/internal/service/sendgrid_service"
+	"liquiswiss/internal/service/user_service"
 
 	"github.com/gin-gonic/gin"
 )
@@ -15,9 +16,15 @@ type API struct {
 	DBService       db_service.IDatabaseService
 	SendgridService sendgrid_service.ISendgridService
 	ForecastService forecast_service.IForecastService
+	UserService     user_service.IUserService
 }
 
-func NewAPI(dbService db_service.IDatabaseService, sendgridService sendgrid_service.ISendgridService, forecastService forecast_service.IForecastService) *API {
+func NewAPI(
+	dbService db_service.IDatabaseService,
+	sendgridService sendgrid_service.ISendgridService,
+	forecastService forecast_service.IForecastService,
+	userService user_service.IUserService,
+) *API {
 	gin.DebugPrintRouteFunc = func(httpMethod, absolutePath, handlerName string, nuHandlers int) {
 		// Suppress listing all available routes for less log spamming
 	}
@@ -26,6 +33,7 @@ func NewAPI(dbService db_service.IDatabaseService, sendgridService sendgrid_serv
 		DBService:       dbService,
 		SendgridService: sendgridService,
 		ForecastService: forecastService,
+		UserService:     userService,
 	}
 	api.setupRouter()
 	return api
@@ -77,6 +85,9 @@ func (api *API) setupRouter() {
 			})
 			protected.PATCH("/profile/organisation", func(ctx *gin.Context) {
 				handlers.SetUserCurrentOrganisation(api.DBService, ctx)
+			})
+			protected.GET("/profile/organisation", func(ctx *gin.Context) {
+				handlers.GetUserCurrentOrganisation(api.UserService, ctx)
 			})
 			protected.GET("/access-token", func(ctx *gin.Context) {
 				handlers.GetAccessToken(api.DBService, ctx)
@@ -262,10 +273,10 @@ func (api *API) setupRouter() {
 			})
 
 			// Fiat Rates
-			protected.GET("/fiat-rates", func(ctx *gin.Context) {
+			protected.GET("/fiat-rates/:base", func(ctx *gin.Context) {
 				handlers.ListFiatRates(api.DBService, ctx)
 			})
-			protected.GET("/fiat-rates/:currency", func(ctx *gin.Context) {
+			protected.GET("/fiat-rates/:base/:target", func(ctx *gin.Context) {
 				handlers.GetFiatRate(api.DBService, ctx)
 			})
 		}

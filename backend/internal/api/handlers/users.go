@@ -6,6 +6,7 @@ import (
 	"github.com/gin-gonic/gin"
 	"golang.org/x/crypto/bcrypt"
 	"liquiswiss/internal/service/db_service"
+	"liquiswiss/internal/service/user_service"
 	"liquiswiss/pkg/models"
 	"liquiswiss/pkg/utils"
 	"net/http"
@@ -137,6 +138,22 @@ func SetUserCurrentOrganisation(dbService db_service.IDatabaseService, c *gin.Co
 	}
 
 	c.Status(http.StatusOK)
+}
+
+func GetUserCurrentOrganisation(userService user_service.IUserService, c *gin.Context) {
+	userID := c.GetInt64("userID")
+	if userID == 0 {
+		c.JSON(http.StatusUnauthorized, gin.H{"error": "Ungültiger Benutzer"})
+		return
+	}
+
+	organisation, err := userService.GetCurrentOrganisation(userID)
+	if err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		return
+	}
+
+	c.JSON(http.StatusOK, organisation)
 }
 
 func GetAccessToken(dbService db_service.IDatabaseService, c *gin.Context) {

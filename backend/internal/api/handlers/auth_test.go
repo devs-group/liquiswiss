@@ -22,6 +22,7 @@ func TestRegistrationSuccessful(t *testing.T) {
 	mockDBService := mocks.NewMockIDatabaseService(ctrl)
 	mockSendgridService := mocks.NewMockISendgridService(ctrl)
 	mockForecastService := mocks.NewMockIForecastService(ctrl)
+	mockUserService := mocks.NewMockIUserService(ctrl)
 
 	// Prepare the payload for the registration request
 	payload := map[string]string{
@@ -41,7 +42,7 @@ func TestRegistrationSuccessful(t *testing.T) {
 		Return(nil)
 
 	// Initialize the API struct with the mocked service
-	myAPI := api.NewAPI(mockDBService, mockSendgridService, mockForecastService)
+	myAPI := api.NewAPI(mockDBService, mockSendgridService, mockForecastService, mockUserService)
 
 	// Create a request to the registration endpoint
 	req, err := http.NewRequest(http.MethodPost, "/api/auth/registration/create", bytes.NewBuffer(payloadBytes))
@@ -65,6 +66,7 @@ func TestRegistrationCreationFails(t *testing.T) {
 	mockDBService := mocks.NewMockIDatabaseService(ctrl)
 	mockSendgridService := mocks.NewMockISendgridService(ctrl)
 	mockForecastService := mocks.NewMockIForecastService(ctrl)
+	mockUserService := mocks.NewMockIUserService(ctrl)
 
 	// Prepare the payload for the registration request
 	payload := map[string]string{
@@ -81,7 +83,7 @@ func TestRegistrationCreationFails(t *testing.T) {
 		Return(int64(0), errors.New("creation error occurred"))
 
 	// Initialize the API struct with the mocked service
-	myAPI := api.NewAPI(mockDBService, mockSendgridService, mockForecastService)
+	myAPI := api.NewAPI(mockDBService, mockSendgridService, mockForecastService, mockUserService)
 
 	// Create a request to the registration endpoint
 	req, err := http.NewRequest(http.MethodPost, "/api/auth/registration/create", bytes.NewBuffer(payloadBytes))
@@ -105,6 +107,7 @@ func TestRegistrationEmailFails(t *testing.T) {
 	mockDBService := mocks.NewMockIDatabaseService(ctrl)
 	mockSendgridService := mocks.NewMockISendgridService(ctrl)
 	mockForecastService := mocks.NewMockIForecastService(ctrl)
+	mockUserService := mocks.NewMockIUserService(ctrl)
 
 	// Prepare the payload for the registration request
 	payload := map[string]string{
@@ -127,7 +130,7 @@ func TestRegistrationEmailFails(t *testing.T) {
 		Return(nil)
 
 	// Initialize the API struct with the mocked service
-	myAPI := api.NewAPI(mockDBService, mockSendgridService, mockForecastService)
+	myAPI := api.NewAPI(mockDBService, mockSendgridService, mockForecastService, mockUserService)
 
 	// Create a request to the registration endpoint
 	req, err := http.NewRequest(http.MethodPost, "/api/auth/registration/create", bytes.NewBuffer(payloadBytes))

@@ -125,7 +125,7 @@
                 class="border-b border-l last:border-r border-zinc-600 dark:border-zinc-400 bg-liqui-green p-2 min-w-40"
               >
                 <p class="text-xs text-center">
-                  {{ revenue.formatted }} CHF
+                  {{ revenue.formatted }} {{ getOrganisationCurrencyCode }}
                 </p>
               </div>
             </div>
@@ -147,7 +147,7 @@
                   class="border-b border-l last:border-r border-zinc-600 dark:border-zinc-400 bg-zinc-100 dark:bg-zinc-800 p-1 min-w-40"
                 >
                   <p class="text-xs text-center">
-                    {{ getCategoryAmount(data, category, 'revenue') }} CHF
+                    {{ getCategoryAmount(data, category, 'revenue') }} {{ getOrganisationCurrencyCode }}
                   </p>
                 </div>
               </div>
@@ -172,7 +172,7 @@
                 class="border-b border-l last:border-r border-zinc-600 dark:border-zinc-400 bg-liqui-red p-2 min-w-40"
               >
                 <p class="text-xs text-center">
-                  {{ expense.formatted }} CHF
+                  {{ expense.formatted }} {{ getOrganisationCurrencyCode }}
                 </p>
               </div>
             </div>
@@ -194,7 +194,7 @@
                   class="border-b border-l last:border-r border-zinc-600 dark:border-zinc-400 bg-zinc-100 dark:bg-zinc-800 p-1 min-w-40"
                 >
                   <p class="text-xs text-center">
-                    {{ getCategoryAmount(data, category, 'expense') }} CHF
+                    {{ getCategoryAmount(data, category, 'expense') }} {{ getOrganisationCurrencyCode }}
                   </p>
                 </div>
               </div>
@@ -213,7 +213,7 @@
                 :class="{ 'text-liqui-red': cashflow.amount < 0, 'text-liqui-green': cashflow.amount > 0 }"
               >
                 <p class="text-xs text-center">
-                  {{ cashflow.formatted }} CHF
+                  {{ cashflow.formatted }} {{ getOrganisationCurrencyCode }}
                 </p>
               </div>
             </div>
@@ -231,7 +231,7 @@
                 :class="{ 'bg-liqui-red': saldo.amount < 0, 'bg-liqui-green': saldo.amount > 0 }"
               >
                 <p class="text-xs text-center font-bold truncate">
-                  {{ saldo.formatted }} CHF
+                  {{ saldo.formatted }} {{ getOrganisationCurrencyCode }}
                 </p>
               </div>
             </div>
@@ -289,6 +289,7 @@ const monthChoices = [
   },
 ]
 
+const { getOrganisationCurrencyCode, getOrganisationCurrencyLocaleCode } = useAuth()
 const { useFetchListForecast, listForecasts, useFetchListForecastDetails, listForecastDetails, forecasts, forecastDetails, calculateForecast } = useForecasts()
 const { useFetchListBankAccounts, totalBankSaldoInCHF } = useBankAccounts()
 const { forecastPerformance, forecastMonths, forecastShowRevenueDetails, forecastShowExpenseDetails } = useSettings()
@@ -387,7 +388,7 @@ const onToggleExpenseDetails = async () => {
 
 const getCategoryAmount = (data: ForecastDetailResponse, category: string, type: 'revenue' | 'expense') => {
   const amount = data[type].find(e => e.name == category)?.amount ?? 0
-  return NumberToFormattedCurrency(AmountToFloat(amount), Constants.BASE_LOCALE_CODE)
+  return NumberToFormattedCurrency(AmountToFloat(amount), getOrganisationCurrencyLocaleCode.value)
 }
 
 watch(forecastMonths, (value) => {
@@ -425,12 +426,12 @@ const revenues = computed(() => forecasts.value.map((f) => {
   const revenue = f.data.revenue * (forecastPerformance.value / 100)
   return {
     amount: revenue,
-    formatted: NumberToFormattedCurrency(AmountToFloat(revenue), Constants.BASE_LOCALE_CODE),
+    formatted: NumberToFormattedCurrency(AmountToFloat(revenue), getOrganisationCurrencyLocaleCode.value),
   }
 }))
 const expenses = computed(() => forecasts.value.map(f => ({
   amount: f.data.expense,
-  formatted: NumberToFormattedCurrency(AmountToFloat(f.data.expense), Constants.BASE_LOCALE_CODE),
+  formatted: NumberToFormattedCurrency(AmountToFloat(f.data.expense), getOrganisationCurrencyLocaleCode.value),
 })))
 const cashflows = computed(() => {
   return revenues.value.map((r, index) => {
@@ -438,7 +439,7 @@ const cashflows = computed(() => {
     const cashflow = r.amount + e.amount
     return {
       amount: cashflow,
-      formatted: NumberToFormattedCurrency(AmountToFloat(cashflow), Constants.BASE_LOCALE_CODE),
+      formatted: NumberToFormattedCurrency(AmountToFloat(cashflow), getOrganisationCurrencyLocaleCode.value),
     }
   })
 })
@@ -448,7 +449,7 @@ const saldos = computed(() => {
     totalBankSaldo += c.amount
     return {
       amount: totalBankSaldo,
-      formatted: NumberToFormattedCurrency(AmountToFloat(totalBankSaldo), Constants.BASE_LOCALE_CODE),
+      formatted: NumberToFormattedCurrency(AmountToFloat(totalBankSaldo), getOrganisationCurrencyLocaleCode.value),
     }
   })
 })

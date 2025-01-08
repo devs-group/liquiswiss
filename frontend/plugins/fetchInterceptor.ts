@@ -6,7 +6,7 @@ export default defineNuxtPlugin((_nuxtApp) => {
       const isOnAuthRoute = AuthRouteNames.includes(_nuxtApp._route.name as string)
       if (!isOnAuthRoute && response._data.logout === true) {
         localStorage.setItem(Constants.SESSION_EXPIRED_NAME, 'true')
-        reloadNuxtApp({ force: true }) // , path: RoutePaths.AUTH
+        reloadNuxtApp({ force: true })
       }
     },
   })

@@ -16,5 +16,5 @@ SELECT
     f.updated_at AS updated_at
 FROM date_series ds
 LEFT JOIN forecasts f ON DATE_FORMAT(ds.date, '%Y-%m') = f.month
-    AND f.organisation_id = get_current_organisation(?)
+    AND f.organisation_id = get_current_user_organisation_id(?)
 ORDER BY ds.date

@@ -54,4 +54,4 @@ JOIN employee_histories h ON h.id = hc.employee_history_id
 JOIN employees e ON e.id = h.employee_id
 LEFT JOIN employee_history_cost_labels hcl ON hcl.id = hc.label_id
 WHERE hc.id = ?
-  AND e.organisation_id = get_current_organisation(?)
+  AND e.organisation_id = get_current_user_organisation_id(?)

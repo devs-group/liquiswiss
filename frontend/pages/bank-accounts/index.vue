@@ -20,7 +20,7 @@
     </div>
 
     <p class="text-sm font-bold text-right">
-      Gesamtvermögen: ~ {{ totalSaldo }} CHF
+      Gesamtvermögen: ~ {{ totalSaldo }} {{ getOrganisationCurrencyCode }}
     </p>
 
     <Message
@@ -76,6 +76,7 @@ useHead({
 })
 
 const dialog = useDialog()
+const { getOrganisationCurrencyCode, getOrganisationCurrencyLocaleCode } = useAuth()
 const { bankAccounts, totalBankSaldoInCHF, useFetchListBankAccounts, listBankAccounts } = useBankAccounts()
 const { toggleBankAccountDisplayType, bankAccountDisplay } = useSettings()
 
@@ -84,7 +85,7 @@ const search = ref('')
 const bankAccountsErrorMessage = ref('')
 
 const totalSaldo = computed(() => {
-  return NumberToFormattedCurrency(AmountToFloat(totalBankSaldoInCHF.value), Constants.BASE_LOCALE_CODE)
+  return NumberToFormattedCurrency(AmountToFloat(totalBankSaldoInCHF.value), getOrganisationCurrencyLocaleCode.value)
 })
 const getDisplayIcon = computed(() => bankAccountDisplay.value == 'list' ? 'pi pi-microsoft' : 'pi pi-list')
 const filterBankAccounts = computed(() => {

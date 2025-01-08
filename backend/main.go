@@ -14,6 +14,7 @@ import (
 	"liquiswiss/internal/service/fixer_io_service"
 	"liquiswiss/internal/service/forecast_service"
 	"liquiswiss/internal/service/sendgrid_service"
+	"liquiswiss/internal/service/user_service"
 	"liquiswiss/pkg/logger"
 	"liquiswiss/pkg/utils"
 	"net/http"
@@ -69,21 +70,34 @@ func runApp() {
 	cfg := config.GetConfig()
 	dbService := db_service.NewDatabaseService(conn)
 	fixerIOService := fixer_io_service.NewFixerIOService(&dbService)
+	userService := user_service.NewUserServiceService(&dbService)
 	sendgridService := sendgrid_service.NewSendgridService(cfg.SendgridToken)
-	forecastService := forecast_service.NewForecastService(&dbService)
+	forecastService := forecast_service.NewForecastService(&dbService, &userService)
 	middleware.InjectUserService(dbService)
-	apiHandler := api.NewAPI(dbService, sendgridService, forecastService)
+	apiHandler := api.NewAPI(dbService, sendgridService, forecastService, userService)
 
 	// Cronjob
 	c := cron.New()
-	_, err = c.AddFunc("@every 30m", fixerIOService.FetchFiatRates)
+	_, err = c.AddFunc("@every 12h", fixerIOService.FetchFiatRates)
 	if err != nil {
 		logger.Logger.Errorf("Failed to set fixer.io cronjob: %v", err)
 		return
 	}
 	c.Start()
 
-	go fixerIOService.FetchFiatRates()
+	go func() {
+		requiresInitialFetch, err := fixerIOService.RequiresInitialFetch()
+		if err != nil {
+			logger.Logger.Error("Error checking if initial fetch is required", err)
+			return
+		}
+		if requiresInitialFetch {
+			logger.Logger.Info("Count of fiat rate currencies doesn't match currencies, fetching from fixer.io")
+			fixerIOService.FetchFiatRates()
+		} else {
+			logger.Logger.Info("No initial fetch required for fiat rates")
+		}
+	}()
 
 	err = http.ListenAndServe(":8080", apiHandler.Router)
 	if err != nil {

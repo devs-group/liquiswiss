@@ -9,4 +9,4 @@ SELECT
 FROM bank_accounts AS ba
 INNER JOIN currencies cur ON ba.currency_id = cur.id
 WHERE
-    ba.organisation_id = get_current_organisation(?)
+    ba.organisation_id = get_current_user_organisation_id(?)

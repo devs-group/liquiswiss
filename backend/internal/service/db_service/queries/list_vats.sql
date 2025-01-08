@@ -5,5 +5,5 @@ SELECT
     IF(v.organisation_id IS NULL, false, true) AS can_edit
 FROM vats AS v
 WHERE organisation_id IS NULL
-   OR v.organisation_id = get_current_organisation(?)
+   OR v.organisation_id = get_current_user_organisation_id(?)
 ORDER BY v.value

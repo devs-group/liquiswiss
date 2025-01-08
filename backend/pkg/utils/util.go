@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 	"github.com/google/uuid"
 	"os"
+	"reflect"
 )
 
 func IsProduction() bool {
@@ -29,6 +30,25 @@ func StructToMap[T any](r T) (map[string]interface{}, error) {
 	}
 
 	return templateData, nil
+}
+
+func IsStructEmpty(v interface{}) bool {
+	val := reflect.ValueOf(v)
+
+	if val.Kind() == reflect.Ptr {
+		val = val.Elem()
+	}
+	if val.Kind() != reflect.Struct {
+		return false
+	}
+
+	for i := 0; i < val.NumField(); i++ {
+		field := val.Field(i)
+		if !field.IsNil() {
+			return false
+		}
+	}
+	return true
 }
 
 func StringAsPointer(s string) *string {

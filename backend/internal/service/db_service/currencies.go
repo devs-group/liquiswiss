@@ -5,7 +5,7 @@ import (
 	"strings"
 )
 
-func (s *DatabaseService) ListCurrencies(page int64, limit int64) ([]models.Currency, int64, error) {
+func (s *DatabaseService) ListCurrencies(userID int64, page int64, limit int64) ([]models.Currency, int64, error) {
 	currencies := []models.Currency{}
 	var totalCount int64
 
@@ -14,7 +14,7 @@ func (s *DatabaseService) ListCurrencies(page int64, limit int64) ([]models.Curr
 		return nil, 0, err
 	}
 
-	rows, err := s.db.Query(string(query), limit, (page-1)*limit)
+	rows, err := s.db.Query(string(query), userID, limit, (page-1)*limit)
 	if err != nil {
 		return nil, 0, err
 	}
@@ -111,4 +111,19 @@ func (s *DatabaseService) UpdateCurrency(payload models.UpdateCurrency, currency
 	}
 
 	return nil
+}
+
+func (s *DatabaseService) CountCurrencies() (int64, error) {
+	query, err := sqlQueries.ReadFile("queries/count_currencies.sql")
+	if err != nil {
+		return 0, err
+	}
+
+	var totalCount int64
+	err = s.db.QueryRow(string(query)).Scan(&totalCount)
+	if err != nil {
+		return 0, err
+	}
+
+	return totalCount, nil
 }

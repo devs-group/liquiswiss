@@ -1,6 +1,6 @@
 -- +goose Up
 -- +goose StatementBegin
-CREATE FUNCTION get_current_organisation(user_id BIGINT UNSIGNED)
+CREATE FUNCTION get_current_user_organisation_id(user_id BIGINT UNSIGNED)
     RETURNS BIGINT UNSIGNED
     DETERMINISTIC
 BEGIN
@@ -17,5 +17,5 @@ END;
 
 -- +goose Down
 -- +goose StatementBegin
-DROP FUNCTION IF EXISTS get_current_organisation;
+DROP FUNCTION IF EXISTS get_current_user_organisation_id;
 -- +goose StatementEnd

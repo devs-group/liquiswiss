@@ -49,3 +49,18 @@ func (mr *MockIFixerIOServiceMockRecorder) FetchFiatRates() *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "FetchFiatRates", reflect.TypeOf((*MockIFixerIOService)(nil).FetchFiatRates))
 }
+
+// RequiresInitialFetch mocks base method.
+func (m *MockIFixerIOService) RequiresInitialFetch() (bool, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "RequiresInitialFetch")
+	ret0, _ := ret[0].(bool)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// RequiresInitialFetch indicates an expected call of RequiresInitialFetch.
+func (mr *MockIFixerIOServiceMockRecorder) RequiresInitialFetch() *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "RequiresInitialFetch", reflect.TypeOf((*MockIFixerIOService)(nil).RequiresInitialFetch))
+}
