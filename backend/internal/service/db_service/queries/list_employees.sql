@@ -18,7 +18,7 @@ SELECT
 FROM employees e
 LEFT JOIN ranked_employee_histories h ON e.id = h.employee_id AND h.rn = 1
 LEFT JOIN currencies c ON h.currency_id = c.id
-WHERE e.organisation_id = get_current_organisation(?)
+WHERE e.organisation_id = get_current_user_organisation_id(?)
 ORDER BY
     %s IS NULL,
     %s %s,

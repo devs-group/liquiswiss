@@ -48,7 +48,6 @@ func (s *DatabaseService) GetFiatRate(base, target string) (*models.FiatRate, er
 	return &fiatRate, nil
 }
 
-// UpsertFiatRate Inserts or updates a fiat rate
 func (s *DatabaseService) UpsertFiatRate(payload models.CreateFiatRate) error {
 	query, err := sqlQueries.ReadFile("queries/upsert_fiat_rate.sql")
 	if err != nil {
@@ -69,4 +68,19 @@ func (s *DatabaseService) UpsertFiatRate(payload models.CreateFiatRate) error {
 	}
 
 	return nil
+}
+
+func (s *DatabaseService) CountUniqueCurrenciesInFiatRates() (int64, error) {
+	query, err := sqlQueries.ReadFile("queries/count_unique_currencies_in_fiat_rates.sql")
+	if err != nil {
+		return 0, err
+	}
+
+	var totalCount int64
+	err = s.db.QueryRow(string(query)).Scan(&totalCount)
+	if err != nil {
+		return 0, err
+	}
+
+	return totalCount, nil
 }

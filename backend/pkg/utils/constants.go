@@ -15,6 +15,4 @@ const (
 
 	AccessTokenName  = "liq-access-token"
 	RefreshTokenName = "liq-refresh-token"
-
-	BaseCurrency = "CHF"
 )

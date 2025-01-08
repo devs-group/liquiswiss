@@ -71,10 +71,12 @@
         id="currency-id"
         v-model="currencyID"
         empty-message="Keine Währungen gefunden"
+        filter
+        empty-filter-message="Keine Resultate gefunden"
         :disabled="isLoading"
         :class="{ 'p-invalid': errors['currencyID']?.length }"
         :options="currencies"
-        option-label="code"
+        :option-label="getCurrencyLabel"
         option-value="id"
         placeholder="Bitte wählen"
       />
@@ -203,8 +205,9 @@ import { EmployeeHistoryUtils } from '~/utils/models/employee-history-utils'
 
 const dialogRef = inject<IHistoryFormDialog>('dialogRef')!
 
+const { getOrganisationCurrencyID } = useAuth()
 const { createEmployeeHistory, updateEmployeeHistory, deleteEmployeeHistory } = useEmployeeHistories()
-const { currencies } = useGlobalData()
+const { currencies, getCurrencyLabel } = useGlobalData()
 const confirm = useConfirm()
 const toast = useToast()
 
@@ -229,7 +232,7 @@ const { defineField, errors, handleSubmit, meta } = useForm({
     id: isClone.value ? undefined : employeeHistory.value?.id ?? undefined,
     hoursPerMonth: employeeHistory.value?.hoursPerMonth ?? 0,
     salary: isNumber(employeeHistory.value?.salary) ? AmountToFloat(employeeHistory.value!.salary) : 0,
-    currencyID: employeeHistory.value?.currency.id ?? null,
+    currencyID: employeeHistory.value?.currency.id ?? getOrganisationCurrencyID.value,
     vacationDaysPerYear: employeeHistory.value?.vacationDaysPerYear ?? 0,
     fromDate: employeeHistory.value?.fromDate ? DateToUTCDate(employeeHistory.value.fromDate) : null,
     cycle: employeeHistory.value?.cycle ?? CycleType.Monthly,

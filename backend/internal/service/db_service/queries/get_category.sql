@@ -9,5 +9,5 @@ WHERE
     AND
     (
         c.organisation_id IS NULL
-        OR c.organisation_id = get_current_organisation(?)
+        OR c.organisation_id = get_current_user_organisation_id(?)
     )

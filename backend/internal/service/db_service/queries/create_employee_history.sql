@@ -13,5 +13,5 @@ INSERT INTO employee_histories
 SELECT ?, ?, ?, ?, ?, ?, ?, ?, ?
 FROM employees e
 WHERE e.id = ?
-  AND e.organisation_id = get_current_organisation(?)
+  AND e.organisation_id = get_current_user_organisation_id(?)
 LIMIT 1;

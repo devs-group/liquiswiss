@@ -33,11 +33,11 @@
           </span>
         </p>
         <p
-          v-if="bankAccount.currency.code != Constants.BASE_CURRENCY"
+          v-if="bankAccount.currency.code != getOrganisationCurrencyCode"
           class="flex flex-wrap gap-1"
         >
           <span class="text-xs">
-            ~ {{ amountToBaseFormatted }} CHF
+            ~ {{ amountToBaseFormatted }} {{ getOrganisationCurrencyCode }}
           </span>
         </p>
       </div>
@@ -48,6 +48,7 @@
 <script setup lang="ts">
 import type { BankAccountResponse } from '~/models/bank-account'
 
+const { getOrganisationCurrencyCode } = useAuth()
 const { convertAmountToRate } = useGlobalData()
 
 const props = defineProps({
@@ -65,6 +66,6 @@ defineEmits<{
 const amountFormatted = computed(() => NumberToFormattedCurrency(AmountToFloat(props.bankAccount.amount), props.bankAccount.currency.localeCode))
 const amountToBaseFormatted = computed(() => NumberToFormattedCurrency(
   convertAmountToRate(AmountToFloat(props.bankAccount.amount), props.bankAccount.currency.code),
-  Constants.BASE_LOCALE_CODE,
+  getOrganisationCurrencyCode.value,
 ))
 </script>

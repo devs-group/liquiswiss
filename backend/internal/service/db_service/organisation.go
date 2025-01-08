@@ -24,8 +24,15 @@ func (s *DatabaseService) ListOrganisations(userID int64, page int64, limit int6
 		var organisation models.Organisation
 
 		err := rows.Scan(
-			&organisation.ID, &organisation.Name, &organisation.MemberCount,
-			&organisation.Role, &organisation.IsDefault,
+			&organisation.ID,
+			&organisation.Name,
+			&organisation.Currency.ID,
+			&organisation.Currency.Code,
+			&organisation.Currency.Description,
+			&organisation.Currency.LocaleCode,
+			&organisation.MemberCount,
+			&organisation.Role,
+			&organisation.IsDefault,
 			&totalCount,
 		)
 		if err != nil {
@@ -47,7 +54,14 @@ func (s *DatabaseService) GetOrganisation(userID int64, organisationID int64) (*
 	}
 
 	err = s.db.QueryRow(string(query), organisationID, userID).Scan(
-		&organisation.ID, &organisation.Name, &organisation.MemberCount, &organisation.Role,
+		&organisation.ID,
+		&organisation.Name,
+		&organisation.Currency.ID,
+		&organisation.Currency.Code,
+		&organisation.Currency.Description,
+		&organisation.Currency.LocaleCode,
+		&organisation.MemberCount,
+		&organisation.Role,
 	)
 	if err != nil {
 		return nil, err
@@ -93,11 +107,15 @@ func (s *DatabaseService) UpdateOrganisation(payload models.UpdateOrganisation, 
 		queryBuild = append(queryBuild, "name = ?")
 		args = append(args, *payload.Name)
 	}
+	if payload.CurrencyID != nil {
+		queryBuild = append(queryBuild, "main_currency_id = ?")
+		args = append(args, *payload.CurrencyID)
+	}
 
 	// Add WHERE clause
 	query += strings.Join(queryBuild, ", ")
-	query += " WHERE id = ?"
-	args = append(args, organisationID)
+	query += " WHERE id = ? AND id = get_current_user_organisation_id(?)"
+	args = append(args, organisationID, userID)
 
 	stmt, err := s.db.Prepare(query)
 	if err != nil {

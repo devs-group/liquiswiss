@@ -11,6 +11,12 @@ import (
 )
 
 func ListCurrencies(dbService db_service.IDatabaseService, c *gin.Context) {
+	userID := c.GetInt64("userID")
+	if userID == 0 {
+		c.JSON(http.StatusUnauthorized, gin.H{"error": "Ungültiger Benutzer"})
+		return
+	}
+
 	limit, err := strconv.ParseInt(c.Query("limit"), 10, 64)
 	if err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
@@ -22,7 +28,7 @@ func ListCurrencies(dbService db_service.IDatabaseService, c *gin.Context) {
 		return
 	}
 
-	currencies, totalCount, err := dbService.ListCurrencies(page, limit)
+	currencies, totalCount, err := dbService.ListCurrencies(userID, page, limit)
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 		return

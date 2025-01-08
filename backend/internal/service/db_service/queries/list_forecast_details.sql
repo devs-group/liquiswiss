@@ -15,5 +15,5 @@ SELECT
     f.forecast_id AS forecast_id
 FROM date_series ds
 LEFT JOIN forecast_details f ON DATE_FORMAT(ds.date, '%Y-%m') = f.month
-    AND f.organisation_id = get_current_organisation(?)
+    AND f.organisation_id = get_current_user_organisation_id(?)
 ORDER BY ds.date

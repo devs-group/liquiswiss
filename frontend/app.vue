@@ -51,7 +51,7 @@ import type { ConfirmDialogBreakpoints } from 'primevue'
 import useAuth from '~/composables/useAuth'
 import { Config } from '~/config/config'
 
-const { isAuthenticated, getAccessToken } = useAuth()
+const { isAuthenticated, getAccessToken, getOrganisationCurrencyCode } = useAuth()
 const { useFetchListCurrencies, useFetchListCategories, useFetchListFiatRates, useFetchGetServerTime, serverDate, showGlobalLoadingSpinner } = useGlobalData()
 const { useFetchListOrganisations } = useOrganisations()
 const toast = useToast()
@@ -71,7 +71,7 @@ const serverDateFormatted = computed(() => {
 })
 
 if (isAuthenticated.value) {
-  await Promise.all([useFetchListCurrencies(), useFetchListCategories(), useFetchListFiatRates(), useFetchGetServerTime()])
+  await Promise.all([useFetchListCurrencies(), useFetchListCategories(), useFetchListFiatRates(getOrganisationCurrencyCode.value), useFetchGetServerTime()])
     .catch(() => {
       hasInitialLoadError.value = true
     })

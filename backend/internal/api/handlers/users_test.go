@@ -13,6 +13,10 @@ func TestCreateAndUpdateUser(t *testing.T) {
 
 	dbService := db_service.NewDatabaseService(conn)
 
+	// Preparations
+	_, err := CreateCurrency(dbService, "CHF", "Swiss Franc", "de-CH")
+	assert.NoError(t, err)
+
 	user, organisation, err := CreateUserWithOrganisation(
 		dbService, "John Doe", "test", "Test Organisation",
 	)

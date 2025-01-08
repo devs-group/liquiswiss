@@ -105,7 +105,7 @@ func (s *DatabaseService) UpdateBankAccount(payload models.UpdateBankAccount, us
 
 	// Add WHERE clause
 	query += strings.Join(queryBuild, ", ")
-	query += " WHERE id = ? AND organisation_id = get_current_organisation(?)"
+	query += " WHERE id = ? AND organisation_id = get_current_user_organisation_id(?)"
 	args = append(args, bankAccountID, userID)
 
 	stmt, err := s.db.Prepare(query)

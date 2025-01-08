@@ -86,7 +86,7 @@ func (s *DatabaseService) UpdateCategory(userID int64, payload models.UpdateCate
 	}
 
 	query += strings.Join(queryBuild, ", ")
-	query += " WHERE id = ? AND organisation_id = get_current_organisation(?)"
+	query += " WHERE id = ? AND organisation_id = get_current_user_organisation_id(?)"
 	args = append(args, categoryID, userID)
 
 	stmt, err := s.db.Prepare(query)

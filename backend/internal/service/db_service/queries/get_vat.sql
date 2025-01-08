@@ -10,5 +10,5 @@ WHERE
     AND
     (
         v.organisation_id IS NULL OR
-        v.organisation_id = get_current_organisation(?)
+        v.organisation_id = get_current_user_organisation_id(?)
     )

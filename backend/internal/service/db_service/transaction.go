@@ -296,7 +296,7 @@ func (s *DatabaseService) UpdateTransaction(payload models.UpdateTransaction, us
 
 	// Add WHERE clause
 	query += strings.Join(queryBuild, ", ")
-	query += " WHERE id = ? AND organisation_id = get_current_organisation(?)"
+	query += " WHERE id = ? AND organisation_id = get_current_user_organisation_id(?)"
 	args = append(args, transactionID)
 	args = append(args, userID)
 

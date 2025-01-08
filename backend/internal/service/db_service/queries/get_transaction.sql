@@ -38,4 +38,4 @@ FROM
     LEFT JOIN employees emp ON r.employee_id = emp.id
 WHERE
     r.id = ?
-    AND r.organisation_id = get_current_organisation(?)
+    AND r.organisation_id = get_current_user_organisation_id(?)

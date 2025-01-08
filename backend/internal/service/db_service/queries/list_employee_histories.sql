@@ -35,7 +35,7 @@ JOIN employees e ON e.id = h.employee_id
 JOIN currencies c ON h.currency_id = c.id
 LEFT JOIN employee_history_costs ehc ON ehc.employee_history_id = h.id
 WHERE h.employee_id = ?
-  AND e.organisation_id = get_current_organisation(?)
+  AND e.organisation_id = get_current_user_organisation_id(?)
 GROUP BY
     h.id,
     h.employee_id,

@@ -58,8 +58,10 @@
         id="name"
         v-model="currency"
         empty-message="Keine Währungen gefunden"
+        filter
+        empty-filter-message="Keine Resultate gefunden"
         :options="currencies"
-        option-label="code"
+        :option-label="getCurrencyLabel"
         option-value="id"
         placeholder="Bitte wählen"
         :class="{ 'p-invalid': errors['currency']?.length }"
@@ -116,8 +118,9 @@ import AmountInvertButton from '~/components/AmountInvertButton.vue'
 
 const dialogRef = inject<IBankAccountFormDialog>('dialogRef')!
 
+const { getOrganisationCurrencyID } = useAuth()
 const { createBankAccount, updateBankAccount, deleteBankAccount } = useBankAccounts()
-const { currencies } = useGlobalData()
+const { currencies, getCurrencyLabel } = useGlobalData()
 const confirm = useConfirm()
 const toast = useToast()
 
@@ -138,7 +141,7 @@ const { defineField, errors, handleSubmit, meta } = useForm({
     id: isClone ? undefined : bankAccount?.id ?? undefined,
     name: bankAccount?.name ?? '',
     amount: isNumber(bankAccount?.amount) ? AmountToFloat(bankAccount!.amount) : '',
-    currency: bankAccount?.currency.id ?? null,
+    currency: bankAccount?.currency.id ?? getOrganisationCurrencyID.value,
   } as BankAccountFormData,
 })
 

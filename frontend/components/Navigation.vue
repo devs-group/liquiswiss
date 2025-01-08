@@ -85,7 +85,7 @@ const items = ref<MenuItem[]>([
       acceptLabel: 'Ja',
       accept: async () => {
         await logout()
-        reloadNuxtApp({ force: true }) // , path: RoutePaths.AUTH
+        reloadNuxtApp({ force: true })
       },
       reject: () => {
       },

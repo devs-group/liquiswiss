@@ -38,7 +38,7 @@ FROM
     LEFT JOIN vats v ON r.vat_id = v.id
     LEFT JOIN employees emp ON r.employee_id = emp.id
 WHERE
-    r.organisation_id = get_current_organisation(?)
+    r.organisation_id = get_current_user_organisation_id(?)
 ORDER BY
     {{.sortBy}} IS NULL,
     {{.sortBy}} {{.sortOrder}},
