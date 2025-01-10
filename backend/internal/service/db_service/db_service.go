@@ -93,7 +93,7 @@ type IDatabaseService interface {
 	CreateCategory(userID *int64, payload models.CreateCategory) (int64, error)
 	UpdateCategory(userID int64, payload models.UpdateCategory, categoryID int64) error
 
-	ListCurrencies(userID int64, page int64, limit int64) ([]models.Currency, int64, error)
+	ListCurrencies(userID int64) ([]models.Currency, error)
 	GetCurrency(currencyID int64) (*models.Currency, error)
 	CreateCurrency(payload models.CreateCurrency) (int64, error)
 	UpdateCurrency(payload models.UpdateCurrency, currencyID int64) error

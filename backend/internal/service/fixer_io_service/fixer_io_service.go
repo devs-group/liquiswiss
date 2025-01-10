@@ -49,7 +49,7 @@ func (f *FixerIOService) FetchFiatRates() {
 	logger.Logger.Infof("Running Fixer.io Cronjob")
 
 	cfg := config.GetConfig()
-	currencies, _, err := f.dbService.ListCurrencies(0, 1, 1000)
+	currencies, err := f.dbService.ListCurrencies(0)
 	if err != nil {
 		logger.Logger.Errorf("Failed to load currencies: %v", err)
 		return

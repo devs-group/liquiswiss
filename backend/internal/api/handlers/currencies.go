@@ -17,27 +17,13 @@ func ListCurrencies(dbService db_service.IDatabaseService, c *gin.Context) {
 		return
 	}
 
-	limit, err := strconv.ParseInt(c.Query("limit"), 10, 64)
-	if err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
-		return
-	}
-	page, err := strconv.ParseInt(c.Query("page"), 10, 64)
-	if err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
-		return
-	}
-
-	currencies, totalCount, err := dbService.ListCurrencies(userID, page, limit)
+	currencies, err := dbService.ListCurrencies(userID)
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 		return
 	}
 
-	c.JSON(http.StatusOK, models.ListResponse[models.Currency]{
-		Data:       currencies,
-		Pagination: models.CalculatePagination(page, limit, totalCount),
-	})
+	c.JSON(http.StatusOK, currencies)
 }
 
 func GetCurrency(dbService db_service.IDatabaseService, c *gin.Context) {

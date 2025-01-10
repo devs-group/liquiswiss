@@ -1,5 +1,5 @@
 import type { CategoryResponse, ListCategoryResponse } from '~/models/category'
-import type { CurrencyResponse, ListCurrencyResponse } from '~/models/currency'
+import type { CurrencyResponse } from '~/models/currency'
 import type { FiatRateResponse } from '~/models/fiat-rate'
 import type { ServerTimeResponse } from '~/models/server-time'
 import { DateToEuropeZurichDate } from '~/utils/format-helper'
@@ -26,17 +26,13 @@ export default function useGlobalData() {
   }
 
   const useFetchListCurrencies = async () => {
-    const { data, error } = await useFetch<ListCurrencyResponse>('/api/currencies', {
+    const { data, error } = await useFetch<CurrencyResponse[]>('/api/currencies', {
       method: 'GET',
-      query: {
-        page: 1,
-        limit: 100,
-      },
     })
     if (error.value) {
       return Promise.reject('Währungen konnten nicht geladen werden')
     }
-    currencies.value = data.value?.data ?? []
+    currencies.value = data.value ?? []
   }
 
   const useFetchListFiatRates = async (baseCurrency: string) => {
