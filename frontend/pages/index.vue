@@ -98,7 +98,7 @@
               <div
                 v-for="month in months"
                 :key="month"
-                class="border-t border-b border-l last:border-r border-zinc-600 dark:border-zinc-400 bg-zinc-300 dark:bg-zinc-700 p-2 min-w-40"
+                class="w-full border-t border-b border-l last:border-r border-zinc-600 dark:border-zinc-400 bg-zinc-300 dark:bg-zinc-700 p-2 min-w-40"
               >
                 <p class="text-xs text-center font-bold">
                   {{ month }}
@@ -122,7 +122,7 @@
               <div
                 v-for="(revenue, i) in revenues"
                 :key="i"
-                class="border-b border-l last:border-r border-zinc-600 dark:border-zinc-400 bg-liqui-green p-2 min-w-40"
+                class="w-full border-b border-l last:border-r border-zinc-600 dark:border-zinc-400 bg-liqui-green p-2 min-w-40"
               >
                 <p class="text-xs text-center">
                   {{ revenue.formatted }} {{ getOrganisationCurrencyCode }}
@@ -131,26 +131,13 @@
             </div>
 
             <template v-if="forecastShowRevenueDetails">
-              <div
-                v-for="category of revenueCategories"
-                :key="category"
-                class="flex items-center col-span-full"
-              >
-                <div class="flex gap-1 cursor-default border-b border-l border-zinc-600 dark:border-zinc-400 bg-zinc-300 dark:bg-zinc-700 p-1 min-w-28">
-                  <p class="w-full text-xs text-right truncate">
-                    {{ category }}
-                  </p>
-                </div>
-                <div
-                  v-for="data in forecastDetails"
-                  :key="data.forecastID"
-                  class="border-b border-l last:border-r border-zinc-600 dark:border-zinc-400 bg-zinc-100 dark:bg-zinc-800 p-1 min-w-40"
-                >
-                  <p class="text-xs text-center">
-                    {{ getCategoryAmount(data, category, 'revenue') }} {{ getOrganisationCurrencyCode }}
-                  </p>
-                </div>
-              </div>
+              <NestedForecastCategory
+                v-for="category in revenueCategories"
+                :key="category.name"
+                :category="category"
+                :forecast-details="forecastDetails"
+                :currency-code="getOrganisationCurrencyCode"
+              />
             </template>
 
             <div class="flex items-center col-span-full">
@@ -169,7 +156,7 @@
               <div
                 v-for="(expense, i) in expenses"
                 :key="i"
-                class="border-b border-l last:border-r border-zinc-600 dark:border-zinc-400 bg-liqui-red p-2 min-w-40"
+                class="w-full border-b border-l last:border-r border-zinc-600 dark:border-zinc-400 bg-liqui-red p-2 min-w-40"
               >
                 <p class="text-xs text-center">
                   {{ expense.formatted }} {{ getOrganisationCurrencyCode }}
@@ -178,26 +165,13 @@
             </div>
 
             <template v-if="forecastShowExpenseDetails">
-              <div
-                v-for="category of expenseCategories"
-                :key="category"
-                class="flex items-center col-span-full"
-              >
-                <div class="flex gap-1 cursor-default border-b border-l border-zinc-600 dark:border-zinc-400 bg-zinc-300 dark:bg-zinc-700 p-1 min-w-28">
-                  <p class="w-full text-xs text-right truncate">
-                    {{ category }}
-                  </p>
-                </div>
-                <div
-                  v-for="data in forecastDetails"
-                  :key="data.forecastID"
-                  class="border-b border-l last:border-r border-zinc-600 dark:border-zinc-400 bg-zinc-100 dark:bg-zinc-800 p-1 min-w-40"
-                >
-                  <p class="text-xs text-center">
-                    {{ getCategoryAmount(data, category, 'expense') }} {{ getOrganisationCurrencyCode }}
-                  </p>
-                </div>
-              </div>
+              <NestedForecastCategory
+                v-for="category in expenseCategories"
+                :key="category.name"
+                :category="category"
+                :forecast-details="forecastDetails"
+                :currency-code="getOrganisationCurrencyCode"
+              />
             </template>
 
             <div class="flex items-center col-span-full">
@@ -209,7 +183,7 @@
               <div
                 v-for="(cashflow, i) in cashflows"
                 :key="i"
-                class="border-b border-l last:border-r border-zinc-600 dark:border-zinc-400 p-2 min-w-40"
+                class="w-full border-b border-l last:border-r border-zinc-600 dark:border-zinc-400 p-2 min-w-40"
                 :class="{ 'text-liqui-red': cashflow.amount < 0, 'text-liqui-green': cashflow.amount > 0 }"
               >
                 <p class="text-xs text-center">
@@ -227,7 +201,7 @@
               <div
                 v-for="(saldo, i) in saldos"
                 :key="i"
-                class="border-b border-l last:border-r border-zinc-600 dark:border-zinc-400 p-2 min-w-40"
+                class="w-full border-b border-l last:border-r border-zinc-600 dark:border-zinc-400 p-2 min-w-40"
                 :class="{ 'bg-liqui-red': saldo.amount < 0, 'bg-liqui-green': saldo.amount > 0 }"
               >
                 <p class="text-xs text-center font-bold truncate">
@@ -261,7 +235,7 @@
 <script setup lang="ts">
 import Chart from 'primevue/chart'
 import useCharts from '~/composables/useCharts'
-import type { ForecastDetailResponse } from '~/models/forecast'
+import type { ForecastDetailRevenueExpenseResponse } from '~/models/forecast'
 import FullProgressSpinner from '~/components/FullProgressSpinner.vue'
 
 useHead({
@@ -386,11 +360,6 @@ const onToggleExpenseDetails = async () => {
   }
 }
 
-const getCategoryAmount = (data: ForecastDetailResponse, category: string, type: 'revenue' | 'expense') => {
-  const amount = data[type].find(e => e.name == category)?.amount ?? 0
-  return NumberToFormattedCurrency(AmountToFloat(amount), getOrganisationCurrencyLocaleCode.value)
-}
-
 watch(forecastMonths, (value) => {
   isLoading.value = true
   listForecasts(value)
@@ -409,18 +378,30 @@ watch(forecastMonths, (value) => {
 })
 
 const revenueCategories = computed(() => {
-  return Array.from(new Set(
-    forecastDetails.value.flatMap(data => [
-      ...data.revenue.map(r => r.name),
-    ]),
-  )).sort((a, b) => a.localeCompare(b))
+  const categories: ForecastDetailRevenueExpenseResponse[] = []
+
+  forecastDetails.value.forEach((data) => {
+    (data.revenue || []).forEach((item) => {
+      if (!categories.find(c => c.name === item.name)) {
+        categories.push(item)
+      }
+    })
+  })
+
+  return categories.sort((a, b) => a.name.localeCompare(b.name))
 })
 const expenseCategories = computed(() => {
-  return Array.from(new Set(
-    forecastDetails.value.flatMap(data => [
-      ...data.expense.map(e => e.name),
-    ]),
-  )).sort((a, b) => a.localeCompare(b))
+  const categories: ForecastDetailRevenueExpenseResponse[] = []
+
+  forecastDetails.value.forEach((data) => {
+    (data.expense || []).forEach((item) => {
+      if (!categories.find(c => c.name === item.name)) {
+        categories.push(item)
+      }
+    })
+  })
+
+  return categories.sort((a, b) => a.name.localeCompare(b.name))
 })
 const revenues = computed(() => forecasts.value.map((f) => {
   const revenue = f.data.revenue * (forecastPerformance.value / 100)
