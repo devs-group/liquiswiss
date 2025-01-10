@@ -30,7 +30,7 @@ func TestCurrencyOrderAndOrganisationDependency(t *testing.T) {
 	// Currently defined in 00009_create-function_get_default_system_currency_id.sql
 	assert.Equal(t, *currencyCHF.Code, *organisation.Currency.Code)
 
-	currencies, _, err := dbService.ListCurrencies(user.ID, 1, 250)
+	currencies, err := dbService.ListCurrencies(user.ID)
 	assert.NoError(t, err)
 
 	// The first currency in the list should be the company currency
@@ -48,7 +48,7 @@ func TestCurrencyOrderAndOrganisationDependency(t *testing.T) {
 		return
 	}
 
-	currencies, _, err = dbService.ListCurrencies(user.ID, 1, 250)
+	currencies, err = dbService.ListCurrencies(user.ID)
 	assert.NoError(t, err)
 
 	// The first currency should now be the newly set one, in this case VND

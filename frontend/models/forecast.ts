@@ -10,7 +10,8 @@ export interface ForecastResponse {
 
 export interface ForecastDetailRevenueExpenseResponse {
   name: string
-  amount: number
+  amount?: number
+  children?: ForecastDetailRevenueExpenseResponse[]
 }
 
 export interface ForecastDetailResponse {

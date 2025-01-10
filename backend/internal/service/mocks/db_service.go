@@ -720,19 +720,18 @@ func (mr *MockIDatabaseServiceMockRecorder) ListCategories(arg0, arg1, arg2 any)
 }
 
 // ListCurrencies mocks base method.
-func (m *MockIDatabaseService) ListCurrencies(arg0, arg1, arg2 int64) ([]models.Currency, int64, error) {
+func (m *MockIDatabaseService) ListCurrencies(arg0 int64) ([]models.Currency, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "ListCurrencies", arg0, arg1, arg2)
+	ret := m.ctrl.Call(m, "ListCurrencies", arg0)
 	ret0, _ := ret[0].([]models.Currency)
-	ret1, _ := ret[1].(int64)
-	ret2, _ := ret[2].(error)
-	return ret0, ret1, ret2
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
 }
 
 // ListCurrencies indicates an expected call of ListCurrencies.
-func (mr *MockIDatabaseServiceMockRecorder) ListCurrencies(arg0, arg1, arg2 any) *gomock.Call {
+func (mr *MockIDatabaseServiceMockRecorder) ListCurrencies(arg0 any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ListCurrencies", reflect.TypeOf((*MockIDatabaseService)(nil).ListCurrencies), arg0, arg1, arg2)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ListCurrencies", reflect.TypeOf((*MockIDatabaseService)(nil).ListCurrencies), arg0)
 }
 
 // ListEmployeeHistory mocks base method.

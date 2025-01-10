@@ -8,6 +8,7 @@ import (
 	"github.com/pressly/goose/v3"
 	"liquiswiss/internal/db"
 	"liquiswiss/internal/service/db_service"
+	"liquiswiss/pkg/logger"
 	"liquiswiss/pkg/models"
 	"liquiswiss/pkg/utils"
 	"os"
@@ -17,6 +18,8 @@ import (
 func TestMain(m *testing.M) {
 	utils.InitValidator()
 	gin.SetMode(gin.TestMode)
+
+	logger.NewZapLogger(false)
 
 	code := m.Run()
 	os.Exit(code)
