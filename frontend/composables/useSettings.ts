@@ -16,11 +16,13 @@ import { RouteNames } from '~/config/routes'
 export default function useSettings() {
   const forecastShowRevenueDetails = useState('forecastShowRevenueDetails', () => false)
   const forecastShowExpenseDetails = useState('forecastShowExpenseDetails', () => false)
+  const forecastShowSalaryCostDetails = useState('forecastShowSalaryCostDetails', () => true)
   const forecastPerformance = useState('forecastPerformance', () => 100)
   // 13 to include from current to the same month
   const forecastMonths = useState('forecastMonths', () => 13)
   const forecastShowRevenueDetailsCookie = CreateSettingsCookie('forecast-revenue-details')
   const forecastShowExpenseDetailsCookie = CreateSettingsCookie('forecast-expense-details')
+  const forecastShowSalaryCostDetailsCookie = CreateSettingsCookie('forecast-salary-cost-details')
   const forecastPerformanceCookie = CreateSettingsCookie('forecast-performance')
   const forecastMonthsCookie = CreateSettingsCookie('forecast-months')
 
@@ -88,6 +90,23 @@ export default function useSettings() {
   }
   else {
     forecastShowExpenseDetails.value = false
+  }
+
+  if (forecastShowSalaryCostDetailsCookie.value !== undefined) {
+    const val = forecastShowSalaryCostDetailsCookie.value
+    if (val == 'true') {
+      forecastShowSalaryCostDetails.value = true
+    }
+    else if (val == 'false') {
+      forecastShowSalaryCostDetails.value = false
+    }
+    else if (typeof val === 'boolean') {
+      // Can be boolean for some reason
+      forecastShowSalaryCostDetails.value = val
+    }
+  }
+  else {
+    forecastShowSalaryCostDetails.value = true
   }
 
   if (employeeDisplayCookie.value !== undefined) {
@@ -310,6 +329,10 @@ export default function useSettings() {
     forecastShowExpenseDetailsCookie.value = value.toString()
   })
 
+  watch(forecastShowSalaryCostDetails, (value) => {
+    forecastShowSalaryCostDetailsCookie.value = value.toString()
+  })
+
   watch(forecastPerformance, (value) => {
     forecastPerformanceCookie.value = value.toString()
   })
@@ -349,6 +372,7 @@ export default function useSettings() {
   return {
     forecastShowRevenueDetails,
     forecastShowExpenseDetails,
+    forecastShowSalaryCostDetails,
     forecastPerformance,
     forecastMonths,
     toggleEmployeeDisplayType,

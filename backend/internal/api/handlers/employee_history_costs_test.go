@@ -50,7 +50,7 @@ func TestMonthlyEmployeeHistoryWithoutToDate(t *testing.T) {
 	type TestCase struct {
 		Description                   string
 		DatabaseTime                  string
-		ExpectedCalculcatedAmount     uint64
+		ExpectedCalculatedAmount      uint64
 		ExpectedNextCost              uint64
 		ExpectedNextExecutionDate     string
 		ExpectedPreviousExecutionDate string
@@ -64,7 +64,7 @@ func TestMonthlyEmployeeHistoryWithoutToDate(t *testing.T) {
 		{
 			Description:                   "Once simple fixed",
 			DatabaseTime:                  "2025-01-01",
-			ExpectedCalculcatedAmount:     500 * 100,
+			ExpectedCalculatedAmount:      500 * 100,
 			ExpectedNextCost:              500 * 100,
 			ExpectedEmployeeDeductions:    500 * 100,
 			ExpectedNextExecutionDate:     "2025-02-15",
@@ -82,7 +82,7 @@ func TestMonthlyEmployeeHistoryWithoutToDate(t *testing.T) {
 		{
 			Description:                   "Once simple percentage",
 			DatabaseTime:                  "2025-01-01",
-			ExpectedCalculcatedAmount:     2500 * 100,
+			ExpectedCalculatedAmount:      2500 * 100,
 			ExpectedNextCost:              2500 * 100,
 			ExpectedEmployeeDeductions:    2500 * 100,
 			ExpectedNextExecutionDate:     "2025-02-15",
@@ -102,7 +102,7 @@ func TestMonthlyEmployeeHistoryWithoutToDate(t *testing.T) {
 		{
 			Description:                   "Daily simple fixed",
 			DatabaseTime:                  "2025-01-01",
-			ExpectedCalculcatedAmount:     500 * 100,
+			ExpectedCalculatedAmount:      500 * 100,
 			ExpectedNextCost:              500 * 100,
 			ExpectedEmployeeDeductions:    500 * 100,
 			ExpectedNextExecutionDate:     "2025-01-27",
@@ -120,7 +120,7 @@ func TestMonthlyEmployeeHistoryWithoutToDate(t *testing.T) {
 		{
 			Description:                   "Daily simple percentage",
 			DatabaseTime:                  "2025-01-01",
-			ExpectedCalculcatedAmount:     2500 * 100,
+			ExpectedCalculatedAmount:      2500 * 100,
 			ExpectedNextCost:              2500 * 100,
 			ExpectedEmployeeDeductions:    2500 * 100,
 			ExpectedNextExecutionDate:     "2025-01-27",
@@ -138,7 +138,7 @@ func TestMonthlyEmployeeHistoryWithoutToDate(t *testing.T) {
 		{
 			Description:                   "Daily offset fixed",
 			DatabaseTime:                  "2025-06-26",
-			ExpectedCalculcatedAmount:     500 * 100,
+			ExpectedCalculatedAmount:      500 * 100,
 			ExpectedNextCost:              500 * 100 * 7,
 			ExpectedEmployeeDeductions:    500 * 100 * 7,
 			ExpectedNextExecutionDate:     "2025-08-02",
@@ -156,7 +156,7 @@ func TestMonthlyEmployeeHistoryWithoutToDate(t *testing.T) {
 		{
 			Description:                   "Daily offset percentage",
 			DatabaseTime:                  "2025-06-26",
-			ExpectedCalculcatedAmount:     7500 * 100,
+			ExpectedCalculatedAmount:      7500 * 100,
 			ExpectedNextCost:              7500 * 100 * 7,
 			ExpectedEmployeeDeductions:    7500 * 100 * 7,
 			ExpectedNextExecutionDate:     "2025-08-02",
@@ -174,7 +174,7 @@ func TestMonthlyEmployeeHistoryWithoutToDate(t *testing.T) {
 		{
 			Description:                   "Daily giga offset fixed",
 			DatabaseTime:                  "2025-01-01",
-			ExpectedCalculcatedAmount:     250 * 100,
+			ExpectedCalculatedAmount:      250 * 100,
 			ExpectedNextCost:              250 * 100 * 720,
 			ExpectedEmployeeDeductions:    250 * 100 * 720,
 			ExpectedNextExecutionDate:     "2027-01-16",
@@ -194,7 +194,7 @@ func TestMonthlyEmployeeHistoryWithoutToDate(t *testing.T) {
 		{
 			Description:                   "Weekly simple fixed",
 			DatabaseTime:                  "2025-01-01",
-			ExpectedCalculcatedAmount:     500 * 100,
+			ExpectedCalculatedAmount:      500 * 100,
 			ExpectedNextCost:              500 * 100,
 			ExpectedEmployeeDeductions:    500 * 100,
 			ExpectedNextExecutionDate:     "2025-02-02",
@@ -212,7 +212,7 @@ func TestMonthlyEmployeeHistoryWithoutToDate(t *testing.T) {
 		{
 			Description:                   "Weekly simple percentage",
 			DatabaseTime:                  "2025-01-01",
-			ExpectedCalculcatedAmount:     2500 * 100,
+			ExpectedCalculatedAmount:      2500 * 100,
 			ExpectedNextCost:              2500 * 100,
 			ExpectedEmployeeDeductions:    2500 * 100,
 			ExpectedNextExecutionDate:     "2025-02-02",
@@ -230,7 +230,7 @@ func TestMonthlyEmployeeHistoryWithoutToDate(t *testing.T) {
 		{
 			Description:                   "Weekly offset fixed",
 			DatabaseTime:                  "2025-06-26",
-			ExpectedCalculcatedAmount:     500 * 100,
+			ExpectedCalculatedAmount:      500 * 100,
 			ExpectedNextCost:              500 * 100 * 7,
 			ExpectedEmployeeDeductions:    500 * 100 * 7,
 			ExpectedNextExecutionDate:     "2025-09-13",
@@ -248,7 +248,7 @@ func TestMonthlyEmployeeHistoryWithoutToDate(t *testing.T) {
 		{
 			Description:                   "Weekly offset percentage",
 			DatabaseTime:                  "2025-06-26",
-			ExpectedCalculcatedAmount:     7500 * 100,
+			ExpectedCalculatedAmount:      7500 * 100,
 			ExpectedNextCost:              7500 * 100 * 7,
 			ExpectedEmployeeDeductions:    7500 * 100 * 7,
 			ExpectedNextExecutionDate:     "2025-09-13",
@@ -266,7 +266,7 @@ func TestMonthlyEmployeeHistoryWithoutToDate(t *testing.T) {
 		{
 			Description:                   "Weekly giga offset fixed",
 			DatabaseTime:                  "2025-01-01",
-			ExpectedCalculcatedAmount:     250 * 100,
+			ExpectedCalculatedAmount:      250 * 100,
 			ExpectedNextCost:              250 * 100 * 720,
 			ExpectedEmployeeDeductions:    250 * 100 * 720,
 			ExpectedNextExecutionDate:     "2038-11-14",
@@ -286,7 +286,7 @@ func TestMonthlyEmployeeHistoryWithoutToDate(t *testing.T) {
 		{
 			Description:                   "Monthly simple fixed",
 			DatabaseTime:                  "2025-01-01",
-			ExpectedCalculcatedAmount:     500 * 100,
+			ExpectedCalculatedAmount:      500 * 100,
 			ExpectedNextCost:              500 * 100,
 			ExpectedEmployeeDeductions:    500 * 100,
 			ExpectedNextExecutionDate:     "2025-02-26",
@@ -304,7 +304,7 @@ func TestMonthlyEmployeeHistoryWithoutToDate(t *testing.T) {
 		{
 			Description:                   "Monthly simple percentage",
 			DatabaseTime:                  "2025-01-01",
-			ExpectedCalculcatedAmount:     2500 * 100,
+			ExpectedCalculatedAmount:      2500 * 100,
 			ExpectedNextCost:              2500 * 100,
 			ExpectedEmployeeDeductions:    2500 * 100,
 			ExpectedNextExecutionDate:     "2025-02-26",
@@ -322,7 +322,7 @@ func TestMonthlyEmployeeHistoryWithoutToDate(t *testing.T) {
 		{
 			Description:                   "Monthly offset fixed",
 			DatabaseTime:                  "2025-06-26",
-			ExpectedCalculcatedAmount:     500 * 100,
+			ExpectedCalculatedAmount:      500 * 100,
 			ExpectedNextCost:              500 * 100 * 7,
 			ExpectedEmployeeDeductions:    500 * 100,
 			ExpectedNextExecutionDate:     "2026-02-26",
@@ -340,7 +340,7 @@ func TestMonthlyEmployeeHistoryWithoutToDate(t *testing.T) {
 		{
 			Description:                   "Monthly offset percentage",
 			DatabaseTime:                  "2025-06-26",
-			ExpectedCalculcatedAmount:     7500 * 100,
+			ExpectedCalculatedAmount:      7500 * 100,
 			ExpectedNextCost:              7500 * 100 * 7,
 			ExpectedEmployeeDeductions:    7500 * 100,
 			ExpectedNextExecutionDate:     "2026-02-26",
@@ -358,7 +358,7 @@ func TestMonthlyEmployeeHistoryWithoutToDate(t *testing.T) {
 		{
 			Description:                   "Monthly giga offset fixed",
 			DatabaseTime:                  "2025-01-01",
-			ExpectedCalculcatedAmount:     250 * 100,
+			ExpectedCalculatedAmount:      250 * 100,
 			ExpectedNextCost:              250 * 100 * 720,
 			ExpectedEmployeeDeductions:    250 * 100,
 			ExpectedNextExecutionDate:     "2085-01-26",
@@ -376,10 +376,10 @@ func TestMonthlyEmployeeHistoryWithoutToDate(t *testing.T) {
 
 		// Quarterly
 		{
-			Description:               "Quarterly simple fixed",
-			DatabaseTime:              "2025-01-01",
-			ExpectedCalculcatedAmount: 500 * 100,
-			ExpectedNextCost:          500 * 100,
+			Description:              "Quarterly simple fixed",
+			DatabaseTime:             "2025-01-01",
+			ExpectedCalculatedAmount: 500 * 100,
+			ExpectedNextCost:         500 * 100,
 			// 500 * 100 / 3
 			ExpectedEmployeeDeductions:    16667,
 			ExpectedNextExecutionDate:     "2025-04-26",
@@ -395,10 +395,10 @@ func TestMonthlyEmployeeHistoryWithoutToDate(t *testing.T) {
 			},
 		},
 		{
-			Description:               "Quarterly simple percentage",
-			DatabaseTime:              "2025-01-01",
-			ExpectedCalculcatedAmount: 2500 * 100,
-			ExpectedNextCost:          2500 * 100,
+			Description:              "Quarterly simple percentage",
+			DatabaseTime:             "2025-01-01",
+			ExpectedCalculatedAmount: 2500 * 100,
+			ExpectedNextCost:         2500 * 100,
 			// 2500 * 100 / 3
 			ExpectedEmployeeDeductions:    83333,
 			ExpectedNextExecutionDate:     "2025-04-26",
@@ -414,10 +414,10 @@ func TestMonthlyEmployeeHistoryWithoutToDate(t *testing.T) {
 			},
 		},
 		{
-			Description:               "Quarterly offset fixed",
-			DatabaseTime:              "2025-06-26",
-			ExpectedCalculcatedAmount: 500 * 100,
-			ExpectedNextCost:          500 * 100 * 7,
+			Description:              "Quarterly offset fixed",
+			DatabaseTime:             "2025-06-26",
+			ExpectedCalculatedAmount: 500 * 100,
+			ExpectedNextCost:         500 * 100 * 7,
 			// 500 * 100 / 3
 			ExpectedEmployeeDeductions:    16667,
 			ExpectedNextExecutionDate:     "2027-04-26",
@@ -433,10 +433,10 @@ func TestMonthlyEmployeeHistoryWithoutToDate(t *testing.T) {
 			},
 		},
 		{
-			Description:               "Quarterly offset percentage",
-			DatabaseTime:              "2025-06-26",
-			ExpectedCalculcatedAmount: 7500 * 100,
-			ExpectedNextCost:          7500 * 100 * 7,
+			Description:              "Quarterly offset percentage",
+			DatabaseTime:             "2025-06-26",
+			ExpectedCalculatedAmount: 7500 * 100,
+			ExpectedNextCost:         7500 * 100 * 7,
 			// 7500 * 100 / 3
 			ExpectedEmployeeDeductions:    250000,
 			ExpectedNextExecutionDate:     "2027-04-26",
@@ -452,10 +452,10 @@ func TestMonthlyEmployeeHistoryWithoutToDate(t *testing.T) {
 			},
 		},
 		{
-			Description:               "Quarterly giga offset fixed",
-			DatabaseTime:              "2025-01-01",
-			ExpectedCalculcatedAmount: 250 * 100,
-			ExpectedNextCost:          250 * 100 * 720,
+			Description:              "Quarterly giga offset fixed",
+			DatabaseTime:             "2025-01-01",
+			ExpectedCalculatedAmount: 250 * 100,
+			ExpectedNextCost:         250 * 100 * 720,
 			// 250 * 100 / 3
 			ExpectedEmployeeDeductions:    8333,
 			ExpectedNextExecutionDate:     "2205-01-26",
@@ -473,10 +473,10 @@ func TestMonthlyEmployeeHistoryWithoutToDate(t *testing.T) {
 
 		// Biannually
 		{
-			Description:               "Biannually simple fixed",
-			DatabaseTime:              "2025-01-01",
-			ExpectedCalculcatedAmount: 500 * 100,
-			ExpectedNextCost:          500 * 100,
+			Description:              "Biannually simple fixed",
+			DatabaseTime:             "2025-01-01",
+			ExpectedCalculatedAmount: 500 * 100,
+			ExpectedNextCost:         500 * 100,
 			// 500 * 100 / 6
 			ExpectedEmployeeDeductions:    8333,
 			ExpectedNextExecutionDate:     "2025-07-26",
@@ -492,10 +492,10 @@ func TestMonthlyEmployeeHistoryWithoutToDate(t *testing.T) {
 			},
 		},
 		{
-			Description:               "Biannually simple percentage",
-			DatabaseTime:              "2025-01-01",
-			ExpectedCalculcatedAmount: 2500 * 100,
-			ExpectedNextCost:          2500 * 100,
+			Description:              "Biannually simple percentage",
+			DatabaseTime:             "2025-01-01",
+			ExpectedCalculatedAmount: 2500 * 100,
+			ExpectedNextCost:         2500 * 100,
 			// 2500 * 100 / 6
 			ExpectedEmployeeDeductions:    41667,
 			ExpectedNextExecutionDate:     "2025-07-26",
@@ -511,10 +511,10 @@ func TestMonthlyEmployeeHistoryWithoutToDate(t *testing.T) {
 			},
 		},
 		{
-			Description:               "Biannually offset fixed",
-			DatabaseTime:              "2025-06-26",
-			ExpectedCalculcatedAmount: 500 * 100,
-			ExpectedNextCost:          500 * 100 * 7,
+			Description:              "Biannually offset fixed",
+			DatabaseTime:             "2025-06-26",
+			ExpectedCalculatedAmount: 500 * 100,
+			ExpectedNextCost:         500 * 100 * 7,
 			// 500 * 100 / 6
 			ExpectedEmployeeDeductions:    8333,
 			ExpectedNextExecutionDate:     "2029-01-26",
@@ -530,10 +530,10 @@ func TestMonthlyEmployeeHistoryWithoutToDate(t *testing.T) {
 			},
 		},
 		{
-			Description:               "Biannually offset percentage",
-			DatabaseTime:              "2025-06-26",
-			ExpectedCalculcatedAmount: 7500 * 100,
-			ExpectedNextCost:          7500 * 100 * 7,
+			Description:              "Biannually offset percentage",
+			DatabaseTime:             "2025-06-26",
+			ExpectedCalculatedAmount: 7500 * 100,
+			ExpectedNextCost:         7500 * 100 * 7,
 			// 7500 * 100 / 6
 			ExpectedEmployeeDeductions:    125000,
 			ExpectedNextExecutionDate:     "2029-01-26",
@@ -549,10 +549,10 @@ func TestMonthlyEmployeeHistoryWithoutToDate(t *testing.T) {
 			},
 		},
 		{
-			Description:               "Biannually giga offset fixed",
-			DatabaseTime:              "2025-01-01",
-			ExpectedCalculcatedAmount: 250 * 100,
-			ExpectedNextCost:          250 * 100 * 720,
+			Description:              "Biannually giga offset fixed",
+			DatabaseTime:             "2025-01-01",
+			ExpectedCalculatedAmount: 250 * 100,
+			ExpectedNextCost:         250 * 100 * 720,
 			// 250 * 100 / 6
 			ExpectedEmployeeDeductions:    4167,
 			ExpectedNextExecutionDate:     "2385-01-26",
@@ -570,10 +570,10 @@ func TestMonthlyEmployeeHistoryWithoutToDate(t *testing.T) {
 
 		// Yearly
 		{
-			Description:               "Yearly simple fixed",
-			DatabaseTime:              "2025-01-01",
-			ExpectedCalculcatedAmount: 500 * 100,
-			ExpectedNextCost:          500 * 100,
+			Description:              "Yearly simple fixed",
+			DatabaseTime:             "2025-01-01",
+			ExpectedCalculatedAmount: 500 * 100,
+			ExpectedNextCost:         500 * 100,
 			// 500 * 100 / 12
 			ExpectedEmployeeDeductions:    4167,
 			ExpectedNextExecutionDate:     "2026-01-26",
@@ -589,10 +589,10 @@ func TestMonthlyEmployeeHistoryWithoutToDate(t *testing.T) {
 			},
 		},
 		{
-			Description:               "Yearly simple percentage",
-			DatabaseTime:              "2025-01-01",
-			ExpectedCalculcatedAmount: 2500 * 100,
-			ExpectedNextCost:          2500 * 100,
+			Description:              "Yearly simple percentage",
+			DatabaseTime:             "2025-01-01",
+			ExpectedCalculatedAmount: 2500 * 100,
+			ExpectedNextCost:         2500 * 100,
 			// 2500 * 100 / 12
 			ExpectedEmployeeDeductions:    20833,
 			ExpectedNextExecutionDate:     "2026-01-26",
@@ -608,10 +608,10 @@ func TestMonthlyEmployeeHistoryWithoutToDate(t *testing.T) {
 			},
 		},
 		{
-			Description:               "Yearly offset fixed",
-			DatabaseTime:              "2025-06-26",
-			ExpectedCalculcatedAmount: 500 * 100,
-			ExpectedNextCost:          500 * 100 * 7,
+			Description:              "Yearly offset fixed",
+			DatabaseTime:             "2025-06-26",
+			ExpectedCalculatedAmount: 500 * 100,
+			ExpectedNextCost:         500 * 100 * 7,
 			// 2500 * 100 / 12
 			ExpectedEmployeeDeductions:    4167,
 			ExpectedNextExecutionDate:     "2032-07-26",
@@ -627,10 +627,10 @@ func TestMonthlyEmployeeHistoryWithoutToDate(t *testing.T) {
 			},
 		},
 		{
-			Description:               "Yearly offset percentage",
-			DatabaseTime:              "2025-06-26",
-			ExpectedCalculcatedAmount: 7500 * 100,
-			ExpectedNextCost:          7500 * 100 * 7,
+			Description:              "Yearly offset percentage",
+			DatabaseTime:             "2025-06-26",
+			ExpectedCalculatedAmount: 7500 * 100,
+			ExpectedNextCost:         7500 * 100 * 7,
 			// 7500 * 100 / 12
 			ExpectedEmployeeDeductions:    62500,
 			ExpectedNextExecutionDate:     "2032-07-26",
@@ -646,10 +646,10 @@ func TestMonthlyEmployeeHistoryWithoutToDate(t *testing.T) {
 			},
 		},
 		{
-			Description:               "Yearly giga offset fixed",
-			DatabaseTime:              "2025-01-01",
-			ExpectedCalculcatedAmount: 250 * 100,
-			ExpectedNextCost:          250 * 100 * 720,
+			Description:              "Yearly giga offset fixed",
+			DatabaseTime:             "2025-01-01",
+			ExpectedCalculatedAmount: 250 * 100,
+			ExpectedNextCost:         250 * 100 * 720,
 			// 250 * 100 / 12
 			ExpectedEmployeeDeductions:    2083,
 			ExpectedNextExecutionDate:     "2745-01-26",
@@ -686,7 +686,7 @@ func TestMonthlyEmployeeHistoryWithoutToDate(t *testing.T) {
 			err = dbService.DeleteEmployeeHistoryCost(historyCost.ID, user.ID)
 			assert.NoError(t, err)
 
-			assert.Equal(t, int64(testCase.ExpectedCalculcatedAmount), int64(historyCost.CalculatedAmount), "historyCost.CalculatedAmount")
+			assert.Equal(t, int64(testCase.ExpectedCalculatedAmount), int64(historyCost.CalculatedAmount), "historyCost.CalculatedAmount")
 			assert.Equal(t, int64(testCase.ExpectedNextCost), int64(historyCost.NextCost), "historyCost.NextCost")
 			assert.Equal(t, testCase.ExpectedNextExecutionDate, historyCost.NextExecutionDate.ToFormattedTime(utils.InternalDateFormat), "historyCost.NextExecutionDate")
 			assert.Equal(t, testCase.ExpectedPreviousExecutionDate, historyCost.PreviousExecutionDate.ToFormattedTime(utils.InternalDateFormat), "historyCost.PreviousExecutionDate")
@@ -741,7 +741,7 @@ func TestMonthlyEmployeeHistoryWithToDate(t *testing.T) {
 	type TestCase struct {
 		Description                   string
 		DatabaseTime                  string
-		ExpectedCalculcatedAmount     uint64
+		ExpectedCalculatedAmount      uint64
 		ExpectedNextCost              uint64
 		ExpectedNextExecutionDate     string
 		ExpectedPreviousExecutionDate string
@@ -755,7 +755,7 @@ func TestMonthlyEmployeeHistoryWithToDate(t *testing.T) {
 		{
 			Description:                   "Monthly simple fixed before history ends in range",
 			DatabaseTime:                  "2025-01-01",
-			ExpectedCalculcatedAmount:     500 * 100,
+			ExpectedCalculatedAmount:      500 * 100,
 			ExpectedNextCost:              500 * 100,
 			ExpectedEmployeeDeductions:    500 * 100,
 			ExpectedNextExecutionDate:     "2025-02-26",
@@ -773,7 +773,7 @@ func TestMonthlyEmployeeHistoryWithToDate(t *testing.T) {
 		{
 			Description:                   "Monthly simple percentage before history ends in range",
 			DatabaseTime:                  "2025-01-01",
-			ExpectedCalculcatedAmount:     2000 * 100,
+			ExpectedCalculatedAmount:      2000 * 100,
 			ExpectedNextCost:              2000 * 100,
 			ExpectedEmployeeDeductions:    2000 * 100,
 			ExpectedNextExecutionDate:     "2025-02-26",
@@ -791,7 +791,7 @@ func TestMonthlyEmployeeHistoryWithToDate(t *testing.T) {
 		{
 			Description:                   "Monthly simple fixed passed history end but in range",
 			DatabaseTime:                  "2025-08-26",
-			ExpectedCalculcatedAmount:     250 * 100,
+			ExpectedCalculatedAmount:      250 * 100,
 			ExpectedNextCost:              250 * 100,
 			ExpectedEmployeeDeductions:    250 * 100,
 			ExpectedNextExecutionDate:     "2025-08-26",
@@ -809,7 +809,7 @@ func TestMonthlyEmployeeHistoryWithToDate(t *testing.T) {
 		{
 			Description:                   "Monthly simple percentage passed history end but in range",
 			DatabaseTime:                  "2025-08-26",
-			ExpectedCalculcatedAmount:     3500 * 100,
+			ExpectedCalculatedAmount:      3500 * 100,
 			ExpectedNextCost:              3500 * 100,
 			ExpectedEmployeeDeductions:    3500 * 100,
 			ExpectedNextExecutionDate:     "2025-08-26",
@@ -828,7 +828,7 @@ func TestMonthlyEmployeeHistoryWithToDate(t *testing.T) {
 			Description: "Monthly simple fixed after history out of range",
 			// Mind one day after a month after the history ended
 			DatabaseTime:                  "2025-08-27",
-			ExpectedCalculcatedAmount:     300 * 100,
+			ExpectedCalculatedAmount:      300 * 100,
 			ExpectedNextCost:              0,
 			ExpectedEmployeeDeductions:    300 * 100,
 			ExpectedNextExecutionDate:     "",
@@ -847,7 +847,7 @@ func TestMonthlyEmployeeHistoryWithToDate(t *testing.T) {
 			Description: "Monthly simple percentage after history out of range",
 			// Mind one day after a month after the history ended
 			DatabaseTime:                  "2025-08-27",
-			ExpectedCalculcatedAmount:     1500 * 100,
+			ExpectedCalculatedAmount:      1500 * 100,
 			ExpectedNextCost:              0,
 			ExpectedEmployeeDeductions:    1500 * 100,
 			ExpectedNextExecutionDate:     "",
@@ -865,7 +865,7 @@ func TestMonthlyEmployeeHistoryWithToDate(t *testing.T) {
 		{
 			Description:                   "Monthly offset fixed before history ends in range",
 			DatabaseTime:                  "2025-01-01",
-			ExpectedCalculcatedAmount:     500 * 100,
+			ExpectedCalculatedAmount:      500 * 100,
 			ExpectedNextCost:              500 * 100 * 10,
 			ExpectedEmployeeDeductions:    500 * 100,
 			ExpectedNextExecutionDate:     "2025-11-26",
@@ -883,7 +883,7 @@ func TestMonthlyEmployeeHistoryWithToDate(t *testing.T) {
 		{
 			Description:                   "Monthly percentage fixed before history ends in range",
 			DatabaseTime:                  "2025-01-01",
-			ExpectedCalculcatedAmount:     2000 * 100,
+			ExpectedCalculatedAmount:      2000 * 100,
 			ExpectedNextCost:              2000 * 100 * 10,
 			ExpectedEmployeeDeductions:    2000 * 100,
 			ExpectedNextExecutionDate:     "2025-11-26",
@@ -901,7 +901,7 @@ func TestMonthlyEmployeeHistoryWithToDate(t *testing.T) {
 		{
 			Description:                   "Monthly offset fixed passed history end but in range",
 			DatabaseTime:                  "2026-05-26",
-			ExpectedCalculcatedAmount:     500 * 100,
+			ExpectedCalculatedAmount:      500 * 100,
 			ExpectedNextCost:              500 * 100 * 10,
 			ExpectedEmployeeDeductions:    500 * 100,
 			ExpectedNextExecutionDate:     "2026-05-26",
@@ -919,7 +919,7 @@ func TestMonthlyEmployeeHistoryWithToDate(t *testing.T) {
 		{
 			Description:                   "Monthly offset percentage passed history end but in range",
 			DatabaseTime:                  "2026-05-26",
-			ExpectedCalculcatedAmount:     3500 * 100,
+			ExpectedCalculatedAmount:      3500 * 100,
 			ExpectedNextCost:              3500 * 100 * 10,
 			ExpectedEmployeeDeductions:    3500 * 100,
 			ExpectedNextExecutionDate:     "2026-05-26",
@@ -938,7 +938,7 @@ func TestMonthlyEmployeeHistoryWithToDate(t *testing.T) {
 			Description: "Monthly offset fixed passed history end out of range",
 			// Mind one day 10 months after the history ended
 			DatabaseTime:                  "2026-05-27",
-			ExpectedCalculcatedAmount:     500 * 100,
+			ExpectedCalculatedAmount:      500 * 100,
 			ExpectedNextCost:              0,
 			ExpectedEmployeeDeductions:    500 * 100,
 			ExpectedNextExecutionDate:     "",
@@ -956,7 +956,7 @@ func TestMonthlyEmployeeHistoryWithToDate(t *testing.T) {
 		{
 			Description:                   "Monthly offset percentage passed history end out of range",
 			DatabaseTime:                  "2026-05-27",
-			ExpectedCalculcatedAmount:     1500 * 100,
+			ExpectedCalculatedAmount:      1500 * 100,
 			ExpectedNextCost:              0,
 			ExpectedEmployeeDeductions:    1500 * 100,
 			ExpectedNextExecutionDate:     "",
@@ -993,7 +993,7 @@ func TestMonthlyEmployeeHistoryWithToDate(t *testing.T) {
 			err = dbService.DeleteEmployeeHistoryCost(historyCost.ID, user.ID)
 			assert.NoError(t, err)
 
-			assert.Equal(t, int64(testCase.ExpectedCalculcatedAmount), int64(historyCost.CalculatedAmount), "historyCost.CalculatedAmount")
+			assert.Equal(t, int64(testCase.ExpectedCalculatedAmount), int64(historyCost.CalculatedAmount), "historyCost.CalculatedAmount")
 			assert.Equal(t, int64(testCase.ExpectedNextCost), int64(historyCost.NextCost), "historyCost.NextCost")
 			assert.Equal(t, testCase.ExpectedNextExecutionDate, historyCost.NextExecutionDate.ToFormattedTime(utils.InternalDateFormat), "historyCost.NextExecutionDate")
 			assert.Equal(t, testCase.ExpectedPreviousExecutionDate, historyCost.PreviousExecutionDate.ToFormattedTime(utils.InternalDateFormat), "historyCost.PreviousExecutionDate")

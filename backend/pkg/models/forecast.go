@@ -15,15 +15,17 @@ type Forecast struct {
 }
 
 type ForecastDetailRevenueExpense struct {
-	Name   string `db:"name" json:"name"`
-	Amount int64  `db:"amount" json:"amount"`
+	Name   string `json:"name"`
+	Amount int64  `json:"amount,omitempty"` // Only set for leaf nodes
+	// Recursive
+	Children []ForecastDetailRevenueExpense `json:"children,omitempty"`
 }
 
 type ForecastDetails struct {
-	Month      string           `db:"month" json:"month"`
-	Revenue    map[string]int64 `db:"revenue" json:"revenue"`
-	Expense    map[string]int64 `db:"expense" json:"expense"`
-	ForecastID int64            `db:"forecast_id" json:"forecastID"`
+	Month      string                 `db:"month" json:"month"`
+	Revenue    map[string]interface{} `db:"revenue" json:"revenue"`
+	Expense    map[string]interface{} `db:"expense" json:"expense"`
+	ForecastID int64                  `db:"forecast_id" json:"forecastID"`
 }
 
 type ForecastDatabaseDetails struct {

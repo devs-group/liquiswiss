@@ -5,33 +5,37 @@ import (
 	"strings"
 )
 
-func (s *DatabaseService) ListCurrencies(userID int64, page int64, limit int64) ([]models.Currency, int64, error) {
+func (s *DatabaseService) ListCurrencies(userID int64) ([]models.Currency, error) {
 	currencies := []models.Currency{}
-	var totalCount int64
 
 	query, err := sqlQueries.ReadFile("queries/list_currencies.sql")
 	if err != nil {
-		return nil, 0, err
+		return nil, err
 	}
 
-	rows, err := s.db.Query(string(query), userID, limit, (page-1)*limit)
+	rows, err := s.db.Query(string(query), userID)
 	if err != nil {
-		return nil, 0, err
+		return nil, err
 	}
 	defer rows.Close()
 
 	for rows.Next() {
 		var currency models.Currency
 
-		err := rows.Scan(&currency.ID, &currency.Code, &currency.Description, &currency.LocaleCode, &totalCount)
+		err := rows.Scan(
+			&currency.ID,
+			&currency.Code,
+			&currency.Description,
+			&currency.LocaleCode,
+		)
 		if err != nil {
-			return nil, 0, err
+			return nil, err
 		}
 
 		currencies = append(currencies, currency)
 	}
 
-	return currencies, totalCount, nil
+	return currencies, nil
 }
 
 func (s *DatabaseService) GetCurrency(currencyID int64) (*models.Currency, error) {
