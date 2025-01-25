@@ -27,11 +27,12 @@
     </div>
   </div>
 
+  <!-- Special case -->
   <template v-if="forecastShowSalaryCostDetails">
     <NestedForecastCategory
-      v-for="child in category.children"
-      :key="child.name"
-      :category="child"
+      v-for="child in childCategories"
+      :key="child"
+      :category="{ name: child, children: [] }"
       :forecast-details="forecastDetails"
       :currency-code="currencyCode"
       :depth="depth+1"
@@ -108,6 +109,20 @@ const getCategoryAmount = (
 
 const hasChildren = computed(() => {
   return props.category.children && props.category.children.length > 0
+})
+
+const childCategories = computed(() => {
+  const categories: string[] = []
+  props.forecastDetails
+    .map(f => f.expense.find(e => e.name === props.category.name)?.children)
+    .filter(f => f)
+    .flat()
+    .forEach((e) => {
+      if (!categories.includes(e.name)) {
+        categories.push(e.name)
+      }
+    })
+  return categories.sort((a, b) => a.localeCompare(b))
 })
 
 const getColumnColor = computed(() => {
