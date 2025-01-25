@@ -312,11 +312,10 @@ func (f *ForecastService) CalculateForecast(userID int64) ([]models.Forecast, er
 					costFromDate := time.Time(*historyCost.NextExecutionDate)
 					nextCost := -models.CalculateAmountWithFiatRate(int64(historyCost.NextCost), fiatRate)
 
-					// TODO: Group these costs into the salary group later
-					//labelName := "<Kein Label>"
-					//if historyCost.Label != nil {
-					//	labelName = historyCost.Label.Name
-					//}
+					labelName := "<Kein Label>"
+					if historyCost.Label != nil {
+						labelName = historyCost.Label.Name
+					}
 
 					switch historyCost.Cycle {
 					case "once":
@@ -328,7 +327,7 @@ func (f *ForecastService) CalculateForecast(userID int64) ([]models.Forecast, er
 							initForecastMapKey(forecastMap, monthKey)
 						}
 						forecastMap[monthKey]["expense"] += nextCost
-						addForecastDetail(forecastDetailMap, monthKey, nextCost, "Lohnkosten", historyCost.Label.Name)
+						addForecastDetail(forecastDetailMap, monthKey, nextCost, "Lohnkosten", labelName)
 					case "daily":
 						lastToDate := toDate.AddDate(0, 0, int(historyCost.RelativeOffset))
 						for current := costFromDate; ; current = addOffset(history.Cycle, historyCost.Cycle, costFromDate, current, historyCost.RelativeOffset) {
@@ -343,7 +342,7 @@ func (f *ForecastService) CalculateForecast(userID int64) ([]models.Forecast, er
 								initForecastMapKey(forecastMap, monthKey)
 							}
 							forecastMap[monthKey]["expense"] += nextCost
-							addForecastDetail(forecastDetailMap, monthKey, nextCost, "Lohnkosten", historyCost.Label.Name)
+							addForecastDetail(forecastDetailMap, monthKey, nextCost, "Lohnkosten", labelName)
 						}
 					case "weekly":
 						lastToDate := toDate.AddDate(0, 0, 7*int(historyCost.RelativeOffset))
@@ -359,7 +358,7 @@ func (f *ForecastService) CalculateForecast(userID int64) ([]models.Forecast, er
 								initForecastMapKey(forecastMap, monthKey)
 							}
 							forecastMap[monthKey]["expense"] += nextCost
-							addForecastDetail(forecastDetailMap, monthKey, nextCost, "Lohnkosten", historyCost.Label.Name)
+							addForecastDetail(forecastDetailMap, monthKey, nextCost, "Lohnkosten", labelName)
 						}
 					case "monthly":
 						lastToDate := utils.GetNextDate(costFromDate, toDate, int(historyCost.RelativeOffset))
@@ -375,7 +374,7 @@ func (f *ForecastService) CalculateForecast(userID int64) ([]models.Forecast, er
 								initForecastMapKey(forecastMap, monthKey)
 							}
 							forecastMap[monthKey]["expense"] += nextCost
-							addForecastDetail(forecastDetailMap, monthKey, nextCost, "Lohnkosten", historyCost.Label.Name)
+							addForecastDetail(forecastDetailMap, monthKey, nextCost, "Lohnkosten", labelName)
 						}
 					case "quarterly":
 						lastToDate := utils.GetNextDate(costFromDate, toDate, 3*int(historyCost.RelativeOffset))
@@ -391,7 +390,7 @@ func (f *ForecastService) CalculateForecast(userID int64) ([]models.Forecast, er
 								initForecastMapKey(forecastMap, monthKey)
 							}
 							forecastMap[monthKey]["expense"] += nextCost
-							addForecastDetail(forecastDetailMap, monthKey, nextCost, "Lohnkosten", historyCost.Label.Name)
+							addForecastDetail(forecastDetailMap, monthKey, nextCost, "Lohnkosten", labelName)
 						}
 					case "biannually":
 						lastToDate := utils.GetNextDate(costFromDate, toDate, 6*int(historyCost.RelativeOffset))
@@ -407,7 +406,7 @@ func (f *ForecastService) CalculateForecast(userID int64) ([]models.Forecast, er
 								initForecastMapKey(forecastMap, monthKey)
 							}
 							forecastMap[monthKey]["expense"] += nextCost
-							addForecastDetail(forecastDetailMap, monthKey, nextCost, "Lohnkosten", historyCost.Label.Name)
+							addForecastDetail(forecastDetailMap, monthKey, nextCost, "Lohnkosten", labelName)
 						}
 					case "yearly":
 						lastToDate := utils.GetNextDate(costFromDate, toDate, 12*int(historyCost.RelativeOffset))
@@ -423,7 +422,7 @@ func (f *ForecastService) CalculateForecast(userID int64) ([]models.Forecast, er
 								initForecastMapKey(forecastMap, monthKey)
 							}
 							forecastMap[monthKey]["expense"] += nextCost
-							addForecastDetail(forecastDetailMap, monthKey, nextCost, "Lohnkosten", historyCost.Label.Name)
+							addForecastDetail(forecastDetailMap, monthKey, nextCost, "Lohnkosten", labelName)
 						}
 					}
 				}

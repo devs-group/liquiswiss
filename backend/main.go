@@ -112,8 +112,8 @@ func runStaticMigrations() error {
 
 	goose.SetBaseFS(staticMigrations)
 
-	if err := goose.SetDialect("mysql"); err != nil {
-		return errors.Wrapf(err, `failed to set goose dialect to "mysql"`)
+	if err := goose.SetDialect(string(goose.DialectMySQL)); err != nil {
+		return errors.Wrapf(err, `failed to set goose dialect to "%s"`, goose.DialectMySQL)
 	}
 
 	gooseConn, err := db.Connect()
@@ -137,8 +137,8 @@ func runDynamicMigrations() error {
 
 	goose.SetBaseFS(dynamicMigrations)
 
-	if err := goose.SetDialect("mysql"); err != nil {
-		return errors.Wrapf(err, `failed to set goose dialect to "mysql"`)
+	if err := goose.SetDialect(string(goose.DialectMySQL)); err != nil {
+		return errors.Wrapf(err, `failed to set goose dialect to "%s"`, goose.DialectMySQL)
 	}
 
 	gooseConn, err := db.Connect()

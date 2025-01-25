@@ -22,7 +22,6 @@ type ForecastDetailRevenueExpense struct {
 }
 
 type ForecastDetails struct {
-	Month      string                 `db:"month" json:"month"`
 	Revenue    map[string]interface{} `db:"revenue" json:"revenue"`
 	Expense    map[string]interface{} `db:"expense" json:"expense"`
 	ForecastID int64                  `db:"forecast_id" json:"forecastID"`
