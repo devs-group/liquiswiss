@@ -106,7 +106,7 @@ export default function useSettings() {
     }
   }
   else {
-    forecastShowChildDetails.value = true
+    forecastShowChildDetails.value = false
   }
 
   if (employeeDisplayCookie.value !== undefined) {
