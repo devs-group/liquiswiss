@@ -135,6 +135,7 @@
                 v-for="category in revenueCategories"
                 :key="category.name"
                 :category="category"
+                forecast-type="revenue"
                 :forecast-details="forecastDetails"
                 :currency-code="getOrganisationCurrencyCode"
               />
@@ -169,6 +170,7 @@
                 v-for="category in expenseCategories"
                 :key="category.name"
                 :category="category"
+                forecast-type="expense"
                 :forecast-details="forecastDetails"
                 :currency-code="getOrganisationCurrencyCode"
               />

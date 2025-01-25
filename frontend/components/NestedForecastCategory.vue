@@ -22,7 +22,7 @@
       class="w-full border-b border-l last:border-r border-zinc-600 dark:border-zinc-400 bg-zinc-100 dark:bg-zinc-800 p-1 min-w-40"
     >
       <p class="text-xs text-center">
-        {{ getCategoryAmount(data, category.name, 'expense') }} {{ currencyCode }}
+        {{ getCategoryAmount(data, category.name, forecastType) }} {{ currencyCode }}
       </p>
     </div>
   </div>
@@ -33,6 +33,7 @@
       v-for="child in childCategories"
       :key="child"
       :category="{ name: child, children: [] }"
+      :forecast-type="forecastType"
       :forecast-details="forecastDetails"
       :currency-code="currencyCode"
       :depth="depth+1"
@@ -57,6 +58,10 @@ const props = defineProps({
   },
   currencyCode: {
     type: String,
+    required: true,
+  },
+  forecastType: {
+    type: String as PropType<'revenue' | 'expense'>,
     required: true,
   },
   depth: {
