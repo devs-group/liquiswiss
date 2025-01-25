@@ -13,7 +13,7 @@
       <i
         v-if="hasChildren"
         class="pi"
-        :class="{ 'pi-sort-down': forecastShowSalaryCostDetails, 'pi-sort-up': !forecastShowSalaryCostDetails }"
+        :class="{ 'pi-sort-down': forecastShowChildDetails, 'pi-sort-up': !forecastShowChildDetails }"
       />
     </div>
     <div
@@ -27,8 +27,7 @@
     </div>
   </div>
 
-  <!-- Special case -->
-  <template v-if="forecastShowSalaryCostDetails">
+  <template v-if="forecastShowChildDetails">
     <NestedForecastCategory
       v-for="child in childCategories"
       :key="child"
@@ -45,7 +44,7 @@
 import type { ForecastDetailResponse, ForecastDetailRevenueExpenseResponse } from '~/models/forecast'
 
 const { getOrganisationCurrencyLocaleCode } = useAuth()
-const { forecastShowSalaryCostDetails } = useSettings()
+const { forecastShowChildDetails } = useSettings()
 
 const props = defineProps({
   category: {
@@ -72,7 +71,7 @@ const props = defineProps({
 
 const toggleChildren = () => {
   if (hasChildren.value) {
-    forecastShowSalaryCostDetails.value = !forecastShowSalaryCostDetails.value
+    forecastShowChildDetails.value = !forecastShowChildDetails.value
   }
 }
 
@@ -119,7 +118,7 @@ const hasChildren = computed(() => {
 const childCategories = computed(() => {
   const categories: string[] = []
   props.forecastDetails
-    .map(f => f.expense.find(e => e.name === props.category.name)?.children)
+    .map(f => (props.forecastType == 'revenue' ? f.revenue : f.expense).find(e => e.name === props.category.name)?.children)
     .filter(f => f)
     .flat()
     .forEach((e) => {
