@@ -13,11 +13,11 @@
     "postinstall": "nuxt prepare"
   },
   "devDependencies": {
-    "@nuxt/eslint": "^0.7.4",
+    "@nuxt/eslint": "^0.7.5",
     "@nuxtjs/color-mode": "^3.5.2",
-    "@nuxtjs/tailwindcss": "^6.12.2",
+    "@nuxtjs/tailwindcss": "^6.13.1",
     "@primevue/nuxt-module": "^4.2.5",
-    "nuxt": "^3.14.1592",
+    "nuxt": "^3.15.2",
     "vue": "^3.4.14",
     "vue-router": "^4.5.0"
   },
