@@ -263,6 +263,21 @@ func (mr *MockIDatabaseServiceMockRecorder) CreateEmployeeHistoryCostLabel(arg0,
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CreateEmployeeHistoryCostLabel", reflect.TypeOf((*MockIDatabaseService)(nil).CreateEmployeeHistoryCostLabel), arg0, arg1)
 }
 
+// CreateForecastExclusion mocks base method.
+func (m *MockIDatabaseService) CreateForecastExclusion(arg0 models.CreateForecastExclusion, arg1 int64) (int64, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "CreateForecastExclusion", arg0, arg1)
+	ret0, _ := ret[0].(int64)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// CreateForecastExclusion indicates an expected call of CreateForecastExclusion.
+func (mr *MockIDatabaseServiceMockRecorder) CreateForecastExclusion(arg0, arg1 any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CreateForecastExclusion", reflect.TypeOf((*MockIDatabaseService)(nil).CreateForecastExclusion), arg0, arg1)
+}
+
 // CreateOrganisation mocks base method.
 func (m *MockIDatabaseService) CreateOrganisation(arg0 string) (int64, error) {
 	m.ctrl.T.Helper()
@@ -421,6 +436,21 @@ func (m *MockIDatabaseService) DeleteEmployeeHistoryCostLabel(arg0, arg1 int64) 
 func (mr *MockIDatabaseServiceMockRecorder) DeleteEmployeeHistoryCostLabel(arg0, arg1 any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "DeleteEmployeeHistoryCostLabel", reflect.TypeOf((*MockIDatabaseService)(nil).DeleteEmployeeHistoryCostLabel), arg0, arg1)
+}
+
+// DeleteForecastExclusion mocks base method.
+func (m *MockIDatabaseService) DeleteForecastExclusion(arg0 models.CreateForecastExclusion, arg1 int64) (int64, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "DeleteForecastExclusion", arg0, arg1)
+	ret0, _ := ret[0].(int64)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// DeleteForecastExclusion indicates an expected call of DeleteForecastExclusion.
+func (mr *MockIDatabaseServiceMockRecorder) DeleteForecastExclusion(arg0, arg1 any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "DeleteForecastExclusion", reflect.TypeOf((*MockIDatabaseService)(nil).DeleteForecastExclusion), arg0, arg1)
 }
 
 // DeleteRefreshToken mocks base method.
@@ -826,6 +856,21 @@ func (m *MockIDatabaseService) ListForecastDetails(arg0, arg1 int64) ([]models.F
 func (mr *MockIDatabaseServiceMockRecorder) ListForecastDetails(arg0, arg1 any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ListForecastDetails", reflect.TypeOf((*MockIDatabaseService)(nil).ListForecastDetails), arg0, arg1)
+}
+
+// ListForecastExclusions mocks base method.
+func (m *MockIDatabaseService) ListForecastExclusions(arg0, arg1 int64, arg2 string) (map[string]bool, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "ListForecastExclusions", arg0, arg1, arg2)
+	ret0, _ := ret[0].(map[string]bool)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// ListForecastExclusions indicates an expected call of ListForecastExclusions.
+func (mr *MockIDatabaseServiceMockRecorder) ListForecastExclusions(arg0, arg1, arg2 any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ListForecastExclusions", reflect.TypeOf((*MockIDatabaseService)(nil).ListForecastExclusions), arg0, arg1, arg2)
 }
 
 // ListForecasts mocks base method.
