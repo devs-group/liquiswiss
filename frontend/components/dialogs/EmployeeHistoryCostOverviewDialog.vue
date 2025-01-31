@@ -110,7 +110,7 @@ const filterType = ref<EmployeeCostOverviewTypeFilterToStringDefinition>(Employe
 
 const filterCosts = computed(() => {
   return costs.value
-    .filter(c => c.label?.name.toLowerCase().includes(search.value.toLowerCase()))
+    .filter(c => !c.label || c.label?.name.toLowerCase().includes(search.value.toLowerCase()))
     .filter((c) => {
       switch (filterType.value) {
         case EmployeeCostOverviewType.Employee:

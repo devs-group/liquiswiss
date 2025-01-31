@@ -108,14 +108,14 @@
 
             <div class="flex items-center col-span-full">
               <div
-                class="flex gap-1 cursor-pointer border-b border-l border-zinc-600 dark:border-zinc-400 bg-zinc-300 dark:bg-zinc-700 p-2 min-w-28"
+                class="group flex gap-1 cursor-pointer border-b border-l border-zinc-600 dark:border-zinc-400 bg-zinc-400 dark:bg-zinc-600 p-2 min-w-28"
                 @click="onToggleRevenueDetails"
               >
-                <p class="text-xs">
+                <p class="text-xs font-bold">
                   Einnahmen
                 </p>
                 <i
-                  class="pi"
+                  class="pi opacity-0 group-hover:opacity-100 transition-opacity"
                   :class="{ 'pi-sort-down': forecastShowRevenueDetails, 'pi-sort-up': !forecastShowRevenueDetails }"
                 />
               </div>
@@ -138,19 +138,20 @@
                 forecast-type="revenue"
                 :forecast-details="forecastDetails"
                 :currency-code="getOrganisationCurrencyCode"
+                @on-recalculate-forecasts="onCalculateForecast"
               />
             </template>
 
             <div class="flex items-center col-span-full">
               <div
-                class="flex gap-1 cursor-pointer border-b border-l border-zinc-600 dark:border-zinc-400 bg-zinc-300 dark:bg-zinc-700 p-2 min-w-28"
+                class="group flex gap-1 cursor-pointer border-b border-l border-zinc-600 dark:border-zinc-400 bg-zinc-400 dark:bg-zinc-600 p-2 min-w-28"
                 @click="onToggleExpenseDetails"
               >
-                <p class="text-xs">
+                <p class="text-xs font-bold">
                   Ausgaben
                 </p>
                 <i
-                  class="pi"
+                  class="pi opacity-0 group-hover:opacity-100 transition-opacity"
                   :class="{ 'pi-sort-down': forecastShowExpenseDetails, 'pi-sort-up': !forecastShowExpenseDetails }"
                 />
               </div>
@@ -173,6 +174,7 @@
                 forecast-type="expense"
                 :forecast-details="forecastDetails"
                 :currency-code="getOrganisationCurrencyCode"
+                @on-recalculate-forecasts="onCalculateForecast"
               />
             </template>
 

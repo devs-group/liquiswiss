@@ -74,6 +74,9 @@ type IDatabaseService interface {
 	ListForecastDetails(userID int64, limit int64) ([]models.ForecastDatabaseDetails, error)
 	UpsertForecast(payload models.CreateForecast, userID int64) (int64, error)
 	UpsertForecastDetail(payload models.CreateForecastDetail, userID, forecastID int64) (int64, error)
+	ListForecastExclusions(userID, relatedID int64, relatedTable string) (map[string]bool, error)
+	CreateForecastExclusion(payload models.CreateForecastExclusion, userID int64) (int64, error)
+	DeleteForecastExclusion(payload models.CreateForecastExclusion, userID int64) (int64, error)
 	ClearForecasts(userID int64) (int64, error)
 
 	ListBankAccounts(userID int64) ([]models.BankAccount, error)
