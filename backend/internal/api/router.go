@@ -203,11 +203,20 @@ func (api *API) setupRouter() {
 			protected.GET("/forecasts", func(ctx *gin.Context) {
 				handlers.ListForecasts(api.DBService, ctx)
 			})
-			protected.GET("/forecast-details", func(ctx *gin.Context) {
+			protected.GET("/forecasts/details", func(ctx *gin.Context) {
 				handlers.ListForecastDetails(api.DBService, ctx)
 			})
 			protected.GET("/forecasts/calculate", func(ctx *gin.Context) {
 				handlers.CalculateForecasts(api.ForecastService, ctx)
+			})
+			protected.GET("/forecasts/exclude", func(ctx *gin.Context) {
+				handlers.ListForecastExclusions(api.DBService, ctx)
+			})
+			protected.POST("/forecasts/exclude", func(ctx *gin.Context) {
+				handlers.CreateForecastExclusion(api.DBService, ctx)
+			})
+			protected.DELETE("/forecasts/exclude", func(ctx *gin.Context) {
+				handlers.DeleteForecastExclusion(api.DBService, ctx)
 			})
 
 			// Bank Accounts

@@ -15,10 +15,21 @@ type Forecast struct {
 }
 
 type ForecastDetailRevenueExpense struct {
-	Name   string `json:"name"`
-	Amount int64  `json:"amount,omitempty"` // Only set for leaf nodes
+	Name string `json:"name"`
+	// Only set those for leaf nodes
+	Amount       int64  `json:"amount"`
+	RelatedID    int64  `json:"relatedID"`
+	RelatedTable string `json:"relatedTable"`
+	IsExcluded   bool   `json:"isExcluded"`
 	// Recursive
 	Children []ForecastDetailRevenueExpense `json:"children,omitempty"`
+}
+
+type ForecastDetail struct {
+	Amount       int64  `json:"amount"`
+	RelatedID    int64  `json:"relatedID"`
+	RelatedTable string `json:"relatedTable"`
+	IsExcluded   bool   `json:"isExcluded"`
 }
 
 type ForecastDetails struct {
@@ -46,4 +57,16 @@ type CreateForecastDetail struct {
 	Revenue    []ForecastDetailRevenueExpense `json:"revenue" validate:"required"`
 	Expense    []ForecastDetailRevenueExpense `json:"expense" validate:"required"`
 	ForecastID int64                          `json:"forecast_id" validate:"required"`
+}
+
+type ForecastExclusion struct {
+	ID            int64  `json:"id"`
+	ExcludeMonth  string `json:"excludeMonth"`
+	TransactionID string `json:"transactionID"`
+}
+
+type CreateForecastExclusion struct {
+	RelatedID    int64  `json:"relatedID" validate:"required"`
+	RelatedTable string `json:"relatedTable" validate:"required"`
+	Month        string `json:"month" validate:"required,max=7"`
 }

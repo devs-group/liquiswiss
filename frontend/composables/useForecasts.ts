@@ -33,7 +33,7 @@ export default function useForecasts() {
   }
 
   const useFetchListForecastDetails = async (months: number) => {
-    const { data, error } = await useFetch<ForecastDetailResponse[]>('/api/forecast-details', {
+    const { data, error } = await useFetch<ForecastDetailResponse[]>('/api/forecasts/details', {
       method: 'GET',
       query: {
         limit: months,
@@ -47,7 +47,7 @@ export default function useForecasts() {
 
   const listForecastDetails = async (months: number) => {
     try {
-      const data = await $fetch<ForecastDetailResponse[]>('/api/forecast-details', {
+      const data = await $fetch<ForecastDetailResponse[]>('/api/forecasts/details', {
         method: 'GET',
         query: {
           limit: months,
@@ -99,6 +99,38 @@ export default function useForecasts() {
     }
   }
 
+  const excludeForecast = async (month: string, relatedID: string | number, relatedTable: string) => {
+    try {
+      await $fetch<ForecastDetailResponse[]>('/api/forecasts/exclude', {
+        method: 'POST',
+        body: {
+          month,
+          relatedID,
+          relatedTable,
+        },
+      })
+    }
+    catch {
+      return Promise.reject('Fehler beim Ausschliessen der Prognose')
+    }
+  }
+
+  const includeForecast = async (month: string, relatedID: string | number, relatedTable: string) => {
+    try {
+      await $fetch<ForecastDetailResponse[]>('/api/forecasts/exclude', {
+        method: 'DELETE',
+        body: {
+          month,
+          relatedID,
+          relatedTable,
+        },
+      })
+    }
+    catch {
+      return Promise.reject('Fehler beim Berücksichtigen der Prognose')
+    }
+  }
+
   return {
     forecasts,
     forecastDetails,
@@ -108,5 +140,7 @@ export default function useForecasts() {
     listForecastDetails,
     setForecasts,
     calculateForecast,
+    excludeForecast,
+    includeForecast,
   }
 }

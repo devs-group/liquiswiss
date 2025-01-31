@@ -68,6 +68,12 @@ func (f *ForecastService) CalculateForecast(userID int64) ([]models.Forecast, er
 		if transaction.Vat != nil && !transaction.VatIncluded {
 			amount = models.CalculateAmountWithFiatRate(transaction.Amount+transaction.VatAmount, fiatRate)
 		}
+		isRevenue := amount > 0
+
+		exclusions, err := f.dbService.ListForecastExclusions(userID, transaction.ID, utils.TransactionsTableName)
+		if err != nil {
+			return nil, err
+		}
 
 		if transaction.Type == "single" {
 			startDate := time.Time(transaction.StartDate)
@@ -78,12 +84,34 @@ func (f *ForecastService) CalculateForecast(userID int64) ([]models.Forecast, er
 			if forecastMap[monthKey] == nil {
 				initForecastMapKey(forecastMap, monthKey)
 			}
+
 			if amount > 0 {
-				forecastMap[monthKey]["revenue"] += amount
-				addForecastDetail(forecastDetailMap, monthKey, amount, transaction.Category.Name, transaction.Name)
+				if exclusions[monthKey] {
+					forecastMap[monthKey]["revenue"] += 0
+					addForecastDetail(
+						forecastDetailMap, monthKey, 0, isRevenue, true,
+						transaction.ID, utils.TransactionsTableName, transaction.Category.Name, transaction.Name,
+					)
+				} else {
+					forecastMap[monthKey]["revenue"] += amount
+					addForecastDetail(
+						forecastDetailMap, monthKey, amount, isRevenue, false,
+						transaction.ID, utils.TransactionsTableName, transaction.Category.Name, transaction.Name,
+					)
+				}
 			} else if amount < 0 {
-				forecastMap[monthKey]["expense"] += amount
-				addForecastDetail(forecastDetailMap, monthKey, amount, transaction.Category.Name, transaction.Name)
+				if exclusions[monthKey] {
+					forecastMap[monthKey]["expense"] += 0
+					addForecastDetail(
+						forecastDetailMap, monthKey, 0, isRevenue, true,
+						transaction.ID, utils.TransactionsTableName, transaction.Category.Name, transaction.Name,
+					)
+				} else {
+					forecastMap[monthKey]["expense"] += amount
+					addForecastDetail(forecastDetailMap, monthKey, amount, isRevenue, false,
+						transaction.ID, utils.TransactionsTableName, transaction.Category.Name, transaction.Name,
+					)
+				}
 			}
 		} else {
 			startDate := time.Time(transaction.StartDate)
@@ -101,12 +129,35 @@ func (f *ForecastService) CalculateForecast(userID int64) ([]models.Forecast, er
 					if forecastMap[monthKey] == nil {
 						initForecastMapKey(forecastMap, monthKey)
 					}
+
 					if amount > 0 {
-						forecastMap[monthKey]["revenue"] += amount
-						addForecastDetail(forecastDetailMap, monthKey, amount, transaction.Category.Name, transaction.Name)
+						if exclusions[monthKey] {
+							forecastMap[monthKey]["revenue"] += 0
+							addForecastDetail(
+								forecastDetailMap, monthKey, 0, isRevenue, true,
+								transaction.ID, utils.TransactionsTableName, transaction.Category.Name, transaction.Name,
+							)
+						} else {
+							forecastMap[monthKey]["revenue"] += amount
+							addForecastDetail(
+								forecastDetailMap, monthKey, amount, isRevenue, false,
+								transaction.ID, utils.TransactionsTableName, transaction.Category.Name, transaction.Name,
+							)
+						}
 					} else if amount < 0 {
-						forecastMap[monthKey]["expense"] += amount
-						addForecastDetail(forecastDetailMap, monthKey, amount, transaction.Category.Name, transaction.Name)
+						if exclusions[monthKey] {
+							forecastMap[monthKey]["expense"] += 0
+							addForecastDetail(
+								forecastDetailMap, monthKey, 0, isRevenue, true,
+								transaction.ID, utils.TransactionsTableName, transaction.Category.Name, transaction.Name,
+							)
+						} else {
+							forecastMap[monthKey]["expense"] += amount
+							addForecastDetail(
+								forecastDetailMap, monthKey, amount, isRevenue, false,
+								transaction.ID, utils.TransactionsTableName, transaction.Category.Name, transaction.Name,
+							)
+						}
 					}
 				}
 			case "weekly":
@@ -119,11 +170,33 @@ func (f *ForecastService) CalculateForecast(userID int64) ([]models.Forecast, er
 						initForecastMapKey(forecastMap, monthKey)
 					}
 					if amount > 0 {
-						forecastMap[monthKey]["revenue"] += amount
-						addForecastDetail(forecastDetailMap, monthKey, amount, transaction.Category.Name, transaction.Name)
+						if exclusions[monthKey] {
+							forecastMap[monthKey]["revenue"] += 0
+							addForecastDetail(
+								forecastDetailMap, monthKey, 0, isRevenue, true,
+								transaction.ID, utils.TransactionsTableName, transaction.Category.Name, transaction.Name,
+							)
+						} else {
+							forecastMap[monthKey]["revenue"] += amount
+							addForecastDetail(
+								forecastDetailMap, monthKey, amount, isRevenue, false,
+								transaction.ID, utils.TransactionsTableName, transaction.Category.Name, transaction.Name,
+							)
+						}
 					} else if amount < 0 {
-						forecastMap[monthKey]["expense"] += amount
-						addForecastDetail(forecastDetailMap, monthKey, amount, transaction.Category.Name, transaction.Name)
+						if exclusions[monthKey] {
+							forecastMap[monthKey]["expense"] += 0
+							addForecastDetail(
+								forecastDetailMap, monthKey, 0, isRevenue, true,
+								transaction.ID, utils.TransactionsTableName, transaction.Category.Name, transaction.Name,
+							)
+						} else {
+							forecastMap[monthKey]["expense"] += amount
+							addForecastDetail(
+								forecastDetailMap, monthKey, amount, isRevenue, false,
+								transaction.ID, utils.TransactionsTableName, transaction.Category.Name, transaction.Name,
+							)
+						}
 					}
 				}
 			case "monthly":
@@ -136,11 +209,30 @@ func (f *ForecastService) CalculateForecast(userID int64) ([]models.Forecast, er
 						initForecastMapKey(forecastMap, monthKey)
 					}
 					if amount > 0 {
-						forecastMap[monthKey]["revenue"] += amount
-						addForecastDetail(forecastDetailMap, monthKey, amount, transaction.Category.Name, transaction.Name)
+						if exclusions[monthKey] {
+							forecastMap[monthKey]["revenue"] += 0
+							addForecastDetail(
+								forecastDetailMap, monthKey, 0, isRevenue, true,
+								transaction.ID, utils.TransactionsTableName, transaction.Category.Name, transaction.Name,
+							)
+						} else {
+							forecastMap[monthKey]["revenue"] += amount
+							addForecastDetail(forecastDetailMap, monthKey, amount, isRevenue, false,
+								transaction.ID, utils.TransactionsTableName, transaction.Category.Name, transaction.Name,
+							)
+						}
 					} else if amount < 0 {
-						forecastMap[monthKey]["expense"] += amount
-						addForecastDetail(forecastDetailMap, monthKey, amount, transaction.Category.Name, transaction.Name)
+						if exclusions[monthKey] {
+							forecastMap[monthKey]["expense"] += 0
+							addForecastDetail(forecastDetailMap, monthKey, 0, isRevenue, true,
+								transaction.ID, utils.TransactionsTableName, transaction.Category.Name, transaction.Name,
+							)
+						} else {
+							forecastMap[monthKey]["expense"] += amount
+							addForecastDetail(forecastDetailMap, monthKey, amount, isRevenue, false,
+								transaction.ID, utils.TransactionsTableName, transaction.Category.Name, transaction.Name,
+							)
+						}
 					}
 				}
 			case "quarterly":
@@ -153,11 +245,33 @@ func (f *ForecastService) CalculateForecast(userID int64) ([]models.Forecast, er
 						initForecastMapKey(forecastMap, monthKey)
 					}
 					if amount > 0 {
-						forecastMap[monthKey]["revenue"] += amount
-						addForecastDetail(forecastDetailMap, monthKey, amount, transaction.Category.Name, transaction.Name)
+						if exclusions[monthKey] {
+							forecastMap[monthKey]["revenue"] += 0
+							addForecastDetail(
+								forecastDetailMap, monthKey, 0, isRevenue, true,
+								transaction.ID, utils.TransactionsTableName, transaction.Category.Name, transaction.Name,
+							)
+						} else {
+							forecastMap[monthKey]["revenue"] += amount
+							addForecastDetail(
+								forecastDetailMap, monthKey, amount, isRevenue, false,
+								transaction.ID, utils.TransactionsTableName, transaction.Category.Name, transaction.Name,
+							)
+						}
 					} else if amount < 0 {
-						forecastMap[monthKey]["expense"] += amount
-						addForecastDetail(forecastDetailMap, monthKey, amount, transaction.Category.Name, transaction.Name)
+						if exclusions[monthKey] {
+							forecastMap[monthKey]["expense"] += 0
+							addForecastDetail(
+								forecastDetailMap, monthKey, 0, isRevenue, true,
+								transaction.ID, utils.TransactionsTableName, transaction.Category.Name, transaction.Name,
+							)
+						} else {
+							forecastMap[monthKey]["expense"] += amount
+							addForecastDetail(
+								forecastDetailMap, monthKey, amount, isRevenue, false,
+								transaction.ID, utils.TransactionsTableName, transaction.Category.Name, transaction.Name,
+							)
+						}
 					}
 				}
 			case "biannually":
@@ -170,11 +284,33 @@ func (f *ForecastService) CalculateForecast(userID int64) ([]models.Forecast, er
 						initForecastMapKey(forecastMap, monthKey)
 					}
 					if amount > 0 {
-						forecastMap[monthKey]["revenue"] += amount
-						addForecastDetail(forecastDetailMap, monthKey, amount, transaction.Category.Name, transaction.Name)
+						if exclusions[monthKey] {
+							forecastMap[monthKey]["revenue"] += 0
+							addForecastDetail(
+								forecastDetailMap, monthKey, 0, isRevenue, true,
+								transaction.ID, utils.TransactionsTableName, transaction.Category.Name, transaction.Name,
+							)
+						} else {
+							forecastMap[monthKey]["revenue"] += amount
+							addForecastDetail(
+								forecastDetailMap, monthKey, amount, isRevenue, false,
+								transaction.ID, utils.TransactionsTableName, transaction.Category.Name, transaction.Name,
+							)
+						}
 					} else if amount < 0 {
-						forecastMap[monthKey]["expense"] += amount
-						addForecastDetail(forecastDetailMap, monthKey, amount, transaction.Category.Name, transaction.Name)
+						if exclusions[monthKey] {
+							forecastMap[monthKey]["expense"] += 0
+							addForecastDetail(
+								forecastDetailMap, monthKey, 0, isRevenue, true,
+								transaction.ID, utils.TransactionsTableName, transaction.Category.Name, transaction.Name,
+							)
+						} else {
+							forecastMap[monthKey]["expense"] += amount
+							addForecastDetail(
+								forecastDetailMap, monthKey, amount, isRevenue, false,
+								transaction.ID, utils.TransactionsTableName, transaction.Category.Name, transaction.Name,
+							)
+						}
 					}
 				}
 			case "yearly":
@@ -187,11 +323,33 @@ func (f *ForecastService) CalculateForecast(userID int64) ([]models.Forecast, er
 						initForecastMapKey(forecastMap, monthKey)
 					}
 					if amount > 0 {
-						forecastMap[monthKey]["revenue"] += amount
-						addForecastDetail(forecastDetailMap, monthKey, amount, transaction.Category.Name, transaction.Name)
+						if exclusions[monthKey] {
+							forecastMap[monthKey]["revenue"] += 0
+							addForecastDetail(
+								forecastDetailMap, monthKey, 0, isRevenue, true,
+								transaction.ID, utils.TransactionsTableName, transaction.Category.Name, transaction.Name,
+							)
+						} else {
+							forecastMap[monthKey]["revenue"] += amount
+							addForecastDetail(
+								forecastDetailMap, monthKey, amount, isRevenue, false,
+								transaction.ID, utils.TransactionsTableName, transaction.Category.Name, transaction.Name,
+							)
+						}
 					} else if amount < 0 {
-						forecastMap[monthKey]["expense"] += amount
-						addForecastDetail(forecastDetailMap, monthKey, amount, transaction.Category.Name, transaction.Name)
+						if exclusions[monthKey] {
+							forecastMap[monthKey]["expense"] += 0
+							addForecastDetail(
+								forecastDetailMap, monthKey, 0, isRevenue, true,
+								transaction.ID, utils.TransactionsTableName, transaction.Category.Name, transaction.Name,
+							)
+						} else {
+							forecastMap[monthKey]["expense"] += amount
+							addForecastDetail(
+								forecastDetailMap, monthKey, amount, isRevenue, false,
+								transaction.ID, utils.TransactionsTableName, transaction.Category.Name, transaction.Name,
+							)
+						}
 					}
 				}
 			}
@@ -223,6 +381,11 @@ func (f *ForecastService) CalculateForecast(userID int64) ([]models.Forecast, er
 			}
 			salary := -models.CalculateAmountWithFiatRate(int64(netSalary), fiatRate)
 
+			historyExclusions, err := f.dbService.ListForecastExclusions(userID, history.ID, utils.EmployeeHistoriesTableName)
+			if err != nil {
+				return nil, err
+			}
+
 			switch history.Cycle {
 			case "daily":
 				for current := fromDate; !current.After(toDate); current = current.AddDate(0, 0, 1) {
@@ -233,8 +396,18 @@ func (f *ForecastService) CalculateForecast(userID int64) ([]models.Forecast, er
 					if forecastMap[monthKey] == nil {
 						initForecastMapKey(forecastMap, monthKey)
 					}
-					forecastMap[monthKey]["expense"] += salary
-					addForecastDetail(forecastDetailMap, monthKey, salary, "Löhne", employee.Name)
+					if historyExclusions[monthKey] {
+						forecastMap[monthKey]["expense"] += 0
+						addForecastDetail(
+							forecastDetailMap, monthKey, 0, false, true,
+							history.ID, utils.EmployeeHistoriesTableName, "Löhne", employee.Name,
+						)
+					} else {
+						forecastMap[monthKey]["expense"] += salary
+						addForecastDetail(forecastDetailMap, monthKey, salary, false, false,
+							history.ID, utils.EmployeeHistoriesTableName, "Löhne", employee.Name,
+						)
+					}
 				}
 			case "weekly":
 				for current := fromDate; !current.After(toDate); current = current.AddDate(0, 0, 7) {
@@ -245,8 +418,18 @@ func (f *ForecastService) CalculateForecast(userID int64) ([]models.Forecast, er
 					if forecastMap[monthKey] == nil {
 						initForecastMapKey(forecastMap, monthKey)
 					}
-					forecastMap[monthKey]["expense"] += salary
-					addForecastDetail(forecastDetailMap, monthKey, salary, "Löhne", employee.Name)
+					if historyExclusions[monthKey] {
+						forecastMap[monthKey]["expense"] += 0
+						addForecastDetail(
+							forecastDetailMap, monthKey, 0, false, true,
+							history.ID, utils.EmployeeHistoriesTableName, "Löhne", employee.Name,
+						)
+					} else {
+						forecastMap[monthKey]["expense"] += salary
+						addForecastDetail(forecastDetailMap, monthKey, salary, false, false,
+							history.ID, utils.EmployeeHistoriesTableName, "Löhne", employee.Name,
+						)
+					}
 				}
 			case "monthly":
 				for current := fromDate; !current.After(toDate); current = utils.GetNextDate(fromDate, current, 1) {
@@ -257,8 +440,18 @@ func (f *ForecastService) CalculateForecast(userID int64) ([]models.Forecast, er
 					if forecastMap[monthKey] == nil {
 						initForecastMapKey(forecastMap, monthKey)
 					}
-					forecastMap[monthKey]["expense"] += salary
-					addForecastDetail(forecastDetailMap, monthKey, salary, "Löhne", employee.Name)
+					if historyExclusions[monthKey] {
+						forecastMap[monthKey]["expense"] += 0
+						addForecastDetail(
+							forecastDetailMap, monthKey, 0, false, true,
+							history.ID, utils.EmployeeHistoriesTableName, "Löhne", employee.Name,
+						)
+					} else {
+						forecastMap[monthKey]["expense"] += salary
+						addForecastDetail(forecastDetailMap, monthKey, salary, false, false,
+							history.ID, utils.EmployeeHistoriesTableName, "Löhne", employee.Name,
+						)
+					}
 				}
 			case "quarterly":
 				for current := fromDate; !current.After(toDate); current = utils.GetNextDate(fromDate, current, 3) {
@@ -269,8 +462,18 @@ func (f *ForecastService) CalculateForecast(userID int64) ([]models.Forecast, er
 					if forecastMap[monthKey] == nil {
 						initForecastMapKey(forecastMap, monthKey)
 					}
-					forecastMap[monthKey]["expense"] += salary
-					addForecastDetail(forecastDetailMap, monthKey, salary, "Löhne", employee.Name)
+					if historyExclusions[monthKey] {
+						forecastMap[monthKey]["expense"] += 0
+						addForecastDetail(
+							forecastDetailMap, monthKey, 0, false, true,
+							history.ID, utils.EmployeeHistoriesTableName, "Löhne", employee.Name,
+						)
+					} else {
+						forecastMap[monthKey]["expense"] += salary
+						addForecastDetail(forecastDetailMap, monthKey, salary, false, false,
+							history.ID, utils.EmployeeHistoriesTableName, "Löhne", employee.Name,
+						)
+					}
 				}
 			case "biannually":
 				for current := fromDate; !current.After(toDate); current = utils.GetNextDate(fromDate, current, 6) {
@@ -281,8 +484,18 @@ func (f *ForecastService) CalculateForecast(userID int64) ([]models.Forecast, er
 					if forecastMap[monthKey] == nil {
 						initForecastMapKey(forecastMap, monthKey)
 					}
-					forecastMap[monthKey]["expense"] += salary
-					addForecastDetail(forecastDetailMap, monthKey, salary, "Löhne", employee.Name)
+					if historyExclusions[monthKey] {
+						forecastMap[monthKey]["expense"] += 0
+						addForecastDetail(
+							forecastDetailMap, monthKey, 0, false, true,
+							history.ID, utils.EmployeeHistoriesTableName, "Löhne", employee.Name,
+						)
+					} else {
+						forecastMap[monthKey]["expense"] += salary
+						addForecastDetail(forecastDetailMap, monthKey, salary, false, false,
+							history.ID, utils.EmployeeHistoriesTableName, "Löhne", employee.Name,
+						)
+					}
 				}
 			case "yearly":
 				for current := fromDate; !current.After(toDate); current = utils.GetNextDate(fromDate, current, 12) {
@@ -293,8 +506,18 @@ func (f *ForecastService) CalculateForecast(userID int64) ([]models.Forecast, er
 					if forecastMap[monthKey] == nil {
 						initForecastMapKey(forecastMap, monthKey)
 					}
-					forecastMap[monthKey]["expense"] += salary
-					addForecastDetail(forecastDetailMap, monthKey, salary, "Löhne", employee.Name)
+					if historyExclusions[monthKey] {
+						forecastMap[monthKey]["expense"] += 0
+						addForecastDetail(
+							forecastDetailMap, monthKey, 0, false, true,
+							history.ID, utils.EmployeeHistoriesTableName, "Löhne", employee.Name,
+						)
+					} else {
+						forecastMap[monthKey]["expense"] += salary
+						addForecastDetail(forecastDetailMap, monthKey, salary, false, false,
+							history.ID, utils.EmployeeHistoriesTableName, "Löhne", employee.Name,
+						)
+					}
 				}
 			}
 
@@ -308,6 +531,11 @@ func (f *ForecastService) CalculateForecast(userID int64) ([]models.Forecast, er
 			}
 
 			for _, historyCost := range historyCosts {
+				historyCostExclusions, err := f.dbService.ListForecastExclusions(userID, historyCost.ID, utils.EmployeeHistoryCostsTableName)
+				if err != nil {
+					return nil, err
+				}
+
 				if historyCost.NextExecutionDate != nil {
 					costFromDate := time.Time(*historyCost.NextExecutionDate)
 					nextCost := -models.CalculateAmountWithFiatRate(int64(historyCost.NextCost), fiatRate)
@@ -326,8 +554,18 @@ func (f *ForecastService) CalculateForecast(userID int64) ([]models.Forecast, er
 						if forecastMap[monthKey] == nil {
 							initForecastMapKey(forecastMap, monthKey)
 						}
-						forecastMap[monthKey]["expense"] += nextCost
-						addForecastDetail(forecastDetailMap, monthKey, nextCost, "Lohnkosten", labelName)
+						if historyCostExclusions[monthKey] {
+							forecastMap[monthKey]["expense"] += 0
+							addForecastDetail(
+								forecastDetailMap, monthKey, 0, false, true,
+								historyCost.ID, utils.EmployeeHistoryCostsTableName, "Lohnkosten", labelName,
+							)
+						} else {
+							forecastMap[monthKey]["expense"] += nextCost
+							addForecastDetail(forecastDetailMap, monthKey, nextCost, false, false,
+								historyCost.ID, utils.EmployeeHistoryCostsTableName, "Lohnkosten", labelName,
+							)
+						}
 					case "daily":
 						lastToDate := toDate.AddDate(0, 0, int(historyCost.RelativeOffset))
 						for current := costFromDate; ; current = addOffset(history.Cycle, historyCost.Cycle, costFromDate, current, historyCost.RelativeOffset) {
@@ -341,8 +579,18 @@ func (f *ForecastService) CalculateForecast(userID int64) ([]models.Forecast, er
 							if forecastMap[monthKey] == nil {
 								initForecastMapKey(forecastMap, monthKey)
 							}
-							forecastMap[monthKey]["expense"] += nextCost
-							addForecastDetail(forecastDetailMap, monthKey, nextCost, "Lohnkosten", labelName)
+							if historyCostExclusions[monthKey] {
+								forecastMap[monthKey]["expense"] += 0
+								addForecastDetail(
+									forecastDetailMap, monthKey, 0, false, true,
+									historyCost.ID, utils.EmployeeHistoryCostsTableName, "Lohnkosten", labelName,
+								)
+							} else {
+								forecastMap[monthKey]["expense"] += nextCost
+								addForecastDetail(forecastDetailMap, monthKey, nextCost, false, false,
+									historyCost.ID, utils.EmployeeHistoryCostsTableName, "Lohnkosten", labelName,
+								)
+							}
 						}
 					case "weekly":
 						lastToDate := toDate.AddDate(0, 0, 7*int(historyCost.RelativeOffset))
@@ -357,8 +605,18 @@ func (f *ForecastService) CalculateForecast(userID int64) ([]models.Forecast, er
 							if forecastMap[monthKey] == nil {
 								initForecastMapKey(forecastMap, monthKey)
 							}
-							forecastMap[monthKey]["expense"] += nextCost
-							addForecastDetail(forecastDetailMap, monthKey, nextCost, "Lohnkosten", labelName)
+							if historyCostExclusions[monthKey] {
+								forecastMap[monthKey]["expense"] += 0
+								addForecastDetail(
+									forecastDetailMap, monthKey, 0, false, true,
+									historyCost.ID, utils.EmployeeHistoryCostsTableName, "Lohnkosten", labelName,
+								)
+							} else {
+								forecastMap[monthKey]["expense"] += nextCost
+								addForecastDetail(forecastDetailMap, monthKey, nextCost, false, false,
+									historyCost.ID, utils.EmployeeHistoryCostsTableName, "Lohnkosten", labelName,
+								)
+							}
 						}
 					case "monthly":
 						lastToDate := utils.GetNextDate(costFromDate, toDate, int(historyCost.RelativeOffset))
@@ -373,8 +631,18 @@ func (f *ForecastService) CalculateForecast(userID int64) ([]models.Forecast, er
 							if forecastMap[monthKey] == nil {
 								initForecastMapKey(forecastMap, monthKey)
 							}
-							forecastMap[monthKey]["expense"] += nextCost
-							addForecastDetail(forecastDetailMap, monthKey, nextCost, "Lohnkosten", labelName)
+							if historyCostExclusions[monthKey] {
+								forecastMap[monthKey]["expense"] += 0
+								addForecastDetail(
+									forecastDetailMap, monthKey, 0, false, true,
+									historyCost.ID, utils.EmployeeHistoryCostsTableName, "Lohnkosten", labelName,
+								)
+							} else {
+								forecastMap[monthKey]["expense"] += nextCost
+								addForecastDetail(forecastDetailMap, monthKey, nextCost, false, false,
+									historyCost.ID, utils.EmployeeHistoryCostsTableName, "Lohnkosten", labelName,
+								)
+							}
 						}
 					case "quarterly":
 						lastToDate := utils.GetNextDate(costFromDate, toDate, 3*int(historyCost.RelativeOffset))
@@ -389,8 +657,18 @@ func (f *ForecastService) CalculateForecast(userID int64) ([]models.Forecast, er
 							if forecastMap[monthKey] == nil {
 								initForecastMapKey(forecastMap, monthKey)
 							}
-							forecastMap[monthKey]["expense"] += nextCost
-							addForecastDetail(forecastDetailMap, monthKey, nextCost, "Lohnkosten", labelName)
+							if historyCostExclusions[monthKey] {
+								forecastMap[monthKey]["expense"] += 0
+								addForecastDetail(
+									forecastDetailMap, monthKey, 0, false, true,
+									historyCost.ID, utils.EmployeeHistoryCostsTableName, "Lohnkosten", labelName,
+								)
+							} else {
+								forecastMap[monthKey]["expense"] += nextCost
+								addForecastDetail(forecastDetailMap, monthKey, nextCost, false, false,
+									historyCost.ID, utils.EmployeeHistoryCostsTableName, "Lohnkosten", labelName,
+								)
+							}
 						}
 					case "biannually":
 						lastToDate := utils.GetNextDate(costFromDate, toDate, 6*int(historyCost.RelativeOffset))
@@ -405,8 +683,18 @@ func (f *ForecastService) CalculateForecast(userID int64) ([]models.Forecast, er
 							if forecastMap[monthKey] == nil {
 								initForecastMapKey(forecastMap, monthKey)
 							}
-							forecastMap[monthKey]["expense"] += nextCost
-							addForecastDetail(forecastDetailMap, monthKey, nextCost, "Lohnkosten", labelName)
+							if historyCostExclusions[monthKey] {
+								forecastMap[monthKey]["expense"] += 0
+								addForecastDetail(
+									forecastDetailMap, monthKey, 0, false, true,
+									historyCost.ID, utils.EmployeeHistoryCostsTableName, "Lohnkosten", labelName,
+								)
+							} else {
+								forecastMap[monthKey]["expense"] += nextCost
+								addForecastDetail(forecastDetailMap, monthKey, nextCost, false, false,
+									historyCost.ID, utils.EmployeeHistoryCostsTableName, "Lohnkosten", labelName,
+								)
+							}
 						}
 					case "yearly":
 						lastToDate := utils.GetNextDate(costFromDate, toDate, 12*int(historyCost.RelativeOffset))
@@ -421,8 +709,18 @@ func (f *ForecastService) CalculateForecast(userID int64) ([]models.Forecast, er
 							if forecastMap[monthKey] == nil {
 								initForecastMapKey(forecastMap, monthKey)
 							}
-							forecastMap[monthKey]["expense"] += nextCost
-							addForecastDetail(forecastDetailMap, monthKey, nextCost, "Lohnkosten", labelName)
+							if historyCostExclusions[monthKey] {
+								forecastMap[monthKey]["expense"] += 0
+								addForecastDetail(
+									forecastDetailMap, monthKey, 0, false, true,
+									historyCost.ID, utils.EmployeeHistoryCostsTableName, "Lohnkosten", labelName,
+								)
+							} else {
+								forecastMap[monthKey]["expense"] += nextCost
+								addForecastDetail(forecastDetailMap, monthKey, nextCost, false, false,
+									historyCost.ID, utils.EmployeeHistoryCostsTableName, "Lohnkosten", labelName,
+								)
+							}
 						}
 					}
 				}
@@ -487,7 +785,7 @@ func initForecastMapKey(forecastMap map[string]map[string]int64, monthKey string
 	forecastMap[monthKey]["expense"] = 0
 }
 
-func addForecastDetail(detailMap map[string]*models.ForecastDetails, monthKey string, amount int64, categories ...string) {
+func addForecastDetail(detailMap map[string]*models.ForecastDetails, monthKey string, amount int64, isRevenue, isExcluded bool, relatedID int64, relatedTable string, categories ...string) {
 	if detailMap[monthKey] == nil {
 		detailMap[monthKey] = &models.ForecastDetails{
 			Revenue: make(map[string]interface{}),
@@ -497,12 +795,10 @@ func addForecastDetail(detailMap map[string]*models.ForecastDetails, monthKey st
 
 	var currentMap map[string]interface{}
 
-	if amount > 0 {
+	if isRevenue {
 		currentMap = detailMap[monthKey].Revenue
-	} else if amount < 0 {
-		currentMap = detailMap[monthKey].Expense
 	} else {
-		return
+		currentMap = detailMap[monthKey].Expense
 	}
 
 	// Traverse through the categories to create or navigate nested maps
@@ -510,9 +806,17 @@ func addForecastDetail(detailMap map[string]*models.ForecastDetails, monthKey st
 		if i == len(categories)-1 {
 			// If this is the last category, add the amount
 			if _, exists := currentMap[category]; !exists {
-				currentMap[category] = int64(0)
+				currentMap[category] = models.ForecastDetail{
+					Amount:       0,
+					RelatedID:    relatedID,
+					RelatedTable: relatedTable,
+					IsExcluded:   isExcluded,
+				}
 			}
-			currentMap[category] = currentMap[category].(int64) + amount
+			existingDetail := currentMap[category].(models.ForecastDetail)
+			existingDetail.Amount += amount
+			existingDetail.IsExcluded = isExcluded
+			currentMap[category] = existingDetail
 		} else {
 			// Otherwise, ensure the nested map exists and navigate deeper
 			if _, exists := currentMap[category]; !exists {
@@ -533,11 +837,14 @@ func iterateForecastDetails(data map[string]interface{}, result *[]models.Foreca
 	for _, key := range keys {
 		value := data[key]
 		switch v := value.(type) {
-		case int64:
+		case models.ForecastDetail:
 			// Leaf node with an amount
 			*result = append(*result, models.ForecastDetailRevenueExpense{
-				Name:   key,
-				Amount: v,
+				Name:         key,
+				Amount:       v.Amount,
+				RelatedID:    v.RelatedID,
+				RelatedTable: v.RelatedTable,
+				IsExcluded:   v.IsExcluded,
 			})
 		case map[string]interface{}:
 			// Nested node with children

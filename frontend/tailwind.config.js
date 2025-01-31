@@ -22,6 +22,9 @@ export default {
       maxWidth: {
         screen: '100vw',
       },
+      fontSize: {
+        '2xs': '0.675rem',
+      },
     },
   },
   plugins: [],

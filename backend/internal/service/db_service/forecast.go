@@ -2,7 +2,9 @@ package db_service
 
 import (
 	"encoding/json"
+	"fmt"
 	"liquiswiss/pkg/models"
+	"liquiswiss/pkg/utils"
 	"log"
 )
 
@@ -136,6 +138,128 @@ func (s *DatabaseService) UpsertForecastDetail(payload models.CreateForecastDeta
 	}
 
 	return id, nil
+}
+
+func (s *DatabaseService) ListForecastExclusions(userID, relatedID int64, relatedTable string) (map[string]bool, error) {
+	sqlFile := ""
+	switch relatedTable {
+	case utils.TransactionsTableName:
+		sqlFile = "queries/list_transaction_exclusions.sql"
+	case utils.EmployeeHistoriesTableName:
+		sqlFile = "queries/list_employee_history_exclusions.sql"
+	case utils.EmployeeHistoryCostsTableName:
+		sqlFile = "queries/list_employee_history_cost_exclusions.sql"
+	default:
+		return nil, fmt.Errorf("invalid relatedTable")
+	}
+
+	query, err := sqlQueries.ReadFile(sqlFile)
+	if err != nil {
+		return nil, err
+	}
+
+	rows, err := s.db.Query(string(query), relatedID, userID)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+
+	forecastExclusions := make(map[string]bool, 0)
+	for rows.Next() {
+		var forecastExclusion models.ForecastExclusion
+
+		err := rows.Scan(
+			&forecastExclusion.ID,
+			&forecastExclusion.ExcludeMonth,
+			&forecastExclusion.TransactionID,
+		)
+		if err != nil {
+			return nil, err
+		}
+
+		forecastExclusions[forecastExclusion.ExcludeMonth] = true
+	}
+
+	return forecastExclusions, nil
+}
+
+func (s *DatabaseService) CreateForecastExclusion(payload models.CreateForecastExclusion, userID int64) (int64, error) {
+	sqlFile := ""
+	switch payload.RelatedTable {
+	case utils.TransactionsTableName:
+		sqlFile = "queries/create_transaction_exclusion.sql"
+	case utils.EmployeeHistoriesTableName:
+		sqlFile = "queries/create_employee_history_exclusion.sql"
+	case utils.EmployeeHistoryCostsTableName:
+		sqlFile = "queries/create_employee_history_cost_exclusion.sql"
+	default:
+		return 0, fmt.Errorf("invalid relatedTable")
+	}
+
+	query, err := sqlQueries.ReadFile(sqlFile)
+	if err != nil {
+		return 0, err
+	}
+
+	stmt, err := s.db.Prepare(string(query))
+	if err != nil {
+		return 0, err
+	}
+	defer stmt.Close()
+
+	res, err := stmt.Exec(
+		payload.Month, payload.RelatedID, userID,
+	)
+	if err != nil {
+		return 0, err
+	}
+
+	// Get the ID of the newly inserted employee
+	id, err := res.LastInsertId()
+	if err != nil {
+		return 0, err
+	}
+
+	return id, nil
+}
+
+func (s *DatabaseService) DeleteForecastExclusion(payload models.CreateForecastExclusion, userID int64) (int64, error) {
+	sqlFile := ""
+	switch payload.RelatedTable {
+	case utils.TransactionsTableName:
+		sqlFile = "queries/delete_transaction_exclusion.sql"
+	case utils.EmployeeHistoriesTableName:
+		sqlFile = "queries/delete_employee_history_exclusion.sql"
+	case utils.EmployeeHistoryCostsTableName:
+		sqlFile = "queries/delete_employee_history_cost_exclusion.sql"
+	default:
+		return 0, fmt.Errorf("invalid relatedTable")
+	}
+
+	query, err := sqlQueries.ReadFile(sqlFile)
+	if err != nil {
+		return 0, err
+	}
+
+	stmt, err := s.db.Prepare(string(query))
+	if err != nil {
+		return 0, err
+	}
+	defer stmt.Close()
+
+	res, err := stmt.Exec(
+		payload.Month, payload.RelatedID, userID,
+	)
+	if err != nil {
+		return 0, err
+	}
+
+	affected, err := res.RowsAffected()
+	if err != nil {
+		return 0, err
+	}
+
+	return affected, nil
 }
 
 func (s *DatabaseService) ClearForecasts(userID int64) (int64, error) {
