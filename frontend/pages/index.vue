@@ -82,7 +82,7 @@
         <ClientOnly>
           <div v-if="hasNoDataInCurrentMonth">
             <Message size="small">
-              Hinweis: In Ihrer Zeitzone ist es noch {{ localMonth }}, für diesen Monat gibt es keine Prognosedaten mehr
+              Hinweis: Sie befinden sich noch im Monat "{{ localMonth }}" aufgrund Ihrer Zeitzone, für diesen Monat werden keine Prognosedaten mehr dargestellt
             </Message>
           </div>
         </ClientOnly>
@@ -246,8 +246,8 @@ useHead({
   title: 'Prognose',
 })
 
-const utcFormatter = new Intl.DateTimeFormat(Constants.BASE_LOCALE_CODE, { month: 'long', year: '2-digit', timeZone: 'UTC' })
-const localFormatter = new Intl.DateTimeFormat(Constants.BASE_LOCALE_CODE, { month: 'long', year: '2-digit' })
+const utcFormatter = new Intl.DateTimeFormat(Constants.BASE_LOCALE_CODE, { month: 'long', year: 'numeric', timeZone: 'UTC' })
+const localFormatter = new Intl.DateTimeFormat(Constants.BASE_LOCALE_CODE, { month: 'long', year: 'numeric' })
 const monthChoices = [
   {
     label: '6 Monate',
