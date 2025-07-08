@@ -1,6 +1,6 @@
 -- +goose Up
 -- +goose StatementBegin
-CREATE TABLE bank_accounts (
+CREATE TABLE IF NOT EXISTS bank_accounts (
     id SERIAL PRIMARY KEY,
     name VARCHAR(100) NOT NULL,
     amount BIGINT NOT NULL,

@@ -1,6 +1,6 @@
 -- +goose Up
 -- +goose StatementBegin
-CREATE TABLE employee_histories_exclusions (
+CREATE TABLE IF NOT EXISTS employee_histories_exclusions (
     id SERIAL PRIMARY KEY,
     exclude_month VARCHAR(7) NOT NULL,
 

@@ -1,6 +1,6 @@
 -- +goose Up
 -- +goose StatementBegin
-CREATE TABLE forecast_details (
+CREATE TABLE IF NOT EXISTS forecast_details (
     id SERIAL PRIMARY KEY,
     month VARCHAR(7) NOT NULL,
     revenue JSON NOT NULL,

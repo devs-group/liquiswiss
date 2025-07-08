@@ -1,6 +1,6 @@
 -- +goose Up
 -- +goose StatementBegin
-CREATE TABLE fiat_rates (
+CREATE TABLE IF NOT EXISTS fiat_rates (
     id SERIAL PRIMARY KEY,
     base CHAR(3) NOT NULL DEFAULT 'CHF',
     target CHAR(3) NOT NULL,

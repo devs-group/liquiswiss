@@ -1,6 +1,6 @@
 -- +goose Up
 -- +goose StatementBegin
-CREATE TABLE transaction_exclusions (
+CREATE TABLE IF NOT EXISTS transaction_exclusions (
     id SERIAL PRIMARY KEY,
     exclude_month VARCHAR(7) NOT NULL,
 

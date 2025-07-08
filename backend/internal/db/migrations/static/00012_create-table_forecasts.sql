@@ -1,6 +1,6 @@
 -- +goose Up
 -- +goose StatementBegin
-CREATE TABLE forecasts (
+CREATE TABLE IF NOT EXISTS forecasts (
     id SERIAL PRIMARY KEY,
     month VARCHAR(7) NOT NULL,
     revenue BIGINT NOT NULL,
