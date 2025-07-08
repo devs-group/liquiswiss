@@ -69,7 +69,7 @@ go get OR go mod tidy
 
 ## Development Server
 
-1. Install [Air](https://github.com/cosmtrek/air): `go install github.com/cosmtrek/air@latest`
+1. Install [Air](https://github.com/air-verse/air): `go install github.com/air-verse/air@latest`
 
 ```
 air
