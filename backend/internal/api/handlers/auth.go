@@ -85,24 +85,28 @@ func FinishRegistration(dbService db_service.IDatabaseService, c *gin.Context) {
 
 	validator := utils.GetValidator()
 	if err := validator.Struct(payload); err != nil {
+		logger.Logger.Error(err)
 		c.JSON(http.StatusBadRequest, gin.H{"error": "Ungültige Eingabe"})
 		return
 	}
 
 	registrationId, err := dbService.ValidateRegistration(payload.Email, payload.Code, utils.RegistrationCodeValidity)
 	if err != nil {
+		logger.Logger.Error(err)
 		c.JSON(http.StatusBadRequest, gin.H{"error": "Validierung der Registrierung ist fehlgeschlagen"})
 		return
 	}
 
 	encryptedPassword, err := bcrypt.GenerateFromPassword([]byte(payload.Password), 12)
 	if err != nil {
+		logger.Logger.Error(err)
 		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 		return
 	}
 
 	userId, err := dbService.CreateUser(payload.Email, string(encryptedPassword))
 	if err != nil {
+		logger.Logger.Error(err)
 		c.JSON(http.StatusInternalServerError, gin.H{"error": "Die Registrierung ist fehlgeschlagen"})
 		return
 	}
@@ -110,6 +114,7 @@ func FinishRegistration(dbService db_service.IDatabaseService, c *gin.Context) {
 	// Every new user gets an organisation assigned automatically
 	organisationID, err := dbService.CreateOrganisation("Meine Organisation")
 	if err != nil {
+		logger.Logger.Error(err)
 		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 		return
 	}
@@ -117,6 +122,7 @@ func FinishRegistration(dbService db_service.IDatabaseService, c *gin.Context) {
 	// We explicity set it as the default organisation which can only be deleted along with the users account
 	err = dbService.AssignUserToOrganisation(userId, organisationID, "owner", true)
 	if err != nil {
+		logger.Logger.Error(err)
 		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 		return
 	}
@@ -124,6 +130,7 @@ func FinishRegistration(dbService db_service.IDatabaseService, c *gin.Context) {
 	// Set the new default organisation as the current one
 	err = dbService.SetUserCurrentOrganisation(userId, organisationID)
 	if err != nil {
+		logger.Logger.Error(err)
 		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 		return
 	}
@@ -131,24 +138,28 @@ func FinishRegistration(dbService db_service.IDatabaseService, c *gin.Context) {
 	// Delete registration since we have the user now
 	err = dbService.DeleteRegistration(registrationId, payload.Email)
 	if err != nil {
+		logger.Logger.Error(err)
 		logger.Logger.Error("Error deleting registation: ", err)
 		return
 	}
 
 	user, err := dbService.GetProfile(userId)
 	if err != nil {
+		logger.Logger.Error(err)
 		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 		return
 	}
 
 	accessToken, accessExpirationTime, _, err := auth.GenerateAccessToken(*user)
 	if err != nil {
+		logger.Logger.Error(err)
 		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 		return
 	}
 
 	refreshToken, tokenId, refreshExpirationTime, err := auth.GenerateRefreshToken(*user)
 	if err != nil {
+		logger.Logger.Error(err)
 		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 		return
 	}
