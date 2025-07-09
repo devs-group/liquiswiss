@@ -94,6 +94,14 @@ Dynamic migrations are stored functions, views or triggers, basically things tha
 - Rollback Migration: `goose --dir internal/db/migrations/<directory> mysql liquiswiss:password@/liquiswiss down`
 - Or check out the [Makefile](backend/Makefile)
 
+## Fixtures
+
+> Optional step
+
+You can fixtures from the [fixtures](backend/internal/service/db_service/fixtures) directory if you desire.
+The dynamic migrations insert a minimal set of data required to make the app work properly. You can check out the
+minimal inserted data in [00007_apply_minimal_fixtures.sql](backend/internal/db/migrations/dynamic/00007_apply_minimal_fixtures.sql)
+
 ## Tests
 
 > Make sure you are in the [backend](backend) directory

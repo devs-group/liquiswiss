@@ -1,0 +1,15 @@
+INSERT INTO `categories` (`id`, `name`, `deleted`, `created_at`, `organisation_id`)
+VALUES (1, 'Hosting', 0, '2024-12-15 22:52:35', NULL),
+       (2, 'Steuern', 0, '2024-12-15 22:52:35', NULL),
+       (3, 'Lizenzen', 0, '2024-12-15 22:52:35', NULL),
+       (4, 'Sozialabgaben', 0, '2024-12-15 22:52:35', NULL),
+       (5, 'Projekte', 0, '2024-12-15 22:52:35', NULL),
+       (6, 'Bankspesen', 0, '2024-12-15 22:52:35', NULL),
+       (7, 'Buchhaltung', 0, '2024-12-15 22:52:35', NULL),
+       (8, 'Investitionen', 0, '2024-12-15 22:52:35', NULL),
+       (9, 'Leasing', 0, '2024-12-15 22:52:35', NULL),
+       (10, 'Miete', 0, '2024-12-15 22:52:35', NULL),
+       (11, 'Telefon', 0, '2024-12-15 22:52:35', NULL),
+       (12, 'Versicherungen', 0, '2024-12-15 22:52:35', NULL),
+       (13, 'Übriges', 0, '2024-12-15 22:52:35', NULL),
+       (14, 'Lohnkosten', 0, '2025-04-05 04:59:42', NULL);
