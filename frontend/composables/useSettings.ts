@@ -16,7 +16,7 @@ import { RouteNames } from '~/config/routes'
 export default function useSettings() {
   const forecastShowRevenueDetails = useState('forecastShowRevenueDetails', () => false)
   const forecastShowExpenseDetails = useState('forecastShowExpenseDetails', () => false)
-  const forecastShowChildDetails = useState('forecastShowChildDetails', () => false)
+  const forecastShowChildDetails = useState<string[]>('forecastShowChildDetails', () => [])
   const forecastPerformance = useState('forecastPerformance', () => 100)
   // 13 to include from current to the same month
   const forecastMonths = useState('forecastMonths', () => 13)
@@ -93,20 +93,13 @@ export default function useSettings() {
   }
 
   if (forecastShowChildDetailsCookie.value !== undefined) {
-    const val = forecastShowChildDetailsCookie.value
-    if (val == 'true') {
-      forecastShowChildDetails.value = true
-    }
-    else if (val == 'false') {
-      forecastShowChildDetails.value = false
-    }
-    else if (typeof val === 'boolean') {
-      // Can be boolean for some reason
+    const val = forecastShowChildDetailsCookie.value as unknown
+    if (val instanceof Array) {
       forecastShowChildDetails.value = val
     }
-  }
-  else {
-    forecastShowChildDetails.value = false
+    else {
+      forecastShowChildDetails.value = []
+    }
   }
 
   if (employeeDisplayCookie.value !== undefined) {
@@ -330,8 +323,8 @@ export default function useSettings() {
   })
 
   watch(forecastShowChildDetails, (value) => {
-    forecastShowChildDetailsCookie.value = value.toString()
-  })
+    forecastShowChildDetailsCookie.value = JSON.stringify(value)
+  }, { deep: true })
 
   watch(forecastPerformance, (value) => {
     forecastPerformanceCookie.value = value.toString()

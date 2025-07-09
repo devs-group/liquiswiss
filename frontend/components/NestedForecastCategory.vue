@@ -5,7 +5,7 @@
     <div
       class="group flex gap-1 border-b border-l border-zinc-600 dark:border-zinc-400 p-1 min-w-28"
       :class="[getColumnColor, { 'cursor-pointer': hasChildren }]"
-      @click="onToggleChildren"
+      @click="onToggleChildren(category.name)"
     >
       <p
         class="w-full truncate"
@@ -16,7 +16,7 @@
       <i
         v-if="hasChildren"
         class="pi opacity-0 group-hover:opacity-100 transition-opacity"
-        :class="{ 'pi-sort-down': forecastShowChildDetails, 'pi-sort-up': !forecastShowChildDetails }"
+        :class="{ 'pi-sort-down': forecastShowChildDetails.includes(category.name), 'pi-sort-up': !forecastShowChildDetails.includes(category.name) }"
       />
     </div>
     <div
@@ -42,7 +42,7 @@
     </div>
   </div>
 
-  <template v-if="forecastShowChildDetails">
+  <template v-if="forecastShowChildDetails.includes(category.name)">
     <NestedForecastCategory
       v-for="child in childCategories"
       :key="child"
@@ -90,9 +90,14 @@ const props = defineProps({
 
 const emits = defineEmits(['onRecalculateForecasts'])
 
-const onToggleChildren = () => {
+const onToggleChildren = (categoryName: string) => {
   if (hasChildren.value) {
-    forecastShowChildDetails.value = !forecastShowChildDetails.value
+    if (forecastShowChildDetails.value.includes(categoryName)) {
+      forecastShowChildDetails.value = forecastShowChildDetails.value.filter(n => n != categoryName)
+    }
+    else {
+      forecastShowChildDetails.value.push(categoryName)
+    }
   }
 }
 
