@@ -111,7 +111,7 @@ const unit = computed(
   () => EmployeeHistoryCostUtils.unit(props.employeeHistoryCost, props.employeeHistory.currency),
 )
 const getNextCostExecutionDateHint = computed(() => {
-  return isInactive.value ? '-' : `am ${DateStringToFormattedDate(props.employeeHistoryCost.nextExecutionDate)}`
+  return isInactive.value ? '-' : `am ${DateStringToFormattedDate(props.employeeHistoryCost?.calculatedNextExecutionDate)}`
 })
 const getNextHistoryPaymentHint = computed(() => {
   if (props.employeeHistory.nextExecutionDate) {

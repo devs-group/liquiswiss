@@ -20,6 +20,7 @@ import (
 type MockIForecastService struct {
 	ctrl     *gomock.Controller
 	recorder *MockIForecastServiceMockRecorder
+	isgomock struct{}
 }
 
 // MockIForecastServiceMockRecorder is the mock recorder for MockIForecastService.
@@ -40,16 +41,16 @@ func (m *MockIForecastService) EXPECT() *MockIForecastServiceMockRecorder {
 }
 
 // CalculateForecast mocks base method.
-func (m *MockIForecastService) CalculateForecast(arg0 int64) ([]models.Forecast, error) {
+func (m *MockIForecastService) CalculateForecast(userID int64) ([]models.Forecast, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "CalculateForecast", arg0)
+	ret := m.ctrl.Call(m, "CalculateForecast", userID)
 	ret0, _ := ret[0].([]models.Forecast)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
 
 // CalculateForecast indicates an expected call of CalculateForecast.
-func (mr *MockIForecastServiceMockRecorder) CalculateForecast(arg0 any) *gomock.Call {
+func (mr *MockIForecastServiceMockRecorder) CalculateForecast(userID any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CalculateForecast", reflect.TypeOf((*MockIForecastService)(nil).CalculateForecast), arg0)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CalculateForecast", reflect.TypeOf((*MockIForecastService)(nil).CalculateForecast), userID)
 }

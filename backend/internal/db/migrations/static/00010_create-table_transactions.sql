@@ -5,7 +5,7 @@ CREATE TABLE IF NOT EXISTS transactions (
     name VARCHAR(255) NOT NULL,
     amount BIGINT NOT NULL,
     vat_included BOOL NOT NULL DEFAULT false,
-    cycle ENUM('daily', 'weekly', 'monthly', 'quarterly', 'biannually', 'yearly'),
+    cycle ENUM('monthly', 'quarterly', 'biannually', 'yearly'),
     type ENUM('single', 'repeating') NOT NULL,
     start_date DATE NOT NULL,
     end_date DATE,

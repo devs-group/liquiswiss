@@ -20,6 +20,7 @@ import (
 type MockIUserService struct {
 	ctrl     *gomock.Controller
 	recorder *MockIUserServiceMockRecorder
+	isgomock struct{}
 }
 
 // MockIUserServiceMockRecorder is the mock recorder for MockIUserService.
@@ -40,16 +41,16 @@ func (m *MockIUserService) EXPECT() *MockIUserServiceMockRecorder {
 }
 
 // GetCurrentOrganisation mocks base method.
-func (m *MockIUserService) GetCurrentOrganisation(arg0 int64) (*models.Organisation, error) {
+func (m *MockIUserService) GetCurrentOrganisation(userID int64) (*models.Organisation, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "GetCurrentOrganisation", arg0)
+	ret := m.ctrl.Call(m, "GetCurrentOrganisation", userID)
 	ret0, _ := ret[0].(*models.Organisation)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
 
 // GetCurrentOrganisation indicates an expected call of GetCurrentOrganisation.
-func (mr *MockIUserServiceMockRecorder) GetCurrentOrganisation(arg0 any) *gomock.Call {
+func (mr *MockIUserServiceMockRecorder) GetCurrentOrganisation(userID any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetCurrentOrganisation", reflect.TypeOf((*MockIUserService)(nil).GetCurrentOrganisation), arg0)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetCurrentOrganisation", reflect.TypeOf((*MockIUserService)(nil).GetCurrentOrganisation), userID)
 }

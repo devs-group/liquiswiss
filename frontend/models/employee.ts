@@ -34,13 +34,13 @@ export interface EmployeeHistoryCostResponse {
   amountType: EmployeeCostTypeToStringDefinition
   amount: number
   distributionType: EmployeeCostDistributionTypeToStringDefinition
-  calculatedAmount: number
   relativeOffset: number
   targetDate: string | null
-  previousExecutionDate: Date
-  nextExecutionDate: Date
-  nextCost: number
   employeeHistoryID: number
+  calculatedAmount: number
+  calculatedPreviousExecutionDate: Date
+  calculatedNextExecutionDate: Date
+  calculatedNextCost: number
 }
 
 export interface EmployeeHistoryResponse {

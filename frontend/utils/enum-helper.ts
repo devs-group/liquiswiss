@@ -6,19 +6,10 @@ import {
   TransactionType,
 } from '~/config/enums'
 
-export type CycleTypeToStringDefinition = CycleType.Daily | CycleType.Weekly | CycleType.Monthly | CycleType.Quarterly | CycleType.Biannually | CycleType.Yearly
+export type CycleTypeToStringDefinition = CycleType.Monthly | CycleType.Quarterly | CycleType.Biannually | CycleType.Yearly
 
 export const CycleTypeToOptions = () => {
   return [
-    // TODO: Due to complexity disabled for now
-    // {
-    //   name: 'Täglich',
-    //   value: CycleType.Daily,
-    // },
-    // {
-    //   name: 'Wöchentlich',
-    //   value: CycleType.Weekly,
-    // },
     {
       name: 'Monatlich',
       value: CycleType.Monthly,
@@ -45,14 +36,6 @@ export const CostCycleTypeToOptions = () => {
     {
       name: 'Einmalig',
       value: CycleType.Once,
-    },
-    {
-      name: 'Täglich',
-      value: CycleType.Daily,
-    },
-    {
-      name: 'Wöchenlich',
-      value: CycleType.Weekly,
     },
     {
       name: 'Monatlich',

@@ -8,7 +8,7 @@ import (
 )
 
 func (s *DatabaseService) ListEmployeeHistoryCosts(userID int64, historyID int64, page int64, limit int64) ([]models.EmployeeHistoryCost, int64, error) {
-	employeeHistoryCosts := make([]models.EmployeeHistoryCost, 0)
+	historyCosts := make([]models.EmployeeHistoryCost, 0)
 	var totalCount int64
 
 	query, err := sqlQueries.ReadFile("queries/list_employee_history_costs.sql")
@@ -23,43 +23,25 @@ func (s *DatabaseService) ListEmployeeHistoryCosts(userID int64, historyID int64
 	defer rows.Close()
 
 	for rows.Next() {
-		var employeeHistoryCost models.EmployeeHistoryCost
-		var labelID sql.NullInt64
-		var labelName sql.NullString
+		var historyCostID int64
 
 		err := rows.Scan(
-			&employeeHistoryCost.ID,
-			&labelID,
-			&labelName,
-			&employeeHistoryCost.Cycle,
-			&employeeHistoryCost.AmountType,
-			&employeeHistoryCost.Amount,
-			&employeeHistoryCost.DistributionType,
-			&employeeHistoryCost.CalculatedAmount,
-			&employeeHistoryCost.RelativeOffset,
-			&employeeHistoryCost.TargetDate,
-			&employeeHistoryCost.PreviousExecutionDate,
-			&employeeHistoryCost.NextExecutionDate,
-			&employeeHistoryCost.NextCost,
-			&employeeHistoryCost.EmployeeHistoryID,
-			// Forget about this for now (or ever :D)
+			&historyCostID,
 			&totalCount,
 		)
 		if err != nil {
 			return nil, 0, err
 		}
 
-		if labelID.Valid && labelName.Valid {
-			employeeHistoryCost.Label = &models.EmployeeHistoryCostLabel{
-				ID:   labelID.Int64,
-				Name: labelName.String,
-			}
+		historyCost, err := s.GetEmployeeHistoryCost(userID, historyCostID)
+		if err != nil {
+			return nil, 0, err
 		}
 
-		employeeHistoryCosts = append(employeeHistoryCosts, employeeHistoryCost)
+		historyCosts = append(historyCosts, *historyCost)
 	}
 
-	return employeeHistoryCosts, totalCount, nil
+	return historyCosts, totalCount, nil
 }
 
 func (s *DatabaseService) GetEmployeeHistoryCost(userID int64, historyCostID int64) (*models.EmployeeHistoryCost, error) {
@@ -80,13 +62,14 @@ func (s *DatabaseService) GetEmployeeHistoryCost(userID int64, historyCostID int
 		&employeeHistoryCost.AmountType,
 		&employeeHistoryCost.Amount,
 		&employeeHistoryCost.DistributionType,
-		&employeeHistoryCost.CalculatedAmount,
 		&employeeHistoryCost.RelativeOffset,
 		&employeeHistoryCost.TargetDate,
-		&employeeHistoryCost.PreviousExecutionDate,
-		&employeeHistoryCost.NextExecutionDate,
-		&employeeHistoryCost.NextCost,
 		&employeeHistoryCost.EmployeeHistoryID,
+		&employeeHistoryCost.HistoryCycle,
+		&employeeHistoryCost.HistorySalary,
+		&employeeHistoryCost.HistoryFromDate,
+		&employeeHistoryCost.HistoryToDate,
+		&employeeHistoryCost.DBDate,
 	)
 	if err != nil {
 		return nil, err
@@ -98,6 +81,51 @@ func (s *DatabaseService) GetEmployeeHistoryCost(userID int64, historyCostID int
 			Name: labelName.String,
 		}
 	}
+
+	employeeCostAmount := s.CalculateEmployeeCostAmount(
+		employeeHistoryCost.HistorySalary,
+		employeeHistoryCost.Amount,
+		employeeHistoryCost.AmountType,
+	)
+	employeeHistoryCost.CalculatedAmount = employeeCostAmount
+
+	previousExecutionDate := s.CalculateCostExecutionDate(
+		employeeHistoryCost.HistoryFromDate,
+		employeeHistoryCost.HistoryToDate,
+		employeeHistoryCost.HistoryCycle,
+		employeeHistoryCost.TargetDate,
+		employeeHistoryCost.Cycle,
+		employeeHistoryCost.RelativeOffset,
+		employeeHistoryCost.DBDate,
+		false,
+	)
+	employeeHistoryCost.CalculatedPreviousExecutionDate = previousExecutionDate
+
+	nextExecutionDate := s.CalculateCostExecutionDate(
+		employeeHistoryCost.HistoryFromDate,
+		employeeHistoryCost.HistoryToDate,
+		employeeHistoryCost.HistoryCycle,
+		employeeHistoryCost.TargetDate,
+		employeeHistoryCost.Cycle,
+		employeeHistoryCost.RelativeOffset,
+		employeeHistoryCost.DBDate,
+		true,
+	)
+	employeeHistoryCost.CalculatedNextExecutionDate = nextExecutionDate
+
+	nextCostAmount := s.CalculateNextCostAmount(
+		employeeHistoryCost.HistoryFromDate,
+		employeeHistoryCost.HistoryToDate,
+		employeeHistoryCost.HistoryCycle,
+		employeeHistoryCost.TargetDate,
+		employeeHistoryCost.Cycle,
+		employeeHistoryCost.RelativeOffset,
+		employeeHistoryCost.DBDate,
+		employeeHistoryCost.AmountType,
+		employeeHistoryCost.Amount,
+		employeeHistoryCost.HistorySalary,
+	)
+	employeeHistoryCost.CalculatedNextCost = nextCostAmount
 
 	return &employeeHistoryCost, nil
 }

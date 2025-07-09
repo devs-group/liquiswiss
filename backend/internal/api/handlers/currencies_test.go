@@ -27,7 +27,7 @@ func TestCurrencyOrderAndOrganisationDependency(t *testing.T) {
 	assert.NoError(t, err)
 
 	// An organisation without a set currency will fall back to the system currency
-	// Currently defined in 00009_create-function_get_default_system_currency_id.sql
+	// Currently defined in 00005_create-function_get_default_system_currency_id.sql
 	assert.Equal(t, *currencyCHF.Code, *organisation.Currency.Code)
 
 	currencies, err := dbService.ListCurrencies(user.ID)

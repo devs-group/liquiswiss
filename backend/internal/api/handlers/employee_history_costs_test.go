@@ -37,7 +37,7 @@ func TestMonthlyEmployeeHistoryWithoutToDate(t *testing.T) {
 		Cycle:               "monthly",
 		CurrencyID:          *currency.ID,
 		VacationDaysPerYear: 25,
-		FromDate:            "2025-01-26",
+		FromDate:            "2025-07-08",
 		ToDate:              nil,
 		// We want to test separate costs
 		WithSeparateCosts: true,
@@ -98,194 +98,28 @@ func TestMonthlyEmployeeHistoryWithoutToDate(t *testing.T) {
 			},
 		},
 
-		// Daily
-		{
-			Description:                   "Daily simple fixed",
-			DatabaseTime:                  "2025-01-01",
-			ExpectedCalculatedAmount:      500 * 100,
-			ExpectedNextCost:              500 * 100,
-			ExpectedEmployeeDeductions:    500 * 100,
-			ExpectedNextExecutionDate:     "2025-01-27",
-			ExpectedPreviousExecutionDate: "2025-01-26",
-			CreateData: models.CreateEmployeeHistoryCost{
-				Cycle:            "daily",
-				AmountType:       "fixed",
-				Amount:           500 * 100,
-				DistributionType: "employee",
-				RelativeOffset:   1,
-				TargetDate:       nil,
-				LabelID:          nil,
-			},
-		},
-		{
-			Description:                   "Daily simple percentage",
-			DatabaseTime:                  "2025-01-01",
-			ExpectedCalculatedAmount:      2500 * 100,
-			ExpectedNextCost:              2500 * 100,
-			ExpectedEmployeeDeductions:    2500 * 100,
-			ExpectedNextExecutionDate:     "2025-01-27",
-			ExpectedPreviousExecutionDate: "2025-01-26",
-			CreateData: models.CreateEmployeeHistoryCost{
-				Cycle:            "daily",
-				AmountType:       "percentage",
-				Amount:           25 * 1000,
-				DistributionType: "employee",
-				RelativeOffset:   1,
-				TargetDate:       nil,
-				LabelID:          nil,
-			},
-		},
-		{
-			Description:                   "Daily offset fixed",
-			DatabaseTime:                  "2025-06-26",
-			ExpectedCalculatedAmount:      500 * 100,
-			ExpectedNextCost:              500 * 100 * 7,
-			ExpectedEmployeeDeductions:    500 * 100 * 7,
-			ExpectedNextExecutionDate:     "2025-08-02",
-			ExpectedPreviousExecutionDate: "2025-07-26",
-			CreateData: models.CreateEmployeeHistoryCost{
-				Cycle:            "daily",
-				AmountType:       "fixed",
-				Amount:           500 * 100,
-				DistributionType: "employee",
-				RelativeOffset:   7,
-				TargetDate:       nil,
-				LabelID:          nil,
-			},
-		},
-		{
-			Description:                   "Daily offset percentage",
-			DatabaseTime:                  "2025-06-26",
-			ExpectedCalculatedAmount:      7500 * 100,
-			ExpectedNextCost:              7500 * 100 * 7,
-			ExpectedEmployeeDeductions:    7500 * 100 * 7,
-			ExpectedNextExecutionDate:     "2025-08-02",
-			ExpectedPreviousExecutionDate: "2025-07-26",
-			CreateData: models.CreateEmployeeHistoryCost{
-				Cycle:            "daily",
-				AmountType:       "percentage",
-				Amount:           75 * 1000,
-				DistributionType: "employee",
-				RelativeOffset:   7,
-				TargetDate:       nil,
-				LabelID:          nil,
-			},
-		},
-		{
-			Description:                   "Daily giga offset fixed",
-			DatabaseTime:                  "2025-01-01",
-			ExpectedCalculatedAmount:      250 * 100,
-			ExpectedNextCost:              250 * 100 * 720,
-			ExpectedEmployeeDeductions:    250 * 100 * 720,
-			ExpectedNextExecutionDate:     "2027-01-16",
-			ExpectedPreviousExecutionDate: "2025-01-26",
-			CreateData: models.CreateEmployeeHistoryCost{
-				Cycle:            "daily",
-				AmountType:       "fixed",
-				Amount:           250 * 100,
-				DistributionType: "employee",
-				RelativeOffset:   720,
-				TargetDate:       nil,
-				LabelID:          nil,
-			},
-		},
-
-		// Weekly
-		{
-			Description:                   "Weekly simple fixed",
-			DatabaseTime:                  "2025-01-01",
-			ExpectedCalculatedAmount:      500 * 100,
-			ExpectedNextCost:              500 * 100,
-			ExpectedEmployeeDeductions:    500 * 100,
-			ExpectedNextExecutionDate:     "2025-02-02",
-			ExpectedPreviousExecutionDate: "2025-01-26",
-			CreateData: models.CreateEmployeeHistoryCost{
-				Cycle:            "weekly",
-				AmountType:       "fixed",
-				Amount:           500 * 100,
-				DistributionType: "employee",
-				RelativeOffset:   1,
-				TargetDate:       nil,
-				LabelID:          nil,
-			},
-		},
-		{
-			Description:                   "Weekly simple percentage",
-			DatabaseTime:                  "2025-01-01",
-			ExpectedCalculatedAmount:      2500 * 100,
-			ExpectedNextCost:              2500 * 100,
-			ExpectedEmployeeDeductions:    2500 * 100,
-			ExpectedNextExecutionDate:     "2025-02-02",
-			ExpectedPreviousExecutionDate: "2025-01-26",
-			CreateData: models.CreateEmployeeHistoryCost{
-				Cycle:            "weekly",
-				AmountType:       "percentage",
-				Amount:           25 * 1000,
-				DistributionType: "employee",
-				RelativeOffset:   1,
-				TargetDate:       nil,
-				LabelID:          nil,
-			},
-		},
-		{
-			Description:                   "Weekly offset fixed",
-			DatabaseTime:                  "2025-06-26",
-			ExpectedCalculatedAmount:      500 * 100,
-			ExpectedNextCost:              500 * 100 * 7,
-			ExpectedEmployeeDeductions:    500 * 100 * 7,
-			ExpectedNextExecutionDate:     "2025-09-13",
-			ExpectedPreviousExecutionDate: "2025-07-26",
-			CreateData: models.CreateEmployeeHistoryCost{
-				Cycle:            "weekly",
-				AmountType:       "fixed",
-				Amount:           500 * 100,
-				DistributionType: "employee",
-				RelativeOffset:   7,
-				TargetDate:       nil,
-				LabelID:          nil,
-			},
-		},
-		{
-			Description:                   "Weekly offset percentage",
-			DatabaseTime:                  "2025-06-26",
-			ExpectedCalculatedAmount:      7500 * 100,
-			ExpectedNextCost:              7500 * 100 * 7,
-			ExpectedEmployeeDeductions:    7500 * 100 * 7,
-			ExpectedNextExecutionDate:     "2025-09-13",
-			ExpectedPreviousExecutionDate: "2025-07-26",
-			CreateData: models.CreateEmployeeHistoryCost{
-				Cycle:            "weekly",
-				AmountType:       "percentage",
-				Amount:           75 * 1000,
-				DistributionType: "employee",
-				RelativeOffset:   7,
-				TargetDate:       nil,
-				LabelID:          nil,
-			},
-		},
-		{
-			Description:                   "Weekly giga offset fixed",
-			DatabaseTime:                  "2025-01-01",
-			ExpectedCalculatedAmount:      250 * 100,
-			ExpectedNextCost:              250 * 100 * 720,
-			ExpectedEmployeeDeductions:    250 * 100 * 720,
-			ExpectedNextExecutionDate:     "2038-11-14",
-			ExpectedPreviousExecutionDate: "2025-01-26",
-			CreateData: models.CreateEmployeeHistoryCost{
-				Cycle:            "weekly",
-				AmountType:       "fixed",
-				Amount:           250 * 100,
-				DistributionType: "employee",
-				RelativeOffset:   720,
-				TargetDate:       nil,
-				LabelID:          nil,
-			},
-		},
-
 		// Monthly
 		{
 			Description:                   "Monthly simple fixed",
 			DatabaseTime:                  "2025-01-01",
+			ExpectedCalculatedAmount:      500 * 100,
+			ExpectedNextCost:              500 * 100,
+			ExpectedEmployeeDeductions:    500 * 100,
+			ExpectedNextExecutionDate:     "2025-02-26",
+			ExpectedPreviousExecutionDate: "2025-01-26",
+			CreateData: models.CreateEmployeeHistoryCost{
+				Cycle:            "monthly",
+				AmountType:       "fixed",
+				Amount:           500 * 100,
+				DistributionType: "employee",
+				RelativeOffset:   1,
+				TargetDate:       nil,
+				LabelID:          nil,
+			},
+		},
+		{
+			Description:                   "Monthly simple fixed 2",
+			DatabaseTime:                  "2025-01-28",
 			ExpectedCalculatedAmount:      500 * 100,
 			ExpectedNextCost:              500 * 100,
 			ExpectedEmployeeDeductions:    500 * 100,
@@ -687,9 +521,9 @@ func TestMonthlyEmployeeHistoryWithoutToDate(t *testing.T) {
 			assert.NoError(t, err)
 
 			assert.Equal(t, int64(testCase.ExpectedCalculatedAmount), int64(historyCost.CalculatedAmount), "historyCost.CalculatedAmount")
-			assert.Equal(t, int64(testCase.ExpectedNextCost), int64(historyCost.NextCost), "historyCost.NextCost")
-			assert.Equal(t, testCase.ExpectedNextExecutionDate, historyCost.NextExecutionDate.ToFormattedTime(utils.InternalDateFormat), "historyCost.NextExecutionDate")
-			assert.Equal(t, testCase.ExpectedPreviousExecutionDate, historyCost.PreviousExecutionDate.ToFormattedTime(utils.InternalDateFormat), "historyCost.PreviousExecutionDate")
+			assert.Equal(t, int64(testCase.ExpectedNextCost), int64(historyCost.CalculatedNextCost), "historyCost.CalculatedNextCost")
+			assert.Equal(t, testCase.ExpectedNextExecutionDate, historyCost.CalculatedNextExecutionDate.ToFormattedTime(utils.InternalDateFormat), "historyCost.CalculatedNextExecutionDate")
+			assert.Equal(t, testCase.ExpectedPreviousExecutionDate, historyCost.CalculatedPreviousExecutionDate.ToFormattedTime(utils.InternalDateFormat), "historyCost.CalculatedPreviousExecutionDate")
 			if historyCost.Label != nil {
 				assert.Equal(t, label.Name, historyCost.Label.Name)
 			} else {
@@ -994,9 +828,9 @@ func TestMonthlyEmployeeHistoryWithToDate(t *testing.T) {
 			assert.NoError(t, err)
 
 			assert.Equal(t, int64(testCase.ExpectedCalculatedAmount), int64(historyCost.CalculatedAmount), "historyCost.CalculatedAmount")
-			assert.Equal(t, int64(testCase.ExpectedNextCost), int64(historyCost.NextCost), "historyCost.NextCost")
-			assert.Equal(t, testCase.ExpectedNextExecutionDate, historyCost.NextExecutionDate.ToFormattedTime(utils.InternalDateFormat), "historyCost.NextExecutionDate")
-			assert.Equal(t, testCase.ExpectedPreviousExecutionDate, historyCost.PreviousExecutionDate.ToFormattedTime(utils.InternalDateFormat), "historyCost.PreviousExecutionDate")
+			assert.Equal(t, int64(testCase.ExpectedNextCost), int64(historyCost.CalculatedNextCost), "historyCost.CalculatedNextCost")
+			assert.Equal(t, testCase.ExpectedNextExecutionDate, historyCost.CalculatedNextExecutionDate.ToFormattedTime(utils.InternalDateFormat), "historyCost.CalculatedNextExecutionDate")
+			assert.Equal(t, testCase.ExpectedPreviousExecutionDate, historyCost.CalculatedPreviousExecutionDate.ToFormattedTime(utils.InternalDateFormat), "historyCost.CalculatedPreviousExecutionDate")
 			if historyCost.Label != nil {
 				assert.Equal(t, label.Name, historyCost.Label.Name)
 			} else {

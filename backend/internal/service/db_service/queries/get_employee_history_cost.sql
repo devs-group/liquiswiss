@@ -6,49 +6,14 @@ SELECT
     hc.amount_type,
     hc.amount,
     hc.distribution_type,
-    calculate_employee_cost_amount(
-        h.salary,
-        hc.amount,
-        hc.amount_type
-    ) AS calculated_amount,
     hc.relative_offset,
     hc.target_date,
-    calculate_cost_execution_date(
-        'repeating',
-        h.from_date,
-        h.to_date,
-        h.cycle,
-        hc.target_date,
-        hc.cycle,
-        hc.relative_offset,
-        CURDATE(),
-        false
-    ) AS previous_execution_date,
-    calculate_cost_execution_date(
-        'repeating',
-        h.from_date,
-        h.to_date,
-        h.cycle,
-        hc.target_date,
-        hc.cycle,
-        hc.relative_offset,
-        CURDATE(),
-        true
-    ) AS next_execution_date,
-    calculate_next_cost_amount(
-        'repeating',
-        h.from_date,
-        h.to_date,
-        h.cycle,
-        hc.target_date,
-        hc.cycle,
-        hc.relative_offset,
-        CURDATE(),
-        hc.amount_type,
-        hc.amount,
-        h.salary
-    ) AS next_cost,
-    hc.employee_history_id
+    hc.employee_history_id,
+    h.cycle AS history_cycle,
+    h.salary AS history_salary,
+    h.from_date AS history_from_date,
+    h.to_date AS history_to_date,
+    CURDATE() AS db_date
 FROM employee_history_costs hc
 JOIN employee_histories h ON h.id = hc.employee_history_id
 JOIN employees e ON e.id = h.employee_id

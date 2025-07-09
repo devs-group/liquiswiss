@@ -2,7 +2,7 @@
 -- +goose StatementBegin
 CREATE TABLE IF NOT EXISTS employee_histories (
     id SERIAL PRIMARY KEY,
-    cycle ENUM('daily', 'weekly', 'monthly', 'quarterly', 'biannually', 'yearly') NOT NULL DEFAULT 'monthly',
+    cycle ENUM('monthly', 'quarterly', 'biannually', 'yearly') NOT NULL DEFAULT 'monthly',
     hours_per_month SMALLINT UNSIGNED NOT NULL,
     salary BIGINT UNSIGNED NOT NULL,
     vacation_days_per_year SMALLINT UNSIGNED NOT NULL,

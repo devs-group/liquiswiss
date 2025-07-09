@@ -11,7 +11,7 @@ import (
 )
 
 func (s *DatabaseService) ListEmployeeHistory(userID int64, employeeID int64, page int64, limit int64) ([]models.EmployeeHistory, int64, error) {
-	employeeHistories := make([]models.EmployeeHistory, 0)
+	histories := make([]models.EmployeeHistory, 0)
 	var totalCount int64
 
 	query, err := sqlQueries.ReadFile("queries/list_employee_histories.sql")
@@ -19,79 +19,39 @@ func (s *DatabaseService) ListEmployeeHistory(userID int64, employeeID int64, pa
 		return nil, 0, err
 	}
 
-	tx, err := s.db.Begin()
-	if err != nil {
-		return nil, 0, err
-	}
-
-	defer func() {
-		if p := recover(); p != nil {
-			tx.Rollback()
-			panic(p)
-		} else if err != nil {
-			tx.Rollback()
-		} else {
-			err = tx.Commit()
-		}
-	}()
-
-	rows, err := tx.Query(string(query), employeeID, userID, (page)*limit, 0)
+	rows, err := s.db.Query(string(query), employeeID, userID, (page)*limit, 0)
 	if err != nil {
 		return nil, 0, err
 	}
 	defer rows.Close()
 
 	for rows.Next() {
-		var employeeHistory models.EmployeeHistory
-		var fromDate sql.NullTime
-		var toDate sql.NullTime
-
-		employeeHistory.Currency = models.Currency{}
+		var historyID int64
 
 		err := rows.Scan(
-			&employeeHistory.ID,
-			&employeeHistory.EmployeeID,
-			&employeeHistory.HoursPerMonth,
-			&employeeHistory.Salary,
-			&employeeHistory.Cycle,
-			&employeeHistory.Currency.ID,
-			&employeeHistory.Currency.LocaleCode,
-			&employeeHistory.Currency.Description,
-			&employeeHistory.Currency.Code,
-			&employeeHistory.VacationDaysPerYear,
-			&fromDate,
-			&toDate,
-			&employeeHistory.NextExecutionDate,
-			&employeeHistory.EmployeeDeductions,
-			&employeeHistory.EmployerCosts,
-			&employeeHistory.WithSeparateCosts,
+			&historyID,
 			&totalCount,
 		)
 		if err != nil {
 			return nil, 0, err
 		}
 
-		if fromDate.Valid {
-			convertedDate := types.AsDate(fromDate.Time)
-			employeeHistory.FromDate = convertedDate
-		}
-		if toDate.Valid {
-			convertedDate := types.AsDate(toDate.Time)
-			employeeHistory.ToDate = &convertedDate
+		history, err := s.GetEmployeeHistory(userID, historyID)
+		if err != nil {
+			return nil, 0, err
 		}
 
-		employeeHistories = append(employeeHistories, employeeHistory)
+		histories = append(histories, *history)
 	}
 
-	return employeeHistories, totalCount, nil
+	return histories, totalCount, nil
 }
 
 func (s *DatabaseService) GetEmployeeHistory(userID int64, historyID int64) (*models.EmployeeHistory, error) {
-	var employeeHistory models.EmployeeHistory
-	var fromDate time.Time
+	var history models.EmployeeHistory
 	var toDate sql.NullTime
 
-	employeeHistory.Currency = models.Currency{}
+	history.Currency = models.Currency{}
 
 	query, err := sqlQueries.ReadFile("queries/get_employee_history.sql")
 	if err != nil {
@@ -99,35 +59,62 @@ func (s *DatabaseService) GetEmployeeHistory(userID int64, historyID int64) (*mo
 	}
 
 	err = s.db.QueryRow(string(query), historyID, userID).Scan(
-		&employeeHistory.ID,
-		&employeeHistory.EmployeeID,
-		&employeeHistory.HoursPerMonth,
-		&employeeHistory.Salary,
-		&employeeHistory.Cycle,
-		&employeeHistory.Currency.ID,
-		&employeeHistory.Currency.LocaleCode,
-		&employeeHistory.Currency.Description,
-		&employeeHistory.Currency.Code,
-		&employeeHistory.VacationDaysPerYear,
-		&fromDate,
+		&history.ID,
+		&history.EmployeeID,
+		&history.HoursPerMonth,
+		&history.Salary,
+		&history.Cycle,
+		&history.Currency.ID,
+		&history.Currency.LocaleCode,
+		&history.Currency.Description,
+		&history.Currency.Code,
+		&history.VacationDaysPerYear,
+		&history.FromDate,
 		&toDate,
-		&employeeHistory.NextExecutionDate,
-		&employeeHistory.EmployeeDeductions,
-		&employeeHistory.EmployerCosts,
-		&employeeHistory.WithSeparateCosts,
+		&history.WithSeparateCosts,
+		&history.DBDate,
 	)
 	if err != nil {
 		return nil, err
 	}
 
-	employeeHistory.FromDate = types.AsDate(fromDate)
-
 	if toDate.Valid {
 		convertedDate := types.AsDate(toDate.Time)
-		employeeHistory.ToDate = &convertedDate
+		history.ToDate = &convertedDate
 	}
 
-	return &employeeHistory, nil
+	// TODO: Think about how to handle the LIMIT here better
+	historyCosts, _, err := s.ListEmployeeHistoryCosts(userID, history.ID, 1, 1000)
+	if err != nil {
+		return nil, err
+	}
+
+	employeeDeductions := s.CalculateSalaryAdjustments(
+		history.Salary,
+		history.Cycle,
+		"employee",
+		historyCosts,
+	)
+
+	history.EmployeeDeductions = employeeDeductions
+
+	employerCosts := s.CalculateSalaryAdjustments(
+		history.Salary,
+		history.Cycle,
+		"employer",
+		historyCosts,
+	)
+
+	history.EmployerCosts = employerCosts
+
+	nextExecutionDate := s.CalculateHistoryExecutionDate(history.FromDate, history.ToDate, &history.Cycle, history.DBDate, 1, true)
+
+	if nextExecutionDate != nil {
+		nextHistoryExecutionDateAsDate := types.AsDate(*nextExecutionDate)
+		history.NextExecutionDate = &nextHistoryExecutionDateAsDate
+	}
+
+	return &history, nil
 }
 
 func (s *DatabaseService) CreateEmployeeHistory(payload models.CreateEmployeeHistory, userID int64, employeeID int64) (int64, error) {

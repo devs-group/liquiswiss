@@ -9,7 +9,7 @@ export const EmployeeHistoryCostUtils = {
 
   isOnce: (historyCost: EmployeeHistoryCostResponse): boolean => historyCost.cycle === 'once',
 
-  isInactive: (historyCost: EmployeeHistoryCostResponse) => historyCost.nextExecutionDate == null,
+  isInactive: (historyCost: EmployeeHistoryCostResponse) => historyCost.calculatedNextExecutionDate == null,
 
   amountFormatted: (historyCost: EmployeeHistoryCostResponse, currency: CurrencyResponse) =>
     EmployeeHistoryCostUtils.isFixed(historyCost)
@@ -20,7 +20,7 @@ export const EmployeeHistoryCostUtils = {
     NumberToFormattedCurrency(AmountToFloat(historyCost.calculatedAmount), currency.localeCode),
 
   nextCostFormatted: (historyCost: EmployeeHistoryCostResponse, currency: CurrencyResponse) =>
-    NumberToFormattedCurrency(AmountToFloat(historyCost.nextCost), currency.localeCode),
+    NumberToFormattedCurrency(AmountToFloat(historyCost.calculatedNextCost), currency.localeCode),
 
   amountType: (historyCost: EmployeeHistoryCostResponse) =>
     EmployeeCostTypeToOptions().find(ct => ct.value === historyCost.amountType)?.name ?? '',
