@@ -2,7 +2,7 @@
 -- +goose StatementBegin
 CREATE TABLE IF NOT EXISTS employee_history_costs (
     id SERIAL PRIMARY KEY,
-    cycle ENUM('once', 'daily', 'weekly', 'monthly', 'quarterly', 'biannually', 'yearly') NOT NULL DEFAULT 'daily',
+    cycle ENUM('once', 'monthly', 'quarterly', 'biannually', 'yearly') NOT NULL DEFAULT 'monthly',
     amount_type ENUM('fixed', 'percentage') NOT NULL DEFAULT 'fixed',
     amount BIGINT UNSIGNED NOT NULL DEFAULT 0,
     distribution_type ENUM('employer', 'employee') NOT NULL DEFAULT 'employee',

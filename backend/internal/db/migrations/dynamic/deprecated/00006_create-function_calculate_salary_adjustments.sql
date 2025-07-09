@@ -19,8 +19,6 @@ BEGIN
                         CASE
                             WHEN ehc.cycle IN ('once') THEN
                                 (salary * ehc.amount / 100000)
-                            WHEN ehc.cycle IN ('daily', 'weekly') THEN
-                                (salary * ehc.amount / 100000) * ehc.relative_offset
                             WHEN ehc.cycle = 'monthly' THEN
                                 CASE h.cycle
                                     WHEN 'monthly' THEN
@@ -71,8 +69,6 @@ BEGIN
                         CASE
                             WHEN ehc.cycle IN ('once') THEN
                                 ehc.amount
-                            WHEN ehc.cycle IN ('daily', 'weekly') THEN
-                                ehc.amount * ehc.relative_offset
                             WHEN ehc.cycle = 'monthly' THEN
                                 CASE h.cycle
                                     WHEN 'monthly' THEN

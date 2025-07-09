@@ -4,9 +4,9 @@ CREATE FUNCTION calculate_next_cost_amount(
     type ENUM('single', 'repeating'),
     from_date DATE,
     to_date DATE,
-    cycle ENUM('daily', 'weekly', 'monthly', 'quarterly', 'biannually', 'yearly'),
+    cycle ENUM('monthly', 'quarterly', 'biannually', 'yearly'),
     target_date DATE,
-    cost_cycle ENUM('once', 'daily', 'weekly', 'monthly', 'quarterly', 'biannually', 'yearly'),
+    cost_cycle ENUM('once', 'monthly', 'quarterly', 'biannually', 'yearly'),
     relative_offset INT,
     curr_date DATE,
     amount_type ENUM('fixed', 'percentage'),
@@ -20,6 +20,7 @@ BEGIN
     DECLARE span_start DATE;
     DECLARE span_end DATE;
     DECLARE next_history_execution DATE;
+    DECLARE previous_history_execution DATE;
 
     IF cost_cycle = 'once' THEN
         -- The cost occurs only once, based on the target_date
@@ -45,9 +46,16 @@ BEGIN
         cycle,
         curr_date
     );
+    SET previous_history_execution = calculate_next_history_execution_date(
+        type,
+        from_date,
+        to_date,
+        cycle,
+        DATE_SUB(curr_date, INTERVAL 1 MONTH)
+    );
 
     IF target_date IS NULL THEN
-        SET span_start = next_history_execution;
+        SET span_start = previous_history_execution;
         SET span_end = calculate_cost_execution_date(
             type,
             from_date,
@@ -99,11 +107,9 @@ BEGIN
                 curr_date,
                 FALSE
             );
-            IF next_history_execution < curr_date AND span_end > next_history_execution THEN
+            IF span_end > previous_history_execution THEN
                 -- Make sure we don't overshoot the history execution for the next costs
                 SET span_end = CASE cost_cycle
-                    WHEN 'daily' THEN DATE_ADD(next_history_execution, INTERVAL 1 DAY)
-                    WHEN 'weekly' THEN DATE_ADD(next_history_execution, INTERVAL 1 WEEK)
                     WHEN 'monthly' THEN DATE_ADD(next_history_execution, INTERVAL 1 MONTH)
                     WHEN 'quarterly' THEN DATE_ADD(next_history_execution, INTERVAL 3 MONTH)
                     WHEN 'biannually' THEN DATE_ADD(next_history_execution, INTERVAL 6 MONTH)
@@ -126,8 +132,6 @@ BEGIN
 
     span_loop: WHILE span_start < span_end DO
         SET @next_span_start = CASE cost_cycle
-            WHEN 'daily' THEN DATE_ADD(span_start, INTERVAL 1 DAY)
-            WHEN 'weekly' THEN DATE_ADD(span_start, INTERVAL 1 WEEK)
             WHEN 'monthly' THEN DATE_ADD(span_start, INTERVAL 1 MONTH)
             WHEN 'quarterly' THEN DATE_ADD(span_start, INTERVAL 3 MONTH)
             WHEN 'biannually' THEN DATE_ADD(span_start, INTERVAL 6 MONTH)
