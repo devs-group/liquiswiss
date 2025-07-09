@@ -23,13 +23,7 @@ SELECT
     v.value,
     CONCAT(FORMAT(v.value / 100, IF(v.value % 10 = 0, 1, 2)), '%') AS formatted_value,
     IF(v.organisation_id IS NULL, false, true) AS can_edit,
-    calculate_next_history_execution_date(
-        r.type,
-        r.start_date,
-        r.end_date,
-        r.cycle,
-        CURDATE()
-    ) AS next_execution_date
+    CURDATE() AS db_date
 FROM
     transactions r
     INNER JOIN categories c ON r.category_id = c.id

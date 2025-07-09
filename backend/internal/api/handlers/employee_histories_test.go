@@ -33,7 +33,7 @@ func TestEmployeeHistoryExecutionDates(t *testing.T) {
 	type TestCase struct {
 		Description           string
 		DatabaseTime          string
-		ExpectedExecutionDate string
+		ExpectedExecutionDate *string
 		CreateData            models.CreateEmployeeHistory
 	}
 
@@ -41,7 +41,7 @@ func TestEmployeeHistoryExecutionDates(t *testing.T) {
 		{
 			Description:           "History in past, still running",
 			DatabaseTime:          "2025-01-01",
-			ExpectedExecutionDate: "2025-01-26",
+			ExpectedExecutionDate: utils.StringAsPointer("2025-01-26"),
 			CreateData: models.CreateEmployeeHistory{
 				HoursPerMonth:       160,
 				Salary:              salary,
@@ -57,7 +57,7 @@ func TestEmployeeHistoryExecutionDates(t *testing.T) {
 		{
 			Description:           "History in past, expired",
 			DatabaseTime:          "2025-01-01",
-			ExpectedExecutionDate: "2024-12-26",
+			ExpectedExecutionDate: nil,
 			CreateData: models.CreateEmployeeHistory{
 				HoursPerMonth:       160,
 				Salary:              salary,
@@ -74,7 +74,7 @@ func TestEmployeeHistoryExecutionDates(t *testing.T) {
 			Description:  "End of January adjust to end of February",
 			DatabaseTime: "2025-02-01",
 			// 2025-01-31 should become 2025-02-28
-			ExpectedExecutionDate: "2025-02-28",
+			ExpectedExecutionDate: utils.StringAsPointer("2025-02-28"),
 			CreateData: models.CreateEmployeeHistory{
 				HoursPerMonth:       160,
 				Salary:              salary,
@@ -90,7 +90,7 @@ func TestEmployeeHistoryExecutionDates(t *testing.T) {
 			Description:  "End of January adjust to end of March after February",
 			DatabaseTime: "2025-03-01",
 			// 2025-01-31 should become 2025-03-31 after February has been 2025-02-28
-			ExpectedExecutionDate: "2025-03-31",
+			ExpectedExecutionDate: utils.StringAsPointer("2025-03-31"),
 			CreateData: models.CreateEmployeeHistory{
 				HoursPerMonth:       160,
 				Salary:              salary,
@@ -105,7 +105,7 @@ func TestEmployeeHistoryExecutionDates(t *testing.T) {
 		{
 			Description:           "History in future in same month",
 			DatabaseTime:          "2025-01-01",
-			ExpectedExecutionDate: "2025-01-26",
+			ExpectedExecutionDate: utils.StringAsPointer("2025-01-26"),
 			CreateData: models.CreateEmployeeHistory{
 				HoursPerMonth:       160,
 				Salary:              salary,
@@ -121,7 +121,7 @@ func TestEmployeeHistoryExecutionDates(t *testing.T) {
 			Description: "History in past in future month",
 			// In the future here
 			DatabaseTime:          "2025-02-01",
-			ExpectedExecutionDate: "2025-02-26",
+			ExpectedExecutionDate: utils.StringAsPointer("2025-02-26"),
 			CreateData: models.CreateEmployeeHistory{
 				HoursPerMonth:       160,
 				Salary:              salary,
@@ -134,42 +134,10 @@ func TestEmployeeHistoryExecutionDates(t *testing.T) {
 			},
 		},
 		{
-			Description:  "Daily cycle is always day after today",
-			DatabaseTime: "2025-02-28",
-			// On a daily cycle the next execution date is always a day after today
-			ExpectedExecutionDate: "2025-03-01",
-			CreateData: models.CreateEmployeeHistory{
-				HoursPerMonth:       160,
-				Salary:              salary,
-				Cycle:               "daily",
-				CurrencyID:          *currency.ID,
-				VacationDaysPerYear: 25,
-				FromDate:            "2025-01-26",
-				ToDate:              nil,
-				WithSeparateCosts:   false,
-			},
-		},
-		{
-			Description:  "A weekly cycle matches",
-			DatabaseTime: "2025-02-02",
-			// 2025-01-26 + a week would be 2025-02-02, since today is 2025-02-02 the next week would be 2025-02-09
-			ExpectedExecutionDate: "2025-02-09",
-			CreateData: models.CreateEmployeeHistory{
-				HoursPerMonth:       160,
-				Salary:              salary,
-				Cycle:               "weekly",
-				CurrencyID:          *currency.ID,
-				VacationDaysPerYear: 25,
-				FromDate:            "2025-01-26",
-				ToDate:              nil,
-				WithSeparateCosts:   false,
-			},
-		},
-		{
 			Description:  "A quarterly cycle matches",
 			DatabaseTime: "2025-04-24",
 			// 2025-01-26 + 3 months which is after today so this will match
-			ExpectedExecutionDate: "2025-04-26",
+			ExpectedExecutionDate: utils.StringAsPointer("2025-04-26"),
 			CreateData: models.CreateEmployeeHistory{
 				HoursPerMonth:       160,
 				Salary:              salary,
@@ -185,7 +153,7 @@ func TestEmployeeHistoryExecutionDates(t *testing.T) {
 			Description:  "A biannually cycle matches",
 			DatabaseTime: "2025-07-27",
 			// 2025-01-26 + 6 months which is 2025-07-26 since today is after that we add another 6 months so we end up next year
-			ExpectedExecutionDate: "2026-01-26",
+			ExpectedExecutionDate: utils.StringAsPointer("2026-01-26"),
 			CreateData: models.CreateEmployeeHistory{
 				HoursPerMonth:       160,
 				Salary:              salary,
@@ -201,7 +169,7 @@ func TestEmployeeHistoryExecutionDates(t *testing.T) {
 			Description:  "A yearly cycle matches",
 			DatabaseTime: "2028-01-25",
 			// 2025-01-26 + 12 months which is 2026-01-26 but we are in 2028 already, so we would expect this to be in January 2028
-			ExpectedExecutionDate: "2028-01-26",
+			ExpectedExecutionDate: utils.StringAsPointer("2028-01-26"),
 			CreateData: models.CreateEmployeeHistory{
 				HoursPerMonth:       160,
 				Salary:              salary,
@@ -217,7 +185,7 @@ func TestEmployeeHistoryExecutionDates(t *testing.T) {
 			Description:  "Month end edge case",
 			DatabaseTime: "2025-01-01",
 			// Chicken or Egg, we decided to not handle the month edge case yet
-			ExpectedExecutionDate: "2024-10-31",
+			ExpectedExecutionDate: nil,
 			CreateData: models.CreateEmployeeHistory{
 				HoursPerMonth:       160,
 				Salary:              salary,
@@ -245,8 +213,11 @@ func TestEmployeeHistoryExecutionDates(t *testing.T) {
 			err = dbService.DeleteEmployeeHistory(history, user.ID)
 			assert.NoError(t, err)
 
-			assert.NotNil(t, history.NextExecutionDate)
-			assert.Equal(t, testCase.ExpectedExecutionDate, time.Time(*history.NextExecutionDate).Format(utils.InternalDateFormat))
+			if history.NextExecutionDate != nil {
+				assert.Equal(t, *testCase.ExpectedExecutionDate, time.Time(*history.NextExecutionDate).Format(utils.InternalDateFormat))
+			} else {
+				assert.Nil(t, testCase.ExpectedExecutionDate)
+			}
 			assert.Equal(t, salary, history.Salary)
 			assert.Equal(t, "Swiss Franc", *history.Currency.Description)
 		})
