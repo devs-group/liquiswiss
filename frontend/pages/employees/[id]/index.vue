@@ -92,14 +92,14 @@
     <div class="flex justify-between items-center gap-2">
       <hr class="h-0.5 bg-black flex-1">
       <p class="text-xl">
-        Historie
+        Lohnverlauf
       </p>
       <hr class="h-0.5 bg-black flex-1">
     </div>
     <Button
       class="self-end"
       :loading="isSubmitting"
-      label="Historie hinzufügen"
+      label="Lohn hinzufügen"
       icon="pi pi-history"
       @click="onCreateEmployeeHistory"
     />
@@ -142,18 +142,18 @@
         v-else
         class="text-xs opacity-60"
       >
-        Keine weiteren Historien ...
+        Keine weiteren Löhne ...
       </p>
     </div>
     <p
       v-else
       class="text-xs opacity-60"
     >
-      Mitarbeiter hat noch keine Historien. Erstelle die
+      Mitarbeiter hat noch keinen Lohn. Erstelle den
       <a
         class="underline cursor-pointer font-bold"
         @click="onCreateEmployeeHistory"
-      >erste Historie</a>!
+      >ersten Lohn</a>!
     </p>
   </div>
 
@@ -309,7 +309,7 @@ const onCreateEmployeeHistory = () => {
       employeeID,
     },
     props: {
-      header: 'Neue Historie anlegen',
+      header: 'Neuen Lohn anlegen',
       ...ModalConfig,
     },
     onClose: onClosedHistoryDialog,
@@ -323,7 +323,7 @@ const onUpdateEmployeeHistory = (employeeHistory: EmployeeHistoryResponse) => {
       employeeHistory,
     },
     props: {
-      header: 'Historie bearbeiten',
+      header: 'Lohn bearbeiten',
       ...ModalConfig,
     },
     onClose: onClosedHistoryDialog,
@@ -338,7 +338,7 @@ const onCloneEmployeeHistory = (employeeHistory: EmployeeHistoryResponse) => {
       isClone: true,
     },
     props: {
-      header: 'Historie klonen',
+      header: 'Lohn klonen',
       ...ModalConfig,
     },
     onClose: onClosedHistoryDialog,

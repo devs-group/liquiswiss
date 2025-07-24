@@ -22,7 +22,7 @@ export default function useEmployeeHistories() {
       },
     })
     if (error.value) {
-      return Promise.reject('Fehler beim Laden der Historie')
+      return Promise.reject('Fehler beim Laden des Lohnverlaufs')
     }
     setEmployeeHistories(data.value, false)
   }
@@ -39,7 +39,7 @@ export default function useEmployeeHistories() {
       setEmployeeHistories(data, false)
     }
     catch {
-      return Promise.reject('Fehler beim Laden der Historie')
+      return Promise.reject('Fehler beim Laden des Lohnverlaufs')
     }
   }
 
@@ -50,7 +50,7 @@ export default function useEmployeeHistories() {
       })
     }
     catch {
-      return Promise.reject(`Historie mit ID "${employeeHistoryID}" konnte nicht geladen werden`)
+      return Promise.reject(`Lohn mit ID "${employeeHistoryID}" konnte nicht geladen werden`)
     }
   }
 
@@ -68,7 +68,7 @@ export default function useEmployeeHistories() {
       return response
     }
     catch {
-      return Promise.reject('Fehler beim Erstellen der Historie')
+      return Promise.reject('Fehler beim Erstellen des Lohns')
     }
   }
 
@@ -85,7 +85,7 @@ export default function useEmployeeHistories() {
       await listEmployeeHistory(employeeID)
     }
     catch {
-      return Promise.reject('Fehler beim Aktualisieren der Historie')
+      return Promise.reject('Fehler beim Aktualisieren des Lohns')
     }
   }
 
@@ -97,7 +97,7 @@ export default function useEmployeeHistories() {
       await listEmployeeHistory(employeeID)
     }
     catch {
-      return Promise.reject('Fehler beim Löschen der Historie')
+      return Promise.reject('Fehler beim Löschen des Lohns')
     }
   }
 

@@ -121,7 +121,7 @@ func CreateEmployeeHistory(dbService db_service.IDatabaseService, forecastServic
 		return
 	}
 
-	historyID, err := dbService.CreateEmployeeHistory(payload, userID, employeeID)
+	historyID, previousHistoryID, nextHistoryID, err := dbService.CreateEmployeeHistory(payload, userID, employeeID)
 	if err != nil {
 		if errors.Is(err, sql.ErrNoRows) {
 			c.Status(http.StatusNotFound)
@@ -130,6 +130,27 @@ func CreateEmployeeHistory(dbService db_service.IDatabaseService, forecastServic
 		logger.Logger.Error(err)
 		c.JSON(http.StatusInternalServerError, gin.H{"error": "Beim Erstellen des Eintrags ist ein Fehler aufgetreten"})
 		return
+	}
+
+	// Refresh all cost details
+	err = dbService.RefreshCostDetails(userID, historyID)
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		return
+	}
+	if previousHistoryID != nil {
+		err = dbService.RefreshCostDetails(userID, *previousHistoryID)
+		if err != nil {
+			c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+			return
+		}
+	}
+	if nextHistoryID != nil {
+		err = dbService.RefreshCostDetails(userID, *nextHistoryID)
+		if err != nil {
+			c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+			return
+		}
 	}
 
 	employeeHistory, err := dbService.GetEmployeeHistory(userID, historyID)
@@ -198,10 +219,31 @@ func UpdateEmployeeHistory(dbService db_service.IDatabaseService, forecastServic
 		return
 	}
 
-	err = dbService.UpdateEmployeeHistory(payload, existingEmployeeHistory.EmployeeID, historyID)
+	previousHistoryID, nextHistoryID, err := dbService.UpdateEmployeeHistory(payload, existingEmployeeHistory.EmployeeID, historyID)
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 		return
+	}
+
+	// Refresh all cost details
+	err = dbService.RefreshCostDetails(userID, historyID)
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		return
+	}
+	if previousHistoryID != nil {
+		err = dbService.RefreshCostDetails(userID, *previousHistoryID)
+		if err != nil {
+			c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+			return
+		}
+	}
+	if nextHistoryID != nil {
+		err = dbService.RefreshCostDetails(userID, *nextHistoryID)
+		if err != nil {
+			c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+			return
+		}
 	}
 
 	employee, err := dbService.GetEmployeeHistory(userID, historyID)

@@ -5,20 +5,25 @@ import (
 )
 
 type Transaction struct {
-	ID                int64                `db:"id" json:"id"`
-	Name              string               `db:"name" json:"name"`
-	Amount            int64                `db:"amount" json:"amount"`
-	VatAmount         int64                `db:"vat_amount" json:"vatAmount"`
-	VatIncluded       bool                 `db:"vat_included" json:"vatIncluded"`
-	Cycle             *string              `db:"cycle" json:"cycle"`
-	Type              string               `db:"type" json:"type"`
-	StartDate         types.AsDate         `db:"start_date" json:"startDate"`
-	EndDate           *types.AsDate        `db:"end_date" json:"endDate"`
-	NextExecutionDate *types.AsDate        `db:"next_execution_date" json:"nextExecutionDate"`
-	Category          Category             `json:"category"`
-	Currency          Currency             `json:"currency"`
-	Employee          *TransactionEmployee `json:"employee"`
-	Vat               *Vat                 `json:"vat"`
+	ID          int64                `db:"id" json:"id"`
+	Name        string               `db:"name" json:"name"`
+	Amount      int64                `db:"amount" json:"amount"`
+	VatAmount   int64                `db:"vat_amount" json:"vatAmount"`
+	VatIncluded bool                 `db:"vat_included" json:"vatIncluded"`
+	Cycle       *string              `db:"cycle" json:"cycle"`
+	Type        string               `db:"type" json:"type"`
+	StartDate   types.AsDate         `db:"start_date" json:"startDate"`
+	EndDate     *types.AsDate        `db:"end_date" json:"endDate"`
+	Category    Category             `json:"category"`
+	Currency    Currency             `json:"currency"`
+	Employee    *TransactionEmployee `json:"employee"`
+	Vat         *Vat                 `json:"vat"`
+
+	// Hidden Values
+	DBDate types.AsDate `db:"db_date" json:"-"`
+
+	// Calculated Values
+	NextExecutionDate *types.AsDate `db:"next_execution_date" json:"nextExecutionDate"`
 }
 
 type TransactionEmployee struct {

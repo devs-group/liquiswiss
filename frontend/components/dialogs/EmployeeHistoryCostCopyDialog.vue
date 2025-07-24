@@ -34,7 +34,7 @@
     </div>
 
     <div class="flex flex-col gap-2">
-      <p>Kopiere zu Historie:</p>
+      <p>Kopiere zu Lohn:</p>
       <Select
         v-model="selectedEmployeeHistoryID"
         :loading="isLoadingHistories"
@@ -119,7 +119,7 @@ onMounted(() => {
   isLoadingHistories.value = true
   listEmployeeHistory(employeeHistory.value.employeeID)
     .catch(() => {
-      historiesErrorMessage.value = 'Es gab einen Fehler beim Laden der Historien'
+      historiesErrorMessage.value = 'Es gab einen Fehler beim Laden des Lohnverlaufs'
     })
     .finally(() => {
       isLoadingHistories.value = false

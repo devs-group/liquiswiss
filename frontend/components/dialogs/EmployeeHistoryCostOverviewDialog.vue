@@ -26,42 +26,36 @@
     </div>
 
     <div
-      class="grid grid-cols-1 sm:grid-cols-2 gap-2 col-span-full p-2 bg-zinc-200 dark:bg-zinc-700 rounded-xl"
+      class="relative grid grid-cols-1 sm:grid-cols-2 gap-2 col-span-full p-2 bg-zinc-200 dark:bg-zinc-700 rounded-xl"
     >
-      <template
-        v-if="isLoadingCosts"
+      <template v-if="costs.length > 0">
+        <EmployeeHistoryCostCard
+          v-for="cost of filterCosts"
+          :key="cost.id"
+          :employee-history-cost="cost"
+          :employee-history="employeeHistory"
+          @on-clone="onCloneCost"
+          @on-edit="onEditCost"
+          @on-delete="onDeleteCost"
+        />
+      </template>
+      <p
+        v-else
+        class="text-sm col-span-full"
       >
-        <Skeleton class="!h-32" />
-        <Skeleton class="!h-32" />
-      </template>
-      <template v-else>
-        <template v-if="costs.length > 0">
-          <EmployeeHistoryCostCard
-            v-for="cost of filterCosts"
-            :key="cost.id"
-            :employee-history-cost="cost"
-            :employee-history="employeeHistory"
-            @on-clone="onCloneCost"
-            @on-edit="onEditCost"
-            @on-delete="onDeleteCost"
-          />
-        </template>
-        <p
-          v-else
-          class="text-sm col-span-full"
-        >
-          Noch keine Lohnkosten vorhanden
-        </p>
-        <div
-          class="flex col-span-full justify-end"
-        >
-          <Button
-            icon="pi pi-plus"
-            label="Lohnkosten hinzufügen"
-            @click="onCreateCost"
-          />
-        </div>
-      </template>
+        Noch keine Lohnkosten vorhanden
+      </p>
+      <div
+        class="flex col-span-full justify-end"
+      >
+        <Button
+          icon="pi pi-plus"
+          label="Lohnkosten hinzufügen"
+          @click="onCreateCost"
+        />
+      </div>
+
+      <FullProgressSpinner :show="isLoadingCosts" />
     </div>
 
     <hr class="my-4 col-span-full">
@@ -203,7 +197,7 @@ const onEditCost = (costToEdit: EmployeeHistoryCostResponse) => {
 const onDeleteCost = (costToDelete: EmployeeHistoryCostResponse) => {
   confirm.require({
     header: 'Löschen',
-    message: `Lohnkosten "${EmployeeHistoryCostUtils.title(costToDelete)}" für Historie vollständig löschen?`,
+    message: `Lohnkosten "${EmployeeHistoryCostUtils.title(costToDelete)}" für Lohn vollständig löschen?`,
     icon: 'pi pi-exclamation-triangle',
     rejectLabel: 'Nein',
     acceptLabel: 'Ja',
@@ -215,7 +209,7 @@ const onDeleteCost = (costToDelete: EmployeeHistoryCostResponse) => {
           onListEmployeeHistoryCosts()
           toast.add({
             summary: 'Erfolg',
-            detail: `Lohnkosten "${EmployeeHistoryCostUtils.title(costToDelete)}" für Historie wurde gelöscht`,
+            detail: `Lohnkosten "${EmployeeHistoryCostUtils.title(costToDelete)}" für Lohn wurde gelöscht`,
             severity: 'success',
             life: Config.TOAST_LIFE_TIME,
           })
@@ -223,7 +217,7 @@ const onDeleteCost = (costToDelete: EmployeeHistoryCostResponse) => {
         .catch(() => {
           toast.add({
             summary: 'Fehler',
-            detail: `Lohnkosten "${EmployeeHistoryCostUtils.title(costToDelete)}" für Historie konnte nicht gelöscht werden`,
+            detail: `Lohnkosten "${EmployeeHistoryCostUtils.title(costToDelete)}" für Lohn konnte nicht gelöscht werden`,
             severity: 'error',
             life: Config.TOAST_LIFE_TIME,
           })

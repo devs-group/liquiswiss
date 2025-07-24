@@ -65,6 +65,7 @@
 import type { PropType } from 'vue'
 import type { EmployeeHistoryCostResponse, EmployeeHistoryResponse } from '~/models/employee'
 import { EmployeeHistoryCostUtils } from '~/utils/models/employee-history-cost-utils'
+import { DateStringToFormattedWordDate } from '~/utils/format-helper'
 
 const props = defineProps({
   employeeHistoryCost: {
@@ -111,7 +112,7 @@ const unit = computed(
   () => EmployeeHistoryCostUtils.unit(props.employeeHistoryCost, props.employeeHistory.currency),
 )
 const getNextCostExecutionDateHint = computed(() => {
-  return isInactive.value ? '-' : `am ${DateStringToFormattedDate(props.employeeHistoryCost.nextExecutionDate)}`
+  return isInactive.value ? '-' : `im ${DateStringToFormattedWordDate(props.employeeHistoryCost?.calculatedNextExecutionDate)}`
 })
 const getNextHistoryPaymentHint = computed(() => {
   if (props.employeeHistory.nextExecutionDate) {

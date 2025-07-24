@@ -120,86 +120,7 @@ func (f *ForecastService) CalculateForecast(userID int64) ([]models.Forecast, er
 				endDate = time.Time(*transaction.EndDate)
 			}
 			switch *transaction.Cycle {
-			case "daily":
-				for current := startDate; !current.After(endDate); current = current.AddDate(0, 0, 1) {
-					if current.Before(today) {
-						continue
-					}
-					monthKey := getYearMonth(current)
-					if forecastMap[monthKey] == nil {
-						initForecastMapKey(forecastMap, monthKey)
-					}
-
-					if amount > 0 {
-						if exclusions[monthKey] {
-							forecastMap[monthKey]["revenue"] += 0
-							addForecastDetail(
-								forecastDetailMap, monthKey, 0, isRevenue, true,
-								transaction.ID, utils.TransactionsTableName, transaction.Category.Name, transaction.Name,
-							)
-						} else {
-							forecastMap[monthKey]["revenue"] += amount
-							addForecastDetail(
-								forecastDetailMap, monthKey, amount, isRevenue, false,
-								transaction.ID, utils.TransactionsTableName, transaction.Category.Name, transaction.Name,
-							)
-						}
-					} else if amount < 0 {
-						if exclusions[monthKey] {
-							forecastMap[monthKey]["expense"] += 0
-							addForecastDetail(
-								forecastDetailMap, monthKey, 0, isRevenue, true,
-								transaction.ID, utils.TransactionsTableName, transaction.Category.Name, transaction.Name,
-							)
-						} else {
-							forecastMap[monthKey]["expense"] += amount
-							addForecastDetail(
-								forecastDetailMap, monthKey, amount, isRevenue, false,
-								transaction.ID, utils.TransactionsTableName, transaction.Category.Name, transaction.Name,
-							)
-						}
-					}
-				}
-			case "weekly":
-				for current := startDate; !current.After(endDate); current = current.AddDate(0, 0, 7) {
-					if current.Before(today) {
-						continue
-					}
-					monthKey := getYearMonth(current)
-					if forecastMap[monthKey] == nil {
-						initForecastMapKey(forecastMap, monthKey)
-					}
-					if amount > 0 {
-						if exclusions[monthKey] {
-							forecastMap[monthKey]["revenue"] += 0
-							addForecastDetail(
-								forecastDetailMap, monthKey, 0, isRevenue, true,
-								transaction.ID, utils.TransactionsTableName, transaction.Category.Name, transaction.Name,
-							)
-						} else {
-							forecastMap[monthKey]["revenue"] += amount
-							addForecastDetail(
-								forecastDetailMap, monthKey, amount, isRevenue, false,
-								transaction.ID, utils.TransactionsTableName, transaction.Category.Name, transaction.Name,
-							)
-						}
-					} else if amount < 0 {
-						if exclusions[monthKey] {
-							forecastMap[monthKey]["expense"] += 0
-							addForecastDetail(
-								forecastDetailMap, monthKey, 0, isRevenue, true,
-								transaction.ID, utils.TransactionsTableName, transaction.Category.Name, transaction.Name,
-							)
-						} else {
-							forecastMap[monthKey]["expense"] += amount
-							addForecastDetail(
-								forecastDetailMap, monthKey, amount, isRevenue, false,
-								transaction.ID, utils.TransactionsTableName, transaction.Category.Name, transaction.Name,
-							)
-						}
-					}
-				}
-			case "monthly":
+			case utils.CycleMonthly:
 				for current := startDate; !current.After(endDate); current = utils.GetNextDate(startDate, current, 1) {
 					if current.Before(today) {
 						continue
@@ -235,7 +156,7 @@ func (f *ForecastService) CalculateForecast(userID int64) ([]models.Forecast, er
 						}
 					}
 				}
-			case "quarterly":
+			case utils.CycleQuarterly:
 				for current := startDate; !current.After(endDate); current = utils.GetNextDate(startDate, current, 3) {
 					if current.Before(today) {
 						continue
@@ -274,7 +195,7 @@ func (f *ForecastService) CalculateForecast(userID int64) ([]models.Forecast, er
 						}
 					}
 				}
-			case "biannually":
+			case utils.CycleBiannually:
 				for current := startDate; !current.After(endDate); current = utils.GetNextDate(startDate, current, 6) {
 					if current.Before(today) {
 						continue
@@ -313,7 +234,7 @@ func (f *ForecastService) CalculateForecast(userID int64) ([]models.Forecast, er
 						}
 					}
 				}
-			case "yearly":
+			case utils.CycleYearly:
 				for current := startDate; !current.After(endDate); current = utils.GetNextDate(startDate, current, 12) {
 					if current.Before(today) {
 						continue
@@ -387,51 +308,7 @@ func (f *ForecastService) CalculateForecast(userID int64) ([]models.Forecast, er
 			}
 
 			switch history.Cycle {
-			case "daily":
-				for current := fromDate; !current.After(toDate); current = current.AddDate(0, 0, 1) {
-					if current.Before(today) {
-						continue
-					}
-					monthKey := getYearMonth(current)
-					if forecastMap[monthKey] == nil {
-						initForecastMapKey(forecastMap, monthKey)
-					}
-					if historyExclusions[monthKey] {
-						forecastMap[monthKey]["expense"] += 0
-						addForecastDetail(
-							forecastDetailMap, monthKey, 0, false, true,
-							history.ID, utils.EmployeeHistoriesTableName, "Löhne", employee.Name,
-						)
-					} else {
-						forecastMap[monthKey]["expense"] += salary
-						addForecastDetail(forecastDetailMap, monthKey, salary, false, false,
-							history.ID, utils.EmployeeHistoriesTableName, "Löhne", employee.Name,
-						)
-					}
-				}
-			case "weekly":
-				for current := fromDate; !current.After(toDate); current = current.AddDate(0, 0, 7) {
-					if current.Before(today) {
-						continue
-					}
-					monthKey := getYearMonth(current)
-					if forecastMap[monthKey] == nil {
-						initForecastMapKey(forecastMap, monthKey)
-					}
-					if historyExclusions[monthKey] {
-						forecastMap[monthKey]["expense"] += 0
-						addForecastDetail(
-							forecastDetailMap, monthKey, 0, false, true,
-							history.ID, utils.EmployeeHistoriesTableName, "Löhne", employee.Name,
-						)
-					} else {
-						forecastMap[monthKey]["expense"] += salary
-						addForecastDetail(forecastDetailMap, monthKey, salary, false, false,
-							history.ID, utils.EmployeeHistoriesTableName, "Löhne", employee.Name,
-						)
-					}
-				}
-			case "monthly":
+			case utils.CycleMonthly:
 				for current := fromDate; !current.After(toDate); current = utils.GetNextDate(fromDate, current, 1) {
 					if current.Before(today) {
 						continue
@@ -453,7 +330,7 @@ func (f *ForecastService) CalculateForecast(userID int64) ([]models.Forecast, er
 						)
 					}
 				}
-			case "quarterly":
+			case utils.CycleQuarterly:
 				for current := fromDate; !current.After(toDate); current = utils.GetNextDate(fromDate, current, 3) {
 					if current.Before(today) {
 						continue
@@ -475,7 +352,7 @@ func (f *ForecastService) CalculateForecast(userID int64) ([]models.Forecast, er
 						)
 					}
 				}
-			case "biannually":
+			case utils.CycleBiannually:
 				for current := fromDate; !current.After(toDate); current = utils.GetNextDate(fromDate, current, 6) {
 					if current.Before(today) {
 						continue
@@ -497,7 +374,7 @@ func (f *ForecastService) CalculateForecast(userID int64) ([]models.Forecast, er
 						)
 					}
 				}
-			case "yearly":
+			case utils.CycleYearly:
 				for current := fromDate; !current.After(toDate); current = utils.GetNextDate(fromDate, current, 12) {
 					if current.Before(today) {
 						continue
@@ -536,9 +413,9 @@ func (f *ForecastService) CalculateForecast(userID int64) ([]models.Forecast, er
 					return nil, err
 				}
 
-				if historyCost.NextExecutionDate != nil {
-					costFromDate := time.Time(*historyCost.NextExecutionDate)
-					nextCost := -models.CalculateAmountWithFiatRate(int64(historyCost.NextCost), fiatRate)
+				if historyCost.CalculatedNextExecutionDate != nil {
+					costFromDate := time.Time(*historyCost.CalculatedNextExecutionDate)
+					nextCost := -models.CalculateAmountWithFiatRate(int64(historyCost.CalculatedNextCost), fiatRate)
 
 					labelName := "<Kein Label>"
 					if historyCost.Label != nil {
@@ -546,7 +423,7 @@ func (f *ForecastService) CalculateForecast(userID int64) ([]models.Forecast, er
 					}
 
 					switch historyCost.Cycle {
-					case "once":
+					case utils.CycleOnce:
 						if costFromDate.Before(today) {
 							continue
 						}
@@ -566,15 +443,19 @@ func (f *ForecastService) CalculateForecast(userID int64) ([]models.Forecast, er
 								historyCost.ID, utils.EmployeeHistoryCostsTableName, "Lohnkosten", labelName,
 							)
 						}
-					case "daily":
-						lastToDate := toDate.AddDate(0, 0, int(historyCost.RelativeOffset))
-						for current := costFromDate; ; current = addOffset(history.Cycle, historyCost.Cycle, costFromDate, current, historyCost.RelativeOffset) {
-							if current.After(lastToDate) {
+					case utils.CycleMonthly:
+						for current := costFromDate; ; current = addOffset(historyCost.Cycle, costFromDate, current, historyCost.RelativeOffset) {
+							var matchingDetail *models.EmployeeHistoryCostDetail
+							for _, detail := range historyCost.CalculatedCostDetails {
+								if detail.Month == current.Format("2006-01") {
+									matchingDetail = &detail
+									break
+								}
+							}
+							if matchingDetail == nil {
 								break
 							}
-							if current.Before(today) {
-								continue
-							}
+							nextCost := -models.CalculateAmountWithFiatRate(int64(matchingDetail.Amount), fiatRate)
 							monthKey := getYearMonth(current)
 							if forecastMap[monthKey] == nil {
 								initForecastMapKey(forecastMap, monthKey)
@@ -592,61 +473,9 @@ func (f *ForecastService) CalculateForecast(userID int64) ([]models.Forecast, er
 								)
 							}
 						}
-					case "weekly":
-						lastToDate := toDate.AddDate(0, 0, 7*int(historyCost.RelativeOffset))
-						for current := costFromDate; ; current = addOffset(history.Cycle, historyCost.Cycle, costFromDate, current, historyCost.RelativeOffset) {
-							if current.After(lastToDate) {
-								break
-							}
-							if current.Before(today) {
-								continue
-							}
-							monthKey := getYearMonth(current)
-							if forecastMap[monthKey] == nil {
-								initForecastMapKey(forecastMap, monthKey)
-							}
-							if historyCostExclusions[monthKey] {
-								forecastMap[monthKey]["expense"] += 0
-								addForecastDetail(
-									forecastDetailMap, monthKey, 0, false, true,
-									historyCost.ID, utils.EmployeeHistoryCostsTableName, "Lohnkosten", labelName,
-								)
-							} else {
-								forecastMap[monthKey]["expense"] += nextCost
-								addForecastDetail(forecastDetailMap, monthKey, nextCost, false, false,
-									historyCost.ID, utils.EmployeeHistoryCostsTableName, "Lohnkosten", labelName,
-								)
-							}
-						}
-					case "monthly":
-						lastToDate := utils.GetNextDate(costFromDate, toDate, int(historyCost.RelativeOffset))
-						for current := costFromDate; ; current = addOffset(history.Cycle, historyCost.Cycle, costFromDate, current, historyCost.RelativeOffset) {
-							if current.After(lastToDate) {
-								break
-							}
-							if current.Before(today) {
-								continue
-							}
-							monthKey := getYearMonth(current)
-							if forecastMap[monthKey] == nil {
-								initForecastMapKey(forecastMap, monthKey)
-							}
-							if historyCostExclusions[monthKey] {
-								forecastMap[monthKey]["expense"] += 0
-								addForecastDetail(
-									forecastDetailMap, monthKey, 0, false, true,
-									historyCost.ID, utils.EmployeeHistoryCostsTableName, "Lohnkosten", labelName,
-								)
-							} else {
-								forecastMap[monthKey]["expense"] += nextCost
-								addForecastDetail(forecastDetailMap, monthKey, nextCost, false, false,
-									historyCost.ID, utils.EmployeeHistoryCostsTableName, "Lohnkosten", labelName,
-								)
-							}
-						}
-					case "quarterly":
+					case utils.CycleQuarterly:
 						lastToDate := utils.GetNextDate(costFromDate, toDate, 3*int(historyCost.RelativeOffset))
-						for current := costFromDate; ; current = addOffset(history.Cycle, historyCost.Cycle, costFromDate, current, historyCost.RelativeOffset) {
+						for current := costFromDate; ; current = addOffset(historyCost.Cycle, costFromDate, current, historyCost.RelativeOffset) {
 							if current.After(lastToDate) {
 								break
 							}
@@ -670,9 +499,9 @@ func (f *ForecastService) CalculateForecast(userID int64) ([]models.Forecast, er
 								)
 							}
 						}
-					case "biannually":
+					case utils.CycleBiannually:
 						lastToDate := utils.GetNextDate(costFromDate, toDate, 6*int(historyCost.RelativeOffset))
-						for current := costFromDate; ; current = addOffset(history.Cycle, historyCost.Cycle, costFromDate, current, historyCost.RelativeOffset) {
+						for current := costFromDate; ; current = addOffset(historyCost.Cycle, costFromDate, current, historyCost.RelativeOffset) {
 							if current.After(lastToDate) {
 								break
 							}
@@ -696,9 +525,9 @@ func (f *ForecastService) CalculateForecast(userID int64) ([]models.Forecast, er
 								)
 							}
 						}
-					case "yearly":
+					case utils.CycleYearly:
 						lastToDate := utils.GetNextDate(costFromDate, toDate, 12*int(historyCost.RelativeOffset))
-						for current := costFromDate; ; current = addOffset(history.Cycle, historyCost.Cycle, costFromDate, current, historyCost.RelativeOffset) {
+						for current := costFromDate; ; current = addOffset(historyCost.Cycle, costFromDate, current, historyCost.RelativeOffset) {
 							if current.After(lastToDate) {
 								break
 							}
@@ -864,40 +693,16 @@ func getYearMonth(date time.Time) string {
 	return date.Format("2006-01")
 }
 
-func addOffset(historyCycle string, costCycle string, fromDate time.Time, current time.Time, relativeOffset int64) time.Time {
+func addOffset(costCycle string, fromDate time.Time, current time.Time, relativeOffset int64) time.Time {
 	offset := int(relativeOffset)
 	switch costCycle {
-	case "daily":
-		switch historyCycle {
-		case "monthly":
-			current = utils.GetNextDate(fromDate, current, 1)
-		case "quarterly":
-			current = utils.GetNextDate(fromDate, current, 3)
-		case "biannually":
-			current = utils.GetNextDate(fromDate, current, 6)
-		case "yearly":
-			current = utils.GetNextDate(fromDate, current, 12)
-		}
-		return current.AddDate(0, 0, offset*1)
-	case "weekly":
-		switch historyCycle {
-		case "monthly":
-			current = utils.GetNextDate(fromDate, current, 1)
-		case "quarterly":
-			current = utils.GetNextDate(fromDate, current, 3)
-		case "biannually":
-			current = utils.GetNextDate(fromDate, current, 6)
-		case "yearly":
-			current = utils.GetNextDate(fromDate, current, 12)
-		}
-		return current.AddDate(0, 0, offset*7)
-	case "monthly":
+	case utils.CycleMonthly:
 		return utils.GetNextDate(fromDate, current, offset*1)
-	case "quarterly":
+	case utils.CycleQuarterly:
 		return utils.GetNextDate(fromDate, current, offset*3)
-	case "biannually":
+	case utils.CycleBiannually:
 		return utils.GetNextDate(fromDate, current, offset*6)
-	case "yearly":
+	case utils.CycleYearly:
 		return utils.GetNextDate(fromDate, current, offset*12)
 	}
 	return current

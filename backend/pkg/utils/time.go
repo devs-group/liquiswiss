@@ -30,40 +30,28 @@ func GetNextAvailableDate(fromDate, limitDate time.Time, cycle string) time.Time
 	current := fromDate
 	for {
 		switch cycle {
-		case "daily":
-			nextDate := current.AddDate(0, 0, 1)
-			if nextDate.Equal(limitDate) || nextDate.After(limitDate) {
-				return current
-			}
-			current = nextDate
-		case "weekly":
-			nextDate := current.AddDate(0, 0, 7)
-			if nextDate.Equal(limitDate) || nextDate.After(limitDate) {
-				return current
-			}
-			current = nextDate
-		case "monthly":
+		case CycleMonthly:
 			nextDate := GetNextDate(fromDate, current, 1)
 			lastDayOfMonth := GetLastDayOfMonth(nextDate)
 			if !lastDayOfMonth.Before(limitDate) {
 				return current
 			}
 			current = nextDate
-		case "quarterly":
+		case CycleQuarterly:
 			nextDate := GetNextDate(fromDate, current, 3)
 			lastDayOfMonth := GetLastDayOfMonth(nextDate)
 			if !lastDayOfMonth.Before(limitDate) {
 				return current
 			}
 			current = nextDate
-		case "biannually":
+		case CycleBiannually:
 			nextDate := GetNextDate(fromDate, current, 6)
 			lastDayOfMonth := GetLastDayOfMonth(nextDate)
 			if !lastDayOfMonth.Before(limitDate) {
 				return current
 			}
 			current = nextDate
-		case "yearly":
+		case CycleYearly:
 			nextDate := GetNextDate(fromDate, current, 12)
 			lastDayOfMonth := GetLastDayOfMonth(nextDate)
 			if !lastDayOfMonth.Before(limitDate) {

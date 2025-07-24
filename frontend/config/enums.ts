@@ -5,8 +5,6 @@ export enum TransactionType {
 
 export enum CycleType {
   Once = 'once',
-  Daily = 'daily',
-  Weekly = 'weekly',
   Monthly = 'monthly',
   Quarterly = 'quarterly',
   Biannually = 'biannually',

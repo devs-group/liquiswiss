@@ -63,7 +63,7 @@ func GetEmployeeHistoryCostLabel(dbService db_service.IDatabaseService, c *gin.C
 
 	historyCostLabelID, err := strconv.ParseInt(c.Param("historyCostLabelID"), 10, 64)
 	if err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"error": "Es fehlt die Historiekosten ID"})
+		c.JSON(http.StatusBadRequest, gin.H{"error": "Es fehlt die Lohnkosten ID"})
 		return
 	}
 

@@ -19,6 +19,7 @@ import (
 type MockIFixerIOService struct {
 	ctrl     *gomock.Controller
 	recorder *MockIFixerIOServiceMockRecorder
+	isgomock struct{}
 }
 
 // MockIFixerIOServiceMockRecorder is the mock recorder for MockIFixerIOService.

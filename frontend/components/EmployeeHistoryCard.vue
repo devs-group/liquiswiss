@@ -24,7 +24,7 @@
           v-if="isActive"
           class="absolute -top-9 left-0 whitespace-nowrap text-sm bg-liqui-green p-2 rounded-xl font-bold text-center"
         >
-          Aktive Historie
+          Aktiver Lohn
         </p>
       </div>
     </template>
@@ -78,7 +78,7 @@
         >
           <Button
             v-if="hasCosts"
-            v-tooltip.top="'Lohnkosten in andere Historie kopieren'"
+            v-tooltip.top="'Lohnkosten in anderen Lohn kopieren'"
             icon="pi pi-copy"
             severity="help"
             @click="onCopyAllCosts"

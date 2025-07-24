@@ -149,7 +149,7 @@
       size="small"
       class="col-span-full"
     >
-      Hinweis: Für diese Historie werden Lohnkosten separat geführt
+      Hinweis: Für diesen Lohn werden Lohnkosten separat geführt
     </Message>
 
     <hr class="my-4 col-span-full">
@@ -263,13 +263,13 @@ const onSubmit = handleSubmit((values) => {
         dialogRef.value.close(true)
         toast.add({
           summary: 'Erfolg',
-          detail: `Historie wurde angelegt`,
+          detail: `Lohn wurde angelegt`,
           severity: 'success',
           life: Config.TOAST_LIFE_TIME,
         })
       })
       .catch(() => {
-        errorMessage.value = `Historie konnte nicht angelegt werden`
+        errorMessage.value = `Lohn konnte nicht angelegt werden`
         nextTick(() => {
           scrollToParentBottom('employee-history-form')
         })
@@ -284,13 +284,13 @@ const onSubmit = handleSubmit((values) => {
         dialogRef.value.close(true)
         toast.add({
           summary: 'Erfolg',
-          detail: `Historie wurde bearbeitet`,
+          detail: `Lohn wurde bearbeitet`,
           severity: 'success',
           life: Config.TOAST_LIFE_TIME,
         })
       })
       .catch(() => {
-        errorMessage.value = `Historie konnte nicht bearbeitet werden`
+        errorMessage.value = `Lohn konnte nicht bearbeitet werden`
         nextTick(() => {
           scrollToParentBottom('employee-history-form')
         })
@@ -304,7 +304,7 @@ const onSubmit = handleSubmit((values) => {
 const onDeleteEmployeeHistory = () => {
   confirm.require({
     header: 'Löschen',
-    message: 'Historie vollständig löschen?',
+    message: 'Lohn vollständig löschen?',
     icon: 'pi pi-exclamation-triangle',
     rejectLabel: 'Nein',
     acceptLabel: 'Ja',
@@ -315,14 +315,14 @@ const onDeleteEmployeeHistory = () => {
           .then(() => {
             toast.add({
               summary: 'Erfolg',
-              detail: `Historie wurde gelöscht`,
+              detail: `Lohn wurde gelöscht`,
               severity: 'success',
               life: Config.TOAST_LIFE_TIME,
             })
             dialogRef.value.close(true)
           })
           .catch(() => {
-            errorMessage.value = `Historie konnte nicht gelöscht werden`
+            errorMessage.value = `Lohn konnte nicht gelöscht werden`
             nextTick(() => {
               scrollToParentBottom('employee-history-form')
             })

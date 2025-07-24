@@ -11,7 +11,7 @@ import (
 )
 
 func (s *DatabaseService) ListEmployeeHistory(userID int64, employeeID int64, page int64, limit int64) ([]models.EmployeeHistory, int64, error) {
-	employeeHistories := make([]models.EmployeeHistory, 0)
+	histories := make([]models.EmployeeHistory, 0)
 	var totalCount int64
 
 	query, err := sqlQueries.ReadFile("queries/list_employee_histories.sql")
@@ -19,79 +19,39 @@ func (s *DatabaseService) ListEmployeeHistory(userID int64, employeeID int64, pa
 		return nil, 0, err
 	}
 
-	tx, err := s.db.Begin()
-	if err != nil {
-		return nil, 0, err
-	}
-
-	defer func() {
-		if p := recover(); p != nil {
-			tx.Rollback()
-			panic(p)
-		} else if err != nil {
-			tx.Rollback()
-		} else {
-			err = tx.Commit()
-		}
-	}()
-
-	rows, err := tx.Query(string(query), employeeID, userID, (page)*limit, 0)
+	rows, err := s.db.Query(string(query), employeeID, userID, (page)*limit, 0)
 	if err != nil {
 		return nil, 0, err
 	}
 	defer rows.Close()
 
 	for rows.Next() {
-		var employeeHistory models.EmployeeHistory
-		var fromDate sql.NullTime
-		var toDate sql.NullTime
-
-		employeeHistory.Currency = models.Currency{}
+		var historyID int64
 
 		err := rows.Scan(
-			&employeeHistory.ID,
-			&employeeHistory.EmployeeID,
-			&employeeHistory.HoursPerMonth,
-			&employeeHistory.Salary,
-			&employeeHistory.Cycle,
-			&employeeHistory.Currency.ID,
-			&employeeHistory.Currency.LocaleCode,
-			&employeeHistory.Currency.Description,
-			&employeeHistory.Currency.Code,
-			&employeeHistory.VacationDaysPerYear,
-			&fromDate,
-			&toDate,
-			&employeeHistory.NextExecutionDate,
-			&employeeHistory.EmployeeDeductions,
-			&employeeHistory.EmployerCosts,
-			&employeeHistory.WithSeparateCosts,
+			&historyID,
 			&totalCount,
 		)
 		if err != nil {
 			return nil, 0, err
 		}
 
-		if fromDate.Valid {
-			convertedDate := types.AsDate(fromDate.Time)
-			employeeHistory.FromDate = convertedDate
-		}
-		if toDate.Valid {
-			convertedDate := types.AsDate(toDate.Time)
-			employeeHistory.ToDate = &convertedDate
+		history, err := s.GetEmployeeHistory(userID, historyID)
+		if err != nil {
+			return nil, 0, err
 		}
 
-		employeeHistories = append(employeeHistories, employeeHistory)
+		histories = append(histories, *history)
 	}
 
-	return employeeHistories, totalCount, nil
+	return histories, totalCount, nil
 }
 
 func (s *DatabaseService) GetEmployeeHistory(userID int64, historyID int64) (*models.EmployeeHistory, error) {
-	var employeeHistory models.EmployeeHistory
-	var fromDate time.Time
+	var history models.EmployeeHistory
 	var toDate sql.NullTime
 
-	employeeHistory.Currency = models.Currency{}
+	history.Currency = models.Currency{}
 
 	query, err := sqlQueries.ReadFile("queries/get_employee_history.sql")
 	if err != nil {
@@ -99,41 +59,68 @@ func (s *DatabaseService) GetEmployeeHistory(userID int64, historyID int64) (*mo
 	}
 
 	err = s.db.QueryRow(string(query), historyID, userID).Scan(
-		&employeeHistory.ID,
-		&employeeHistory.EmployeeID,
-		&employeeHistory.HoursPerMonth,
-		&employeeHistory.Salary,
-		&employeeHistory.Cycle,
-		&employeeHistory.Currency.ID,
-		&employeeHistory.Currency.LocaleCode,
-		&employeeHistory.Currency.Description,
-		&employeeHistory.Currency.Code,
-		&employeeHistory.VacationDaysPerYear,
-		&fromDate,
+		&history.ID,
+		&history.EmployeeID,
+		&history.HoursPerMonth,
+		&history.Salary,
+		&history.Cycle,
+		&history.Currency.ID,
+		&history.Currency.LocaleCode,
+		&history.Currency.Description,
+		&history.Currency.Code,
+		&history.VacationDaysPerYear,
+		&history.FromDate,
 		&toDate,
-		&employeeHistory.NextExecutionDate,
-		&employeeHistory.EmployeeDeductions,
-		&employeeHistory.EmployerCosts,
-		&employeeHistory.WithSeparateCosts,
+		&history.WithSeparateCosts,
+		&history.DBDate,
 	)
 	if err != nil {
 		return nil, err
 	}
 
-	employeeHistory.FromDate = types.AsDate(fromDate)
-
 	if toDate.Valid {
 		convertedDate := types.AsDate(toDate.Time)
-		employeeHistory.ToDate = &convertedDate
+		history.ToDate = &convertedDate
 	}
 
-	return &employeeHistory, nil
+	// TODO: Think about how to handle the LIMIT here better
+	historyCosts, _, err := s.ListEmployeeHistoryCosts(userID, history.ID, 1, 1000)
+	if err != nil {
+		return nil, err
+	}
+
+	employeeDeductions := s.CalculateSalaryAdjustments(
+		history.Salary,
+		history.Cycle,
+		"employee",
+		historyCosts,
+	)
+
+	history.EmployeeDeductions = employeeDeductions
+
+	employerCosts := s.CalculateSalaryAdjustments(
+		history.Salary,
+		history.Cycle,
+		"employer",
+		historyCosts,
+	)
+
+	history.EmployerCosts = employerCosts
+
+	nextExecutionDate := s.CalculateHistoryExecutionDate(history.FromDate, history.ToDate, &history.Cycle, history.DBDate, 1, true)
+
+	if nextExecutionDate != nil {
+		nextHistoryExecutionDateAsDate := types.AsDate(*nextExecutionDate)
+		history.NextExecutionDate = &nextHistoryExecutionDateAsDate
+	}
+
+	return &history, nil
 }
 
-func (s *DatabaseService) CreateEmployeeHistory(payload models.CreateEmployeeHistory, userID int64, employeeID int64) (int64, error) {
+func (s *DatabaseService) CreateEmployeeHistory(payload models.CreateEmployeeHistory, userID int64, employeeID int64) (int64, *int64, *int64, error) {
 	tx, err := s.db.Begin()
 	if err != nil {
-		return 0, err
+		return 0, nil, nil, err
 	}
 
 	defer func() {
@@ -149,26 +136,26 @@ func (s *DatabaseService) CreateEmployeeHistory(payload models.CreateEmployeeHis
 
 	query, err := sqlQueries.ReadFile("queries/create_employee_history.sql")
 	if err != nil {
-		return 0, err
+		return 0, nil, nil, err
 	}
 
 	stmt, err := tx.Prepare(string(query))
 	if err != nil {
-		return 0, err
+		return 0, nil, nil, err
 	}
 	defer stmt.Close()
 
 	// Prepare entry and exit date
 	fromDate, err := time.Parse(utils.InternalDateFormat, payload.FromDate)
 	if err != nil {
-		return 0, err
+		return 0, nil, nil, err
 	}
 
 	var toDate sql.NullTime
 	if payload.ToDate != nil {
 		parsedToDate, err := time.Parse(utils.InternalDateFormat, *payload.ToDate)
 		if err != nil {
-			return 0, err
+			return 0, nil, nil, err
 		}
 		toDate = sql.NullTime{Time: parsedToDate, Valid: true}
 	} else {
@@ -192,16 +179,16 @@ func (s *DatabaseService) CreateEmployeeHistory(payload models.CreateEmployeeHis
 		userID,
 	)
 	if err != nil {
-		return 0, err
+		return 0, nil, nil, err
 	}
 
 	// Get the ID of the newly inserted history
 	historyID, err := res.LastInsertId()
 	if err != nil {
-		return 0, err
+		return 0, nil, nil, err
 	}
 	if historyID == 0 {
-		return 0, sql.ErrNoRows
+		return 0, nil, nil, sql.ErrNoRows
 	}
 
 	// Fetch and adjust previous entry if required
@@ -212,14 +199,14 @@ func (s *DatabaseService) CreateEmployeeHistory(payload models.CreateEmployeeHis
         ORDER BY from_date DESC LIMIT 1
     `, employeeID, payload.FromDate, historyID).
 		Scan(&previous.ID, &previous.FromDate, &previous.ToDate, &previous.Cycle); err != nil && err != sql.ErrNoRows {
-		return 0, err
+		return 0, nil, nil, err
 	}
 
 	if previous.ID != 0 {
 		logger.Logger.Debugf("Checking previous history entry")
 		currentFromDate, err := time.Parse(utils.InternalDateFormat, payload.FromDate)
 		if err != nil {
-			return 0, err
+			return 0, nil, nil, err
 		}
 		needsAdjustment := false
 		if previous.ToDate == nil {
@@ -239,7 +226,7 @@ func (s *DatabaseService) CreateEmployeeHistory(payload models.CreateEmployeeHis
             UPDATE employee_histories SET to_date = ? WHERE id = ?
         `, newToDate, previous.ID)
 			if err != nil {
-				return 0, err
+				return 0, nil, nil, err
 			}
 		}
 	}
@@ -252,7 +239,7 @@ func (s *DatabaseService) CreateEmployeeHistory(payload models.CreateEmployeeHis
 	   ORDER BY from_date ASC LIMIT 1
 	`, employeeID, payload.FromDate, historyID).
 		Scan(&next.ID, &next.FromDate, &next.ToDate); err != nil && err != sql.ErrNoRows {
-		return 0, err
+		return 0, nil, nil, err
 	}
 
 	if next.ID != 0 {
@@ -265,7 +252,7 @@ func (s *DatabaseService) CreateEmployeeHistory(payload models.CreateEmployeeHis
 		} else {
 			currentToDate, err := time.Parse(utils.InternalDateFormat, *payload.ToDate)
 			if err != nil {
-				return 0, err
+				return 0, nil, nil, err
 			}
 			if !currentToDate.Before(nextFromDate) {
 				needsAdjustment = true
@@ -275,7 +262,7 @@ func (s *DatabaseService) CreateEmployeeHistory(payload models.CreateEmployeeHis
 		if needsAdjustment {
 			currentFromDate, err := time.Parse(utils.InternalDateFormat, payload.FromDate)
 			if err != nil {
-				return 0, err
+				return 0, nil, nil, err
 			}
 			newToDate := utils.GetNextAvailableDate(currentFromDate, nextFromDate, payload.Cycle)
 			logger.Logger.Debugf("Adjusting current history entry to: %s", newToDate)
@@ -283,18 +270,18 @@ func (s *DatabaseService) CreateEmployeeHistory(payload models.CreateEmployeeHis
             UPDATE employee_histories SET to_date = ? WHERE id = ?
         `, newToDate, historyID)
 			if err != nil {
-				return 0, err
+				return 0, nil, nil, err
 			}
 		}
 	}
 
-	return historyID, nil
+	return historyID, &previous.ID, &next.ID, nil
 }
 
-func (s *DatabaseService) UpdateEmployeeHistory(payload models.UpdateEmployeeHistory, employeeID int64, historyID int64) error {
+func (s *DatabaseService) UpdateEmployeeHistory(payload models.UpdateEmployeeHistory, employeeID int64, historyID int64) (*int64, *int64, error) {
 	tx, err := s.db.Begin()
 	if err != nil {
-		return err
+		return nil, nil, err
 	}
 
 	defer func() {
@@ -334,7 +321,7 @@ func (s *DatabaseService) UpdateEmployeeHistory(payload models.UpdateEmployeeHis
 		queryBuild = append(queryBuild, "from_date = ?")
 		entryDate, err := time.Parse(utils.InternalDateFormat, *payload.FromDate)
 		if err != nil {
-			return err
+			return nil, nil, err
 		}
 		args = append(args, entryDate)
 	}
@@ -347,7 +334,7 @@ func (s *DatabaseService) UpdateEmployeeHistory(payload models.UpdateEmployeeHis
 	if payload.ToDate != nil {
 		exitDate, err := time.Parse(utils.InternalDateFormat, *payload.ToDate)
 		if err != nil {
-			return err
+			return nil, nil, err
 		}
 		args = append(args, exitDate)
 	} else {
@@ -365,13 +352,13 @@ func (s *DatabaseService) UpdateEmployeeHistory(payload models.UpdateEmployeeHis
 
 	stmt, err := tx.Prepare(query)
 	if err != nil {
-		return err
+		return nil, nil, err
 	}
 	defer stmt.Close()
 
 	_, err = stmt.Exec(args...)
 	if err != nil {
-		return err
+		return nil, nil, err
 	}
 
 	// Fetch and adjust previous entry if required
@@ -382,13 +369,13 @@ func (s *DatabaseService) UpdateEmployeeHistory(payload models.UpdateEmployeeHis
         ORDER BY from_date DESC LIMIT 1
     `, employeeID, payload.FromDate, historyID).
 		Scan(&previous.ID, &previous.FromDate, &previous.ToDate, &previous.Cycle); err != nil && err != sql.ErrNoRows {
-		return err
+		return nil, nil, err
 	}
 	if previous.ID != 0 {
 		logger.Logger.Debugf("Checking previous history entry")
 		currentFromDate, err := time.Parse(utils.InternalDateFormat, *payload.FromDate)
 		if err != nil {
-			return err
+			return nil, nil, err
 		}
 		previousFromDate := time.Time(previous.FromDate)
 		newToDate := utils.GetNextAvailableDate(previousFromDate, currentFromDate, previous.Cycle)
@@ -398,7 +385,7 @@ func (s *DatabaseService) UpdateEmployeeHistory(payload models.UpdateEmployeeHis
 			`, newToDate, previous.ID)
 		if err != nil {
 			logger.Logger.Error(err)
-			return err
+			return nil, nil, err
 		}
 	}
 
@@ -409,13 +396,13 @@ func (s *DatabaseService) UpdateEmployeeHistory(payload models.UpdateEmployeeHis
        WHERE employee_id = ? AND from_date > ? AND id != ?
 	   ORDER BY from_date ASC LIMIT 1
 	`, employeeID, payload.FromDate, historyID).Scan(&next.ID, &next.FromDate, &next.ToDate); err != nil && err != sql.ErrNoRows {
-		return err
+		return nil, nil, err
 	}
 	if next.ID != 0 {
 		logger.Logger.Debugf("Checking next history entry")
 		currentFromDate, err := time.Parse(utils.InternalDateFormat, *payload.FromDate)
 		if err != nil {
-			return err
+			return nil, nil, err
 		}
 		nextFromDate := time.Time(next.FromDate)
 		newToDate := utils.GetNextAvailableDate(currentFromDate, nextFromDate, *payload.Cycle)
@@ -424,11 +411,11 @@ func (s *DatabaseService) UpdateEmployeeHistory(payload models.UpdateEmployeeHis
 				UPDATE employee_histories SET to_date = ? WHERE id = ?
 			`, newToDate, historyID)
 		if err != nil {
-			return err
+			return nil, nil, err
 		}
 	}
 
-	return nil
+	return &previous.ID, &next.ID, nil
 }
 
 func (s *DatabaseService) DeleteEmployeeHistory(toDeleteEmployeeHistory *models.EmployeeHistory, userID int64) error {

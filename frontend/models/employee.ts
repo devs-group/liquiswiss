@@ -27,6 +27,14 @@ export interface EmployeeHistoryCostLabelResponse {
   name: string
 }
 
+export interface EmployeeHistoryCostDetailResponse {
+  id: number
+  month: string
+  Amount: number
+  Divider: number
+  CostID: number
+}
+
 export interface EmployeeHistoryCostResponse {
   id: number
   label: EmployeeHistoryCostLabelResponse | null
@@ -34,13 +42,14 @@ export interface EmployeeHistoryCostResponse {
   amountType: EmployeeCostTypeToStringDefinition
   amount: number
   distributionType: EmployeeCostDistributionTypeToStringDefinition
-  calculatedAmount: number
   relativeOffset: number
   targetDate: string | null
-  previousExecutionDate: Date
-  nextExecutionDate: Date
-  nextCost: number
   employeeHistoryID: number
+  calculatedAmount: number
+  calculatedPreviousExecutionDate: Date
+  calculatedNextExecutionDate: Date
+  calculatedNextCost: number
+  calculatedCostDetails: EmployeeHistoryCostDetailResponse[]
 }
 
 export interface EmployeeHistoryResponse {

@@ -20,6 +20,7 @@ import (
 type MockISendgridService struct {
 	ctrl     *gomock.Controller
 	recorder *MockISendgridServiceMockRecorder
+	isgomock struct{}
 }
 
 // MockISendgridServiceMockRecorder is the mock recorder for MockISendgridService.
@@ -40,43 +41,43 @@ func (m *MockISendgridService) EXPECT() *MockISendgridServiceMockRecorder {
 }
 
 // SendMail mocks base method.
-func (m *MockISendgridService) SendMail(arg0, arg1 *mail.Email, arg2 string, arg3 any) error {
+func (m *MockISendgridService) SendMail(from, to *mail.Email, templateId string, dynamicTemplateData any) error {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "SendMail", arg0, arg1, arg2, arg3)
+	ret := m.ctrl.Call(m, "SendMail", from, to, templateId, dynamicTemplateData)
 	ret0, _ := ret[0].(error)
 	return ret0
 }
 
 // SendMail indicates an expected call of SendMail.
-func (mr *MockISendgridServiceMockRecorder) SendMail(arg0, arg1, arg2, arg3 any) *gomock.Call {
+func (mr *MockISendgridServiceMockRecorder) SendMail(from, to, templateId, dynamicTemplateData any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "SendMail", reflect.TypeOf((*MockISendgridService)(nil).SendMail), arg0, arg1, arg2, arg3)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "SendMail", reflect.TypeOf((*MockISendgridService)(nil).SendMail), from, to, templateId, dynamicTemplateData)
 }
 
 // SendPasswordResetMail mocks base method.
-func (m *MockISendgridService) SendPasswordResetMail(arg0, arg1 string) error {
+func (m *MockISendgridService) SendPasswordResetMail(email, code string) error {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "SendPasswordResetMail", arg0, arg1)
+	ret := m.ctrl.Call(m, "SendPasswordResetMail", email, code)
 	ret0, _ := ret[0].(error)
 	return ret0
 }
 
 // SendPasswordResetMail indicates an expected call of SendPasswordResetMail.
-func (mr *MockISendgridServiceMockRecorder) SendPasswordResetMail(arg0, arg1 any) *gomock.Call {
+func (mr *MockISendgridServiceMockRecorder) SendPasswordResetMail(email, code any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "SendPasswordResetMail", reflect.TypeOf((*MockISendgridService)(nil).SendPasswordResetMail), arg0, arg1)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "SendPasswordResetMail", reflect.TypeOf((*MockISendgridService)(nil).SendPasswordResetMail), email, code)
 }
 
 // SendRegistrationMail mocks base method.
-func (m *MockISendgridService) SendRegistrationMail(arg0, arg1 string) error {
+func (m *MockISendgridService) SendRegistrationMail(email, code string) error {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "SendRegistrationMail", arg0, arg1)
+	ret := m.ctrl.Call(m, "SendRegistrationMail", email, code)
 	ret0, _ := ret[0].(error)
 	return ret0
 }
 
 // SendRegistrationMail indicates an expected call of SendRegistrationMail.
-func (mr *MockISendgridServiceMockRecorder) SendRegistrationMail(arg0, arg1 any) *gomock.Call {
+func (mr *MockISendgridServiceMockRecorder) SendRegistrationMail(email, code any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "SendRegistrationMail", reflect.TypeOf((*MockISendgridService)(nil).SendRegistrationMail), arg0, arg1)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "SendRegistrationMail", reflect.TypeOf((*MockISendgridService)(nil).SendRegistrationMail), email, code)
 }

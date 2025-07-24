@@ -53,8 +53,8 @@ type IDatabaseService interface {
 
 	ListEmployeeHistory(userID int64, employeeID int64, page int64, limit int64) ([]models.EmployeeHistory, int64, error)
 	GetEmployeeHistory(userID int64, historyID int64) (*models.EmployeeHistory, error)
-	CreateEmployeeHistory(payload models.CreateEmployeeHistory, userID int64, employeeID int64) (int64, error)
-	UpdateEmployeeHistory(payload models.UpdateEmployeeHistory, employeeID int64, historyID int64) error
+	CreateEmployeeHistory(payload models.CreateEmployeeHistory, userID int64, employeeID int64) (int64, *int64, *int64, error)
+	UpdateEmployeeHistory(payload models.UpdateEmployeeHistory, employeeID int64, historyID int64) (*int64, *int64, error)
 	DeleteEmployeeHistory(existingEmployeeHistory *models.EmployeeHistory, userID int64) error
 
 	ListEmployeeHistoryCosts(userID int64, historyID int64, page int64, limit int64) ([]models.EmployeeHistoryCost, int64, error)
@@ -63,6 +63,11 @@ type IDatabaseService interface {
 	CopyEmployeeHistoryCosts(payload models.CopyEmployeeHistoryCosts, userID int64, historyID int64) error
 	UpdateEmployeeHistoryCost(payload models.CreateEmployeeHistoryCost, userID int64, historyCostID int64) error
 	DeleteEmployeeHistoryCost(historyCostID int64, userID int64) error
+
+	ListEmployeeHistoryCostDetails(historyCostID int64) ([]models.EmployeeHistoryCostDetail, error)
+	CalculateEmployeeHistoryCostDetails(historyCostID int64, userID int64) error
+	UpsertEmployeeHistoryCostDetails(payload models.CreateEmployeeHistoryCostDetail) (int64, error)
+	RefreshCostDetails(userID int64, historyID int64) error
 
 	ListEmployeeHistoryCostLabels(userID int64, page int64, limit int64) ([]models.EmployeeHistoryCostLabel, int64, error)
 	GetEmployeeHistoryCostLabel(userID int64, historyCostLabelID int64) (*models.EmployeeHistoryCostLabel, error)

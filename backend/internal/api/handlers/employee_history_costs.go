@@ -23,7 +23,7 @@ func ListEmployeeHistoryCosts(dbService db_service.IDatabaseService, c *gin.Cont
 
 	historyID, err := strconv.ParseInt(c.Param("historyID"), 10, 64)
 	if err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"error": "Es fehlt die Historie ID"})
+		c.JSON(http.StatusBadRequest, gin.H{"error": "Es fehlt die Lohn ID"})
 		return
 	}
 
@@ -70,7 +70,7 @@ func GetEmployeeHistoryCost(dbService db_service.IDatabaseService, c *gin.Contex
 
 	historyCostID, err := strconv.ParseInt(c.Param("historyCostID"), 10, 64)
 	if err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"error": "Es fehlt die Historiekosten ID"})
+		c.JSON(http.StatusBadRequest, gin.H{"error": "Es fehlt die Lohnkosten ID"})
 		return
 	}
 
@@ -105,7 +105,7 @@ func CreateEmployeeHistoryCost(dbService db_service.IDatabaseService, forecastSe
 
 	historyID, err := strconv.ParseInt(c.Param("historyID"), 10, 64)
 	if err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"error": "Es fehlt die Historie ID"})
+		c.JSON(http.StatusBadRequest, gin.H{"error": "Es fehlt die Lohn ID"})
 		return
 	}
 
@@ -129,6 +129,11 @@ func CreateEmployeeHistoryCost(dbService db_service.IDatabaseService, forecastSe
 		}
 		logger.Logger.Error(err)
 		c.JSON(http.StatusInternalServerError, gin.H{"error": "Beim Erstellen des Eintrags ist ein Fehler aufgetreten"})
+		return
+	}
+
+	err = dbService.CalculateEmployeeHistoryCostDetails(historyCostID, userID)
+	if err != nil {
 		return
 	}
 
@@ -156,7 +161,7 @@ func CopyEmployeeHistoryCosts(dbService db_service.IDatabaseService, forecastSer
 
 	historyID, err := strconv.ParseInt(c.Param("historyID"), 10, 64)
 	if err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"error": "Es fehlt die Historie ID"})
+		c.JSON(http.StatusBadRequest, gin.H{"error": "Es fehlt die Lohn ID"})
 		return
 	}
 
@@ -180,6 +185,11 @@ func CopyEmployeeHistoryCosts(dbService db_service.IDatabaseService, forecastSer
 		}
 		logger.Logger.Error(err)
 		c.JSON(http.StatusInternalServerError, gin.H{"error": "Beim Kopieren der Lohnkosten ist ein Fehler aufgetreten"})
+		return
+	}
+
+	err = dbService.RefreshCostDetails(userID, historyID)
+	if err != nil {
 		return
 	}
 
@@ -226,6 +236,11 @@ func UpdateEmployeeHistoryCost(dbService db_service.IDatabaseService, forecastSe
 	err = dbService.UpdateEmployeeHistoryCost(payload, userID, historyCostID)
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		return
+	}
+
+	err = dbService.CalculateEmployeeHistoryCostDetails(historyCostID, userID)
+	if err != nil {
 		return
 	}
 

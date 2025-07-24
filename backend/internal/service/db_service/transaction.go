@@ -47,76 +47,22 @@ func (s *DatabaseService) ListTransactions(userID int64, page int64, limit int64
 	defer rows.Close()
 
 	for rows.Next() {
-		var transaction models.Transaction
-		// These are required for proper date convertion afterwards
-		var startDate time.Time
-		var endDate sql.NullTime
-		var nextExecutionDate sql.NullTime
-		var transactionEmployeeID sql.NullInt64
-		var transactionEmployeeName sql.NullString
-		var vatID sql.NullInt64
-		var vatValue sql.NullInt64
-		var vatFormattedValue sql.NullString
-		var vatCanEdit sql.NullBool
+		var transactionID int64
 
 		err := rows.Scan(
-			&transaction.ID,
-			&transaction.Name,
-			&transaction.Amount,
-			&transaction.VatAmount,
-			&transaction.VatIncluded,
-			&transaction.Cycle,
-			&transaction.Type,
-			&startDate,
-			&endDate,
-			&transaction.Category.ID,
-			&transaction.Category.Name,
-			&transaction.Currency.ID,
-			&transaction.Currency.Code,
-			&transaction.Currency.Description,
-			&transaction.Currency.LocaleCode,
-			&transactionEmployeeID,
-			&transactionEmployeeName,
-			&vatID,
-			&vatValue,
-			&vatFormattedValue,
-			&vatCanEdit,
-			&nextExecutionDate,
+			&transactionID,
 			&totalCount,
 		)
 		if err != nil {
 			return nil, 0, err
 		}
 
-		transaction.StartDate = types.AsDate(startDate)
-
-		if endDate.Valid {
-			convertedDate := types.AsDate(endDate.Time)
-			transaction.EndDate = &convertedDate
+		transaction, err := s.GetTransaction(userID, transactionID)
+		if err != nil {
+			return nil, 0, err
 		}
 
-		if nextExecutionDate.Valid {
-			convertedDate := types.AsDate(nextExecutionDate.Time)
-			transaction.NextExecutionDate = &convertedDate
-		}
-
-		if transactionEmployeeID.Valid {
-			transaction.Employee = &models.TransactionEmployee{
-				ID:   transactionEmployeeID.Int64,
-				Name: transactionEmployeeName.String,
-			}
-		}
-
-		if vatID.Valid {
-			transaction.Vat = &models.Vat{
-				ID:             vatID.Int64,
-				Value:          vatValue.Int64,
-				FormattedValue: vatFormattedValue.String,
-				CanEdit:        vatCanEdit.Bool,
-			}
-		}
-
-		transactions = append(transactions, transaction)
+		transactions = append(transactions, *transaction)
 	}
 
 	return transactions, totalCount, nil
@@ -133,7 +79,6 @@ func (s *DatabaseService) GetTransaction(userID int64, transactionID int64) (*mo
 	var vatValue sql.NullInt64
 	var vatFormattedValue sql.NullString
 	var vatCanEdit sql.NullBool
-	var nextExecutionDate sql.NullTime
 
 	query, err := sqlQueries.ReadFile("queries/get_transaction.sql")
 	if err != nil {
@@ -162,7 +107,7 @@ func (s *DatabaseService) GetTransaction(userID int64, transactionID int64) (*mo
 		&vatValue,
 		&vatFormattedValue,
 		&vatCanEdit,
-		&nextExecutionDate,
+		&transaction.DBDate,
 	)
 	if err != nil {
 		return nil, err
@@ -191,9 +136,10 @@ func (s *DatabaseService) GetTransaction(userID int64, transactionID int64) (*mo
 		}
 	}
 
-	if nextExecutionDate.Valid {
-		convertedDate := types.AsDate(nextExecutionDate.Time)
-		transaction.NextExecutionDate = &convertedDate
+	nextExecutionDate := s.CalculateHistoryExecutionDate(transaction.StartDate, transaction.EndDate, transaction.Cycle, transaction.DBDate, 1, true)
+	if nextExecutionDate != nil {
+		nextExecutionDateAsDate := types.AsDate(*nextExecutionDate)
+		transaction.NextExecutionDate = &nextExecutionDateAsDate
 	}
 
 	return &transaction, nil

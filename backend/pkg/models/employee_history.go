@@ -13,9 +13,14 @@ type EmployeeHistory struct {
 	FromDate            types.AsDate  `db:"from_date" json:"fromDate"`
 	ToDate              *types.AsDate `db:"to_date" json:"toDate"`
 	WithSeparateCosts   bool          `db:"with_separate_costs" json:"withSeparateCosts"`
-	NextExecutionDate   *types.AsDate `db:"-" json:"nextExecutionDate"`
-	EmployeeDeductions  uint64        `db:"employee_deductions" json:"employeeDeductions"`
-	EmployerCosts       uint64        `db:"employer_costs" json:"employerCosts"`
+
+	// Hidden values
+	DBDate types.AsDate `db:"db_date" json:"-"`
+
+	// Calculated Values
+	NextExecutionDate  *types.AsDate `db:"-" json:"nextExecutionDate"`
+	EmployeeDeductions uint64        `db:"-" json:"employeeDeductions"`
+	EmployerCosts      uint64        `db:"-" json:"employerCosts"`
 }
 
 type CreateEmployeeHistory struct {

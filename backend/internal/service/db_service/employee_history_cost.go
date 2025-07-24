@@ -3,12 +3,13 @@ package db_service
 import (
 	"database/sql"
 	"liquiswiss/pkg/models"
+	"liquiswiss/pkg/types"
 	"liquiswiss/pkg/utils"
 	"time"
 )
 
 func (s *DatabaseService) ListEmployeeHistoryCosts(userID int64, historyID int64, page int64, limit int64) ([]models.EmployeeHistoryCost, int64, error) {
-	employeeHistoryCosts := make([]models.EmployeeHistoryCost, 0)
+	historyCosts := make([]models.EmployeeHistoryCost, 0)
 	var totalCount int64
 
 	query, err := sqlQueries.ReadFile("queries/list_employee_history_costs.sql")
@@ -23,43 +24,25 @@ func (s *DatabaseService) ListEmployeeHistoryCosts(userID int64, historyID int64
 	defer rows.Close()
 
 	for rows.Next() {
-		var employeeHistoryCost models.EmployeeHistoryCost
-		var labelID sql.NullInt64
-		var labelName sql.NullString
+		var historyCostID int64
 
 		err := rows.Scan(
-			&employeeHistoryCost.ID,
-			&labelID,
-			&labelName,
-			&employeeHistoryCost.Cycle,
-			&employeeHistoryCost.AmountType,
-			&employeeHistoryCost.Amount,
-			&employeeHistoryCost.DistributionType,
-			&employeeHistoryCost.CalculatedAmount,
-			&employeeHistoryCost.RelativeOffset,
-			&employeeHistoryCost.TargetDate,
-			&employeeHistoryCost.PreviousExecutionDate,
-			&employeeHistoryCost.NextExecutionDate,
-			&employeeHistoryCost.NextCost,
-			&employeeHistoryCost.EmployeeHistoryID,
-			// Forget about this for now (or ever :D)
+			&historyCostID,
 			&totalCount,
 		)
 		if err != nil {
 			return nil, 0, err
 		}
 
-		if labelID.Valid && labelName.Valid {
-			employeeHistoryCost.Label = &models.EmployeeHistoryCostLabel{
-				ID:   labelID.Int64,
-				Name: labelName.String,
-			}
+		historyCost, err := s.GetEmployeeHistoryCost(userID, historyCostID)
+		if err != nil {
+			return nil, 0, err
 		}
 
-		employeeHistoryCosts = append(employeeHistoryCosts, employeeHistoryCost)
+		historyCosts = append(historyCosts, *historyCost)
 	}
 
-	return employeeHistoryCosts, totalCount, nil
+	return historyCosts, totalCount, nil
 }
 
 func (s *DatabaseService) GetEmployeeHistoryCost(userID int64, historyCostID int64) (*models.EmployeeHistoryCost, error) {
@@ -80,13 +63,14 @@ func (s *DatabaseService) GetEmployeeHistoryCost(userID int64, historyCostID int
 		&employeeHistoryCost.AmountType,
 		&employeeHistoryCost.Amount,
 		&employeeHistoryCost.DistributionType,
-		&employeeHistoryCost.CalculatedAmount,
 		&employeeHistoryCost.RelativeOffset,
 		&employeeHistoryCost.TargetDate,
-		&employeeHistoryCost.PreviousExecutionDate,
-		&employeeHistoryCost.NextExecutionDate,
-		&employeeHistoryCost.NextCost,
 		&employeeHistoryCost.EmployeeHistoryID,
+		&employeeHistoryCost.HistoryCycle,
+		&employeeHistoryCost.HistorySalary,
+		&employeeHistoryCost.HistoryFromDate,
+		&employeeHistoryCost.HistoryToDate,
+		&employeeHistoryCost.DBDate,
 	)
 	if err != nil {
 		return nil, err
@@ -97,6 +81,40 @@ func (s *DatabaseService) GetEmployeeHistoryCost(userID int64, historyCostID int
 			ID:   labelID.Int64,
 			Name: labelName.String,
 		}
+	}
+
+	costDetails, err := s.ListEmployeeHistoryCostDetails(employeeHistoryCost.ID)
+	if err != nil {
+		return nil, err
+	}
+
+	employeeHistoryCost.CalculatedCostDetails = costDetails
+
+	currDate := time.Time(employeeHistoryCost.DBDate)
+
+	var next *models.EmployeeHistoryCostDetail
+	for i := range costDetails {
+		costDetail := costDetails[i]
+		dt, err := time.Parse("2006-01", costDetail.Month)
+		if err != nil {
+			continue
+		}
+		if currDate.Format("2006-01") == costDetail.Month || dt.After(currDate) {
+			next = &costDetail
+			break
+		}
+	}
+
+	if next != nil {
+		dt, err := time.Parse("2006-01", next.Month)
+		if err != nil {
+			return nil, err
+		}
+		dtAsDate := types.AsDate(dt)
+		//employeeHistoryCost.CalculatedPreviousExecutionDate = ??
+		employeeHistoryCost.CalculatedNextExecutionDate = &dtAsDate
+		employeeHistoryCost.CalculatedNextCost = next.Amount
+		employeeHistoryCost.CalculatedAmount = next.Amount / uint64(next.Divider)
 	}
 
 	return &employeeHistoryCost, nil

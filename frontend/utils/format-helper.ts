@@ -3,6 +3,11 @@ export const DateStringToFormattedDate = (date: string | Date, asUtc: boolean = 
   return fmt.format(date instanceof Date ? date : new Date(date))
 }
 
+export const DateStringToFormattedWordDate = (date: string | Date, asUtc: boolean = true) => {
+  const fmt = Intl.DateTimeFormat(Constants.BASE_LOCALE_CODE, { month: 'long', year: 'numeric', timeZone: asUtc ? 'UTC' : undefined })
+  return fmt.format(date instanceof Date ? date : new Date(date))
+}
+
 export const DateStringToFormattedDateTime = (date: string | Date, asUtc: boolean = true) => {
   const fmt = Intl.DateTimeFormat(Constants.BASE_LOCALE_CODE, {
     day: '2-digit', month: '2-digit', year: 'numeric',
