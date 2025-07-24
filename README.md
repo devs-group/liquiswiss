@@ -77,6 +77,8 @@ air
 
 ## Migrations
 
+1. Install [Goose](https://github.com/pressly/goose): `go install github.com/pressly/goose/v3/cmd/goose@latest`
+
 We differentiate between static and dynamic migrations whereas **static migrations** are all migrations that
 actually hold data later and a migration down would lead to data loss such as table creation or alterations.
 
