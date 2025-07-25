@@ -7,7 +7,7 @@ import (
 	"time"
 )
 
-func (s *DatabaseService) CalculateHistoryExecutionDate(fromDatePtr types.AsDate, toDatePtr *types.AsDate, cycle *string, currDatePtr types.AsDate, relativeOffset int64, isNext bool) *time.Time {
+func (s *DatabaseService) CalculateSalaryExecutionDate(fromDatePtr types.AsDate, toDatePtr *types.AsDate, cycle *string, currDatePtr types.AsDate, relativeOffset int64, isNext bool) *time.Time {
 	fromDate := time.Time(fromDatePtr)
 	currDate := time.Time(currDatePtr)
 	var toDate *time.Time
@@ -56,9 +56,9 @@ func (s *DatabaseService) CalculateHistoryExecutionDate(fromDatePtr types.AsDate
 
 func (s *DatabaseService) CalculateSalaryAdjustments(
 	salary uint64,
-	historyCycle string,
+	salaryCycle string,
 	distributionType string,
-	costs []models.EmployeeHistoryCost,
+	costs []models.SalaryCost,
 ) uint64 {
 	var total uint64 = 0
 
@@ -74,13 +74,13 @@ func (s *DatabaseService) CalculateSalaryAdjustments(
 			case utils.CycleOnce:
 				value = cost.CalculatedAmount
 			case utils.CycleMonthly:
-				value = multiplyByHistoryScaleUint(cost.CalculatedAmount, historyCycle, 1)
+				value = multiplyBySalaryScaleUint(cost.CalculatedAmount, salaryCycle, 1)
 			case utils.CycleQuarterly:
-				value = multiplyByHistoryScaleUint(cost.CalculatedAmount, historyCycle, 3)
+				value = multiplyBySalaryScaleUint(cost.CalculatedAmount, salaryCycle, 3)
 			case utils.CycleBiannually:
-				value = multiplyByHistoryScaleUint(cost.CalculatedAmount, historyCycle, 6)
+				value = multiplyBySalaryScaleUint(cost.CalculatedAmount, salaryCycle, 6)
 			case utils.CycleYearly:
-				value = multiplyByHistoryScaleUint(cost.CalculatedAmount, historyCycle, 12)
+				value = multiplyBySalaryScaleUint(cost.CalculatedAmount, salaryCycle, 12)
 			}
 
 		} else if cost.AmountType == "fixed" {
@@ -88,13 +88,13 @@ func (s *DatabaseService) CalculateSalaryAdjustments(
 			case utils.CycleOnce:
 				value = cost.Amount
 			case utils.CycleMonthly:
-				value = multiplyByHistoryScaleUint(cost.Amount, historyCycle, 1)
+				value = multiplyBySalaryScaleUint(cost.Amount, salaryCycle, 1)
 			case utils.CycleQuarterly:
-				value = multiplyByHistoryScaleUint(cost.Amount, historyCycle, 3)
+				value = multiplyBySalaryScaleUint(cost.Amount, salaryCycle, 3)
 			case utils.CycleBiannually:
-				value = multiplyByHistoryScaleUint(cost.Amount, historyCycle, 6)
+				value = multiplyBySalaryScaleUint(cost.Amount, salaryCycle, 6)
 			case utils.CycleYearly:
-				value = multiplyByHistoryScaleUint(cost.Amount, historyCycle, 12)
+				value = multiplyBySalaryScaleUint(cost.Amount, salaryCycle, 12)
 			}
 		}
 
@@ -107,7 +107,7 @@ func (s *DatabaseService) CalculateSalaryAdjustments(
 func (s *DatabaseService) CalculateCostExecutionDate(
 	fromDatePtr types.AsDate,
 	toDatePtr *types.AsDate,
-	historyCycle string,
+	salaryCycle string,
 	targetDatePtr *types.AsDate,
 	costCycle string,
 	relativeOffset int64,
@@ -116,8 +116,7 @@ func (s *DatabaseService) CalculateCostExecutionDate(
 ) *types.AsDate {
 	currDate := time.Time(currDatePtr)
 
-	nextHistoryExecution := s.CalculateHistoryExecutionDate(fromDatePtr, toDatePtr, &historyCycle, currDatePtr, 1, true)
-	//previousHistoryExecution := s.CalculateHistoryExecutionDate(fromDatePtr, toDatePtr, historyCycle, currDatePtr, relativeOffset, false)
+	nextSalaryExecution := s.CalculateSalaryExecutionDate(fromDatePtr, toDatePtr, &salaryCycle, currDatePtr, 1, true)
 
 	if costCycle == utils.CycleOnce {
 		if isNext {
@@ -131,9 +130,9 @@ func (s *DatabaseService) CalculateCostExecutionDate(
 
 	if targetDatePtr != nil {
 		targetDate := time.Time(*targetDatePtr)
-		lastPossibleExecutionDate := addCycle(*nextHistoryExecution, costCycle, relativeOffset)
+		lastPossibleExecutionDate := addCycle(*nextSalaryExecution, costCycle, relativeOffset)
 
-		if nextHistoryExecution.After(targetDate) || nextHistoryExecution.Equal(targetDate) {
+		if nextSalaryExecution.After(targetDate) || nextSalaryExecution.Equal(targetDate) {
 			for targetDate.Before(currDate) || targetDate.Equal(currDate) {
 				next := addCycle(targetDate, costCycle, relativeOffset)
 				if next.After(lastPossibleExecutionDate) {
@@ -156,7 +155,7 @@ func (s *DatabaseService) CalculateCostExecutionDate(
 		return &as
 	}
 
-	costDate := addCycle(*nextHistoryExecution, costCycle, relativeOffset)
+	costDate := addCycle(*nextSalaryExecution, costCycle, relativeOffset)
 
 	if isNext {
 		if currDate.After(costDate) {
@@ -176,18 +175,18 @@ func (s *DatabaseService) CalculateCostExecutionDate(
 	return &as
 }
 
-func (s *DatabaseService) CalculateCostAmount(cost models.EmployeeHistoryCost, history models.EmployeeHistory) uint64 {
+func (s *DatabaseService) CalculateCostAmount(cost models.SalaryCost, salary models.Salary) uint64 {
 	if cost.AmountType == "fixed" {
 		return cost.Amount
 	}
 	if cost.AmountType == "percentage" {
-		return (history.Salary * cost.Amount) / 100_000
+		return (salary.Amount * cost.Amount) / 100_000
 	}
 	return 0
 }
 
-func multiplyByHistoryScaleUint(base uint64, historyCycle string, costMonths uint64) uint64 {
-	switch historyCycle {
+func multiplyBySalaryScaleUint(base uint64, salaryCycle string, costMonths uint64) uint64 {
+	switch salaryCycle {
 	case utils.CycleMonthly:
 		return base / costMonths
 	case utils.CycleQuarterly:

@@ -11,7 +11,7 @@ import (
 )
 
 type EmployeeForecastData struct {
-	Data map[models.Employee][]models.EmployeeHistory
+	Data map[models.Employee][]models.Salary
 }
 
 type IForecastService interface {
@@ -283,31 +283,31 @@ func (f *ForecastService) CalculateForecast(userID int64) ([]models.Forecast, er
 		return nil, err
 	}
 	for _, employee := range employees {
-		employeeHistories, _, err := f.dbService.ListEmployeeHistory(userID, employee.ID, page, limit)
+		salaries, _, err := f.dbService.ListSalaries(userID, employee.ID, page, limit)
 		if err != nil {
 			return nil, err
 		}
-		for _, history := range employeeHistories {
-			fromDate := time.Time(history.FromDate)
+		for _, salary := range salaries {
+			fromDate := time.Time(salary.FromDate)
 			toDate := lastDayOfMaxEndDate
-			if history.ToDate != nil {
-				toDate = time.Time(*history.ToDate)
+			if salary.ToDate != nil {
+				toDate = time.Time(*salary.ToDate)
 			}
 
-			fiatRate := models.GetFiatRateFromCurrency(fiatRates, baseCurrency, *history.Currency.Code)
+			fiatRate := models.GetFiatRateFromCurrency(fiatRates, baseCurrency, *salary.Currency.Code)
 			// Must be minus here
-			netSalary := history.Salary
-			if history.WithSeparateCosts {
-				netSalary = history.Salary - history.EmployeeDeductions
+			netAmount := salary.Amount
+			if salary.WithSeparateCosts {
+				netAmount = salary.Amount - salary.EmployeeDeductions
 			}
-			salary := -models.CalculateAmountWithFiatRate(int64(netSalary), fiatRate)
+			amount := -models.CalculateAmountWithFiatRate(int64(netAmount), fiatRate)
 
-			historyExclusions, err := f.dbService.ListForecastExclusions(userID, history.ID, utils.EmployeeHistoriesTableName)
+			salaryExclusions, err := f.dbService.ListForecastExclusions(userID, salary.ID, utils.SalariesTableName)
 			if err != nil {
 				return nil, err
 			}
 
-			switch history.Cycle {
+			switch salary.Cycle {
 			case utils.CycleMonthly:
 				for current := fromDate; !current.After(toDate); current = utils.GetNextDate(fromDate, current, 1) {
 					if current.Before(today) {
@@ -317,16 +317,16 @@ func (f *ForecastService) CalculateForecast(userID int64) ([]models.Forecast, er
 					if forecastMap[monthKey] == nil {
 						initForecastMapKey(forecastMap, monthKey)
 					}
-					if historyExclusions[monthKey] {
+					if salaryExclusions[monthKey] {
 						forecastMap[monthKey]["expense"] += 0
 						addForecastDetail(
 							forecastDetailMap, monthKey, 0, false, true,
-							history.ID, utils.EmployeeHistoriesTableName, "Löhne", employee.Name,
+							salary.ID, utils.SalariesTableName, "Löhne", employee.Name,
 						)
 					} else {
-						forecastMap[monthKey]["expense"] += salary
-						addForecastDetail(forecastDetailMap, monthKey, salary, false, false,
-							history.ID, utils.EmployeeHistoriesTableName, "Löhne", employee.Name,
+						forecastMap[monthKey]["expense"] += amount
+						addForecastDetail(forecastDetailMap, monthKey, amount, false, false,
+							salary.ID, utils.SalariesTableName, "Löhne", employee.Name,
 						)
 					}
 				}
@@ -339,16 +339,16 @@ func (f *ForecastService) CalculateForecast(userID int64) ([]models.Forecast, er
 					if forecastMap[monthKey] == nil {
 						initForecastMapKey(forecastMap, monthKey)
 					}
-					if historyExclusions[monthKey] {
+					if salaryExclusions[monthKey] {
 						forecastMap[monthKey]["expense"] += 0
 						addForecastDetail(
 							forecastDetailMap, monthKey, 0, false, true,
-							history.ID, utils.EmployeeHistoriesTableName, "Löhne", employee.Name,
+							salary.ID, utils.SalariesTableName, "Löhne", employee.Name,
 						)
 					} else {
-						forecastMap[monthKey]["expense"] += salary
-						addForecastDetail(forecastDetailMap, monthKey, salary, false, false,
-							history.ID, utils.EmployeeHistoriesTableName, "Löhne", employee.Name,
+						forecastMap[monthKey]["expense"] += amount
+						addForecastDetail(forecastDetailMap, monthKey, amount, false, false,
+							salary.ID, utils.SalariesTableName, "Löhne", employee.Name,
 						)
 					}
 				}
@@ -361,16 +361,16 @@ func (f *ForecastService) CalculateForecast(userID int64) ([]models.Forecast, er
 					if forecastMap[monthKey] == nil {
 						initForecastMapKey(forecastMap, monthKey)
 					}
-					if historyExclusions[monthKey] {
+					if salaryExclusions[monthKey] {
 						forecastMap[monthKey]["expense"] += 0
 						addForecastDetail(
 							forecastDetailMap, monthKey, 0, false, true,
-							history.ID, utils.EmployeeHistoriesTableName, "Löhne", employee.Name,
+							salary.ID, utils.SalariesTableName, "Löhne", employee.Name,
 						)
 					} else {
-						forecastMap[monthKey]["expense"] += salary
-						addForecastDetail(forecastDetailMap, monthKey, salary, false, false,
-							history.ID, utils.EmployeeHistoriesTableName, "Löhne", employee.Name,
+						forecastMap[monthKey]["expense"] += amount
+						addForecastDetail(forecastDetailMap, monthKey, amount, false, false,
+							salary.ID, utils.SalariesTableName, "Löhne", employee.Name,
 						)
 					}
 				}
@@ -383,46 +383,46 @@ func (f *ForecastService) CalculateForecast(userID int64) ([]models.Forecast, er
 					if forecastMap[monthKey] == nil {
 						initForecastMapKey(forecastMap, monthKey)
 					}
-					if historyExclusions[monthKey] {
+					if salaryExclusions[monthKey] {
 						forecastMap[monthKey]["expense"] += 0
 						addForecastDetail(
 							forecastDetailMap, monthKey, 0, false, true,
-							history.ID, utils.EmployeeHistoriesTableName, "Löhne", employee.Name,
+							salary.ID, utils.SalariesTableName, "Löhne", employee.Name,
 						)
 					} else {
-						forecastMap[monthKey]["expense"] += salary
-						addForecastDetail(forecastDetailMap, monthKey, salary, false, false,
-							history.ID, utils.EmployeeHistoriesTableName, "Löhne", employee.Name,
+						forecastMap[monthKey]["expense"] += amount
+						addForecastDetail(forecastDetailMap, monthKey, amount, false, false,
+							salary.ID, utils.SalariesTableName, "Löhne", employee.Name,
 						)
 					}
 				}
 			}
 
 			// Calculate the separate costs if wanted
-			var historyCosts []models.EmployeeHistoryCost
-			if history.WithSeparateCosts {
-				historyCosts, _, err = f.dbService.ListEmployeeHistoryCosts(userID, history.ID, page, limit)
+			var salaryCosts []models.SalaryCost
+			if salary.WithSeparateCosts {
+				salaryCosts, _, err = f.dbService.ListSalaryCosts(userID, salary.ID, page, limit)
 				if err != nil {
 					return nil, err
 				}
 			}
 
-			for _, historyCost := range historyCosts {
-				historyCostExclusions, err := f.dbService.ListForecastExclusions(userID, historyCost.ID, utils.EmployeeHistoryCostsTableName)
+			for _, salaryCost := range salaryCosts {
+				salaryCostExclusions, err := f.dbService.ListForecastExclusions(userID, salaryCost.ID, utils.SalaryCostsTableName)
 				if err != nil {
 					return nil, err
 				}
 
-				if historyCost.CalculatedNextExecutionDate != nil {
-					costFromDate := time.Time(*historyCost.CalculatedNextExecutionDate)
-					nextCost := -models.CalculateAmountWithFiatRate(int64(historyCost.CalculatedNextCost), fiatRate)
+				if salaryCost.CalculatedNextExecutionDate != nil {
+					costFromDate := time.Time(*salaryCost.CalculatedNextExecutionDate)
+					nextCost := -models.CalculateAmountWithFiatRate(int64(salaryCost.CalculatedNextCost), fiatRate)
 
 					labelName := "<Kein Label>"
-					if historyCost.Label != nil {
-						labelName = historyCost.Label.Name
+					if salaryCost.Label != nil {
+						labelName = salaryCost.Label.Name
 					}
 
-					switch historyCost.Cycle {
+					switch salaryCost.Cycle {
 					case utils.CycleOnce:
 						if costFromDate.Before(today) {
 							continue
@@ -431,22 +431,22 @@ func (f *ForecastService) CalculateForecast(userID int64) ([]models.Forecast, er
 						if forecastMap[monthKey] == nil {
 							initForecastMapKey(forecastMap, monthKey)
 						}
-						if historyCostExclusions[monthKey] {
+						if salaryCostExclusions[monthKey] {
 							forecastMap[monthKey]["expense"] += 0
 							addForecastDetail(
 								forecastDetailMap, monthKey, 0, false, true,
-								historyCost.ID, utils.EmployeeHistoryCostsTableName, "Lohnkosten", labelName,
+								salaryCost.ID, utils.SalaryCostsTableName, "Lohnkosten", labelName,
 							)
 						} else {
 							forecastMap[monthKey]["expense"] += nextCost
 							addForecastDetail(forecastDetailMap, monthKey, nextCost, false, false,
-								historyCost.ID, utils.EmployeeHistoryCostsTableName, "Lohnkosten", labelName,
+								salaryCost.ID, utils.SalaryCostsTableName, "Lohnkosten", labelName,
 							)
 						}
 					case utils.CycleMonthly:
-						for current := costFromDate; ; current = addOffset(historyCost.Cycle, costFromDate, current, historyCost.RelativeOffset) {
-							var matchingDetail *models.EmployeeHistoryCostDetail
-							for _, detail := range historyCost.CalculatedCostDetails {
+						for current := costFromDate; ; current = addOffset(salaryCost.Cycle, costFromDate, current, salaryCost.RelativeOffset) {
+							var matchingDetail *models.SalaryCostDetail
+							for _, detail := range salaryCost.CalculatedCostDetails {
 								if detail.Month == current.Format("2006-01") {
 									matchingDetail = &detail
 									break
@@ -460,22 +460,22 @@ func (f *ForecastService) CalculateForecast(userID int64) ([]models.Forecast, er
 							if forecastMap[monthKey] == nil {
 								initForecastMapKey(forecastMap, monthKey)
 							}
-							if historyCostExclusions[monthKey] {
+							if salaryCostExclusions[monthKey] {
 								forecastMap[monthKey]["expense"] += 0
 								addForecastDetail(
 									forecastDetailMap, monthKey, 0, false, true,
-									historyCost.ID, utils.EmployeeHistoryCostsTableName, "Lohnkosten", labelName,
+									salaryCost.ID, utils.SalaryCostsTableName, "Lohnkosten", labelName,
 								)
 							} else {
 								forecastMap[monthKey]["expense"] += nextCost
 								addForecastDetail(forecastDetailMap, monthKey, nextCost, false, false,
-									historyCost.ID, utils.EmployeeHistoryCostsTableName, "Lohnkosten", labelName,
+									salaryCost.ID, utils.SalaryCostsTableName, "Lohnkosten", labelName,
 								)
 							}
 						}
 					case utils.CycleQuarterly:
-						lastToDate := utils.GetNextDate(costFromDate, toDate, 3*int(historyCost.RelativeOffset))
-						for current := costFromDate; ; current = addOffset(historyCost.Cycle, costFromDate, current, historyCost.RelativeOffset) {
+						lastToDate := utils.GetNextDate(costFromDate, toDate, 3*int(salaryCost.RelativeOffset))
+						for current := costFromDate; ; current = addOffset(salaryCost.Cycle, costFromDate, current, salaryCost.RelativeOffset) {
 							if current.After(lastToDate) {
 								break
 							}
@@ -486,22 +486,22 @@ func (f *ForecastService) CalculateForecast(userID int64) ([]models.Forecast, er
 							if forecastMap[monthKey] == nil {
 								initForecastMapKey(forecastMap, monthKey)
 							}
-							if historyCostExclusions[monthKey] {
+							if salaryCostExclusions[monthKey] {
 								forecastMap[monthKey]["expense"] += 0
 								addForecastDetail(
 									forecastDetailMap, monthKey, 0, false, true,
-									historyCost.ID, utils.EmployeeHistoryCostsTableName, "Lohnkosten", labelName,
+									salaryCost.ID, utils.SalaryCostsTableName, "Lohnkosten", labelName,
 								)
 							} else {
 								forecastMap[monthKey]["expense"] += nextCost
 								addForecastDetail(forecastDetailMap, monthKey, nextCost, false, false,
-									historyCost.ID, utils.EmployeeHistoryCostsTableName, "Lohnkosten", labelName,
+									salaryCost.ID, utils.SalaryCostsTableName, "Lohnkosten", labelName,
 								)
 							}
 						}
 					case utils.CycleBiannually:
-						lastToDate := utils.GetNextDate(costFromDate, toDate, 6*int(historyCost.RelativeOffset))
-						for current := costFromDate; ; current = addOffset(historyCost.Cycle, costFromDate, current, historyCost.RelativeOffset) {
+						lastToDate := utils.GetNextDate(costFromDate, toDate, 6*int(salaryCost.RelativeOffset))
+						for current := costFromDate; ; current = addOffset(salaryCost.Cycle, costFromDate, current, salaryCost.RelativeOffset) {
 							if current.After(lastToDate) {
 								break
 							}
@@ -512,22 +512,22 @@ func (f *ForecastService) CalculateForecast(userID int64) ([]models.Forecast, er
 							if forecastMap[monthKey] == nil {
 								initForecastMapKey(forecastMap, monthKey)
 							}
-							if historyCostExclusions[monthKey] {
+							if salaryCostExclusions[monthKey] {
 								forecastMap[monthKey]["expense"] += 0
 								addForecastDetail(
 									forecastDetailMap, monthKey, 0, false, true,
-									historyCost.ID, utils.EmployeeHistoryCostsTableName, "Lohnkosten", labelName,
+									salaryCost.ID, utils.SalaryCostsTableName, "Lohnkosten", labelName,
 								)
 							} else {
 								forecastMap[monthKey]["expense"] += nextCost
 								addForecastDetail(forecastDetailMap, monthKey, nextCost, false, false,
-									historyCost.ID, utils.EmployeeHistoryCostsTableName, "Lohnkosten", labelName,
+									salaryCost.ID, utils.SalaryCostsTableName, "Lohnkosten", labelName,
 								)
 							}
 						}
 					case utils.CycleYearly:
-						lastToDate := utils.GetNextDate(costFromDate, toDate, 12*int(historyCost.RelativeOffset))
-						for current := costFromDate; ; current = addOffset(historyCost.Cycle, costFromDate, current, historyCost.RelativeOffset) {
+						lastToDate := utils.GetNextDate(costFromDate, toDate, 12*int(salaryCost.RelativeOffset))
+						for current := costFromDate; ; current = addOffset(salaryCost.Cycle, costFromDate, current, salaryCost.RelativeOffset) {
 							if current.After(lastToDate) {
 								break
 							}
@@ -538,16 +538,16 @@ func (f *ForecastService) CalculateForecast(userID int64) ([]models.Forecast, er
 							if forecastMap[monthKey] == nil {
 								initForecastMapKey(forecastMap, monthKey)
 							}
-							if historyCostExclusions[monthKey] {
+							if salaryCostExclusions[monthKey] {
 								forecastMap[monthKey]["expense"] += 0
 								addForecastDetail(
 									forecastDetailMap, monthKey, 0, false, true,
-									historyCost.ID, utils.EmployeeHistoryCostsTableName, "Lohnkosten", labelName,
+									salaryCost.ID, utils.SalaryCostsTableName, "Lohnkosten", labelName,
 								)
 							} else {
 								forecastMap[monthKey]["expense"] += nextCost
 								addForecastDetail(forecastDetailMap, monthKey, nextCost, false, false,
-									historyCost.ID, utils.EmployeeHistoryCostsTableName, "Lohnkosten", labelName,
+									salaryCost.ID, utils.SalaryCostsTableName, "Lohnkosten", labelName,
 								)
 							}
 						}

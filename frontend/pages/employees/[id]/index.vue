@@ -101,42 +101,42 @@
       :loading="isSubmitting"
       label="Lohn hinzufügen"
       icon="pi pi-history"
-      @click="onCreateEmployeeHistory"
+      @click="onCreateSalary"
     />
 
     <Message
-      v-if="historyErrorMessage.length"
+      v-if="salaryErrorMessage.length"
       severity="error"
       :closable="false"
       class="col-span-full"
     >
-      {{ historyErrorMessage }}
+      {{ salaryErrorMessage }}
     </Message>
 
     <div
-      v-if="employeeHistories?.data.length"
+      v-if="salaries?.data.length"
       class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 2xl:grid-cols-4 gap-4"
     >
-      <EmployeeHistoryCard
-        v-for="employeeHistory in employeeHistories.data"
-        :key="employeeHistory.id"
-        :employee-history="employeeHistory"
-        :is-active="employee?.historyID == employeeHistory.id"
-        @on-edit="onUpdateEmployeeHistory"
-        @on-clone="onCloneEmployeeHistory"
+      <SalaryCard
+        v-for="salary in salaries.data"
+        :key="salary.id"
+        :salary="salary"
+        :is-active="employee?.salaryID == salary.id"
+        @on-edit="onUpdateSalary"
+        @on-clone="onCloneSalary"
       />
     </div>
 
     <div
-      v-if="employeeHistories?.data.length"
+      v-if="salaries?.data.length"
       class="self-center"
     >
       <Button
-        v-if="!noMoreDataEmployeeHistories"
+        v-if="!noMoreDataSalaries"
         severity="info"
         label="Mehr anzeigen"
         :loading="isLoadingMore"
-        @click="onLoadMoreEmployeeHistory"
+        @click="onLoadMoreSalaries"
       />
       <p
         v-else
@@ -152,7 +152,7 @@
       Mitarbeiter hat noch keinen Lohn. Erstelle den
       <a
         class="underline cursor-pointer font-bold"
-        @click="onCreateEmployeeHistory"
+        @click="onCreateSalary"
       >ersten Lohn</a>!
     </p>
   </div>
@@ -174,10 +174,10 @@ import * as yup from 'yup'
 import type { DynamicDialogCloseOptions } from 'primevue/dynamicdialogoptions'
 import { ModalConfig } from '~/config/dialog-props'
 import { Config } from '~/config/config'
-import type { EmployeeFormData, EmployeeHistoryResponse, EmployeeResponse } from '~/models/employee'
+import type { EmployeeFormData, EmployeeResponse, SalaryResponse } from '~/models/employee'
 import { RouteNames } from '~/config/routes'
-import EmployeeHistoryDialog from '~/components/dialogs/EmployeeHistoryDialog.vue'
-import EmployeeHistoryCard from '~/components/EmployeeHistoryCard.vue'
+import SalaryDialog from '~/components/dialogs/SalaryDialog.vue'
+import SalaryCard from '~/components/SalaryCard.vue'
 
 const {
   useFetchGetEmployee,
@@ -186,12 +186,12 @@ const {
   deleteEmployee,
 } = useEmployees()
 const {
-  employeeHistories,
-  noMoreDataEmployeeHistories,
-  pageEmployeeHistories,
-  useFetchListEmployeeHistory,
-  listEmployeeHistory,
-} = useEmployeeHistories()
+  salaries,
+  noMoreDataSalaries,
+  pageSalaries,
+  useFetchListSalaries,
+  listSalaries,
+} = useSalaries()
 const dialog = useDialog()
 const toast = useToast()
 const route = useRoute()
@@ -205,7 +205,7 @@ const employeeLoadErrorMessage = ref('')
 const employeeUpdateMessage = ref('')
 const employeeUpdateErrorMessage = ref('')
 const employeeDeleteErrorMessage = ref('')
-const historyErrorMessage = ref('')
+const salaryErrorMessage = ref('')
 
 if (
   route.params.id
@@ -225,8 +225,8 @@ else {
 }
 
 if (employee.value) {
-  await useFetchListEmployeeHistory(employeeID).catch((reason) => {
-    historyErrorMessage.value = reason
+  await useFetchListSalaries(employeeID).catch((reason) => {
+    salaryErrorMessage.value = reason
   })
 }
 
@@ -303,8 +303,8 @@ const onDeleteEmployee = () => {
   })
 }
 
-const onCreateEmployeeHistory = () => {
-  dialog.open(EmployeeHistoryDialog, {
+const onCreateSalary = () => {
+  dialog.open(SalaryDialog, {
     data: {
       employeeID,
     },
@@ -312,42 +312,42 @@ const onCreateEmployeeHistory = () => {
       header: 'Neuen Lohn anlegen',
       ...ModalConfig,
     },
-    onClose: onClosedHistoryDialog,
+    onClose: onClosedSalaryDialog,
   })
 }
 
-const onUpdateEmployeeHistory = (employeeHistory: EmployeeHistoryResponse) => {
-  dialog.open(EmployeeHistoryDialog, {
+const onUpdateSalary = (salary: SalaryResponse) => {
+  dialog.open(SalaryDialog, {
     data: {
       employeeID,
-      employeeHistory,
+      salary,
     },
     props: {
       header: 'Lohn bearbeiten',
       ...ModalConfig,
     },
-    onClose: onClosedHistoryDialog,
+    onClose: onClosedSalaryDialog,
   })
 }
 
-const onCloneEmployeeHistory = (employeeHistory: EmployeeHistoryResponse) => {
-  dialog.open(EmployeeHistoryDialog, {
+const onCloneSalary = (salary: SalaryResponse) => {
+  dialog.open(SalaryDialog, {
     data: {
       employeeID,
-      employeeHistory,
+      salary,
       isClone: true,
     },
     props: {
       header: 'Lohn klonen',
       ...ModalConfig,
     },
-    onClose: onClosedHistoryDialog,
+    onClose: onClosedSalaryDialog,
   })
 }
 
-const onClosedHistoryDialog = (options: DynamicDialogCloseOptions) => {
+const onClosedSalaryDialog = (options: DynamicDialogCloseOptions) => {
   if (options?.data === true) {
-    // Refetch employee to set proper active history
+    // Refetch employee to set proper active salary
     getEmployee(employeeID)
       .then((value) => {
         employee.value = value
@@ -358,10 +358,10 @@ const onClosedHistoryDialog = (options: DynamicDialogCloseOptions) => {
   }
 }
 
-const onLoadMoreEmployeeHistory = async () => {
+const onLoadMoreSalaries = async () => {
   isLoadingMore.value = true
-  pageEmployeeHistories.value += 1
-  await listEmployeeHistory(employeeID)
+  pageSalaries.value += 1
+  await listSalaries(employeeID)
   isLoadingMore.value = false
 }
 </script>

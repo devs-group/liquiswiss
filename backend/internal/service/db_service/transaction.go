@@ -136,7 +136,7 @@ func (s *DatabaseService) GetTransaction(userID int64, transactionID int64) (*mo
 		}
 	}
 
-	nextExecutionDate := s.CalculateHistoryExecutionDate(transaction.StartDate, transaction.EndDate, transaction.Cycle, transaction.DBDate, 1, true)
+	nextExecutionDate := s.CalculateSalaryExecutionDate(transaction.StartDate, transaction.EndDate, transaction.Cycle, transaction.DBDate, 1, true)
 	if nextExecutionDate != nil {
 		nextExecutionDateAsDate := types.AsDate(*nextExecutionDate)
 		transaction.NextExecutionDate = &nextExecutionDateAsDate

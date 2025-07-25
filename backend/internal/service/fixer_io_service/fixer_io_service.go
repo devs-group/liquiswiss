@@ -42,8 +42,11 @@ func (f *FixerIOService) RequiresInitialFetch() (bool, error) {
 
 func (f *FixerIOService) FetchFiatRates() {
 	if !utils.IsProduction() {
-		logger.Logger.Debug("Skipping Fiat Rates because we are not on Production")
-		return
+		fiatRates, err := f.dbService.ListFiatRates("CHF")
+		if err == nil && len(fiatRates) > 0 {
+			logger.Logger.Debug("Skipping Fiat Rates because we are not on Production and already have some Fiat Rates")
+			return
+		}
 	}
 
 	logger.Logger.Infof("Running Fixer.io Cronjob")

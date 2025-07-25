@@ -55,18 +55,18 @@ func (mr *MockIDatabaseServiceMockRecorder) AssignUserToOrganisation(userID, org
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "AssignUserToOrganisation", reflect.TypeOf((*MockIDatabaseService)(nil).AssignUserToOrganisation), userID, organisationID, role, isDefault)
 }
 
-// CalculateEmployeeHistoryCostDetails mocks base method.
-func (m *MockIDatabaseService) CalculateEmployeeHistoryCostDetails(historyCostID, userID int64) error {
+// CalculateSalaryCostDetails mocks base method.
+func (m *MockIDatabaseService) CalculateSalaryCostDetails(salaryCostID, userID int64) error {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "CalculateEmployeeHistoryCostDetails", historyCostID, userID)
+	ret := m.ctrl.Call(m, "CalculateSalaryCostDetails", salaryCostID, userID)
 	ret0, _ := ret[0].(error)
 	return ret0
 }
 
-// CalculateEmployeeHistoryCostDetails indicates an expected call of CalculateEmployeeHistoryCostDetails.
-func (mr *MockIDatabaseServiceMockRecorder) CalculateEmployeeHistoryCostDetails(historyCostID, userID any) *gomock.Call {
+// CalculateSalaryCostDetails indicates an expected call of CalculateSalaryCostDetails.
+func (mr *MockIDatabaseServiceMockRecorder) CalculateSalaryCostDetails(salaryCostID, userID any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CalculateEmployeeHistoryCostDetails", reflect.TypeOf((*MockIDatabaseService)(nil).CalculateEmployeeHistoryCostDetails), historyCostID, userID)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CalculateSalaryCostDetails", reflect.TypeOf((*MockIDatabaseService)(nil).CalculateSalaryCostDetails), salaryCostID, userID)
 }
 
 // CheckRefreshToken mocks base method.
@@ -114,18 +114,18 @@ func (mr *MockIDatabaseServiceMockRecorder) ClearForecasts(userID any) *gomock.C
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ClearForecasts", reflect.TypeOf((*MockIDatabaseService)(nil).ClearForecasts), userID)
 }
 
-// CopyEmployeeHistoryCosts mocks base method.
-func (m *MockIDatabaseService) CopyEmployeeHistoryCosts(payload models.CopyEmployeeHistoryCosts, userID, historyID int64) error {
+// CopySalaryCosts mocks base method.
+func (m *MockIDatabaseService) CopySalaryCosts(payload models.CopySalaryCosts, userID, salaryID int64) error {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "CopyEmployeeHistoryCosts", payload, userID, historyID)
+	ret := m.ctrl.Call(m, "CopySalaryCosts", payload, userID, salaryID)
 	ret0, _ := ret[0].(error)
 	return ret0
 }
 
-// CopyEmployeeHistoryCosts indicates an expected call of CopyEmployeeHistoryCosts.
-func (mr *MockIDatabaseServiceMockRecorder) CopyEmployeeHistoryCosts(payload, userID, historyID any) *gomock.Call {
+// CopySalaryCosts indicates an expected call of CopySalaryCosts.
+func (mr *MockIDatabaseServiceMockRecorder) CopySalaryCosts(payload, userID, salaryID any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CopyEmployeeHistoryCosts", reflect.TypeOf((*MockIDatabaseService)(nil).CopyEmployeeHistoryCosts), payload, userID, historyID)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CopySalaryCosts", reflect.TypeOf((*MockIDatabaseService)(nil).CopySalaryCosts), payload, userID, salaryID)
 }
 
 // CountCurrencies mocks base method.
@@ -233,53 +233,6 @@ func (mr *MockIDatabaseServiceMockRecorder) CreateEmployee(payload, userID any) 
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CreateEmployee", reflect.TypeOf((*MockIDatabaseService)(nil).CreateEmployee), payload, userID)
 }
 
-// CreateEmployeeHistory mocks base method.
-func (m *MockIDatabaseService) CreateEmployeeHistory(payload models.CreateEmployeeHistory, userID, employeeID int64) (int64, *int64, *int64, error) {
-	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "CreateEmployeeHistory", payload, userID, employeeID)
-	ret0, _ := ret[0].(int64)
-	ret1, _ := ret[1].(*int64)
-	ret2, _ := ret[2].(*int64)
-	ret3, _ := ret[3].(error)
-	return ret0, ret1, ret2, ret3
-}
-
-// CreateEmployeeHistory indicates an expected call of CreateEmployeeHistory.
-func (mr *MockIDatabaseServiceMockRecorder) CreateEmployeeHistory(payload, userID, employeeID any) *gomock.Call {
-	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CreateEmployeeHistory", reflect.TypeOf((*MockIDatabaseService)(nil).CreateEmployeeHistory), payload, userID, employeeID)
-}
-
-// CreateEmployeeHistoryCost mocks base method.
-func (m *MockIDatabaseService) CreateEmployeeHistoryCost(payload models.CreateEmployeeHistoryCost, userID, historyID int64) (int64, error) {
-	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "CreateEmployeeHistoryCost", payload, userID, historyID)
-	ret0, _ := ret[0].(int64)
-	ret1, _ := ret[1].(error)
-	return ret0, ret1
-}
-
-// CreateEmployeeHistoryCost indicates an expected call of CreateEmployeeHistoryCost.
-func (mr *MockIDatabaseServiceMockRecorder) CreateEmployeeHistoryCost(payload, userID, historyID any) *gomock.Call {
-	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CreateEmployeeHistoryCost", reflect.TypeOf((*MockIDatabaseService)(nil).CreateEmployeeHistoryCost), payload, userID, historyID)
-}
-
-// CreateEmployeeHistoryCostLabel mocks base method.
-func (m *MockIDatabaseService) CreateEmployeeHistoryCostLabel(payload models.CreateEmployeeHistoryCostLabel, userID int64) (int64, error) {
-	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "CreateEmployeeHistoryCostLabel", payload, userID)
-	ret0, _ := ret[0].(int64)
-	ret1, _ := ret[1].(error)
-	return ret0, ret1
-}
-
-// CreateEmployeeHistoryCostLabel indicates an expected call of CreateEmployeeHistoryCostLabel.
-func (mr *MockIDatabaseServiceMockRecorder) CreateEmployeeHistoryCostLabel(payload, userID any) *gomock.Call {
-	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CreateEmployeeHistoryCostLabel", reflect.TypeOf((*MockIDatabaseService)(nil).CreateEmployeeHistoryCostLabel), payload, userID)
-}
-
 // CreateForecastExclusion mocks base method.
 func (m *MockIDatabaseService) CreateForecastExclusion(payload models.CreateForecastExclusion, userID int64) (int64, error) {
 	m.ctrl.T.Helper()
@@ -338,6 +291,53 @@ func (m *MockIDatabaseService) CreateResetPassword(email, code string, delay tim
 func (mr *MockIDatabaseServiceMockRecorder) CreateResetPassword(email, code, delay any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CreateResetPassword", reflect.TypeOf((*MockIDatabaseService)(nil).CreateResetPassword), email, code, delay)
+}
+
+// CreateSalary mocks base method.
+func (m *MockIDatabaseService) CreateSalary(payload models.CreateSalary, userID, employeeID int64) (int64, *int64, *int64, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "CreateSalary", payload, userID, employeeID)
+	ret0, _ := ret[0].(int64)
+	ret1, _ := ret[1].(*int64)
+	ret2, _ := ret[2].(*int64)
+	ret3, _ := ret[3].(error)
+	return ret0, ret1, ret2, ret3
+}
+
+// CreateSalary indicates an expected call of CreateSalary.
+func (mr *MockIDatabaseServiceMockRecorder) CreateSalary(payload, userID, employeeID any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CreateSalary", reflect.TypeOf((*MockIDatabaseService)(nil).CreateSalary), payload, userID, employeeID)
+}
+
+// CreateSalaryCost mocks base method.
+func (m *MockIDatabaseService) CreateSalaryCost(payload models.CreateSalaryCost, userID, salaryID int64) (int64, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "CreateSalaryCost", payload, userID, salaryID)
+	ret0, _ := ret[0].(int64)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// CreateSalaryCost indicates an expected call of CreateSalaryCost.
+func (mr *MockIDatabaseServiceMockRecorder) CreateSalaryCost(payload, userID, salaryID any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CreateSalaryCost", reflect.TypeOf((*MockIDatabaseService)(nil).CreateSalaryCost), payload, userID, salaryID)
+}
+
+// CreateSalaryCostLabel mocks base method.
+func (m *MockIDatabaseService) CreateSalaryCostLabel(payload models.CreateSalaryCostLabel, userID int64) (int64, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "CreateSalaryCostLabel", payload, userID)
+	ret0, _ := ret[0].(int64)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// CreateSalaryCostLabel indicates an expected call of CreateSalaryCostLabel.
+func (mr *MockIDatabaseServiceMockRecorder) CreateSalaryCostLabel(payload, userID any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CreateSalaryCostLabel", reflect.TypeOf((*MockIDatabaseService)(nil).CreateSalaryCostLabel), payload, userID)
 }
 
 // CreateTransaction mocks base method.
@@ -413,48 +413,6 @@ func (mr *MockIDatabaseServiceMockRecorder) DeleteEmployee(employeeID, userID an
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "DeleteEmployee", reflect.TypeOf((*MockIDatabaseService)(nil).DeleteEmployee), employeeID, userID)
 }
 
-// DeleteEmployeeHistory mocks base method.
-func (m *MockIDatabaseService) DeleteEmployeeHistory(existingEmployeeHistory *models.EmployeeHistory, userID int64) error {
-	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "DeleteEmployeeHistory", existingEmployeeHistory, userID)
-	ret0, _ := ret[0].(error)
-	return ret0
-}
-
-// DeleteEmployeeHistory indicates an expected call of DeleteEmployeeHistory.
-func (mr *MockIDatabaseServiceMockRecorder) DeleteEmployeeHistory(existingEmployeeHistory, userID any) *gomock.Call {
-	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "DeleteEmployeeHistory", reflect.TypeOf((*MockIDatabaseService)(nil).DeleteEmployeeHistory), existingEmployeeHistory, userID)
-}
-
-// DeleteEmployeeHistoryCost mocks base method.
-func (m *MockIDatabaseService) DeleteEmployeeHistoryCost(historyCostID, userID int64) error {
-	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "DeleteEmployeeHistoryCost", historyCostID, userID)
-	ret0, _ := ret[0].(error)
-	return ret0
-}
-
-// DeleteEmployeeHistoryCost indicates an expected call of DeleteEmployeeHistoryCost.
-func (mr *MockIDatabaseServiceMockRecorder) DeleteEmployeeHistoryCost(historyCostID, userID any) *gomock.Call {
-	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "DeleteEmployeeHistoryCost", reflect.TypeOf((*MockIDatabaseService)(nil).DeleteEmployeeHistoryCost), historyCostID, userID)
-}
-
-// DeleteEmployeeHistoryCostLabel mocks base method.
-func (m *MockIDatabaseService) DeleteEmployeeHistoryCostLabel(historyCostLabelID, userID int64) error {
-	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "DeleteEmployeeHistoryCostLabel", historyCostLabelID, userID)
-	ret0, _ := ret[0].(error)
-	return ret0
-}
-
-// DeleteEmployeeHistoryCostLabel indicates an expected call of DeleteEmployeeHistoryCostLabel.
-func (mr *MockIDatabaseServiceMockRecorder) DeleteEmployeeHistoryCostLabel(historyCostLabelID, userID any) *gomock.Call {
-	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "DeleteEmployeeHistoryCostLabel", reflect.TypeOf((*MockIDatabaseService)(nil).DeleteEmployeeHistoryCostLabel), historyCostLabelID, userID)
-}
-
 // DeleteForecastExclusion mocks base method.
 func (m *MockIDatabaseService) DeleteForecastExclusion(payload models.CreateForecastExclusion, userID int64) (int64, error) {
 	m.ctrl.T.Helper()
@@ -510,6 +468,50 @@ func (m *MockIDatabaseService) DeleteResetPassword(email string) error {
 func (mr *MockIDatabaseServiceMockRecorder) DeleteResetPassword(email any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "DeleteResetPassword", reflect.TypeOf((*MockIDatabaseService)(nil).DeleteResetPassword), email)
+}
+
+// DeleteSalary mocks base method.
+func (m *MockIDatabaseService) DeleteSalary(existingSalary *models.Salary, userID int64) (*int64, *int64, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "DeleteSalary", existingSalary, userID)
+	ret0, _ := ret[0].(*int64)
+	ret1, _ := ret[1].(*int64)
+	ret2, _ := ret[2].(error)
+	return ret0, ret1, ret2
+}
+
+// DeleteSalary indicates an expected call of DeleteSalary.
+func (mr *MockIDatabaseServiceMockRecorder) DeleteSalary(existingSalary, userID any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "DeleteSalary", reflect.TypeOf((*MockIDatabaseService)(nil).DeleteSalary), existingSalary, userID)
+}
+
+// DeleteSalaryCost mocks base method.
+func (m *MockIDatabaseService) DeleteSalaryCost(salaryCostID, userID int64) error {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "DeleteSalaryCost", salaryCostID, userID)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// DeleteSalaryCost indicates an expected call of DeleteSalaryCost.
+func (mr *MockIDatabaseServiceMockRecorder) DeleteSalaryCost(salaryCostID, userID any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "DeleteSalaryCost", reflect.TypeOf((*MockIDatabaseService)(nil).DeleteSalaryCost), salaryCostID, userID)
+}
+
+// DeleteSalaryCostLabel mocks base method.
+func (m *MockIDatabaseService) DeleteSalaryCostLabel(salaryCostLabelID, userID int64) error {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "DeleteSalaryCostLabel", salaryCostLabelID, userID)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// DeleteSalaryCostLabel indicates an expected call of DeleteSalaryCostLabel.
+func (mr *MockIDatabaseServiceMockRecorder) DeleteSalaryCostLabel(salaryCostLabelID, userID any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "DeleteSalaryCostLabel", reflect.TypeOf((*MockIDatabaseService)(nil).DeleteSalaryCostLabel), salaryCostLabelID, userID)
 }
 
 // DeleteTransaction mocks base method.
@@ -600,51 +602,6 @@ func (mr *MockIDatabaseServiceMockRecorder) GetEmployee(userID, employeeID any) 
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetEmployee", reflect.TypeOf((*MockIDatabaseService)(nil).GetEmployee), userID, employeeID)
 }
 
-// GetEmployeeHistory mocks base method.
-func (m *MockIDatabaseService) GetEmployeeHistory(userID, historyID int64) (*models.EmployeeHistory, error) {
-	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "GetEmployeeHistory", userID, historyID)
-	ret0, _ := ret[0].(*models.EmployeeHistory)
-	ret1, _ := ret[1].(error)
-	return ret0, ret1
-}
-
-// GetEmployeeHistory indicates an expected call of GetEmployeeHistory.
-func (mr *MockIDatabaseServiceMockRecorder) GetEmployeeHistory(userID, historyID any) *gomock.Call {
-	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetEmployeeHistory", reflect.TypeOf((*MockIDatabaseService)(nil).GetEmployeeHistory), userID, historyID)
-}
-
-// GetEmployeeHistoryCost mocks base method.
-func (m *MockIDatabaseService) GetEmployeeHistoryCost(userID, historyCostID int64) (*models.EmployeeHistoryCost, error) {
-	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "GetEmployeeHistoryCost", userID, historyCostID)
-	ret0, _ := ret[0].(*models.EmployeeHistoryCost)
-	ret1, _ := ret[1].(error)
-	return ret0, ret1
-}
-
-// GetEmployeeHistoryCost indicates an expected call of GetEmployeeHistoryCost.
-func (mr *MockIDatabaseServiceMockRecorder) GetEmployeeHistoryCost(userID, historyCostID any) *gomock.Call {
-	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetEmployeeHistoryCost", reflect.TypeOf((*MockIDatabaseService)(nil).GetEmployeeHistoryCost), userID, historyCostID)
-}
-
-// GetEmployeeHistoryCostLabel mocks base method.
-func (m *MockIDatabaseService) GetEmployeeHistoryCostLabel(userID, historyCostLabelID int64) (*models.EmployeeHistoryCostLabel, error) {
-	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "GetEmployeeHistoryCostLabel", userID, historyCostLabelID)
-	ret0, _ := ret[0].(*models.EmployeeHistoryCostLabel)
-	ret1, _ := ret[1].(error)
-	return ret0, ret1
-}
-
-// GetEmployeeHistoryCostLabel indicates an expected call of GetEmployeeHistoryCostLabel.
-func (mr *MockIDatabaseServiceMockRecorder) GetEmployeeHistoryCostLabel(userID, historyCostLabelID any) *gomock.Call {
-	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetEmployeeHistoryCostLabel", reflect.TypeOf((*MockIDatabaseService)(nil).GetEmployeeHistoryCostLabel), userID, historyCostLabelID)
-}
-
 // GetFiatRate mocks base method.
 func (m *MockIDatabaseService) GetFiatRate(base, target string) (*models.FiatRate, error) {
 	m.ctrl.T.Helper()
@@ -688,6 +645,51 @@ func (m *MockIDatabaseService) GetProfile(userID int64) (*models.User, error) {
 func (mr *MockIDatabaseServiceMockRecorder) GetProfile(userID any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetProfile", reflect.TypeOf((*MockIDatabaseService)(nil).GetProfile), userID)
+}
+
+// GetSalary mocks base method.
+func (m *MockIDatabaseService) GetSalary(userID, salaryID int64) (*models.Salary, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "GetSalary", userID, salaryID)
+	ret0, _ := ret[0].(*models.Salary)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// GetSalary indicates an expected call of GetSalary.
+func (mr *MockIDatabaseServiceMockRecorder) GetSalary(userID, salaryID any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetSalary", reflect.TypeOf((*MockIDatabaseService)(nil).GetSalary), userID, salaryID)
+}
+
+// GetSalaryCost mocks base method.
+func (m *MockIDatabaseService) GetSalaryCost(userID, salaryCostID int64) (*models.SalaryCost, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "GetSalaryCost", userID, salaryCostID)
+	ret0, _ := ret[0].(*models.SalaryCost)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// GetSalaryCost indicates an expected call of GetSalaryCost.
+func (mr *MockIDatabaseServiceMockRecorder) GetSalaryCost(userID, salaryCostID any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetSalaryCost", reflect.TypeOf((*MockIDatabaseService)(nil).GetSalaryCost), userID, salaryCostID)
+}
+
+// GetSalaryCostLabel mocks base method.
+func (m *MockIDatabaseService) GetSalaryCostLabel(userID, salaryCostLabelID int64) (*models.SalaryCostLabel, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "GetSalaryCostLabel", userID, salaryCostLabelID)
+	ret0, _ := ret[0].(*models.SalaryCostLabel)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// GetSalaryCostLabel indicates an expected call of GetSalaryCostLabel.
+func (mr *MockIDatabaseServiceMockRecorder) GetSalaryCostLabel(userID, salaryCostLabelID any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetSalaryCostLabel", reflect.TypeOf((*MockIDatabaseService)(nil).GetSalaryCostLabel), userID, salaryCostLabelID)
 }
 
 // GetTransaction mocks base method.
@@ -779,69 +781,6 @@ func (m *MockIDatabaseService) ListCurrencies(userID int64) ([]models.Currency, 
 func (mr *MockIDatabaseServiceMockRecorder) ListCurrencies(userID any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ListCurrencies", reflect.TypeOf((*MockIDatabaseService)(nil).ListCurrencies), userID)
-}
-
-// ListEmployeeHistory mocks base method.
-func (m *MockIDatabaseService) ListEmployeeHistory(userID, employeeID, page, limit int64) ([]models.EmployeeHistory, int64, error) {
-	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "ListEmployeeHistory", userID, employeeID, page, limit)
-	ret0, _ := ret[0].([]models.EmployeeHistory)
-	ret1, _ := ret[1].(int64)
-	ret2, _ := ret[2].(error)
-	return ret0, ret1, ret2
-}
-
-// ListEmployeeHistory indicates an expected call of ListEmployeeHistory.
-func (mr *MockIDatabaseServiceMockRecorder) ListEmployeeHistory(userID, employeeID, page, limit any) *gomock.Call {
-	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ListEmployeeHistory", reflect.TypeOf((*MockIDatabaseService)(nil).ListEmployeeHistory), userID, employeeID, page, limit)
-}
-
-// ListEmployeeHistoryCostDetails mocks base method.
-func (m *MockIDatabaseService) ListEmployeeHistoryCostDetails(historyCostID int64) ([]models.EmployeeHistoryCostDetail, error) {
-	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "ListEmployeeHistoryCostDetails", historyCostID)
-	ret0, _ := ret[0].([]models.EmployeeHistoryCostDetail)
-	ret1, _ := ret[1].(error)
-	return ret0, ret1
-}
-
-// ListEmployeeHistoryCostDetails indicates an expected call of ListEmployeeHistoryCostDetails.
-func (mr *MockIDatabaseServiceMockRecorder) ListEmployeeHistoryCostDetails(historyCostID any) *gomock.Call {
-	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ListEmployeeHistoryCostDetails", reflect.TypeOf((*MockIDatabaseService)(nil).ListEmployeeHistoryCostDetails), historyCostID)
-}
-
-// ListEmployeeHistoryCostLabels mocks base method.
-func (m *MockIDatabaseService) ListEmployeeHistoryCostLabels(userID, page, limit int64) ([]models.EmployeeHistoryCostLabel, int64, error) {
-	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "ListEmployeeHistoryCostLabels", userID, page, limit)
-	ret0, _ := ret[0].([]models.EmployeeHistoryCostLabel)
-	ret1, _ := ret[1].(int64)
-	ret2, _ := ret[2].(error)
-	return ret0, ret1, ret2
-}
-
-// ListEmployeeHistoryCostLabels indicates an expected call of ListEmployeeHistoryCostLabels.
-func (mr *MockIDatabaseServiceMockRecorder) ListEmployeeHistoryCostLabels(userID, page, limit any) *gomock.Call {
-	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ListEmployeeHistoryCostLabels", reflect.TypeOf((*MockIDatabaseService)(nil).ListEmployeeHistoryCostLabels), userID, page, limit)
-}
-
-// ListEmployeeHistoryCosts mocks base method.
-func (m *MockIDatabaseService) ListEmployeeHistoryCosts(userID, historyID, page, limit int64) ([]models.EmployeeHistoryCost, int64, error) {
-	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "ListEmployeeHistoryCosts", userID, historyID, page, limit)
-	ret0, _ := ret[0].([]models.EmployeeHistoryCost)
-	ret1, _ := ret[1].(int64)
-	ret2, _ := ret[2].(error)
-	return ret0, ret1, ret2
-}
-
-// ListEmployeeHistoryCosts indicates an expected call of ListEmployeeHistoryCosts.
-func (mr *MockIDatabaseServiceMockRecorder) ListEmployeeHistoryCosts(userID, historyID, page, limit any) *gomock.Call {
-	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ListEmployeeHistoryCosts", reflect.TypeOf((*MockIDatabaseService)(nil).ListEmployeeHistoryCosts), userID, historyID, page, limit)
 }
 
 // ListEmployees mocks base method.
@@ -936,6 +875,69 @@ func (mr *MockIDatabaseServiceMockRecorder) ListOrganisations(userID, page, limi
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ListOrganisations", reflect.TypeOf((*MockIDatabaseService)(nil).ListOrganisations), userID, page, limit)
 }
 
+// ListSalaries mocks base method.
+func (m *MockIDatabaseService) ListSalaries(userID, employeeID, page, limit int64) ([]models.Salary, int64, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "ListSalaries", userID, employeeID, page, limit)
+	ret0, _ := ret[0].([]models.Salary)
+	ret1, _ := ret[1].(int64)
+	ret2, _ := ret[2].(error)
+	return ret0, ret1, ret2
+}
+
+// ListSalaries indicates an expected call of ListSalaries.
+func (mr *MockIDatabaseServiceMockRecorder) ListSalaries(userID, employeeID, page, limit any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ListSalaries", reflect.TypeOf((*MockIDatabaseService)(nil).ListSalaries), userID, employeeID, page, limit)
+}
+
+// ListSalaryCostDetails mocks base method.
+func (m *MockIDatabaseService) ListSalaryCostDetails(salaryCostID int64) ([]models.SalaryCostDetail, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "ListSalaryCostDetails", salaryCostID)
+	ret0, _ := ret[0].([]models.SalaryCostDetail)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// ListSalaryCostDetails indicates an expected call of ListSalaryCostDetails.
+func (mr *MockIDatabaseServiceMockRecorder) ListSalaryCostDetails(salaryCostID any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ListSalaryCostDetails", reflect.TypeOf((*MockIDatabaseService)(nil).ListSalaryCostDetails), salaryCostID)
+}
+
+// ListSalaryCostLabels mocks base method.
+func (m *MockIDatabaseService) ListSalaryCostLabels(userID, page, limit int64) ([]models.SalaryCostLabel, int64, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "ListSalaryCostLabels", userID, page, limit)
+	ret0, _ := ret[0].([]models.SalaryCostLabel)
+	ret1, _ := ret[1].(int64)
+	ret2, _ := ret[2].(error)
+	return ret0, ret1, ret2
+}
+
+// ListSalaryCostLabels indicates an expected call of ListSalaryCostLabels.
+func (mr *MockIDatabaseServiceMockRecorder) ListSalaryCostLabels(userID, page, limit any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ListSalaryCostLabels", reflect.TypeOf((*MockIDatabaseService)(nil).ListSalaryCostLabels), userID, page, limit)
+}
+
+// ListSalaryCosts mocks base method.
+func (m *MockIDatabaseService) ListSalaryCosts(userID, salaryID, page, limit int64) ([]models.SalaryCost, int64, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "ListSalaryCosts", userID, salaryID, page, limit)
+	ret0, _ := ret[0].([]models.SalaryCost)
+	ret1, _ := ret[1].(int64)
+	ret2, _ := ret[2].(error)
+	return ret0, ret1, ret2
+}
+
+// ListSalaryCosts indicates an expected call of ListSalaryCosts.
+func (mr *MockIDatabaseServiceMockRecorder) ListSalaryCosts(userID, salaryID, page, limit any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ListSalaryCosts", reflect.TypeOf((*MockIDatabaseService)(nil).ListSalaryCosts), userID, salaryID, page, limit)
+}
+
 // ListTransactions mocks base method.
 func (m *MockIDatabaseService) ListTransactions(userID, page, limit int64, sortBy, sortOrder string) ([]models.Transaction, int64, error) {
 	m.ctrl.T.Helper()
@@ -967,18 +969,18 @@ func (mr *MockIDatabaseServiceMockRecorder) ListVats(userID any) *gomock.Call {
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ListVats", reflect.TypeOf((*MockIDatabaseService)(nil).ListVats), userID)
 }
 
-// RefreshCostDetails mocks base method.
-func (m *MockIDatabaseService) RefreshCostDetails(userID, historyID int64) error {
+// RefreshSalaryCostDetails mocks base method.
+func (m *MockIDatabaseService) RefreshSalaryCostDetails(userID, salaryID int64) error {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "RefreshCostDetails", userID, historyID)
+	ret := m.ctrl.Call(m, "RefreshSalaryCostDetails", userID, salaryID)
 	ret0, _ := ret[0].(error)
 	return ret0
 }
 
-// RefreshCostDetails indicates an expected call of RefreshCostDetails.
-func (mr *MockIDatabaseServiceMockRecorder) RefreshCostDetails(userID, historyID any) *gomock.Call {
+// RefreshSalaryCostDetails indicates an expected call of RefreshSalaryCostDetails.
+func (mr *MockIDatabaseServiceMockRecorder) RefreshSalaryCostDetails(userID, salaryID any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "RefreshCostDetails", reflect.TypeOf((*MockIDatabaseService)(nil).RefreshCostDetails), userID, historyID)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "RefreshSalaryCostDetails", reflect.TypeOf((*MockIDatabaseService)(nil).RefreshSalaryCostDetails), userID, salaryID)
 }
 
 // ResetPassword mocks base method.
@@ -1079,50 +1081,6 @@ func (mr *MockIDatabaseServiceMockRecorder) UpdateEmployee(payload, userID, empl
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "UpdateEmployee", reflect.TypeOf((*MockIDatabaseService)(nil).UpdateEmployee), payload, userID, employeeID)
 }
 
-// UpdateEmployeeHistory mocks base method.
-func (m *MockIDatabaseService) UpdateEmployeeHistory(payload models.UpdateEmployeeHistory, employeeID, historyID int64) (*int64, *int64, error) {
-	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "UpdateEmployeeHistory", payload, employeeID, historyID)
-	ret0, _ := ret[0].(*int64)
-	ret1, _ := ret[1].(*int64)
-	ret2, _ := ret[2].(error)
-	return ret0, ret1, ret2
-}
-
-// UpdateEmployeeHistory indicates an expected call of UpdateEmployeeHistory.
-func (mr *MockIDatabaseServiceMockRecorder) UpdateEmployeeHistory(payload, employeeID, historyID any) *gomock.Call {
-	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "UpdateEmployeeHistory", reflect.TypeOf((*MockIDatabaseService)(nil).UpdateEmployeeHistory), payload, employeeID, historyID)
-}
-
-// UpdateEmployeeHistoryCost mocks base method.
-func (m *MockIDatabaseService) UpdateEmployeeHistoryCost(payload models.CreateEmployeeHistoryCost, userID, historyCostID int64) error {
-	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "UpdateEmployeeHistoryCost", payload, userID, historyCostID)
-	ret0, _ := ret[0].(error)
-	return ret0
-}
-
-// UpdateEmployeeHistoryCost indicates an expected call of UpdateEmployeeHistoryCost.
-func (mr *MockIDatabaseServiceMockRecorder) UpdateEmployeeHistoryCost(payload, userID, historyCostID any) *gomock.Call {
-	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "UpdateEmployeeHistoryCost", reflect.TypeOf((*MockIDatabaseService)(nil).UpdateEmployeeHistoryCost), payload, userID, historyCostID)
-}
-
-// UpdateEmployeeHistoryCostLabel mocks base method.
-func (m *MockIDatabaseService) UpdateEmployeeHistoryCostLabel(payload models.CreateEmployeeHistoryCostLabel, userID, historyCostLabelID int64) error {
-	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "UpdateEmployeeHistoryCostLabel", payload, userID, historyCostLabelID)
-	ret0, _ := ret[0].(error)
-	return ret0
-}
-
-// UpdateEmployeeHistoryCostLabel indicates an expected call of UpdateEmployeeHistoryCostLabel.
-func (mr *MockIDatabaseServiceMockRecorder) UpdateEmployeeHistoryCostLabel(payload, userID, historyCostLabelID any) *gomock.Call {
-	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "UpdateEmployeeHistoryCostLabel", reflect.TypeOf((*MockIDatabaseService)(nil).UpdateEmployeeHistoryCostLabel), payload, userID, historyCostLabelID)
-}
-
 // UpdateOrganisation mocks base method.
 func (m *MockIDatabaseService) UpdateOrganisation(payload models.UpdateOrganisation, userID, organisationID int64) error {
 	m.ctrl.T.Helper()
@@ -1165,6 +1123,50 @@ func (mr *MockIDatabaseServiceMockRecorder) UpdateProfile(payload, userID any) *
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "UpdateProfile", reflect.TypeOf((*MockIDatabaseService)(nil).UpdateProfile), payload, userID)
 }
 
+// UpdateSalary mocks base method.
+func (m *MockIDatabaseService) UpdateSalary(payload models.UpdateSalary, employeeID, salaryID int64) (*int64, *int64, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "UpdateSalary", payload, employeeID, salaryID)
+	ret0, _ := ret[0].(*int64)
+	ret1, _ := ret[1].(*int64)
+	ret2, _ := ret[2].(error)
+	return ret0, ret1, ret2
+}
+
+// UpdateSalary indicates an expected call of UpdateSalary.
+func (mr *MockIDatabaseServiceMockRecorder) UpdateSalary(payload, employeeID, salaryID any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "UpdateSalary", reflect.TypeOf((*MockIDatabaseService)(nil).UpdateSalary), payload, employeeID, salaryID)
+}
+
+// UpdateSalaryCost mocks base method.
+func (m *MockIDatabaseService) UpdateSalaryCost(payload models.CreateSalaryCost, userID, salaryCostID int64) error {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "UpdateSalaryCost", payload, userID, salaryCostID)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// UpdateSalaryCost indicates an expected call of UpdateSalaryCost.
+func (mr *MockIDatabaseServiceMockRecorder) UpdateSalaryCost(payload, userID, salaryCostID any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "UpdateSalaryCost", reflect.TypeOf((*MockIDatabaseService)(nil).UpdateSalaryCost), payload, userID, salaryCostID)
+}
+
+// UpdateSalaryCostLabel mocks base method.
+func (m *MockIDatabaseService) UpdateSalaryCostLabel(payload models.CreateSalaryCostLabel, userID, salaryCostLabelID int64) error {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "UpdateSalaryCostLabel", payload, userID, salaryCostLabelID)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// UpdateSalaryCostLabel indicates an expected call of UpdateSalaryCostLabel.
+func (mr *MockIDatabaseServiceMockRecorder) UpdateSalaryCostLabel(payload, userID, salaryCostLabelID any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "UpdateSalaryCostLabel", reflect.TypeOf((*MockIDatabaseService)(nil).UpdateSalaryCostLabel), payload, userID, salaryCostLabelID)
+}
+
 // UpdateTransaction mocks base method.
 func (m *MockIDatabaseService) UpdateTransaction(payload models.UpdateTransaction, userID, transactionID int64) error {
 	m.ctrl.T.Helper()
@@ -1191,21 +1193,6 @@ func (m *MockIDatabaseService) UpdateVat(payload models.UpdateVat, userID, vatID
 func (mr *MockIDatabaseServiceMockRecorder) UpdateVat(payload, userID, vatID any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "UpdateVat", reflect.TypeOf((*MockIDatabaseService)(nil).UpdateVat), payload, userID, vatID)
-}
-
-// UpsertEmployeeHistoryCostDetails mocks base method.
-func (m *MockIDatabaseService) UpsertEmployeeHistoryCostDetails(payload models.CreateEmployeeHistoryCostDetail) (int64, error) {
-	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "UpsertEmployeeHistoryCostDetails", payload)
-	ret0, _ := ret[0].(int64)
-	ret1, _ := ret[1].(error)
-	return ret0, ret1
-}
-
-// UpsertEmployeeHistoryCostDetails indicates an expected call of UpsertEmployeeHistoryCostDetails.
-func (mr *MockIDatabaseServiceMockRecorder) UpsertEmployeeHistoryCostDetails(payload any) *gomock.Call {
-	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "UpsertEmployeeHistoryCostDetails", reflect.TypeOf((*MockIDatabaseService)(nil).UpsertEmployeeHistoryCostDetails), payload)
 }
 
 // UpsertFiatRate mocks base method.
@@ -1250,6 +1237,21 @@ func (m *MockIDatabaseService) UpsertForecastDetail(payload models.CreateForecas
 func (mr *MockIDatabaseServiceMockRecorder) UpsertForecastDetail(payload, userID, forecastID any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "UpsertForecastDetail", reflect.TypeOf((*MockIDatabaseService)(nil).UpsertForecastDetail), payload, userID, forecastID)
+}
+
+// UpsertSalaryCostDetails mocks base method.
+func (m *MockIDatabaseService) UpsertSalaryCostDetails(payload models.CreateSalaryCostDetail) (int64, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "UpsertSalaryCostDetails", payload)
+	ret0, _ := ret[0].(int64)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// UpsertSalaryCostDetails indicates an expected call of UpsertSalaryCostDetails.
+func (mr *MockIDatabaseServiceMockRecorder) UpsertSalaryCostDetails(payload any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "UpsertSalaryCostDetails", reflect.TypeOf((*MockIDatabaseService)(nil).UpsertSalaryCostDetails), payload)
 }
 
 // ValidateRegistration mocks base method.

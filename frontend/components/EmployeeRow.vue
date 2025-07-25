@@ -10,7 +10,7 @@
       />
     </div>
     <p>{{ employee.hoursPerMonth || '-' }}</p>
-    <p v-if="hasHistoryData">
+    <p v-if="hasSalaryAmount">
       {{ salaryFormatted || '-' }} {{ employee.currency.code }} / {{ cycle }}
     </p>
     <p v-else>
@@ -54,7 +54,7 @@ const toDate = computed(
 const cycle = computed(
   () => EmployeeUtils.cycle(props.employee),
 )
-const hasHistoryData = computed(
-  () => EmployeeUtils.hasHistoryData(props.employee),
+const hasSalaryAmount = computed(
+  () => EmployeeUtils.hasSalaryAmount(props.employee),
 )
 </script>

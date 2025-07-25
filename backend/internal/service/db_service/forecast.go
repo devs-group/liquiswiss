@@ -145,10 +145,10 @@ func (s *DatabaseService) ListForecastExclusions(userID, relatedID int64, relate
 	switch relatedTable {
 	case utils.TransactionsTableName:
 		sqlFile = "queries/list_transaction_exclusions.sql"
-	case utils.EmployeeHistoriesTableName:
-		sqlFile = "queries/list_employee_history_exclusions.sql"
-	case utils.EmployeeHistoryCostsTableName:
-		sqlFile = "queries/list_employee_history_cost_exclusions.sql"
+	case utils.SalariesTableName:
+		sqlFile = "queries/list_salary_exclusions.sql"
+	case utils.SalaryCostsTableName:
+		sqlFile = "queries/list_salary_cost_exclusions.sql"
 	default:
 		return nil, fmt.Errorf("invalid relatedTable")
 	}
@@ -188,10 +188,10 @@ func (s *DatabaseService) CreateForecastExclusion(payload models.CreateForecastE
 	switch payload.RelatedTable {
 	case utils.TransactionsTableName:
 		sqlFile = "queries/create_transaction_exclusion.sql"
-	case utils.EmployeeHistoriesTableName:
-		sqlFile = "queries/create_employee_history_exclusion.sql"
-	case utils.EmployeeHistoryCostsTableName:
-		sqlFile = "queries/create_employee_history_cost_exclusion.sql"
+	case utils.SalariesTableName:
+		sqlFile = "queries/create_salary_exclusion.sql"
+	case utils.SalaryCostsTableName:
+		sqlFile = "queries/create_salary_cost_exclusion.sql"
 	default:
 		return 0, fmt.Errorf("invalid relatedTable")
 	}
@@ -228,10 +228,10 @@ func (s *DatabaseService) DeleteForecastExclusion(payload models.CreateForecastE
 	switch payload.RelatedTable {
 	case utils.TransactionsTableName:
 		sqlFile = "queries/delete_transaction_exclusion.sql"
-	case utils.EmployeeHistoriesTableName:
-		sqlFile = "queries/delete_employee_history_exclusion.sql"
-	case utils.EmployeeHistoryCostsTableName:
-		sqlFile = "queries/delete_employee_history_cost_exclusion.sql"
+	case utils.SalariesTableName:
+		sqlFile = "queries/delete_salary_exclusion.sql"
+	case utils.SalaryCostsTableName:
+		sqlFile = "queries/delete_salary_cost_exclusion.sql"
 	default:
 		return 0, fmt.Errorf("invalid relatedTable")
 	}

@@ -12,22 +12,22 @@ export interface EmployeeResponse {
   id: number
   name: string
   hoursPerMonth: number | null
-  salary: number | null
+  salaryAmount: number | null
   cycle: CycleTypeToStringDefinition | null
   currency: CurrencyResponse | null
   vacationDaysPerYear?: number | null
   fromDate?: string | null
   toDate?: string | null
   isInFuture: boolean
-  historyID: number | null
+  salaryID: number | null
 }
 
-export interface EmployeeHistoryCostLabelResponse {
+export interface SalaryCostLabelResponse {
   id: number
   name: string
 }
 
-export interface EmployeeHistoryCostDetailResponse {
+export interface SalaryCostDetailResponse {
   id: number
   month: string
   Amount: number
@@ -35,28 +35,28 @@ export interface EmployeeHistoryCostDetailResponse {
   CostID: number
 }
 
-export interface EmployeeHistoryCostResponse {
+export interface SalaryCostResponse {
   id: number
-  label: EmployeeHistoryCostLabelResponse | null
+  label: SalaryCostLabelResponse | null
   cycle: CostCycleTypeToStringDefinition
   amountType: EmployeeCostTypeToStringDefinition
   amount: number
   distributionType: EmployeeCostDistributionTypeToStringDefinition
   relativeOffset: number
   targetDate: string | null
-  employeeHistoryID: number
+  salaryID: number
   calculatedAmount: number
   calculatedPreviousExecutionDate: Date
   calculatedNextExecutionDate: Date
   calculatedNextCost: number
-  calculatedCostDetails: EmployeeHistoryCostDetailResponse[]
+  calculatedCostDetails: SalaryCostDetailResponse[]
 }
 
-export interface EmployeeHistoryResponse {
+export interface SalaryResponse {
   id: number
   employeeID: number
   hoursPerMonth: number
-  salary: number
+  amount: number
   cycle: CycleTypeToStringDefinition
   currency: CurrencyResponse
   vacationDaysPerYear: number
@@ -74,12 +74,12 @@ export interface EmployeeFormData {
   name: string
 }
 
-export interface EmployeeHistoryCostLabelFormData {
+export interface SalaryCostLabelFormData {
   id: number
   name: string
 }
 
-export interface EmployeeHistoryCostFormData {
+export interface SalaryCostFormData {
   id: number
   labelID?: number
   cycle: CostCycleTypeToStringDefinition
@@ -90,14 +90,14 @@ export interface EmployeeHistoryCostFormData {
   targetDate?: Date
 }
 
-export interface EmployeeHistoryCostCopyFormData {
+export interface SalaryCostCopyFormData {
   ids: number[]
 }
 
-export interface EmployeeHistoryPUTFormData {
+export interface SalaryPUTFormData {
   id: number
   hoursPerMonth: number
-  salary: number
+  amount: number
   cycle: CycleTypeToStringDefinition
   currencyID: number
   vacationDaysPerYear: number
@@ -105,10 +105,10 @@ export interface EmployeeHistoryPUTFormData {
   withSeparateCosts: boolean
 }
 
-export interface EmployeeHistoryPATCHFormData {
+export interface SalaryPATCHFormData {
   id: number
   hoursPerMonth?: number
-  salary?: number
+  amount?: number
   cycle: CycleTypeToStringDefinition
   currencyID?: number
   vacationDaysPerYear?: number
@@ -122,17 +122,17 @@ export interface ListEmployeeResponse {
   pagination: PaginationResponse
 }
 
-export interface ListEmployeeHistoryCostResponse {
-  data: EmployeeHistoryCostResponse[]
+export interface ListSalaryCostResponse {
+  data: SalaryCostResponse[]
   pagination: PaginationResponse
 }
 
-export interface ListEmployeeHistoryCostLabelResponse {
-  data: EmployeeHistoryCostLabelResponse[]
+export interface ListSalaryCostLabelResponse {
+  data: SalaryCostLabelResponse[]
   pagination: PaginationResponse
 }
 
-export interface ListEmployeeHistoryResponse {
-  data: EmployeeHistoryResponse[]
+export interface ListSalaryResponse {
+  data: SalaryResponse[]
   pagination: PaginationResponse
 }

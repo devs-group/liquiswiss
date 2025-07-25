@@ -12,8 +12,8 @@ func (s *DatabaseService) ListEmployees(userID int64, page int64, limit int64, s
 	employees := make([]models.Employee, 0)
 	var totalCount int64
 	sortByMap := map[string]string{
-		"name": "e.name", "hoursPerMonth": "h.hours_per_month", "salary": "h.salary", "vacationDaysPerYear": "h.vacation_days_per_year",
-		"fromDate": "h.from_date", "toDate": "h.to_date",
+		"name": "e.name", "hoursPerMonth": "s.hours_per_month", "salary": "s.amount", "vacationDaysPerYear": "s.vacation_days_per_year",
+		"fromDate": "s.from_date", "toDate": "s.to_date",
 	}
 
 	// Validate inputs
@@ -46,7 +46,7 @@ func (s *DatabaseService) ListEmployees(userID int64, page int64, limit int64, s
 			&employee.ID,
 			&employee.Name,
 			&employee.HoursPerMonth,
-			&employee.Salary,
+			&employee.SalaryAmount,
 			&employee.Cycle,
 			&employee.Currency.ID,
 			&employee.Currency.LocaleCode,
@@ -57,7 +57,7 @@ func (s *DatabaseService) ListEmployees(userID int64, page int64, limit int64, s
 			&toDate,
 			&employee.IsInFuture,
 			&employee.WithSeparateCosts,
-			&employee.HistoryID,
+			&employee.SalaryID,
 			&totalCount,
 		)
 		if err != nil {
@@ -95,7 +95,7 @@ func (s *DatabaseService) GetEmployee(userID int64, employeeID int64) (*models.E
 		&employee.ID,
 		&employee.Name,
 		&employee.HoursPerMonth,
-		&employee.Salary,
+		&employee.SalaryAmount,
 		&employee.Cycle,
 		&employee.Currency.ID,
 		&employee.Currency.LocaleCode,
@@ -106,7 +106,7 @@ func (s *DatabaseService) GetEmployee(userID int64, employeeID int64) (*models.E
 		&toDate,
 		&employee.IsInFuture,
 		&employee.WithSeparateCosts,
-		&employee.HistoryID,
+		&employee.SalaryID,
 	)
 	if err != nil {
 		return nil, err

@@ -125,20 +125,20 @@ func CreateCurrency(dbService db_service.IDatabaseService, code, description, lo
 	return currency, nil
 }
 
-func CreateEmployeeHistoryCostLabel(dbService db_service.IDatabaseService, userID int64, name string) (*models.EmployeeHistoryCostLabel, error) {
-	historyCostLabelID, err := dbService.CreateEmployeeHistoryCostLabel(models.CreateEmployeeHistoryCostLabel{
+func CreateSalaryCostLabel(dbService db_service.IDatabaseService, userID int64, name string) (*models.SalaryCostLabel, error) {
+	salaryCostLabelID, err := dbService.CreateSalaryCostLabel(models.CreateSalaryCostLabel{
 		Name: name,
 	}, userID)
 	if err != nil {
 		return nil, err
 	}
 
-	historyCostLabel, err := dbService.GetEmployeeHistoryCostLabel(userID, historyCostLabelID)
+	salaryCostLabel, err := dbService.GetSalaryCostLabel(userID, salaryCostLabelID)
 	if err != nil {
 		return nil, err
 	}
 
-	return historyCostLabel, nil
+	return salaryCostLabel, nil
 }
 
 func SetDatabaseTime(conn *sql.DB, simulatedTime string) error {

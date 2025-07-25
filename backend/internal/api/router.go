@@ -145,58 +145,58 @@ func (api *API) setupRouter() {
 				handlers.GetEmployeesPagination(api.DBService, ctx)
 			})
 
-			// Employee Histories
-			protected.GET("/employees/:employeeID/history", func(ctx *gin.Context) {
-				handlers.ListEmployeeHistory(api.DBService, ctx)
+			// Employee Salaries
+			protected.GET("/employees/:employeeID/salary", func(ctx *gin.Context) {
+				handlers.ListSalaries(api.DBService, ctx)
 			})
-			protected.GET("/employees/history/:historyID", func(ctx *gin.Context) {
-				handlers.GetEmployeeHistory(api.DBService, ctx)
+			protected.GET("/employees/salary/:salaryID", func(ctx *gin.Context) {
+				handlers.GetSalary(api.DBService, ctx)
 			})
-			protected.POST("/employees/:employeeID/history", func(ctx *gin.Context) {
-				handlers.CreateEmployeeHistory(api.DBService, api.ForecastService, ctx)
+			protected.POST("/employees/:employeeID/salary", func(ctx *gin.Context) {
+				handlers.CreateSalary(api.DBService, api.ForecastService, ctx)
 			})
-			protected.PATCH("/employees/history/:historyID", func(ctx *gin.Context) {
-				handlers.UpdateEmployeeHistory(api.DBService, api.ForecastService, ctx)
+			protected.PATCH("/employees/salary/:salaryID", func(ctx *gin.Context) {
+				handlers.UpdateSalary(api.DBService, api.ForecastService, ctx)
 			})
-			protected.DELETE("/employees/history/:historyID", func(ctx *gin.Context) {
-				handlers.DeleteEmployeeHistory(api.DBService, api.ForecastService, ctx)
-			})
-
-			// Employee History Costs
-			protected.GET("/employees/history/:historyID/costs", func(ctx *gin.Context) {
-				handlers.ListEmployeeHistoryCosts(api.DBService, ctx)
-			})
-			protected.GET("/employees/history/costs/:historyCostID", func(ctx *gin.Context) {
-				handlers.GetEmployeeHistoryCost(api.DBService, ctx)
-			})
-			protected.POST("/employees/history/:historyID/costs", func(ctx *gin.Context) {
-				handlers.CreateEmployeeHistoryCost(api.DBService, api.ForecastService, ctx)
-			})
-			protected.POST("/employees/history/:historyID/costs/copy", func(ctx *gin.Context) {
-				handlers.CopyEmployeeHistoryCosts(api.DBService, api.ForecastService, ctx)
-			})
-			protected.PATCH("/employees/history/costs/:historyCostID", func(ctx *gin.Context) {
-				handlers.UpdateEmployeeHistoryCost(api.DBService, api.ForecastService, ctx)
-			})
-			protected.DELETE("/employees/history/costs/:historyCostID", func(ctx *gin.Context) {
-				handlers.DeleteEmployeeHistoryCost(api.DBService, api.ForecastService, ctx)
+			protected.DELETE("/employees/salary/:salaryID", func(ctx *gin.Context) {
+				handlers.DeleteSalary(api.DBService, api.ForecastService, ctx)
 			})
 
-			// Employee History Cost Labels
-			protected.GET("/employees/history/costs/labels", func(ctx *gin.Context) {
-				handlers.ListEmployeeHistoryCostLabels(api.DBService, ctx)
+			// Employee Salary Costs
+			protected.GET("/employees/salary/:salaryID/costs", func(ctx *gin.Context) {
+				handlers.ListSalaryCosts(api.DBService, ctx)
 			})
-			protected.GET("/employees/history/costs/labels/:historyCostLabelID", func(ctx *gin.Context) {
-				handlers.GetEmployeeHistoryCostLabel(api.DBService, ctx)
+			protected.GET("/employees/salary/costs/:salaryCostID", func(ctx *gin.Context) {
+				handlers.GetSalaryCost(api.DBService, ctx)
 			})
-			protected.POST("/employees/history/costs/labels", func(ctx *gin.Context) {
-				handlers.CreateEmployeeHistoryCostLabel(api.DBService, ctx)
+			protected.POST("/employees/salary/:salaryID/costs", func(ctx *gin.Context) {
+				handlers.CreateSalaryCost(api.DBService, api.ForecastService, ctx)
 			})
-			protected.PATCH("/employees/history/costs/labels/:historyCostLabelID", func(ctx *gin.Context) {
-				handlers.UpdateEmployeeHistoryCostLabel(api.DBService, ctx)
+			protected.POST("/employees/salary/:salaryID/costs/copy", func(ctx *gin.Context) {
+				handlers.CopySalaryCosts(api.DBService, api.ForecastService, ctx)
 			})
-			protected.DELETE("/employees/history/costs/labels/:historyCostLabelID", func(ctx *gin.Context) {
-				handlers.DeleteEmployeeHistoryCostLabel(api.DBService, ctx)
+			protected.PATCH("/employees/salary/costs/:salaryCostID", func(ctx *gin.Context) {
+				handlers.UpdateSalaryCost(api.DBService, api.ForecastService, ctx)
+			})
+			protected.DELETE("/employees/salary/costs/:salaryCostID", func(ctx *gin.Context) {
+				handlers.DeleteSalaryCost(api.DBService, api.ForecastService, ctx)
+			})
+
+			// Employee Salary Cost Labels
+			protected.GET("/employees/salary/costs/labels", func(ctx *gin.Context) {
+				handlers.ListSalaryCostLabels(api.DBService, ctx)
+			})
+			protected.GET("/employees/salary/costs/labels/:salaryCostLabelID", func(ctx *gin.Context) {
+				handlers.GetSalaryCostLabel(api.DBService, ctx)
+			})
+			protected.POST("/employees/salary/costs/labels", func(ctx *gin.Context) {
+				handlers.CreateSalaryCostLabel(api.DBService, ctx)
+			})
+			protected.PATCH("/employees/salary/costs/labels/:salaryCostLabelID", func(ctx *gin.Context) {
+				handlers.UpdateSalaryCostLabel(api.DBService, ctx)
+			})
+			protected.DELETE("/employees/salary/costs/labels/:salaryCostLabelID", func(ctx *gin.Context) {
+				handlers.DeleteSalaryCostLabel(api.DBService, ctx)
 			})
 
 			// Forecasts
