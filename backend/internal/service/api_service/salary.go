@@ -13,6 +13,14 @@ func (a *APIService) ListSalaries(userID int64, employeeID int64, page int64, li
 		logger.Logger.Error(err)
 		return nil, 0, err
 	}
+	for i := range salaries {
+		salary := salaries[i]
+		updatedSalary, err := a.applySalaryCalculations(userID, &salary)
+		if err != nil {
+			return nil, 0, err
+		}
+		salaries[i] = *updatedSalary
+	}
 	validator := utils.GetValidator()
 	if err := validator.Var(salaries, "dive"); err != nil {
 		logger.Logger.Error(err)
@@ -32,33 +40,9 @@ func (a *APIService) GetSalary(userID int64, salaryID int64) (*models.Salary, er
 		logger.Logger.Error(err)
 		return nil, err
 	}
-	// TODO: Think about how to handle the LIMIT here better
-	salaryCosts, _, err := a.ListSalaryCosts(userID, salary.ID, 1, 1000)
+	salary, err = a.applySalaryCalculations(userID, salary)
 	if err != nil {
 		return nil, err
-	}
-
-	employeeDeductions := a.CalculateSalaryAdjustments(
-		salary.Cycle,
-		"employee",
-		salaryCosts,
-	)
-
-	salary.EmployeeDeductions = employeeDeductions
-
-	employerCosts := a.CalculateSalaryAdjustments(
-		salary.Cycle,
-		"employer",
-		salaryCosts,
-	)
-
-	salary.EmployerCosts = employerCosts
-
-	nextExecutionDate := a.CalculateSalaryExecutionDate(salary.FromDate, salary.ToDate, &salary.Cycle, salary.DBDate, 1, true)
-
-	if nextExecutionDate != nil {
-		nextSalaryExecutionDateAsDate := types.AsDate(*nextExecutionDate)
-		salary.NextExecutionDate = &nextSalaryExecutionDateAsDate
 	}
 	return salary, nil
 }
@@ -183,7 +167,6 @@ func (a *APIService) DeleteSalary(salaryID int64, userID int64) error {
 		logger.Logger.Error(err)
 		return err
 	}
-
 	previousSalaryID, nextSalaryID, err := a.dbService.DeleteSalary(existingSalary, userID)
 	if err != nil {
 		logger.Logger.Error(err)
@@ -216,4 +199,30 @@ func (a *APIService) DeleteSalary(salaryID int64, userID int64) error {
 		return err
 	}
 	return nil
+}
+
+func (a *APIService) applySalaryCalculations(userID int64, salary *models.Salary) (*models.Salary, error) {
+	// TODO: Think about how to handle the LIMIT here better
+	salaryCosts, _, err := a.ListSalaryCosts(userID, salary.ID, 1, 1000)
+	if err != nil {
+		return nil, err
+	}
+	employeeDeductions := a.CalculateSalaryAdjustments(
+		salary.Cycle,
+		"employee",
+		salaryCosts,
+	)
+	salary.EmployeeDeductions = employeeDeductions
+	employerCosts := a.CalculateSalaryAdjustments(
+		salary.Cycle,
+		"employer",
+		salaryCosts,
+	)
+	salary.EmployerCosts = employerCosts
+	nextExecutionDate := a.CalculateSalaryExecutionDate(salary.FromDate, salary.ToDate, &salary.Cycle, salary.DBDate, 1, true)
+	if nextExecutionDate != nil {
+		nextSalaryExecutionDateAsDate := types.AsDate(*nextExecutionDate)
+		salary.NextExecutionDate = &nextSalaryExecutionDateAsDate
+	}
+	return salary, nil
 }

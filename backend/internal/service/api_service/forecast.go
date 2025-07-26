@@ -95,7 +95,7 @@ func (a *APIService) CalculateForecast(userID int64) ([]models.Forecast, error) 
 		return nil, err
 	}
 
-	fiatRates, err := a.dbService.ListFiatRates(baseCurrency)
+	fiatRates, err := a.ListFiatRates(baseCurrency)
 	if err != nil {
 		return nil, err
 	}
@@ -116,7 +116,7 @@ func (a *APIService) CalculateForecast(userID int64) ([]models.Forecast, error) 
 		}
 		isRevenue := amount > 0
 
-		exclusions, err := a.dbService.ListForecastExclusions(userID, transaction.ID, utils.TransactionsTableName)
+		exclusions, err := a.ListForecastExclusions(userID, transaction.ID, utils.TransactionsTableName)
 		if err != nil {
 			return nil, err
 		}
@@ -324,12 +324,12 @@ func (a *APIService) CalculateForecast(userID int64) ([]models.Forecast, error) 
 	}
 
 	// Collect the employee expenses now
-	employees, _, err := a.dbService.ListEmployees(userID, page, limit, sortBy, sortOrder)
+	employees, _, err := a.ListEmployees(userID, page, limit, sortBy, sortOrder)
 	if err != nil {
 		return nil, err
 	}
 	for _, employee := range employees {
-		salaries, _, err := a.dbService.ListSalaries(userID, employee.ID, page, limit)
+		salaries, _, err := a.ListSalaries(userID, employee.ID, page, limit)
 		if err != nil {
 			return nil, err
 		}
@@ -348,7 +348,7 @@ func (a *APIService) CalculateForecast(userID int64) ([]models.Forecast, error) 
 			}
 			amount := -models.CalculateAmountWithFiatRate(int64(netAmount), fiatRate)
 
-			salaryExclusions, err := a.dbService.ListForecastExclusions(userID, salary.ID, utils.SalariesTableName)
+			salaryExclusions, err := a.ListForecastExclusions(userID, salary.ID, utils.SalariesTableName)
 			if err != nil {
 				return nil, err
 			}
@@ -447,14 +447,14 @@ func (a *APIService) CalculateForecast(userID int64) ([]models.Forecast, error) 
 			// Calculate the separate costs if wanted
 			var salaryCosts []models.SalaryCost
 			if salary.WithSeparateCosts {
-				salaryCosts, _, err = a.dbService.ListSalaryCosts(userID, salary.ID, page, limit)
+				salaryCosts, _, err = a.ListSalaryCosts(userID, salary.ID, page, limit)
 				if err != nil {
 					return nil, err
 				}
 			}
 
 			for _, salaryCost := range salaryCosts {
-				salaryCostExclusions, err := a.dbService.ListForecastExclusions(userID, salaryCost.ID, utils.SalaryCostsTableName)
+				salaryCostExclusions, err := a.ListForecastExclusions(userID, salaryCost.ID, utils.SalaryCostsTableName)
 				if err != nil {
 					return nil, err
 				}
@@ -640,7 +640,7 @@ func (a *APIService) CalculateForecast(userID int64) ([]models.Forecast, error) 
 		}
 	}
 
-	forecasts, err := a.dbService.ListForecasts(userID, 37)
+	forecasts, err := a.ListForecasts(userID, int64(utils.GetTotalMonthsForMaxForecastYears()))
 	if err != nil {
 		return nil, err
 	}

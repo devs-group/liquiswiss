@@ -166,7 +166,7 @@ func DeleteSalary(apiService api_service.IAPIService, c *gin.Context) {
 	}
 
 	// Action
-	err = apiService.DeleteSalary(userID, salaryID)
+	err = apiService.DeleteSalary(salaryID, userID)
 	if err != nil {
 		c.Status(http.StatusInternalServerError)
 		return
