@@ -1,6 +1,7 @@
 package handlers
 
 import (
+	"errors"
 	"github.com/gin-gonic/gin"
 	"liquiswiss/internal/service/api_service"
 	"liquiswiss/pkg/auth"
@@ -23,7 +24,7 @@ func Login(apiService api_service.IAPIService, c *gin.Context) {
 	}
 	deviceName := c.Request.UserAgent()
 	existingRefreshToken, err := c.Cookie(utils.RefreshTokenName)
-	if err != nil {
+	if err != nil && !errors.Is(err, http.ErrNoCookie) {
 		c.Status(http.StatusInternalServerError)
 		return
 	}
