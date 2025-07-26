@@ -1141,3 +1141,148 @@ func TestMultipleSalaryCases(t *testing.T) {
 		})
 	}
 }
+
+func TestLongOffsetScenarios(t *testing.T) {
+	conn := SetupTestEnvironment(t)
+	defer conn.Close()
+
+	dbAdapter := db_adapter.NewDatabaseAdapter(conn)
+	sendgridService := sendgrid_adapter.NewSendgridAdapter("")
+	apiService := api_service.NewAPIService(dbAdapter, sendgridService)
+
+	// Preparations
+	currency, err := CreateCurrency(apiService, "CHF", "Swiss Franc", "de-CH")
+	assert.NoError(t, err)
+
+	user, _, err := CreateUserWithOrganisation(
+		apiService, dbAdapter, "john@doe.com", "test", "Test Organisation",
+	)
+	assert.NoError(t, err)
+
+	employee, err := CreateEmployee(apiService, user.ID, "Tom Riddle")
+	assert.NoError(t, err)
+
+	salaryCostLabel, err := CreateSalaryCostLabel(apiService, user.ID, "Test Label")
+	assert.NoError(t, err)
+
+	// Tests
+	salary, err := apiService.CreateSalary(models.CreateSalary{
+		HoursPerMonth:       160,
+		Amount:              10000_00,
+		Cycle:               "monthly",
+		CurrencyID:          *currency.ID,
+		VacationDaysPerYear: 25,
+		FromDate:            "2025-01-30",
+		ToDate:              nil,
+		// We want to test separate costs
+		WithSeparateCosts: true,
+	}, user.ID, employee.ID)
+	assert.NoError(t, err)
+
+	type TestCase struct {
+		Description                   string
+		DatabaseTime                  string
+		ExpectedCalculatedAmount      uint64
+		ExpectedNextCost              uint64
+		ExpectedNextExecutionDate     string
+		ExpectedPreviousExecutionDate string
+		ExpectedEmployeeDeductions    uint64
+		CreateData                    models.CreateSalaryCost
+	}
+
+	testCases := []TestCase{
+		{
+			Description:                   "Monthly with 12 months relative offset",
+			DatabaseTime:                  "2025-01-26",
+			ExpectedCalculatedAmount:      15_00,
+			ExpectedNextCost:              180_00,
+			ExpectedEmployeeDeductions:    0,
+			ExpectedNextExecutionDate:     "2026-01-01",
+			ExpectedPreviousExecutionDate: "",
+			CreateData: models.CreateSalaryCost{
+				Cycle:            "monthly",
+				AmountType:       "fixed",
+				Amount:           15_00,
+				DistributionType: "employer",
+				RelativeOffset:   12,
+				TargetDate:       utils.StringAsPointer("2025-01-31"),
+				LabelID:          nil,
+			},
+		},
+		{
+			Description:              "Monthly with 12 months relative offset",
+			DatabaseTime:             "2025-11-26",
+			ExpectedCalculatedAmount: 15_00,
+			// Should be the same independent of the date since it still counts as 1 year
+			ExpectedNextCost:              180_00,
+			ExpectedEmployeeDeductions:    0,
+			ExpectedNextExecutionDate:     "2026-01-01",
+			ExpectedPreviousExecutionDate: "",
+			CreateData: models.CreateSalaryCost{
+				Cycle:            "monthly",
+				AmountType:       "fixed",
+				Amount:           15_00,
+				DistributionType: "employer",
+				RelativeOffset:   12,
+				TargetDate:       utils.StringAsPointer("2025-01-31"),
+				LabelID:          nil,
+			},
+		},
+		{
+			Description:                "Monthly with 12 months relative offset",
+			DatabaseTime:               "2026-02-01",
+			ExpectedCalculatedAmount:   15_00,
+			ExpectedNextCost:           180_00,
+			ExpectedEmployeeDeductions: 0,
+			// It should shift one year further
+			ExpectedNextExecutionDate:     "2027-01-01",
+			ExpectedPreviousExecutionDate: "",
+			CreateData: models.CreateSalaryCost{
+				Cycle:            "monthly",
+				AmountType:       "fixed",
+				Amount:           15_00,
+				DistributionType: "employer",
+				RelativeOffset:   12,
+				TargetDate:       utils.StringAsPointer("2025-01-31"),
+				LabelID:          nil,
+			},
+		},
+	}
+
+	for _, testCase := range testCases {
+		t.Run(testCase.Description, func(t *testing.T) {
+			err = SetDatabaseTime(conn, testCase.DatabaseTime)
+			assert.NoError(t, err)
+
+			parsedDatabaseTime, err := time.Parse(utils.InternalDateFormat, testCase.DatabaseTime)
+			assert.NoError(t, err)
+
+			utils.DefaultClock.SetFixedTime(&parsedDatabaseTime)
+			defer func() {
+				utils.DefaultClock.SetFixedTime(nil)
+			}()
+
+			salaryCost, err := apiService.CreateSalaryCost(testCase.CreateData, user.ID, salary.ID)
+			assert.NoError(t, err)
+
+			// Check deduction
+			updatedSalary, err := apiService.GetSalary(user.ID, salary.ID)
+			assert.NoError(t, err)
+
+			assert.Equal(t, int64(testCase.ExpectedEmployeeDeductions), int64(updatedSalary.EmployeeDeductions), "updatedSalary.EmployeeDeductions")
+
+			err = apiService.DeleteSalaryCost(user.ID, salaryCost.ID)
+			assert.NoError(t, err)
+
+			assert.Equal(t, int64(testCase.ExpectedCalculatedAmount), int64(salaryCost.CalculatedAmount), "salaryCost.CalculatedAmount")
+			assert.Equal(t, int64(testCase.ExpectedNextCost), int64(salaryCost.CalculatedNextCost), "salaryCost.CalculatedNextCost")
+			assert.Equal(t, testCase.ExpectedNextExecutionDate, salaryCost.CalculatedNextExecutionDate.ToFormattedTime(utils.InternalDateFormat), "salaryCost.CalculatedNextExecutionDate")
+			assert.Equal(t, testCase.ExpectedPreviousExecutionDate, salaryCost.CalculatedPreviousExecutionDate.ToFormattedTime(utils.InternalDateFormat), "salaryCost.CalculatedPreviousExecutionDate")
+			if salaryCost.Label != nil {
+				assert.Equal(t, salaryCostLabel.Name, salaryCost.Label.Name)
+			} else {
+				assert.Nil(t, salaryCost.Label)
+			}
+		})
+	}
+}
