@@ -116,7 +116,7 @@
         id="cycle"
         v-model="cycle"
         empty-message="Keine Zyklen gefunden"
-        :options="CycleTypeToOptions()"
+        :options="SalaryCycleTypeToOptions()"
         option-label="name"
         option-value="value"
         placeholder="Bitte wählen"
@@ -202,6 +202,7 @@ import { Config } from '~/config/config'
 import type { SalaryPUTFormData } from '~/models/employee'
 import { CycleType } from '~/config/enums'
 import { SalaryUtils } from '~/utils/models/salary-utils'
+import { SalaryCycleTypeToOptions } from '~/utils/enum-helper'
 
 const dialogRef = inject<ISalaryFormDialog>('dialogRef')!
 

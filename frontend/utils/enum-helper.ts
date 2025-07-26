@@ -6,30 +6,41 @@ import {
   TransactionType,
 } from '~/config/enums'
 
-export type CycleTypeToStringDefinition = CycleType.Monthly | CycleType.Quarterly | CycleType.Biannually | CycleType.Yearly
+export type TransactionCycleTypeToStringDefinition = CycleType.Monthly | CycleType.Quarterly | CycleType.Biannually | CycleType.Yearly
 
-export const CycleTypeToOptions = () => {
+export const TransactionCycleTypeToOptions = () => {
   return [
     {
       name: 'Monatlich',
       value: CycleType.Monthly,
     },
-    // {
-    //   name: 'Vierteljährlich',
-    //   value: CycleType.Quarterly,
-    // },
-    // {
-    //   name: 'Halbjährlich',
-    //   value: CycleType.Biannually,
-    // },
-    // {
-    //   name: 'Jährlich',
-    //   value: CycleType.Yearly,
-    // },
+    {
+      name: 'Vierteljährlich',
+      value: CycleType.Quarterly,
+    },
+    {
+      name: 'Halbjährlich',
+      value: CycleType.Biannually,
+    },
+    {
+      name: 'Jährlich',
+      value: CycleType.Yearly,
+    },
   ]
 }
 
-export type CostCycleTypeToStringDefinition = CycleType.Once | CycleTypeToStringDefinition
+export type SalaryCycleTypeToStringDefinition = CycleType.Monthly
+
+export const SalaryCycleTypeToOptions = () => {
+  return [
+    {
+      name: 'Monatlich',
+      value: CycleType.Monthly,
+    },
+  ]
+}
+
+export type CostCycleTypeToStringDefinition = CycleType.Once | CycleType.Monthly
 
 export const CostCycleTypeToOptions = () => {
   return [

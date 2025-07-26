@@ -73,5 +73,5 @@ defineEmits<{
 }>()
 
 const salaryFormatted = computed(() => NumberToFormattedCurrency(AmountToFloat(props.employee.salaryAmount!), props.employee.currency!.localeCode))
-const cycle = computed(() => CycleTypeToOptions().find(ct => ct.value === props.employee.cycle)?.name ?? '')
+const cycle = computed(() => SalaryCycleTypeToOptions().find(ct => ct.value === props.employee.cycle)?.name ?? '')
 </script>

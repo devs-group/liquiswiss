@@ -246,7 +246,7 @@
         id="name"
         v-model="cycle"
         empty-message="Keine Zyklen gefunden"
-        :options="CycleTypeToOptions()"
+        :options="TransactionCycleTypeToOptions()"
         option-label="name"
         option-value="value"
         placeholder="Bitte wählen"

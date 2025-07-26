@@ -11,7 +11,7 @@ export const EmployeeUtils = {
     employee.toDate ? DateStringToFormattedDate(employee.toDate) : '-',
 
   cycle: (employee: EmployeeResponse) =>
-    CycleTypeToOptions().find(ct => ct.value === employee.cycle)?.name ?? '',
+    SalaryCycleTypeToOptions().find(ct => ct.value === employee.cycle)?.name ?? '',
 
   hasSalaryAmount: (employee: EmployeeResponse) =>
     employee.salaryAmount !== null,

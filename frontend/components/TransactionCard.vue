@@ -82,6 +82,6 @@ const endDate = computed(() => props.transaction.endDate ? DateStringToFormatted
 const nextExecutionDate = computed(() => props.transaction.nextExecutionDate ? DateStringToFormattedDate(props.transaction.nextExecutionDate) : '')
 const amountFormatted = computed(() => NumberToFormattedCurrency(AmountToFloat(props.transaction.amount), props.transaction.currency.localeCode))
 const isRepeating = computed(() => props.transaction.type === TransactionType.Repeating)
-const cycle = computed(() => CycleTypeToOptions().find(ct => ct.value === props.transaction.cycle)?.name ?? '')
+const cycle = computed(() => TransactionCycleTypeToOptions().find(ct => ct.value === props.transaction.cycle)?.name ?? '')
 const getNextLabel = computed(() => isRevenue.value ? 'Gutschrift' : 'Belastung')
 </script>

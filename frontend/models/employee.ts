@@ -2,9 +2,9 @@ import type { PaginationResponse } from '~/models/pagination'
 import type { CurrencyResponse } from '~/models/currency'
 import type {
   CostCycleTypeToStringDefinition,
-  CycleTypeToStringDefinition,
   EmployeeCostDistributionTypeToStringDefinition,
   EmployeeCostTypeToStringDefinition,
+  SalaryCycleTypeToStringDefinition,
 } from '~/utils/enum-helper'
 
 // Response
@@ -13,7 +13,7 @@ export interface EmployeeResponse {
   name: string
   hoursPerMonth: number | null
   salaryAmount: number | null
-  cycle: CycleTypeToStringDefinition | null
+  cycle: SalaryCycleTypeToStringDefinition | null
   currency: CurrencyResponse | null
   vacationDaysPerYear?: number | null
   fromDate?: string | null
@@ -57,7 +57,7 @@ export interface SalaryResponse {
   employeeID: number
   hoursPerMonth: number
   amount: number
-  cycle: CycleTypeToStringDefinition
+  cycle: SalaryCycleTypeToStringDefinition
   currency: CurrencyResponse
   vacationDaysPerYear: number
   fromDate: string
@@ -98,7 +98,7 @@ export interface SalaryPUTFormData {
   id: number
   hoursPerMonth: number
   amount: number
-  cycle: CycleTypeToStringDefinition
+  cycle: SalaryCycleTypeToStringDefinition
   currencyID: number
   vacationDaysPerYear: number
   fromDate: Date
@@ -109,7 +109,7 @@ export interface SalaryPATCHFormData {
   id: number
   hoursPerMonth?: number
   amount?: number
-  cycle: CycleTypeToStringDefinition
+  cycle: SalaryCycleTypeToStringDefinition
   currencyID?: number
   vacationDaysPerYear?: number
   fromDate?: Date
