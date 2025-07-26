@@ -2,10 +2,7 @@ package handlers
 
 import (
 	"database/sql"
-	"errors"
-	"liquiswiss/internal/service/db_service"
-	"liquiswiss/internal/service/forecast_service"
-	"liquiswiss/pkg/logger"
+	"liquiswiss/internal/service/api_service"
 	"liquiswiss/pkg/models"
 	"liquiswiss/pkg/utils"
 	"net/http"
@@ -14,304 +11,167 @@ import (
 	"github.com/gin-gonic/gin"
 )
 
-func ListSalaries(dbService db_service.IDatabaseService, c *gin.Context) {
+func ListSalaries(apiService api_service.IAPIService, c *gin.Context) {
+	// Pre
 	userID := c.GetInt64("userID")
 	if userID == 0 {
-		c.JSON(http.StatusUnauthorized, gin.H{"error": "Ungültiger Benutzer"})
+		c.Status(http.StatusUnauthorized)
 		return
 	}
-
 	employeeID, err := strconv.ParseInt(c.Param("employeeID"), 10, 64)
 	if err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"error": "Es fehlt die ID"})
+		c.Status(http.StatusBadRequest)
 		return
 	}
-
 	limit, err := strconv.ParseInt(c.Query("limit"), 10, 64)
 	if err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		c.Status(http.StatusBadRequest)
 		return
 	}
 	page, err := strconv.ParseInt(c.Query("page"), 10, 64)
 	if err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		c.Status(http.StatusBadRequest)
 		return
 	}
 
-	salaries, totalCount, err := dbService.ListSalaries(userID, employeeID, page, limit)
+	// Action
+	salaries, totalCount, err := apiService.ListSalaries(userID, employeeID, page, limit)
 	if err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		c.Status(http.StatusInternalServerError)
 		return
 	}
 
-	validator := utils.GetValidator()
-	if err := validator.Var(salaries, "dive"); err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"error": "Ungültige Daten", "details": err.Error()})
-		return
-	}
-
-	totalPages := totalCount / limit
-	if totalCount%limit != 0 {
-		totalPages++
-	}
-
+	// Post
 	c.JSON(http.StatusOK, models.ListResponse[models.Salary]{
 		Data:       salaries,
 		Pagination: models.CalculatePagination(page, limit, totalCount),
 	})
 }
 
-func GetSalary(dbService db_service.IDatabaseService, c *gin.Context) {
+func GetSalary(apiService api_service.IAPIService, c *gin.Context) {
+	// Pre
 	userID := c.GetInt64("userID")
 	if userID == 0 {
 		c.JSON(http.StatusUnauthorized, gin.H{"error": "Ungültiger Benutzer"})
 		return
 	}
-
 	salaryID, err := strconv.ParseInt(c.Param("salaryID"), 10, 64)
 	if err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"error": "Es fehlt die ID"})
 		return
 	}
 
-	salary, err := dbService.GetSalary(userID, salaryID)
+	// Action
+	salary, err := apiService.GetSalary(userID, salaryID)
 	if err != nil {
 		switch err {
 		case sql.ErrNoRows:
 			c.Status(http.StatusNotFound)
 			return
 		default:
-			logger.Logger.Error(err)
 			c.Status(http.StatusInternalServerError)
 			return
 		}
 	}
 
-	validator := utils.GetValidator()
-	if err := validator.Struct(salary); err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"error": "Ungültige Daten"})
-		return
-	}
-
+	// Post
 	c.JSON(http.StatusOK, salary)
 }
 
-func CreateSalary(dbService db_service.IDatabaseService, forecastService forecast_service.IForecastService, c *gin.Context) {
+func CreateSalary(apiService api_service.IAPIService, c *gin.Context) {
+	// Pre
 	userID := c.GetInt64("userID")
 	if userID == 0 {
 		c.JSON(http.StatusUnauthorized, gin.H{"error": "Ungültiger Benutzer"})
 		return
 	}
-
 	employeeID, err := strconv.ParseInt(c.Param("employeeID"), 10, 64)
 	if err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"error": "Es fehlt die ID"})
 		return
 	}
-
 	var payload models.CreateSalary
 	if err := c.BindJSON(&payload); err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 		return
 	}
-
 	validator := utils.GetValidator()
 	if err := validator.Struct(payload); err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"error": "Ungültige Daten", "details": err.Error()})
 		return
 	}
 
-	salaryID, previousSalaryID, nextSalaryID, err := dbService.CreateSalary(payload, userID, employeeID)
+	// Action
+	salary, err := apiService.CreateSalary(payload, employeeID, userID)
 	if err != nil {
-		if errors.Is(err, sql.ErrNoRows) {
+		switch err {
+		case sql.ErrNoRows:
 			c.Status(http.StatusNotFound)
 			return
-		}
-		logger.Logger.Error(err)
-		c.JSON(http.StatusInternalServerError, gin.H{"error": "Beim Erstellen des Eintrags ist ein Fehler aufgetreten"})
-		return
-	}
-
-	// Refresh all cost details
-	err = dbService.RefreshSalaryCostDetails(userID, salaryID)
-	if err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
-		return
-	}
-	if previousSalaryID != nil {
-		err = dbService.RefreshSalaryCostDetails(userID, *previousSalaryID)
-		if err != nil {
-			c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
-			return
-		}
-	}
-	if nextSalaryID != nil {
-		err = dbService.RefreshSalaryCostDetails(userID, *nextSalaryID)
-		if err != nil {
-			c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		default:
+			c.Status(http.StatusInternalServerError)
 			return
 		}
 	}
 
-	salary, err := dbService.GetSalary(userID, salaryID)
-	if err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
-		return
-	}
-
-	// Recalculate Forecast
-	_, err = forecastService.CalculateForecast(userID)
-	if err != nil {
-		return
-	}
-
+	// Post
 	c.JSON(http.StatusCreated, salary)
 }
 
-func UpdateSalary(dbService db_service.IDatabaseService, forecastService forecast_service.IForecastService, c *gin.Context) {
+func UpdateSalary(apiService api_service.IAPIService, c *gin.Context) {
+	// Pre
 	userID := c.GetInt64("userID")
 	if userID == 0 {
-		c.JSON(http.StatusUnauthorized, gin.H{"error": "Ungültiger Benutzer"})
+		c.Status(http.StatusUnauthorized)
 		return
 	}
-
 	salaryID, err := strconv.ParseInt(c.Param("salaryID"), 10, 64)
 	if err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"error": "Es fehlt die ID"})
+		c.Status(http.StatusBadRequest)
 		return
 	}
-
-	existingSalary, err := dbService.GetSalary(userID, salaryID)
-	if err != nil {
-		c.Status(http.StatusNotFound)
-		return
-	}
-
 	var payload models.UpdateSalary
 	if err := c.BindJSON(&payload); err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		c.Status(http.StatusBadRequest)
 		return
 	}
-
-	if payload.HoursPerMonth == nil {
-		hoursPerMonth := existingSalary.HoursPerMonth
-		payload.HoursPerMonth = &hoursPerMonth
-	}
-	if payload.Amount == nil {
-		salary := existingSalary.Amount
-		payload.Amount = &salary
-	}
-	if payload.CurrencyID == nil {
-		payload.CurrencyID = existingSalary.Currency.ID
-	}
-	if payload.VacationDaysPerYear == nil {
-		vacationDaysPerYear := existingSalary.VacationDaysPerYear
-		payload.VacationDaysPerYear = &vacationDaysPerYear
-	}
-	if payload.FromDate == nil {
-		fromDate := existingSalary.FromDate.ToString()
-		payload.FromDate = &fromDate
-	}
-
 	validator := utils.GetValidator()
 	if err := validator.Struct(payload); err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"error": "Ungültige Daten", "details": err.Error()})
+		c.Status(http.StatusBadRequest)
 		return
 	}
 
-	previousSalaryID, nextSalaryID, err := dbService.UpdateSalary(payload, existingSalary.EmployeeID, salaryID)
+	// Action
+	salary, err := apiService.UpdateSalary(payload, userID, salaryID)
 	if err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		c.Status(http.StatusInternalServerError)
 		return
 	}
 
-	// Refresh all cost details
-	err = dbService.RefreshSalaryCostDetails(userID, salaryID)
-	if err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
-		return
-	}
-	if previousSalaryID != nil {
-		err = dbService.RefreshSalaryCostDetails(userID, *previousSalaryID)
-		if err != nil {
-			c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
-			return
-		}
-	}
-	if nextSalaryID != nil {
-		err = dbService.RefreshSalaryCostDetails(userID, *nextSalaryID)
-		if err != nil {
-			c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
-			return
-		}
-	}
-
-	employee, err := dbService.GetSalary(userID, salaryID)
-	if err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
-		return
-	}
-
-	// Recalculate Forecast
-	_, err = forecastService.CalculateForecast(userID)
-	if err != nil {
-		return
-	}
-
-	c.JSON(http.StatusOK, employee)
+	// Post
+	c.JSON(http.StatusOK, salary)
 }
 
-func DeleteSalary(dbService db_service.IDatabaseService, forecastService forecast_service.IForecastService, c *gin.Context) {
+func DeleteSalary(apiService api_service.IAPIService, c *gin.Context) {
+	// Pre
 	userID := c.GetInt64("userID")
 	if userID == 0 {
-		c.JSON(http.StatusUnauthorized, gin.H{"error": "Ungültiger Benutzer"})
+		c.Status(http.StatusUnauthorized)
 		return
 	}
-
 	salaryID, err := strconv.ParseInt(c.Param("salaryID"), 10, 64)
 	if err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"error": "Es fehlt die ID"})
+		c.Status(http.StatusBadRequest)
 		return
 	}
 
-	existingSalary, err := dbService.GetSalary(userID, salaryID)
+	// Action
+	err = apiService.DeleteSalary(userID, salaryID)
 	if err != nil {
-		c.Status(http.StatusNotFound)
+		c.Status(http.StatusInternalServerError)
 		return
 	}
 
-	previousSalaryID, nextSalaryID, err := dbService.DeleteSalary(existingSalary, userID)
-	if err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
-		return
-	}
-
-	// Refresh all cost details
-	err = dbService.RefreshSalaryCostDetails(userID, salaryID)
-	if err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
-		return
-	}
-	if previousSalaryID != nil {
-		err = dbService.RefreshSalaryCostDetails(userID, *previousSalaryID)
-		if err != nil {
-			c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
-			return
-		}
-	}
-	if nextSalaryID != nil {
-		err = dbService.RefreshSalaryCostDetails(userID, *nextSalaryID)
-		if err != nil {
-			c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
-			return
-		}
-	}
-
-	// Recalculate Forecast
-	_, err = forecastService.CalculateForecast(userID)
-	if err != nil {
-		return
-	}
-
+	// Post
 	c.Status(http.StatusNoContent)
 }

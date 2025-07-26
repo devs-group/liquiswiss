@@ -6,9 +6,33 @@ import (
 
 const InternalDateFormat = "2006-01-02"
 
+type Clock interface {
+	SetFixedTime(t *time.Time)
+	Today() time.Time
+}
+
+type dynamicClock struct {
+	FixedTime *time.Time
+}
+
+func (dc *dynamicClock) SetFixedTime(t *time.Time) {
+	dc.FixedTime = t
+}
+
+func (dc *dynamicClock) Today() time.Time {
+	if dc.FixedTime != nil {
+		now := *dc.FixedTime
+		return now.UTC()
+	} else {
+		now := time.Now()
+		return time.Date(now.Year(), now.Month(), now.Day(), 0, 0, 0, 0, time.UTC)
+	}
+}
+
+var DefaultClock Clock = &dynamicClock{}
+
 func GetTodayAsUTC() time.Time {
-	now := time.Now()
-	return time.Date(now.Year(), now.Month(), now.Day(), 0, 0, 0, 0, time.UTC)
+	return DefaultClock.Today()
 }
 
 func GetNextDate(referenceDate, currentDate time.Time, months int) time.Time {
@@ -60,4 +84,8 @@ func GetNextAvailableDate(fromDate, limitDate time.Time, cycle string) time.Time
 			current = nextDate
 		}
 	}
+}
+
+func GetTotalMonthsForMaxForecastYears() float64 {
+	return float64(MaxForecastYears*12 + 1)
 }

@@ -100,7 +100,7 @@ Dynamic migrations are stored functions, views or triggers, basically things tha
 
 > Optional step
 
-You can fixtures from the [fixtures](backend/internal/service/db_service/fixtures) directory if you desire.
+You can fixtures from the [fixtures](backend/internal/adapter/db_adapter/fixtures) directory if you desire.
 The dynamic migrations insert a minimal set of data required to make the app work properly. You can check out the
 minimal inserted data in [10000_apply_minimal_fixtures.sql](backend/internal/db/migrations/dynamic/10000_apply_minimal_fixtures.sql)
 

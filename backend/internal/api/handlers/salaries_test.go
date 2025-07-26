@@ -2,7 +2,9 @@ package handlers_test
 
 import (
 	"github.com/stretchr/testify/assert"
-	"liquiswiss/internal/service/db_service"
+	"liquiswiss/internal/adapter/db_adapter"
+	"liquiswiss/internal/adapter/sendgrid_adapter"
+	"liquiswiss/internal/service/api_service"
 	"liquiswiss/pkg/models"
 	"liquiswiss/pkg/utils"
 	"testing"
@@ -13,22 +15,24 @@ func TestSalaryExecutionDates(t *testing.T) {
 	conn := SetupTestEnvironment(t)
 	defer conn.Close()
 
-	dbService := db_service.NewDatabaseService(conn)
+	dbAdapter := db_adapter.NewDatabaseAdapter(conn)
+	sendgridService := sendgrid_adapter.NewSendgridAdapter("")
+	apiService := api_service.NewAPIService(dbAdapter, sendgridService)
 
 	// Preparations
-	currency, err := CreateCurrency(dbService, "CHF", "Swiss Franc", "de-CH")
+	currency, err := CreateCurrency(apiService, "CHF", "Swiss Franc", "de-CH")
 	assert.NoError(t, err)
 
 	user, _, err := CreateUserWithOrganisation(
-		dbService, "John Doe", "test", "Test Organisation",
+		apiService, dbAdapter, "john@doe.com", "test", "Test Organisation",
 	)
 	assert.NoError(t, err)
 
-	employee, err := CreateEmployee(dbService, user.ID, "Tom Riddle")
+	employee, err := CreateEmployee(apiService, user.ID, "Tom Riddle")
 	assert.NoError(t, err)
 
 	// Tests
-	salaryAmount := uint64(5000.75 * 100)
+	salaryAmount := uint64(5000_75)
 
 	type TestCase struct {
 		Description           string
@@ -201,16 +205,21 @@ func TestSalaryExecutionDates(t *testing.T) {
 
 	for _, testCase := range testCases {
 		t.Run(testCase.Description, func(t *testing.T) {
-			salaryID, _, _, err := dbService.CreateSalary(testCase.CreateData, user.ID, employee.ID)
-			assert.NoError(t, err)
-
 			err = SetDatabaseTime(conn, testCase.DatabaseTime)
 			assert.NoError(t, err)
 
-			salary, err := dbService.GetSalary(user.ID, salaryID)
+			parsedDatabaseTime, err := time.Parse(utils.InternalDateFormat, testCase.DatabaseTime)
 			assert.NoError(t, err)
 
-			_, _, err = dbService.DeleteSalary(salary, user.ID)
+			utils.DefaultClock.SetFixedTime(&parsedDatabaseTime)
+			defer func() {
+				utils.DefaultClock.SetFixedTime(nil)
+			}()
+
+			salary, err := apiService.CreateSalary(testCase.CreateData, user.ID, employee.ID)
+			assert.NoError(t, err)
+
+			err = apiService.DeleteSalary(salary.ID, user.ID)
 			assert.NoError(t, err)
 
 			if salary.NextExecutionDate != nil {
@@ -218,7 +227,7 @@ func TestSalaryExecutionDates(t *testing.T) {
 			} else {
 				assert.Nil(t, testCase.ExpectedExecutionDate)
 			}
-			assert.Equal(t, salary, salary.Amount)
+			assert.Equal(t, salaryAmount, salary.Amount)
 			assert.Equal(t, "Swiss Franc", *salary.Currency.Description)
 		})
 	}

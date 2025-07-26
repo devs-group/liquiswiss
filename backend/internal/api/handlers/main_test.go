@@ -6,8 +6,9 @@ import (
 	"github.com/gin-gonic/gin"
 	"github.com/joho/godotenv"
 	"github.com/pressly/goose/v3"
+	"liquiswiss/internal/adapter/db_adapter"
 	"liquiswiss/internal/db"
-	"liquiswiss/internal/service/db_service"
+	"liquiswiss/internal/service/api_service"
 	"liquiswiss/pkg/logger"
 	"liquiswiss/pkg/models"
 	"liquiswiss/pkg/utils"
@@ -52,54 +53,39 @@ func SetupTestEnvironment(t *testing.T) *sql.DB {
 }
 
 // CreateUserWithOrganisation is a helper method to quickly create a user with an organisation attached
-func CreateUserWithOrganisation(dbService db_service.IDatabaseService, email, password, organisationName string) (*models.User, *models.Organisation, error) {
+func CreateUserWithOrganisation(apiService api_service.IAPIService, dbService db_adapter.IDatabaseAdapter, email, password, organisationName string) (*models.User, *models.Organisation, error) {
 	userID, err := dbService.CreateUser(email, password)
 	if err != nil {
 		return nil, nil, err
 	}
 
-	organisationID, err := dbService.CreateOrganisation(organisationName)
+	organisation, err := apiService.CreateOrganisation(models.CreateOrganisation{
+		Name: organisationName,
+	}, userID)
 	if err != nil {
 		return nil, nil, err
 	}
 
-	err = dbService.AssignUserToOrganisation(userID, organisationID, "owner", true)
-	if err != nil {
-		return nil, nil, err
-	}
-
-	err = dbService.SetUserCurrentOrganisation(userID, organisationID)
+	err = apiService.SetUserCurrentOrganisation(models.UpdateUserCurrentOrganisation{OrganisationID: organisation.ID}, userID)
 	if err != nil {
 		return nil, nil, err
 	}
 
 	userName := "John Doe"
-	err = dbService.UpdateProfile(models.UpdateUser{
+	user, err := apiService.UpdateProfile(models.UpdateUser{
 		Name: &userName,
 	}, userID)
 	if err != nil {
 		return nil, nil, err
 	}
 
-	user, err := dbService.GetProfile(userID)
-	if err != nil {
-		return nil, nil, err
-	}
-
-	organisation, err := dbService.GetOrganisation(userID, organisationID)
-
 	return user, organisation, nil
 }
 
-func CreateEmployee(dbService db_service.IDatabaseService, userID int64, name string) (*models.Employee, error) {
-	employeeID, err := dbService.CreateEmployee(models.CreateEmployee{
+func CreateEmployee(apiService api_service.IAPIService, userID int64, name string) (*models.Employee, error) {
+	employee, err := apiService.CreateEmployee(models.CreateEmployee{
 		Name: name,
 	}, userID)
-	if err != nil {
-		return nil, err
-	}
-
-	employee, err := dbService.GetEmployee(userID, employeeID)
 	if err != nil {
 		return nil, err
 	}
@@ -107,8 +93,8 @@ func CreateEmployee(dbService db_service.IDatabaseService, userID int64, name st
 	return employee, nil
 }
 
-func CreateCurrency(dbService db_service.IDatabaseService, code, description, localeCode string) (*models.Currency, error) {
-	currencyID, err := dbService.CreateCurrency(models.CreateCurrency{
+func CreateCurrency(apiService api_service.IAPIService, code, description, localeCode string) (*models.Currency, error) {
+	currency, err := apiService.CreateCurrency(models.CreateCurrency{
 		Code:        code,
 		Description: description,
 		LocaleCode:  localeCode,
@@ -117,23 +103,13 @@ func CreateCurrency(dbService db_service.IDatabaseService, code, description, lo
 		return nil, err
 	}
 
-	currency, err := dbService.GetCurrency(currencyID)
-	if err != nil {
-		return nil, err
-	}
-
 	return currency, nil
 }
 
-func CreateSalaryCostLabel(dbService db_service.IDatabaseService, userID int64, name string) (*models.SalaryCostLabel, error) {
-	salaryCostLabelID, err := dbService.CreateSalaryCostLabel(models.CreateSalaryCostLabel{
+func CreateSalaryCostLabel(apiService api_service.IAPIService, userID int64, name string) (*models.SalaryCostLabel, error) {
+	salaryCostLabel, err := apiService.CreateSalaryCostLabel(models.CreateSalaryCostLabel{
 		Name: name,
 	}, userID)
-	if err != nil {
-		return nil, err
-	}
-
-	salaryCostLabel, err := dbService.GetSalaryCostLabel(userID, salaryCostLabelID)
 	if err != nil {
 		return nil, err
 	}

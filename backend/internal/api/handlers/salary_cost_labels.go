@@ -2,9 +2,7 @@ package handlers
 
 import (
 	"database/sql"
-	"errors"
-	"liquiswiss/internal/service/db_service"
-	"liquiswiss/pkg/logger"
+	"liquiswiss/internal/service/api_service"
 	"liquiswiss/pkg/models"
 	"liquiswiss/pkg/utils"
 	"net/http"
@@ -13,191 +11,156 @@ import (
 	"github.com/gin-gonic/gin"
 )
 
-func ListSalaryCostLabels(dbService db_service.IDatabaseService, c *gin.Context) {
+func ListSalaryCostLabels(apiService api_service.IAPIService, c *gin.Context) {
+	// Pre
 	userID := c.GetInt64("userID")
 	if userID == 0 {
-		c.JSON(http.StatusUnauthorized, gin.H{"error": "Ungültiger Benutzer"})
+		c.Status(http.StatusUnauthorized)
 		return
 	}
-
 	limit, err := strconv.ParseInt(c.Query("limit"), 10, 64)
 	if err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		c.Status(http.StatusBadRequest)
 		return
 	}
 	page, err := strconv.ParseInt(c.Query("page"), 10, 64)
 	if err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		c.Status(http.StatusBadRequest)
 		return
 	}
 
-	salaryCostLabels, totalCount, err := dbService.ListSalaryCostLabels(userID, page, limit)
+	// Action
+	salaryCostLabels, totalCount, err := apiService.ListSalaryCostLabels(userID, page, limit)
 	if err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 		return
 	}
 
-	validator := utils.GetValidator()
-	if err := validator.Var(salaryCostLabels, "dive"); err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"error": "Ungültige Daten", "details": err.Error()})
-		return
-	}
-
-	totalPages := totalCount / limit
-	if totalCount%limit != 0 {
-		totalPages++
-	}
-
+	// Post
 	c.JSON(http.StatusOK, models.ListResponse[models.SalaryCostLabel]{
 		Data:       salaryCostLabels,
 		Pagination: models.CalculatePagination(page, limit, totalCount),
 	})
 }
 
-func GetSalaryCostLabel(dbService db_service.IDatabaseService, c *gin.Context) {
+func GetSalaryCostLabel(apiService api_service.IAPIService, c *gin.Context) {
+	// Pre
 	userID := c.GetInt64("userID")
 	if userID == 0 {
-		c.JSON(http.StatusUnauthorized, gin.H{"error": "Ungültiger Benutzer"})
+		c.Status(http.StatusUnauthorized)
 		return
 	}
-
 	salaryCostLabelID, err := strconv.ParseInt(c.Param("salaryCostLabelID"), 10, 64)
 	if err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"error": "Es fehlt die Lohnkosten Label ID"})
+		c.Status(http.StatusBadRequest)
 		return
 	}
 
-	salaryCostLabel, err := dbService.GetSalaryCostLabel(userID, salaryCostLabelID)
+	// Action
+	salaryCostLabel, err := apiService.GetSalaryCostLabel(userID, salaryCostLabelID)
 	if err != nil {
 		switch err {
 		case sql.ErrNoRows:
 			c.Status(http.StatusNotFound)
 			return
 		default:
-			logger.Logger.Error(err)
 			c.Status(http.StatusInternalServerError)
 			return
 		}
 	}
 
-	validator := utils.GetValidator()
-	if err := validator.Struct(salaryCostLabel); err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"error": "Ungültige Daten"})
-		return
-	}
-
+	// Post
 	c.JSON(http.StatusOK, salaryCostLabel)
 }
 
-func CreateSalaryCostLabel(dbService db_service.IDatabaseService, c *gin.Context) {
+func CreateSalaryCostLabel(apiService api_service.IAPIService, c *gin.Context) {
+	// Pre
 	userID := c.GetInt64("userID")
 	if userID == 0 {
-		c.JSON(http.StatusUnauthorized, gin.H{"error": "Ungültiger Benutzer"})
+		c.Status(http.StatusUnauthorized)
 		return
 	}
-
 	var payload models.CreateSalaryCostLabel
 	if err := c.BindJSON(&payload); err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		c.Status(http.StatusBadRequest)
 		return
 	}
-
 	validator := utils.GetValidator()
 	if err := validator.Struct(payload); err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"error": "Ungültige Daten", "details": err.Error()})
+		c.Status(http.StatusBadRequest)
 		return
 	}
 
-	salaryCostLabelID, err := dbService.CreateSalaryCostLabel(payload, userID)
+	// Action
+	salaryCostLabel, err := apiService.CreateSalaryCostLabel(payload, userID)
 	if err != nil {
-		if errors.Is(err, sql.ErrNoRows) {
+		switch err {
+		case sql.ErrNoRows:
 			c.Status(http.StatusNotFound)
 			return
+		default:
+			c.Status(http.StatusInternalServerError)
+			return
 		}
-		logger.Logger.Error(err)
-		c.JSON(http.StatusInternalServerError, gin.H{"error": "Beim Erstellen des Eintrags ist ein Fehler aufgetreten"})
-		return
 	}
 
-	salaryCostLabel, err := dbService.GetSalaryCostLabel(userID, salaryCostLabelID)
-	if err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
-		return
-	}
-
+	// Post
 	c.JSON(http.StatusCreated, salaryCostLabel)
 }
 
-func UpdateSalaryCostLabel(dbService db_service.IDatabaseService, c *gin.Context) {
+func UpdateSalaryCostLabel(apiService api_service.IAPIService, c *gin.Context) {
+	// Pre
 	userID := c.GetInt64("userID")
 	if userID == 0 {
-		c.JSON(http.StatusUnauthorized, gin.H{"error": "Ungültiger Benutzer"})
+		c.Status(http.StatusUnauthorized)
 		return
 	}
-
 	salaryCostLabelID, err := strconv.ParseInt(c.Param("salaryCostLabelID"), 10, 64)
 	if err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"error": "Es fehlt die ID"})
+		c.Status(http.StatusBadRequest)
 		return
 	}
-
-	_, err = dbService.GetSalaryCostLabel(userID, salaryCostLabelID)
-	if err != nil {
-		c.Status(http.StatusNotFound)
-		return
-	}
-
 	var payload models.CreateSalaryCostLabel
 	if err := c.BindJSON(&payload); err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		c.Status(http.StatusBadRequest)
 		return
 	}
-
 	validator := utils.GetValidator()
 	if err := validator.Struct(payload); err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"error": "Ungültige Daten", "details": err.Error()})
+		c.Status(http.StatusBadRequest)
 		return
 	}
 
-	err = dbService.UpdateSalaryCostLabel(payload, userID, salaryCostLabelID)
+	// Action
+	salaryCostLabel, err := apiService.UpdateSalaryCostLabel(payload, userID, salaryCostLabelID)
 	if err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		c.Status(http.StatusInternalServerError)
 		return
 	}
 
-	salaryCostLabel, err := dbService.GetSalaryCostLabel(userID, salaryCostLabelID)
-	if err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
-		return
-	}
-
+	// Post
 	c.JSON(http.StatusOK, salaryCostLabel)
 }
 
-func DeleteSalaryCostLabel(dbService db_service.IDatabaseService, c *gin.Context) {
+func DeleteSalaryCostLabel(apiService api_service.IAPIService, c *gin.Context) {
+	// Pre
 	userID := c.GetInt64("userID")
 	if userID == 0 {
-		c.JSON(http.StatusUnauthorized, gin.H{"error": "Ungültiger Benutzer"})
+		c.Status(http.StatusUnauthorized)
 		return
 	}
-
 	salaryCostLabelID, err := strconv.ParseInt(c.Param("salaryCostLabelID"), 10, 64)
 	if err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"error": "Es fehlt die ID"})
+		c.Status(http.StatusBadRequest)
 		return
 	}
 
-	existingSalaryCostLabel, err := dbService.GetSalaryCostLabel(userID, salaryCostLabelID)
+	// Action
+	err = apiService.DeleteSalaryCostLabel(userID, salaryCostLabelID)
 	if err != nil {
-		c.Status(http.StatusNotFound)
+		c.Status(http.StatusInternalServerError)
 		return
 	}
 
-	err = dbService.DeleteSalaryCostLabel(existingSalaryCostLabel.ID, userID)
-	if err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
-		return
-	}
-
+	// Post
 	c.Status(http.StatusNoContent)
 }

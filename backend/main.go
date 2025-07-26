@@ -7,14 +7,13 @@ import (
 	"github.com/pressly/goose/v3"
 	"github.com/robfig/cron/v3"
 	"liquiswiss/config"
+	"liquiswiss/internal/adapter/db_adapter"
+	"liquiswiss/internal/adapter/sendgrid_adapter"
 	"liquiswiss/internal/api"
 	"liquiswiss/internal/db"
 	"liquiswiss/internal/middleware"
-	"liquiswiss/internal/service/db_service"
+	"liquiswiss/internal/service/api_service"
 	"liquiswiss/internal/service/fixer_io_service"
-	"liquiswiss/internal/service/forecast_service"
-	"liquiswiss/internal/service/sendgrid_service"
-	"liquiswiss/internal/service/user_service"
 	"liquiswiss/pkg/logger"
 	"liquiswiss/pkg/utils"
 	"net/http"
@@ -68,13 +67,13 @@ func runApp() {
 	}
 
 	cfg := config.GetConfig()
-	dbService := db_service.NewDatabaseService(conn)
-	fixerIOService := fixer_io_service.NewFixerIOService(&dbService)
-	userService := user_service.NewUserServiceService(&dbService)
-	sendgridService := sendgrid_service.NewSendgridService(cfg.SendgridToken)
-	forecastService := forecast_service.NewForecastService(&dbService, &userService)
+	sendgridService := sendgrid_adapter.NewSendgridAdapter(cfg.SendgridToken)
+	dbService := db_adapter.NewDatabaseAdapter(conn)
+
+	apiService := api_service.NewAPIService(dbService, sendgridService)
+	fixerIOService := fixer_io_service.NewFixerIOService(&apiService)
 	middleware.InjectUserService(dbService)
-	apiHandler := api.NewAPI(dbService, sendgridService, forecastService, userService)
+	apiHandler := api.NewAPI(dbService, apiService, sendgridService)
 
 	// Cronjob
 	c := cron.New()

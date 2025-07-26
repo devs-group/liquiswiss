@@ -1,7 +1,7 @@
 package middleware
 
 import (
-	"liquiswiss/internal/service/db_service"
+	"liquiswiss/internal/adapter/db_adapter"
 	"liquiswiss/pkg/auth"
 	"liquiswiss/pkg/logger"
 	"liquiswiss/pkg/models"
@@ -11,7 +11,7 @@ import (
 	"github.com/gin-gonic/gin"
 )
 
-var databaseService db_service.IDatabaseService
+var databaseService db_adapter.IDatabaseAdapter
 
 func AuthMiddleware(c *gin.Context) {
 	var accessClaims *auth.Claims
@@ -88,6 +88,6 @@ func AuthMiddleware(c *gin.Context) {
 	c.Next()
 }
 
-func InjectUserService(s db_service.IDatabaseService) {
+func InjectUserService(s db_adapter.IDatabaseAdapter) {
 	databaseService = s
 }

@@ -4,50 +4,47 @@ import (
 	"database/sql"
 	"fmt"
 	"github.com/gin-gonic/gin"
-	"liquiswiss/internal/service/db_service"
+	"liquiswiss/internal/service/api_service"
 	"liquiswiss/pkg/models"
 	"liquiswiss/pkg/utils"
 	"net/http"
 	"strconv"
 )
 
-func ListBankAccounts(dbService db_service.IDatabaseService, c *gin.Context) {
+func ListBankAccounts(apiService api_service.IAPIService, c *gin.Context) {
+	// Pre
 	userID := c.GetInt64("userID")
 	if userID == 0 {
-		c.JSON(http.StatusUnauthorized, gin.H{"error": "Ungültiger Benutzer"})
+		c.Status(http.StatusUnauthorized)
 		return
 	}
 
-	bankAccounts, err := dbService.ListBankAccounts(userID)
+	// Action
+	bankAccounts, err := apiService.ListBankAccounts(userID)
 	if err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		c.Status(http.StatusInternalServerError)
 		return
 	}
 
-	validator := utils.GetValidator()
-	if err := validator.Var(bankAccounts, "dive"); err != nil {
-		// Return validation errors
-		c.JSON(http.StatusBadRequest, gin.H{"error": "Ungültige Daten", "details": err.Error()})
-		return
-	}
-
+	// Post
 	c.JSON(http.StatusOK, bankAccounts)
 }
 
-func GetBankAccount(dbService db_service.IDatabaseService, c *gin.Context) {
+func GetBankAccount(apiService api_service.IAPIService, c *gin.Context) {
+	// Pre
 	userID := c.GetInt64("userID")
 	if userID == 0 {
 		c.JSON(http.StatusUnauthorized, gin.H{"error": "Ungültiger Benutzer"})
 		return
 	}
-
 	bankAccountID, err := strconv.ParseInt(c.Param("bankAccountID"), 10, 64)
 	if err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"error": "Es fehlt die ID"})
 		return
 	}
 
-	bankAccount, err := dbService.GetBankAccount(userID, bankAccountID)
+	// Action
+	bankAccount, err := apiService.GetBankAccount(userID, bankAccountID)
 	if err != nil {
 		switch err {
 		case sql.ErrNoRows:
@@ -59,122 +56,93 @@ func GetBankAccount(dbService db_service.IDatabaseService, c *gin.Context) {
 		}
 	}
 
-	validator := utils.GetValidator()
-	if err := validator.Struct(bankAccount); err != nil {
-		// Return validation errors
-		c.JSON(http.StatusBadRequest, gin.H{"error": "Ungültige Daten", "details": err.Error()})
-		return
-	}
-
+	// Post
 	c.JSON(http.StatusOK, bankAccount)
 }
 
-func CreateBankAccount(dbService db_service.IDatabaseService, c *gin.Context) {
+func CreateBankAccount(apiService api_service.IAPIService, c *gin.Context) {
+	// Pre
 	userID := c.GetInt64("userID")
 	if userID == 0 {
-		c.JSON(http.StatusUnauthorized, gin.H{"error": "Ungültiger Benutzer"})
+		c.Status(http.StatusUnauthorized)
 		return
 	}
-
 	var payload models.CreateBankAccount
 	if err := c.BindJSON(&payload); err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		c.Status(http.StatusBadRequest)
 		return
 	}
-
 	validator := utils.GetValidator()
 	if err := validator.Struct(payload); err != nil {
-		// Return validation errors
-		c.JSON(http.StatusBadRequest, gin.H{"error": "Ungültige Daten", "details": err.Error()})
+		c.Status(http.StatusBadRequest)
 		return
 	}
 
-	bankAccountID, err := dbService.CreateBankAccount(payload, userID)
+	// Action
+	bankAccount, err := apiService.CreateBankAccount(payload, userID)
 	if err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		c.Status(http.StatusInternalServerError)
 		return
 	}
 
-	bankAccount, err := dbService.GetBankAccount(userID, bankAccountID)
-	if err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
-		return
-	}
-
+	// Post
 	c.JSON(http.StatusCreated, bankAccount)
 }
 
-func UpdateBankAccount(dbService db_service.IDatabaseService, c *gin.Context) {
+func UpdateBankAccount(apiService api_service.IAPIService, c *gin.Context) {
+	// Pre
 	userID := c.GetInt64("userID")
 	if userID == 0 {
-		c.JSON(http.StatusUnauthorized, gin.H{"error": "Ungültiger Benutzer"})
+		c.Status(http.StatusUnauthorized)
 		return
 	}
-
 	bankAccountID, err := strconv.ParseInt(c.Param("bankAccountID"), 10, 64)
 	if err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"error": "Es fehlt die ID"})
+		c.Status(http.StatusBadRequest)
 		return
 	}
-
-	_, err = dbService.GetBankAccount(userID, bankAccountID)
-	if err != nil {
-		c.JSON(http.StatusNotFound, gin.H{"error": err.Error()})
-		return
-	}
-
 	var payload models.UpdateBankAccount
 	if err := c.Bind(&payload); err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		c.Status(http.StatusBadRequest)
 		return
 	}
-
 	validator := utils.GetValidator()
 	if err := validator.Struct(payload); err != nil {
-		// Return validation errors
-		c.JSON(http.StatusBadRequest, gin.H{"error": "Ungültige Daten", "details": err.Error()})
+		c.Status(http.StatusBadRequest)
 		return
 	}
 
-	err = dbService.UpdateBankAccount(payload, userID, bankAccountID)
+	// Create
+	bankAccount, err := apiService.UpdateBankAccount(payload, userID, bankAccountID)
 	if err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		c.Status(http.StatusInternalServerError)
 		return
 	}
 
-	bankAccount, err := dbService.GetBankAccount(userID, bankAccountID)
-	if err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
-		return
-	}
-
+	// Post
 	c.JSON(http.StatusOK, bankAccount)
 }
 
-func DeleteBankAccount(dbService db_service.IDatabaseService, c *gin.Context) {
+func DeleteBankAccount(apiService api_service.IAPIService, c *gin.Context) {
+	// Pre
 	userID := c.GetInt64("userID")
 	if userID == 0 {
-		c.JSON(http.StatusUnauthorized, gin.H{"error": "Ungültiger Benutzer"})
+		c.Status(http.StatusUnauthorized)
 		return
 	}
-
 	bankAccountID, err := strconv.ParseInt(c.Param("bankAccountID"), 10, 64)
 	if err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"error": "Es fehlt die ID"})
+		c.Status(http.StatusBadRequest)
 		return
 	}
 
-	_, err = dbService.GetBankAccount(userID, bankAccountID)
+	// Create
+	err = apiService.DeleteBankAccount(userID, bankAccountID)
 	if err != nil {
-		c.Status(http.StatusNotFound)
+		c.Status(http.StatusInternalServerError)
 		return
 	}
 
-	err = dbService.DeleteBankAccount(userID, bankAccountID)
-	if err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
-		return
-	}
-
+	// Post
 	c.Status(http.StatusNoContent)
 }

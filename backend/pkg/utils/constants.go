@@ -13,6 +13,8 @@ const (
 
 	ResetPasswordDelay = 1 * time.Hour
 
+	MaxForecastYears = 3
+
 	AccessTokenName  = "liq-access-token"
 	RefreshTokenName = "liq-refresh-token"
 
