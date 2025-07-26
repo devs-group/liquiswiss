@@ -56,32 +56,32 @@ func (mr *MockIDatabaseAdapterMockRecorder) AssignUserToOrganisation(userID, org
 }
 
 // CalculateSalaryCostDetails mocks base method.
-func (m *MockIDatabaseAdapter) CalculateSalaryCostDetails(salaryCostID, userID int64) error {
+func (m *MockIDatabaseAdapter) CalculateSalaryCostDetails(userID, salaryCostID int64) error {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "CalculateSalaryCostDetails", salaryCostID, userID)
+	ret := m.ctrl.Call(m, "CalculateSalaryCostDetails", userID, salaryCostID)
 	ret0, _ := ret[0].(error)
 	return ret0
 }
 
 // CalculateSalaryCostDetails indicates an expected call of CalculateSalaryCostDetails.
-func (mr *MockIDatabaseAdapterMockRecorder) CalculateSalaryCostDetails(salaryCostID, userID any) *gomock.Call {
+func (mr *MockIDatabaseAdapterMockRecorder) CalculateSalaryCostDetails(userID, salaryCostID any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CalculateSalaryCostDetails", reflect.TypeOf((*MockIDatabaseAdapter)(nil).CalculateSalaryCostDetails), salaryCostID, userID)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CalculateSalaryCostDetails", reflect.TypeOf((*MockIDatabaseAdapter)(nil).CalculateSalaryCostDetails), userID, salaryCostID)
 }
 
 // CheckRefreshToken mocks base method.
-func (m *MockIDatabaseAdapter) CheckRefreshToken(tokenID string, userID int64) (bool, error) {
+func (m *MockIDatabaseAdapter) CheckRefreshToken(userID int64, tokenID string) (bool, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "CheckRefreshToken", tokenID, userID)
+	ret := m.ctrl.Call(m, "CheckRefreshToken", userID, tokenID)
 	ret0, _ := ret[0].(bool)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
 
 // CheckRefreshToken indicates an expected call of CheckRefreshToken.
-func (mr *MockIDatabaseAdapterMockRecorder) CheckRefreshToken(tokenID, userID any) *gomock.Call {
+func (mr *MockIDatabaseAdapterMockRecorder) CheckRefreshToken(userID, tokenID any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CheckRefreshToken", reflect.TypeOf((*MockIDatabaseAdapter)(nil).CheckRefreshToken), tokenID, userID)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CheckRefreshToken", reflect.TypeOf((*MockIDatabaseAdapter)(nil).CheckRefreshToken), userID, tokenID)
 }
 
 // CheckUserExistence mocks base method.
@@ -189,18 +189,18 @@ func (mr *MockIDatabaseAdapterMockRecorder) CreateBankAccount(payload, userID an
 }
 
 // CreateCategory mocks base method.
-func (m *MockIDatabaseAdapter) CreateCategory(userID *int64, payload models.CreateCategory) (int64, error) {
+func (m *MockIDatabaseAdapter) CreateCategory(payload models.CreateCategory, userID *int64) (int64, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "CreateCategory", userID, payload)
+	ret := m.ctrl.Call(m, "CreateCategory", payload, userID)
 	ret0, _ := ret[0].(int64)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
 
 // CreateCategory indicates an expected call of CreateCategory.
-func (mr *MockIDatabaseAdapterMockRecorder) CreateCategory(userID, payload any) *gomock.Call {
+func (mr *MockIDatabaseAdapterMockRecorder) CreateCategory(payload, userID any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CreateCategory", reflect.TypeOf((*MockIDatabaseAdapter)(nil).CreateCategory), userID, payload)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CreateCategory", reflect.TypeOf((*MockIDatabaseAdapter)(nil).CreateCategory), payload, userID)
 }
 
 // CreateCurrency mocks base method.
@@ -400,17 +400,17 @@ func (mr *MockIDatabaseAdapterMockRecorder) DeleteBankAccount(userID, bankAccoun
 }
 
 // DeleteEmployee mocks base method.
-func (m *MockIDatabaseAdapter) DeleteEmployee(employeeID, userID int64) error {
+func (m *MockIDatabaseAdapter) DeleteEmployee(userID, employeeID int64) error {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "DeleteEmployee", employeeID, userID)
+	ret := m.ctrl.Call(m, "DeleteEmployee", userID, employeeID)
 	ret0, _ := ret[0].(error)
 	return ret0
 }
 
 // DeleteEmployee indicates an expected call of DeleteEmployee.
-func (mr *MockIDatabaseAdapterMockRecorder) DeleteEmployee(employeeID, userID any) *gomock.Call {
+func (mr *MockIDatabaseAdapterMockRecorder) DeleteEmployee(userID, employeeID any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "DeleteEmployee", reflect.TypeOf((*MockIDatabaseAdapter)(nil).DeleteEmployee), employeeID, userID)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "DeleteEmployee", reflect.TypeOf((*MockIDatabaseAdapter)(nil).DeleteEmployee), userID, employeeID)
 }
 
 // DeleteForecastExclusion mocks base method.
@@ -429,17 +429,17 @@ func (mr *MockIDatabaseAdapterMockRecorder) DeleteForecastExclusion(payload, use
 }
 
 // DeleteRefreshToken mocks base method.
-func (m *MockIDatabaseAdapter) DeleteRefreshToken(tokenID string, userID int64) error {
+func (m *MockIDatabaseAdapter) DeleteRefreshToken(userID int64, tokenID string) error {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "DeleteRefreshToken", tokenID, userID)
+	ret := m.ctrl.Call(m, "DeleteRefreshToken", userID, tokenID)
 	ret0, _ := ret[0].(error)
 	return ret0
 }
 
 // DeleteRefreshToken indicates an expected call of DeleteRefreshToken.
-func (mr *MockIDatabaseAdapterMockRecorder) DeleteRefreshToken(tokenID, userID any) *gomock.Call {
+func (mr *MockIDatabaseAdapterMockRecorder) DeleteRefreshToken(userID, tokenID any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "DeleteRefreshToken", reflect.TypeOf((*MockIDatabaseAdapter)(nil).DeleteRefreshToken), tokenID, userID)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "DeleteRefreshToken", reflect.TypeOf((*MockIDatabaseAdapter)(nil).DeleteRefreshToken), userID, tokenID)
 }
 
 // DeleteRegistration mocks base method.
@@ -487,31 +487,31 @@ func (mr *MockIDatabaseAdapterMockRecorder) DeleteSalary(existingSalary, userID 
 }
 
 // DeleteSalaryCost mocks base method.
-func (m *MockIDatabaseAdapter) DeleteSalaryCost(salaryCostID, userID int64) error {
+func (m *MockIDatabaseAdapter) DeleteSalaryCost(userID, salaryCostID int64) error {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "DeleteSalaryCost", salaryCostID, userID)
+	ret := m.ctrl.Call(m, "DeleteSalaryCost", userID, salaryCostID)
 	ret0, _ := ret[0].(error)
 	return ret0
 }
 
 // DeleteSalaryCost indicates an expected call of DeleteSalaryCost.
-func (mr *MockIDatabaseAdapterMockRecorder) DeleteSalaryCost(salaryCostID, userID any) *gomock.Call {
+func (mr *MockIDatabaseAdapterMockRecorder) DeleteSalaryCost(userID, salaryCostID any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "DeleteSalaryCost", reflect.TypeOf((*MockIDatabaseAdapter)(nil).DeleteSalaryCost), salaryCostID, userID)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "DeleteSalaryCost", reflect.TypeOf((*MockIDatabaseAdapter)(nil).DeleteSalaryCost), userID, salaryCostID)
 }
 
 // DeleteSalaryCostLabel mocks base method.
-func (m *MockIDatabaseAdapter) DeleteSalaryCostLabel(salaryCostLabelID, userID int64) error {
+func (m *MockIDatabaseAdapter) DeleteSalaryCostLabel(userID, salaryCostLabelID int64) error {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "DeleteSalaryCostLabel", salaryCostLabelID, userID)
+	ret := m.ctrl.Call(m, "DeleteSalaryCostLabel", userID, salaryCostLabelID)
 	ret0, _ := ret[0].(error)
 	return ret0
 }
 
 // DeleteSalaryCostLabel indicates an expected call of DeleteSalaryCostLabel.
-func (mr *MockIDatabaseAdapterMockRecorder) DeleteSalaryCostLabel(salaryCostLabelID, userID any) *gomock.Call {
+func (mr *MockIDatabaseAdapterMockRecorder) DeleteSalaryCostLabel(userID, salaryCostLabelID any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "DeleteSalaryCostLabel", reflect.TypeOf((*MockIDatabaseAdapter)(nil).DeleteSalaryCostLabel), salaryCostLabelID, userID)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "DeleteSalaryCostLabel", reflect.TypeOf((*MockIDatabaseAdapter)(nil).DeleteSalaryCostLabel), userID, salaryCostLabelID)
 }
 
 // DeleteTransaction mocks base method.
@@ -1040,17 +1040,17 @@ func (mr *MockIDatabaseAdapterMockRecorder) UpdateBankAccount(payload, userID, b
 }
 
 // UpdateCategory mocks base method.
-func (m *MockIDatabaseAdapter) UpdateCategory(userID int64, payload models.UpdateCategory, categoryID int64) error {
+func (m *MockIDatabaseAdapter) UpdateCategory(payload models.UpdateCategory, userID, categoryID int64) error {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "UpdateCategory", userID, payload, categoryID)
+	ret := m.ctrl.Call(m, "UpdateCategory", payload, userID, categoryID)
 	ret0, _ := ret[0].(error)
 	return ret0
 }
 
 // UpdateCategory indicates an expected call of UpdateCategory.
-func (mr *MockIDatabaseAdapterMockRecorder) UpdateCategory(userID, payload, categoryID any) *gomock.Call {
+func (mr *MockIDatabaseAdapterMockRecorder) UpdateCategory(payload, userID, categoryID any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "UpdateCategory", reflect.TypeOf((*MockIDatabaseAdapter)(nil).UpdateCategory), userID, payload, categoryID)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "UpdateCategory", reflect.TypeOf((*MockIDatabaseAdapter)(nil).UpdateCategory), payload, userID, categoryID)
 }
 
 // UpdateCurrency mocks base method.
@@ -1096,17 +1096,17 @@ func (mr *MockIDatabaseAdapterMockRecorder) UpdateOrganisation(payload, userID, 
 }
 
 // UpdatePassword mocks base method.
-func (m *MockIDatabaseAdapter) UpdatePassword(password string, userID int64) error {
+func (m *MockIDatabaseAdapter) UpdatePassword(userID int64, password string) error {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "UpdatePassword", password, userID)
+	ret := m.ctrl.Call(m, "UpdatePassword", userID, password)
 	ret0, _ := ret[0].(error)
 	return ret0
 }
 
 // UpdatePassword indicates an expected call of UpdatePassword.
-func (mr *MockIDatabaseAdapterMockRecorder) UpdatePassword(password, userID any) *gomock.Call {
+func (mr *MockIDatabaseAdapterMockRecorder) UpdatePassword(userID, password any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "UpdatePassword", reflect.TypeOf((*MockIDatabaseAdapter)(nil).UpdatePassword), password, userID)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "UpdatePassword", reflect.TypeOf((*MockIDatabaseAdapter)(nil).UpdatePassword), userID, password)
 }
 
 // UpdateProfile mocks base method.
@@ -1255,31 +1255,31 @@ func (mr *MockIDatabaseAdapterMockRecorder) UpsertSalaryCostDetails(payload any)
 }
 
 // ValidateRegistration mocks base method.
-func (m *MockIDatabaseAdapter) ValidateRegistration(email, code string, hours time.Duration) (int64, error) {
+func (m *MockIDatabaseAdapter) ValidateRegistration(email, code string, validity time.Duration) (int64, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "ValidateRegistration", email, code, hours)
+	ret := m.ctrl.Call(m, "ValidateRegistration", email, code, validity)
 	ret0, _ := ret[0].(int64)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
 
 // ValidateRegistration indicates an expected call of ValidateRegistration.
-func (mr *MockIDatabaseAdapterMockRecorder) ValidateRegistration(email, code, hours any) *gomock.Call {
+func (mr *MockIDatabaseAdapterMockRecorder) ValidateRegistration(email, code, validity any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ValidateRegistration", reflect.TypeOf((*MockIDatabaseAdapter)(nil).ValidateRegistration), email, code, hours)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ValidateRegistration", reflect.TypeOf((*MockIDatabaseAdapter)(nil).ValidateRegistration), email, code, validity)
 }
 
 // ValidateResetPassword mocks base method.
-func (m *MockIDatabaseAdapter) ValidateResetPassword(email, code string, hours time.Duration) (int64, error) {
+func (m *MockIDatabaseAdapter) ValidateResetPassword(email, code string, validity time.Duration) (int64, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "ValidateResetPassword", email, code, hours)
+	ret := m.ctrl.Call(m, "ValidateResetPassword", email, code, validity)
 	ret0, _ := ret[0].(int64)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
 
 // ValidateResetPassword indicates an expected call of ValidateResetPassword.
-func (mr *MockIDatabaseAdapterMockRecorder) ValidateResetPassword(email, code, hours any) *gomock.Call {
+func (mr *MockIDatabaseAdapterMockRecorder) ValidateResetPassword(email, code, validity any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ValidateResetPassword", reflect.TypeOf((*MockIDatabaseAdapter)(nil).ValidateResetPassword), email, code, hours)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ValidateResetPassword", reflect.TypeOf((*MockIDatabaseAdapter)(nil).ValidateResetPassword), email, code, validity)
 }

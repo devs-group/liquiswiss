@@ -57,18 +57,18 @@ func (mr *MockIAPIServiceMockRecorder) CalculateForecast(userID any) *gomock.Cal
 }
 
 // CheckRegistrationCode mocks base method.
-func (m *MockIAPIService) CheckRegistrationCode(payload models.CheckRegistrationCode, hours time.Duration) (int64, error) {
+func (m *MockIAPIService) CheckRegistrationCode(payload models.CheckRegistrationCode, validity time.Duration) (int64, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "CheckRegistrationCode", payload, hours)
+	ret := m.ctrl.Call(m, "CheckRegistrationCode", payload, validity)
 	ret0, _ := ret[0].(int64)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
 
 // CheckRegistrationCode indicates an expected call of CheckRegistrationCode.
-func (mr *MockIAPIServiceMockRecorder) CheckRegistrationCode(payload, hours any) *gomock.Call {
+func (mr *MockIAPIServiceMockRecorder) CheckRegistrationCode(payload, validity any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CheckRegistrationCode", reflect.TypeOf((*MockIAPIService)(nil).CheckRegistrationCode), payload, hours)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CheckRegistrationCode", reflect.TypeOf((*MockIAPIService)(nil).CheckRegistrationCode), payload, validity)
 }
 
 // CheckResetPasswordCode mocks base method.
@@ -339,17 +339,17 @@ func (mr *MockIAPIServiceMockRecorder) DeleteBankAccount(userID, bankAccountID a
 }
 
 // DeleteEmployee mocks base method.
-func (m *MockIAPIService) DeleteEmployee(employeeID, userID int64) error {
+func (m *MockIAPIService) DeleteEmployee(userID, employeeID int64) error {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "DeleteEmployee", employeeID, userID)
+	ret := m.ctrl.Call(m, "DeleteEmployee", userID, employeeID)
 	ret0, _ := ret[0].(error)
 	return ret0
 }
 
 // DeleteEmployee indicates an expected call of DeleteEmployee.
-func (mr *MockIAPIServiceMockRecorder) DeleteEmployee(employeeID, userID any) *gomock.Call {
+func (mr *MockIAPIServiceMockRecorder) DeleteEmployee(userID, employeeID any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "DeleteEmployee", reflect.TypeOf((*MockIAPIService)(nil).DeleteEmployee), employeeID, userID)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "DeleteEmployee", reflect.TypeOf((*MockIAPIService)(nil).DeleteEmployee), userID, employeeID)
 }
 
 // DeleteForecastExclusion mocks base method.
@@ -382,45 +382,45 @@ func (mr *MockIAPIServiceMockRecorder) DeleteRegistration(registrationID, email 
 }
 
 // DeleteSalary mocks base method.
-func (m *MockIAPIService) DeleteSalary(userID int64, salaryID int64) error {
+func (m *MockIAPIService) DeleteSalary(userID, salaryID int64) error {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "DeleteSalary", salaryID, userID)
+	ret := m.ctrl.Call(m, "DeleteSalary", userID, salaryID)
 	ret0, _ := ret[0].(error)
 	return ret0
 }
 
 // DeleteSalary indicates an expected call of DeleteSalary.
-func (mr *MockIAPIServiceMockRecorder) DeleteSalary(salaryID, userID any) *gomock.Call {
+func (mr *MockIAPIServiceMockRecorder) DeleteSalary(userID, salaryID any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "DeleteSalary", reflect.TypeOf((*MockIAPIService)(nil).DeleteSalary), salaryID, userID)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "DeleteSalary", reflect.TypeOf((*MockIAPIService)(nil).DeleteSalary), userID, salaryID)
 }
 
 // DeleteSalaryCost mocks base method.
-func (m *MockIAPIService) DeleteSalaryCost(salaryCostID, userID int64) error {
+func (m *MockIAPIService) DeleteSalaryCost(userID, salaryCostID int64) error {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "DeleteSalaryCost", salaryCostID, userID)
+	ret := m.ctrl.Call(m, "DeleteSalaryCost", userID, salaryCostID)
 	ret0, _ := ret[0].(error)
 	return ret0
 }
 
 // DeleteSalaryCost indicates an expected call of DeleteSalaryCost.
-func (mr *MockIAPIServiceMockRecorder) DeleteSalaryCost(salaryCostID, userID any) *gomock.Call {
+func (mr *MockIAPIServiceMockRecorder) DeleteSalaryCost(userID, salaryCostID any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "DeleteSalaryCost", reflect.TypeOf((*MockIAPIService)(nil).DeleteSalaryCost), salaryCostID, userID)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "DeleteSalaryCost", reflect.TypeOf((*MockIAPIService)(nil).DeleteSalaryCost), userID, salaryCostID)
 }
 
 // DeleteSalaryCostLabel mocks base method.
-func (m *MockIAPIService) DeleteSalaryCostLabel(salaryCostLabelID, userID int64) error {
+func (m *MockIAPIService) DeleteSalaryCostLabel(userID, salaryCostLabelID int64) error {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "DeleteSalaryCostLabel", salaryCostLabelID, userID)
+	ret := m.ctrl.Call(m, "DeleteSalaryCostLabel", userID, salaryCostLabelID)
 	ret0, _ := ret[0].(error)
 	return ret0
 }
 
 // DeleteSalaryCostLabel indicates an expected call of DeleteSalaryCostLabel.
-func (mr *MockIAPIServiceMockRecorder) DeleteSalaryCostLabel(salaryCostLabelID, userID any) *gomock.Call {
+func (mr *MockIAPIServiceMockRecorder) DeleteSalaryCostLabel(userID, salaryCostLabelID any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "DeleteSalaryCostLabel", reflect.TypeOf((*MockIAPIService)(nil).DeleteSalaryCostLabel), salaryCostLabelID, userID)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "DeleteSalaryCostLabel", reflect.TypeOf((*MockIAPIService)(nil).DeleteSalaryCostLabel), userID, salaryCostLabelID)
 }
 
 // DeleteTransaction mocks base method.
