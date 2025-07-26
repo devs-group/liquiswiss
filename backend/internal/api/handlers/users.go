@@ -2,161 +2,146 @@ package handlers
 
 import (
 	"database/sql"
-	"fmt"
 	"github.com/gin-gonic/gin"
-	"golang.org/x/crypto/bcrypt"
-	"liquiswiss/internal/service/db_service"
-	"liquiswiss/internal/service/user_service"
+	"liquiswiss/internal/service/api_service"
 	"liquiswiss/pkg/models"
 	"liquiswiss/pkg/utils"
 	"net/http"
 )
 
-func GetProfile(dbService db_service.IDatabaseService, c *gin.Context) {
+func GetProfile(apiService api_service.IAPIService, c *gin.Context) {
+	// Pre
 	userID := c.GetInt64("userID")
 	if userID == 0 {
-		c.JSON(http.StatusUnauthorized, gin.H{"error": "Ungültiger Benutzer"})
+		c.Status(http.StatusUnauthorized)
 		return
 	}
 
-	user, err := dbService.GetProfile(userID)
+	// Action
+	user, err := apiService.GetProfile(userID)
 	if err != nil {
 		switch err {
 		case sql.ErrNoRows:
-			c.JSON(http.StatusNotFound, gin.H{"error": fmt.Sprintf("Kein Benutzer gefunden mit ID: %d", userID)})
+			c.Status(http.StatusNotFound)
 			return
 		default:
-			c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+			c.Status(http.StatusInternalServerError)
 			return
 		}
 	}
 
-	validator := utils.GetValidator()
-	if err := validator.Struct(user); err != nil {
-		// Return validation errors
-		c.JSON(http.StatusBadRequest, gin.H{"error": "Ungültige Daten", "details": err.Error()})
-		return
-	}
-
+	// Post
 	c.JSON(http.StatusOK, user)
 }
 
-func UpdateProfile(dbService db_service.IDatabaseService, c *gin.Context) {
+func UpdateProfile(apiService api_service.IAPIService, c *gin.Context) {
+	// Pre
 	userID := c.GetInt64("userID")
 	if userID == 0 {
-		c.JSON(http.StatusUnauthorized, gin.H{"error": "Ungültiger Benutzer"})
+		c.Status(http.StatusUnauthorized)
 		return
 	}
-
 	var payload models.UpdateUser
 	if err := c.Bind(&payload); err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		c.Status(http.StatusBadRequest)
 		return
 	}
-
 	validator := utils.GetValidator()
 	if err := validator.Struct(payload); err != nil {
-		// Return validation errors
-		c.JSON(http.StatusBadRequest, gin.H{"error": "Ungültige Daten", "details": err.Error()})
+		c.Status(http.StatusBadRequest)
 		return
 	}
 
-	err := dbService.UpdateProfile(payload, userID)
+	// Action
+	user, err := apiService.UpdateProfile(payload, userID)
 	if err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		c.Status(http.StatusInternalServerError)
 		return
 	}
 
-	user, err := dbService.GetProfile(userID)
-	if err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
-		return
-	}
-
+	// Post
 	c.JSON(http.StatusOK, user)
 }
 
-func UpdatePassword(dbService db_service.IDatabaseService, c *gin.Context) {
+func UpdatePassword(apiService api_service.IAPIService, c *gin.Context) {
+	// Pre
 	userID := c.GetInt64("userID")
 	if userID == 0 {
-		c.JSON(http.StatusUnauthorized, gin.H{"error": "Ungültiger Benutzer"})
+		c.Status(http.StatusUnauthorized)
 		return
 	}
-
 	var payload models.UpdateUserPassword
 	if err := c.Bind(&payload); err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		c.Status(http.StatusBadRequest)
 		return
 	}
-
 	validator := utils.GetValidator()
 	if err := validator.Struct(payload); err != nil {
-		// Return validation errors
-		c.JSON(http.StatusBadRequest, gin.H{"error": "Ungültige Daten", "details": err.Error()})
+		c.Status(http.StatusBadRequest)
 		return
 	}
 
-	encryptedPassword, err := bcrypt.GenerateFromPassword([]byte(payload.Password), 12)
+	// Action
+	err := apiService.UpdatePassword(payload, userID)
 	if err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		c.Status(http.StatusInternalServerError)
 		return
 	}
 
-	err = dbService.UpdatePassword(string(encryptedPassword), userID)
-	if err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
-		return
-	}
-
+	// Post
 	c.Status(http.StatusOK)
 }
 
-func SetUserCurrentOrganisation(dbService db_service.IDatabaseService, c *gin.Context) {
+func SetUserCurrentOrganisation(apiService api_service.IAPIService, c *gin.Context) {
+	// Pre
 	userID := c.GetInt64("userID")
 	if userID == 0 {
-		c.JSON(http.StatusUnauthorized, gin.H{"error": "Ungültiger Benutzer"})
+		c.Status(http.StatusUnauthorized)
 		return
 	}
-
 	var payload models.UpdateUserCurrentOrganisation
 	if err := c.Bind(&payload); err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		c.Status(http.StatusBadRequest)
 		return
 	}
-
 	validator := utils.GetValidator()
 	if err := validator.Struct(payload); err != nil {
 		// Return validation errors
-		c.JSON(http.StatusBadRequest, gin.H{"error": "Ungültige Daten", "details": err.Error()})
+		c.Status(http.StatusBadRequest)
 		return
 	}
 
-	err := dbService.SetUserCurrentOrganisation(userID, payload.OrganisationID)
+	// Action
+	err := apiService.SetUserCurrentOrganisation(payload, userID)
 	if err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		c.Status(http.StatusInternalServerError)
 		return
 	}
 
+	// Post
 	c.Status(http.StatusOK)
 }
 
-func GetUserCurrentOrganisation(userService user_service.IUserService, c *gin.Context) {
+func GetUserCurrentOrganisation(apiService api_service.IAPIService, c *gin.Context) {
+	// Pre
 	userID := c.GetInt64("userID")
 	if userID == 0 {
-		c.JSON(http.StatusUnauthorized, gin.H{"error": "Ungültiger Benutzer"})
+		c.Status(http.StatusUnauthorized)
 		return
 	}
 
-	organisation, err := userService.GetCurrentOrganisation(userID)
+	// Action
+	organisation, err := apiService.GetCurrentOrganisation(userID)
 	if err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		c.Status(http.StatusBadRequest)
 		return
 	}
 
+	// Post
 	c.JSON(http.StatusOK, organisation)
 }
 
-func GetAccessToken(dbService db_service.IDatabaseService, c *gin.Context) {
+func GetAccessToken(c *gin.Context) {
 	// This does nothing it's simply for the user to get a refresh token
 	c.Status(http.StatusNoContent)
 }

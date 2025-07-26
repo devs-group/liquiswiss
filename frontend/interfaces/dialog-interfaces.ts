@@ -1,10 +1,5 @@
 import type { TransactionResponse } from '~/models/transaction'
-import type {
-  EmployeeHistoryCostLabelResponse,
-  EmployeeHistoryCostResponse,
-  EmployeeHistoryResponse,
-  EmployeeResponse,
-} from '~/models/employee'
+import type { EmployeeResponse, SalaryCostLabelResponse, SalaryCostResponse, SalaryResponse } from '~/models/employee'
 import type { BankAccountResponse } from '~/models/bank-account'
 import type { VatResponse } from '~/models/vat'
 import type { OrganisationResponse } from '~/models/organisation'
@@ -19,34 +14,34 @@ export interface IEmployeeFormDialog {
   }
 }
 
-export interface IHistoryFormDialog {
+export interface ISalaryFormDialog {
   close: () => object
   value: {
     close: (data: boolean) => boolean
     data: {
       isClone: boolean
       employeeID: number
-      employeeHistory?: EmployeeHistoryResponse
+      salary?: SalaryResponse
     }
   }
 }
 
-export interface IHistoryCostOverviewDialog {
+export interface ISalaryCostOverviewDialog {
   close: (requiresRefresh: boolean) => unknown
   value: {
     close: (data: boolean) => boolean
     data: {
-      employeeHistory: EmployeeHistoryResponse
+      salary: SalaryResponse
     }
   }
 }
 
-export interface IHistoryCostCopyDialog {
+export interface ISalaryCostCopyDialog {
   close: () => object
   value: {
     close: (data: boolean) => boolean
     data: {
-      employeeHistory: EmployeeHistoryResponse
+      salaryAmount: SalaryResponse
     }
   }
 }
@@ -92,24 +87,24 @@ export interface IOrganisationFormDialog {
   }
 }
 
-export interface IEmployeeHistoryCostFormDialog {
+export interface ISalaryCostFormDialog {
   close: (requiresRefresh: boolean) => unknown
   value: {
-    close: (historyCostId?: number) => number | undefined
+    close: (salaryCostId?: number) => number | undefined
     data: {
       isClone: boolean
-      employeeHistory: EmployeeHistoryResponse
-      employeeCostToEdit?: EmployeeHistoryCostResponse
+      salary: SalaryResponse
+      salaryCostToEdit?: SalaryCostResponse
     }
   }
 }
 
-export interface IEmployeeHistoryCostLabelFormDialog {
+export interface ISalaryCostLabelFormDialog {
   close: () => object
   value: {
-    close: (historyCostId?: number) => number | undefined
+    close: (salaryCostID?: number) => number | undefined
     data: {
-      employeeCostLabelToEdit?: EmployeeHistoryCostLabelResponse
+      employeeCostLabelToEdit?: SalaryCostLabelResponse
     }
   }
 }

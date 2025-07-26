@@ -2,44 +2,49 @@ package handlers
 
 import (
 	"github.com/gin-gonic/gin"
-	"liquiswiss/internal/service/db_service"
+	"liquiswiss/internal/service/api_service"
 	"net/http"
 )
 
-func ListFiatRates(dbService db_service.IDatabaseService, c *gin.Context) {
+func ListFiatRates(apiService api_service.IAPIService, c *gin.Context) {
+	// Pre
 	base := c.Param("base")
 	if base == "" {
-		c.JSON(http.StatusBadRequest, gin.H{"error": "Basiswährung fehlt"})
+		c.Status(http.StatusBadRequest)
 		return
 	}
 
-	fiatRates, err := dbService.ListFiatRates(base)
+	// Action
+	fiatRates, err := apiService.ListFiatRates(base)
 	if err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		c.Status(http.StatusInternalServerError)
 		return
 	}
 
+	// Post
 	c.JSON(http.StatusOK, fiatRates)
 }
 
-func GetFiatRate(dbService db_service.IDatabaseService, c *gin.Context) {
+func GetFiatRate(apiService api_service.IAPIService, c *gin.Context) {
+	// Pre
 	base := c.Param("base")
 	if base == "" {
-		c.JSON(http.StatusBadRequest, gin.H{"error": "Basiswährung fehlt"})
+		c.Status(http.StatusBadRequest)
 		return
 	}
-
 	target := c.Param("target")
 	if target == "" {
-		c.JSON(http.StatusBadRequest, gin.H{"error": "Zielwährung fehlt"})
+		c.Status(http.StatusBadRequest)
 		return
 	}
 
-	fiatRate, err := dbService.GetFiatRate(base, target)
+	// Action
+	fiatRate, err := apiService.GetFiatRate(base, target)
 	if err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"error": "Konnte Währungskombination nicht finden"})
+		c.Status(http.StatusInternalServerError)
 		return
 	}
 
+	// Post
 	c.JSON(http.StatusOK, fiatRate)
 }

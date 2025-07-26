@@ -2,7 +2,9 @@ package handlers_test
 
 import (
 	"github.com/stretchr/testify/assert"
-	"liquiswiss/internal/service/db_service"
+	"liquiswiss/internal/adapter/db_adapter"
+	"liquiswiss/internal/adapter/sendgrid_adapter"
+	"liquiswiss/internal/service/api_service"
 	"liquiswiss/pkg/models"
 	"testing"
 )
@@ -11,26 +13,28 @@ func TestCurrencyOrderAndOrganisationDependency(t *testing.T) {
 	conn := SetupTestEnvironment(t)
 	defer conn.Close()
 
-	dbService := db_service.NewDatabaseService(conn)
+	dbAdapter := db_adapter.NewDatabaseAdapter(conn)
+	sendgridService := sendgrid_adapter.NewSendgridAdapter("")
+	apiService := api_service.NewAPIService(dbAdapter, sendgridService)
 
 	// Preparations
-	currencyCHF, err := CreateCurrency(dbService, "CHF", "Swiss Franc", "de-CH")
+	currencyCHF, err := CreateCurrency(apiService, "CHF", "Swiss Franc", "de-CH")
 	assert.NoError(t, err)
-	currencyVND, err := CreateCurrency(dbService, "VND", "Vietnamese Dong", "vi-VN")
+	currencyVND, err := CreateCurrency(apiService, "VND", "Vietnamese Dong", "vi-VN")
 	assert.NoError(t, err)
-	currencyAED, err := CreateCurrency(dbService, "AED", "United Arab Emirates Dirham", "ar-AE")
+	currencyAED, err := CreateCurrency(apiService, "AED", "United Arab Emirates Dirham", "ar-AE")
 	assert.NoError(t, err)
 
 	user, organisation, err := CreateUserWithOrganisation(
-		dbService, "John Doe", "test", "Test Organisation",
+		apiService, dbAdapter, "john@doe.com", "test", "Test Organisation",
 	)
 	assert.NoError(t, err)
 
 	// An organisation without a set currency will fall back to the system currency
-	// Currently defined in 00009_create-function_get_default_system_currency_id.sql
+	// Currently defined in 00004_create-function_get_default_system_currency_id.sql
 	assert.Equal(t, *currencyCHF.Code, *organisation.Currency.Code)
 
-	currencies, err := dbService.ListCurrencies(user.ID)
+	currencies, err := dbAdapter.ListCurrencies(user.ID)
 	assert.NoError(t, err)
 
 	// The first currency in the list should be the company currency
@@ -40,7 +44,7 @@ func TestCurrencyOrderAndOrganisationDependency(t *testing.T) {
 	assert.Equal(t, *currencyVND.Code, *currencies[2].Code)
 
 	// We change the currency to VND
-	err = dbService.UpdateOrganisation(models.UpdateOrganisation{
+	err = dbAdapter.UpdateOrganisation(models.UpdateOrganisation{
 		Name:       nil,
 		CurrencyID: currencyVND.ID,
 	}, user.ID, organisation.ID)
@@ -48,7 +52,7 @@ func TestCurrencyOrderAndOrganisationDependency(t *testing.T) {
 		return
 	}
 
-	currencies, err = dbService.ListCurrencies(user.ID)
+	currencies, err = dbAdapter.ListCurrencies(user.ID)
 	assert.NoError(t, err)
 
 	// The first currency should now be the newly set one, in this case VND

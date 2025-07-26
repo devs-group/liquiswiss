@@ -25,9 +25,17 @@
     <template #content>
       <div class="flex flex-col text-sm">
         <p>Start: {{ startDate }}</p>
-        <p>Nächste {{ getNextLabel }}: {{ nextExecutionDate }}</p>
         <p v-if="isRepeating && endDate">
           Ende: {{ endDate }}
+        </p>
+        <p v-if="nextExecutionDate">
+          Nächste {{ getNextLabel }}: {{ nextExecutionDate }}
+        </p>
+        <p
+          v-else
+          class="text-liqui-red"
+        >
+          Abgelaufen
         </p>
         <p class="flex flex-wrap gap-1">
           Betrag: <span

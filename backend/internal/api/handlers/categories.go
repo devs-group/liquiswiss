@@ -1,7 +1,7 @@
 package handlers
 
 import (
-	"liquiswiss/internal/service/db_service"
+	"liquiswiss/internal/service/api_service"
 	"liquiswiss/pkg/models"
 	"liquiswiss/pkg/utils"
 	"net/http"
@@ -10,128 +10,121 @@ import (
 	"github.com/gin-gonic/gin"
 )
 
-func ListCategories(dbService db_service.IDatabaseService, c *gin.Context) {
+func ListCategories(apiServce api_service.IAPIService, c *gin.Context) {
+	// Pre
 	userID := c.GetInt64("userID")
 	if userID == 0 {
-		c.JSON(http.StatusUnauthorized, gin.H{"error": "Ungültiger Benutzer"})
+		c.Status(http.StatusUnauthorized)
 		return
 	}
-
 	limit, err := strconv.ParseInt(c.Query("limit"), 10, 64)
 	if err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		c.Status(http.StatusBadRequest)
 		return
 	}
 	page, err := strconv.ParseInt(c.Query("page"), 10, 64)
 	if err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		c.Status(http.StatusBadRequest)
 		return
 	}
 
-	categories, totalCount, err := dbService.ListCategories(userID, page, limit)
+	// Action
+	categories, totalCount, err := apiServce.ListCategories(userID, page, limit)
 	if err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		c.Status(http.StatusInternalServerError)
 		return
 	}
 
+	// Post
 	c.JSON(http.StatusOK, models.ListResponse[models.Category]{
 		Data:       categories,
 		Pagination: models.CalculatePagination(page, limit, totalCount),
 	})
 }
 
-func GetCategory(dbService db_service.IDatabaseService, c *gin.Context) {
+func GetCategory(apiService api_service.IAPIService, c *gin.Context) {
+	// Pre
 	userID := c.GetInt64("userID")
 	if userID == 0 {
-		c.JSON(http.StatusUnauthorized, gin.H{"error": "Ungültiger Benutzer"})
+		c.Status(http.StatusUnauthorized)
 		return
 	}
-
 	categoryID, err := strconv.ParseInt(c.Param("categoryID"), 10, 64)
 	if err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"error": "ID is missing"})
+		c.Status(http.StatusBadRequest)
 		return
 	}
 
-	category, err := dbService.GetCategory(userID, categoryID)
+	// Action
+	category, err := apiService.GetCategory(userID, categoryID)
 	if err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		c.Status(http.StatusInternalServerError)
 		return
 	}
 
+	// Post
 	c.JSON(http.StatusOK, category)
 }
 
-func CreateCategory(dbService db_service.IDatabaseService, c *gin.Context) {
+func CreateCategory(apiService api_service.IAPIService, c *gin.Context) {
+	// Pre
 	userID := c.GetInt64("userID")
 	if userID == 0 {
-		c.JSON(http.StatusUnauthorized, gin.H{"error": "Ungültiger Benutzer"})
+		c.Status(http.StatusUnauthorized)
 		return
 	}
-
 	var payload models.CreateCategory
 	if err := c.BindJSON(&payload); err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		c.Status(http.StatusBadRequest)
 		return
 	}
-
 	validator := utils.GetValidator()
 	if err := validator.Struct(payload); err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid data", "details": err.Error()})
+		c.Status(http.StatusBadRequest)
 		return
 	}
 
-	categoryID, err := dbService.CreateCategory(&userID, payload)
+	// Action
+	category, err := apiService.CreateCategory(payload, &userID)
 	if err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		c.Status(http.StatusInternalServerError)
 		return
 	}
 
-	category, err := dbService.GetCategory(userID, categoryID)
-	if err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
-		return
-	}
-
+	// Post
 	c.JSON(http.StatusCreated, category)
 }
 
-func UpdateCategory(dbService db_service.IDatabaseService, c *gin.Context) {
+func UpdateCategory(apiService api_service.IAPIService, c *gin.Context) {
+	// Pre
 	userID := c.GetInt64("userID")
 	if userID == 0 {
-		c.JSON(http.StatusUnauthorized, gin.H{"error": "Ungültiger Benutzer"})
+		c.Status(http.StatusUnauthorized)
 		return
 	}
-
 	categoryID, err := strconv.ParseInt(c.Param("categoryID"), 10, 64)
 	if err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"error": "ID is missing"})
+		c.Status(http.StatusBadRequest)
 		return
 	}
-
 	var payload models.UpdateCategory
 	if err := c.BindJSON(&payload); err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		c.Status(http.StatusBadRequest)
 		return
 	}
-
 	validator := utils.GetValidator()
 	if err := validator.Struct(payload); err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid data", "details": err.Error()})
+		c.Status(http.StatusBadRequest)
 		return
 	}
 
-	err = dbService.UpdateCategory(userID, payload, categoryID)
+	// Action
+	category, err := apiService.UpdateCategory(payload, userID, categoryID)
 	if err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		c.Status(http.StatusInternalServerError)
 		return
 	}
 
-	category, err := dbService.GetCategory(userID, categoryID)
-	if err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
-		return
-	}
-
+	// Poste
 	c.JSON(http.StatusOK, category)
 }

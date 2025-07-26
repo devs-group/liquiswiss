@@ -15,7 +15,15 @@
     </div>
     <p>{{ startDate }}</p>
     <p>{{ endDate || '-' }}</p>
-    <p>{{ nextExecutionDate || '-' }}</p>
+    <p v-if="nextExecutionDate">
+      {{ nextExecutionDate }}
+    </p>
+    <p
+      v-else
+      class="text-liqui-red"
+    >
+      Abgelaufen
+    </p>
     <p class="flex flex-wrap gap-1">
       <span
         class="font-bold"

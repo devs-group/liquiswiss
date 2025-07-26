@@ -77,6 +77,8 @@ air
 
 ## Migrations
 
+1. Install [Goose](https://github.com/pressly/goose): `go install github.com/pressly/goose/v3/cmd/goose@latest`
+
 We differentiate between static and dynamic migrations whereas **static migrations** are all migrations that
 actually hold data later and a migration down would lead to data loss such as table creation or alterations.
 
@@ -98,9 +100,9 @@ Dynamic migrations are stored functions, views or triggers, basically things tha
 
 > Optional step
 
-You can fixtures from the [fixtures](backend/internal/service/db_service/fixtures) directory if you desire.
+You can fixtures from the [fixtures](backend/internal/adapter/db_adapter/fixtures) directory if you desire.
 The dynamic migrations insert a minimal set of data required to make the app work properly. You can check out the
-minimal inserted data in [00007_apply_minimal_fixtures.sql](backend/internal/db/migrations/dynamic/00007_apply_minimal_fixtures.sql)
+minimal inserted data in [10000_apply_minimal_fixtures.sql](backend/internal/db/migrations/dynamic/10000_apply_minimal_fixtures.sql)
 
 ## Tests
 

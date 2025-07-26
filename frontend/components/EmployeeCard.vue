@@ -72,6 +72,6 @@ defineEmits<{
   onEdit: [employee: EmployeeResponse]
 }>()
 
-const salaryFormatted = computed(() => NumberToFormattedCurrency(AmountToFloat(props.employee.salary!), props.employee.currency!.localeCode))
+const salaryFormatted = computed(() => NumberToFormattedCurrency(AmountToFloat(props.employee.salaryAmount!), props.employee.currency!.localeCode))
 const cycle = computed(() => CycleTypeToOptions().find(ct => ct.value === props.employee.cycle)?.name ?? '')
 </script>

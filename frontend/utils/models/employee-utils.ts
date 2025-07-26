@@ -2,7 +2,7 @@ import type { EmployeeResponse } from '~/models/employee'
 
 export const EmployeeUtils = {
   salaryFormatted: (employee: EmployeeResponse) =>
-    employee.salary ? NumberToFormattedCurrency(AmountToFloat(employee.salary ?? 0), employee.currency!.localeCode) : '-',
+    employee.salaryAmount ? NumberToFormattedCurrency(AmountToFloat(employee.salaryAmount ?? 0), employee.currency!.localeCode) : '-',
 
   fromDate: (employee: EmployeeResponse) =>
     employee.fromDate ? DateStringToFormattedDate(employee.fromDate) : '-',
@@ -13,6 +13,6 @@ export const EmployeeUtils = {
   cycle: (employee: EmployeeResponse) =>
     CycleTypeToOptions().find(ct => ct.value === employee.cycle)?.name ?? '',
 
-  hasHistoryData: (employee: EmployeeResponse) =>
-    employee.salary !== null,
+  hasSalaryAmount: (employee: EmployeeResponse) =>
+    employee.salaryAmount !== null,
 }

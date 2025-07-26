@@ -1,11 +1,11 @@
-//go:generate mockgen -package=mocks -destination ../mocks/fixer_io_service.go liquiswiss/internal/service/fixer_io_service IFixerIOService
+//go:generate mockgen -package=mocks -destination ../../mocks/fixer_io_service.go liquiswiss/internal/service/fixer_io_service IFixerIOService
 package fixer_io_service
 
 import (
 	"encoding/json"
 	"fmt"
 	"liquiswiss/config"
-	"liquiswiss/internal/service/db_service"
+	"liquiswiss/internal/service/api_service"
 	"liquiswiss/pkg/logger"
 	"liquiswiss/pkg/models"
 	"liquiswiss/pkg/utils"
@@ -19,21 +19,21 @@ type IFixerIOService interface {
 }
 
 type FixerIOService struct {
-	dbService db_service.IDatabaseService
+	apiService api_service.IAPIService
 }
 
-func NewFixerIOService(s *db_service.IDatabaseService) IFixerIOService {
+func NewFixerIOService(s *api_service.IAPIService) IFixerIOService {
 	return &FixerIOService{
-		dbService: *s,
+		apiService: *s,
 	}
 }
 
 func (f *FixerIOService) RequiresInitialFetch() (bool, error) {
-	totalCurrenciesInRates, err := f.dbService.CountUniqueCurrenciesInFiatRates()
+	totalCurrenciesInRates, err := f.apiService.CountUniqueCurrenciesInFiatRates()
 	if err != nil {
 		return false, err
 	}
-	totalCurrencies, err := f.dbService.CountCurrencies()
+	totalCurrencies, err := f.apiService.CountCurrencies()
 	if err != nil {
 		return false, err
 	}
@@ -42,14 +42,17 @@ func (f *FixerIOService) RequiresInitialFetch() (bool, error) {
 
 func (f *FixerIOService) FetchFiatRates() {
 	if !utils.IsProduction() {
-		logger.Logger.Debug("Skipping Fiat Rates because we are not on Production")
-		return
+		fiatRates, err := f.apiService.ListFiatRates("CHF")
+		if err == nil && len(fiatRates) > 0 {
+			logger.Logger.Debug("Skipping Fiat Rates because we are not on Production and already have some Fiat Rates")
+			return
+		}
 	}
 
 	logger.Logger.Infof("Running Fixer.io Cronjob")
 
 	cfg := config.GetConfig()
-	currencies, err := f.dbService.ListCurrencies(0)
+	currencies, err := f.apiService.ListCurrencies(0)
 	if err != nil {
 		logger.Logger.Errorf("Failed to load currencies: %v", err)
 		return
@@ -92,7 +95,7 @@ func (f *FixerIOService) FetchFiatRates() {
 		}
 
 		for targetCurrency, rate := range *exchangeData.Rates {
-			err = f.dbService.UpsertFiatRate(models.CreateFiatRate{
+			err = f.apiService.UpsertFiatRate(models.CreateFiatRate{
 				Base:   baseCurrency,
 				Target: targetCurrency,
 				Rate:   rate,

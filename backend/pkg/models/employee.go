@@ -8,7 +8,7 @@ type Employee struct {
 	ID                  int64         `db:"id" json:"id"`
 	Name                string        `db:"name" json:"name"`
 	HoursPerMonth       *uint16       `db:"-" json:"hoursPerMonth"`
-	Salary              *uint64       `db:"-" json:"salary"`
+	SalaryAmount        *uint64       `db:"-" json:"salaryAmount"`
 	Cycle               *string       `db:"-" json:"cycle"`
 	Currency            *Currency     `db:"-" json:"currency"`
 	VacationDaysPerYear *uint16       `db:"-" json:"vacationDaysPerYear"`
@@ -16,7 +16,7 @@ type Employee struct {
 	ToDate              *types.AsDate `db:"-" json:"toDate"`
 	IsInFuture          bool          `db:"-" json:"isInFuture"`
 	WithSeparateCosts   bool          `db:"with_separate_costs" json:"withSeparateCosts"`
-	HistoryID           *int64        `db:"-" json:"historyID"`
+	SalaryID            *int64        `db:"-" json:"salaryID"`
 }
 
 type CreateEmployee struct {

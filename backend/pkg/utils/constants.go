@@ -13,10 +13,12 @@ const (
 
 	ResetPasswordDelay = 1 * time.Hour
 
+	MaxForecastYears = 3
+
 	AccessTokenName  = "liq-access-token"
 	RefreshTokenName = "liq-refresh-token"
 
-	TransactionsTableName         = "transactions"
-	EmployeeHistoriesTableName    = "employee_histories"
-	EmployeeHistoryCostsTableName = "employee_history_costs"
+	TransactionsTableName = "transactions"
+	SalariesTableName     = "salaries"
+	SalaryCostsTableName  = "salary_costs"
 )
