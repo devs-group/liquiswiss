@@ -41,7 +41,7 @@ export interface ISalaryCostCopyDialog {
   value: {
     close: (data: boolean) => boolean
     data: {
-      salaryAmount: SalaryResponse
+      salary: SalaryResponse
     }
   }
 }

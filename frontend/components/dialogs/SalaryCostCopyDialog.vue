@@ -27,7 +27,7 @@
         v-for="cost of salaryCosts"
         :key="cost.id"
         :salary-cost="cost"
-        :currency="salaryAmount.currency"
+        :currency="salary.currency"
         :select-all="selectAll"
         @on-selection="onSalaryCostSelection"
       />
@@ -78,7 +78,7 @@ const toast = useToast()
 
 // Data
 const isCopying = ref(false)
-const salaryAmount = ref(dialogRef.value.data!.salaryAmount)
+const salary = ref(dialogRef.value.data!.salary)
 const isLoadingSalaries = ref(false)
 const isLoadingSalaryCosts = ref(false)
 const salariesErrorMessage = ref('')
@@ -90,17 +90,17 @@ const selectAll = ref(true)
 const selectedSalaryID = ref<number>()
 
 const filteredSalaries = computed(() => {
-  return salaries.value.data.filter(h => h.id !== salaryAmount.value.id)
+  return salaries.value.data.filter(s => s.id !== salary.value.id)
 })
 const canCopy = computed(() => {
   return selectedSalaryCosts.value.length > 0 && !!selectedSalaryID.value
 })
 
 const onListSalaryCosts = () => {
-  if (salaryAmount.value) {
+  if (salary.value) {
     salaryCostsErrorMessage.value = ''
     isLoadingSalaryCosts.value = true
-    listSalaryCosts(salaryAmount.value.id)
+    listSalaryCosts(salary.value.id)
       .then((resp) => {
         salaryCosts.value = resp.data
         selectedSalaryCosts.value = resp.data
@@ -117,7 +117,7 @@ const onListSalaryCosts = () => {
 onMounted(() => {
   onListSalaryCosts()
   isLoadingSalaries.value = true
-  listSalaries(salaryAmount.value.employeeID)
+  listSalaries(salary.value.employeeID)
     .catch(() => {
       salariesErrorMessage.value = 'Es gab einen Fehler beim Laden des Lohnverlaufs'
     })

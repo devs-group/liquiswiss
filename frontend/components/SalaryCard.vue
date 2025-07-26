@@ -189,7 +189,6 @@ const onCopyAllCosts = () => {
       salary: props.salary,
     },
     onClose: (options) => {
-      console.log(options?.data)
       if (options?.data) {
         listSalaries(props.salary.employeeID)
       }

@@ -185,7 +185,7 @@ func (d *DatabaseAdapter) RefreshSalaryCostDetails(userID int64, salaryID int64)
 		return err
 	}
 	for _, cost := range costs {
-		err = d.CalculateSalaryCostDetails(cost.ID, userID)
+		err = d.CalculateSalaryCostDetails(userID, cost.ID)
 		if err != nil {
 			return err
 		}
