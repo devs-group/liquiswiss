@@ -258,8 +258,16 @@ const monthChoices = [
     value: 13,
   },
   {
+    label: '18 Monate',
+    value: 19,
+  },
+  {
     label: '24 Monate',
     value: 25,
+  },
+  {
+    label: '30 Monate',
+    value: 31,
   },
   {
     label: '36 Monate',
