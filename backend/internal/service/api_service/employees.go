@@ -81,13 +81,13 @@ func (a *APIService) UpdateEmployee(payload models.UpdateEmployee, userID int64,
 	return employee, nil
 }
 
-func (a *APIService) DeleteEmployee(employeeID int64, userID int64) error {
+func (a *APIService) DeleteEmployee(userID int64, employeeID int64) error {
 	existingEmployee, err := a.dbService.GetEmployee(userID, employeeID)
 	if err != nil {
 		logger.Logger.Error(err)
 		return err
 	}
-	err = a.dbService.DeleteEmployee(existingEmployee.ID, userID)
+	err = a.dbService.DeleteEmployee(userID, existingEmployee.ID)
 	if err != nil {
 		logger.Logger.Error(err)
 		return err

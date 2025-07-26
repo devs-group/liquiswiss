@@ -52,7 +52,7 @@ func (a *APIService) CreateSalaryCost(payload models.CreateSalaryCost, userID in
 		logger.Logger.Error(err)
 		return nil, err
 	}
-	err = a.dbService.CalculateSalaryCostDetails(salaryCostID, userID)
+	err = a.dbService.CalculateSalaryCostDetails(userID, salaryCostID)
 	if err != nil {
 		logger.Logger.Error(err)
 		return nil, err
@@ -87,7 +87,7 @@ func (a *APIService) UpdateSalaryCost(payload models.CreateSalaryCost, userID in
 		logger.Logger.Error(err)
 		return nil, err
 	}
-	err = a.dbService.CalculateSalaryCostDetails(salaryCostID, userID)
+	err = a.dbService.CalculateSalaryCostDetails(userID, salaryCostID)
 	if err != nil {
 		logger.Logger.Error(err)
 		return nil, err
@@ -111,13 +111,13 @@ func (a *APIService) UpdateSalaryCost(payload models.CreateSalaryCost, userID in
 	return salaryCost, nil
 }
 
-func (a *APIService) DeleteSalaryCost(salaryCostID int64, userID int64) error {
+func (a *APIService) DeleteSalaryCost(userID int64, salaryCostID int64) error {
 	existingSalaryCost, err := a.GetSalaryCost(userID, salaryCostID)
 	if err != nil {
 		logger.Logger.Error(err)
 		return err
 	}
-	err = a.dbService.DeleteSalaryCost(existingSalaryCost.ID, userID)
+	err = a.dbService.DeleteSalaryCost(userID, existingSalaryCost.ID)
 	if err != nil {
 		logger.Logger.Error(err)
 		return err

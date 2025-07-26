@@ -15,7 +15,7 @@ type IAPIService interface {
 	ResetPassword(payload models.ResetPassword) error
 	CheckResetPasswordCode(payload models.CheckResetPasswordCode) error
 	CreateRegistration(payload models.CreateRegistration, code string) (int64, error)
-	CheckRegistrationCode(payload models.CheckRegistrationCode, hours time.Duration) (int64, error)
+	CheckRegistrationCode(payload models.CheckRegistrationCode, validity time.Duration) (int64, error)
 	FinishRegistration(payload models.FinishRegistration, deviceName string, validity time.Duration) (*models.User, *string, *time.Time, *string, *time.Time, error)
 	DeleteRegistration(registrationID int64, email string) error
 
@@ -40,20 +40,20 @@ type IAPIService interface {
 	GetEmployee(userID int64, employeeID int64) (*models.Employee, error)
 	CreateEmployee(payload models.CreateEmployee, userID int64) (*models.Employee, error)
 	UpdateEmployee(payload models.UpdateEmployee, userID int64, employeeID int64) (*models.Employee, error)
-	DeleteEmployee(employeeID int64, userID int64) error
+	DeleteEmployee(userID int64, employeeID int64) error
 	CountEmployees(userID int64, page int64, limit int64) (int64, error)
 
 	ListSalaries(userID int64, employeeID int64, page int64, limit int64) ([]models.Salary, int64, error)
 	GetSalary(userID int64, salaryID int64) (*models.Salary, error)
 	CreateSalary(payload models.CreateSalary, userID int64, employeeID int64) (*models.Salary, error)
 	UpdateSalary(payload models.UpdateSalary, userID int64, salaryID int64) (*models.Salary, error)
-	DeleteSalary(salaryID int64, userID int64) error
+	DeleteSalary(userID int64, salaryID int64) error
 
 	ListSalaryCosts(userID int64, salaryID int64, page int64, limit int64) ([]models.SalaryCost, int64, error)
 	GetSalaryCost(userID int64, salaryCostID int64) (*models.SalaryCost, error)
 	CreateSalaryCost(payload models.CreateSalaryCost, userID int64, salaryID int64) (*models.SalaryCost, error)
 	UpdateSalaryCost(payload models.CreateSalaryCost, userID int64, salaryCostID int64) (*models.SalaryCost, error)
-	DeleteSalaryCost(salaryCostID int64, userID int64) error
+	DeleteSalaryCost(userID int64, salaryCostID int64) error
 	CopySalaryCosts(payload models.CopySalaryCosts, userID int64, salaryID int64) error
 
 	//ListSalaryCostDetails(salaryCostID int64) ([]models.SalaryCostDetail, error)
@@ -65,11 +65,11 @@ type IAPIService interface {
 	GetSalaryCostLabel(userID int64, salaryCostLabelID int64) (*models.SalaryCostLabel, error)
 	CreateSalaryCostLabel(payload models.CreateSalaryCostLabel, userID int64) (*models.SalaryCostLabel, error)
 	UpdateSalaryCostLabel(payload models.CreateSalaryCostLabel, userID int64, salaryCostLabelID int64) (*models.SalaryCostLabel, error)
-	DeleteSalaryCostLabel(salaryCostLabelID int64, userID int64) error
+	DeleteSalaryCostLabel(userID int64, salaryCostLabelID int64) error
 
 	ListForecasts(userID int64, limit int64) ([]models.Forecast, error)
 	ListForecastDetails(userID int64, limit int64) ([]models.ForecastDatabaseDetails, error)
-	ListForecastExclusions(userID, relatedID int64, relatedTable string) (map[string]bool, error)
+	ListForecastExclusions(userID int64, relatedID int64, relatedTable string) (map[string]bool, error)
 	CreateForecastExclusion(payload models.CreateForecastExclusion, userID int64) (int64, error)
 	DeleteForecastExclusion(payload models.CreateForecastExclusion, userID int64) (int64, error)
 	CalculateForecast(userID int64) ([]models.Forecast, error)

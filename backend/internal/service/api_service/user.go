@@ -46,7 +46,7 @@ func (a *APIService) UpdatePassword(payload models.UpdateUserPassword, userID in
 		logger.Logger.Error(err)
 		return err
 	}
-	err = a.dbService.UpdatePassword(string(encryptedPassword), userID)
+	err = a.dbService.UpdatePassword(userID, string(encryptedPassword))
 	if err != nil {
 		logger.Logger.Error(err)
 		return err
@@ -55,7 +55,7 @@ func (a *APIService) UpdatePassword(payload models.UpdateUserPassword, userID in
 }
 
 func (a *APIService) SetUserCurrentOrganisation(payload models.UpdateUserCurrentOrganisation, userID int64) error {
-	err := a.dbService.SetUserCurrentOrganisation(payload.OrganisationID, userID)
+	err := a.dbService.SetUserCurrentOrganisation(userID, payload.OrganisationID)
 	if err != nil {
 		logger.Logger.Error(err)
 		return err

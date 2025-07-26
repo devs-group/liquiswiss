@@ -128,7 +128,7 @@ func UpdateEmployee(apiService api_service.IAPIService, c *gin.Context) {
 	}
 
 	// Action
-	employee, err := apiService.UpdateEmployee(payload, employeeID, userID)
+	employee, err := apiService.UpdateEmployee(payload, userID, employeeID)
 	if err != nil {
 		c.Status(http.StatusInternalServerError)
 		return
@@ -180,7 +180,7 @@ func GetEmployeesPagination(apiService api_service.IAPIService, c *gin.Context) 
 	}
 
 	// Action
-	totalCount, err := apiService.CountEmployees(userID, limit, page)
+	totalCount, err := apiService.CountEmployees(userID, page, limit)
 	if err != nil {
 		return
 	}

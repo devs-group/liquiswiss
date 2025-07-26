@@ -40,7 +40,7 @@ func (d *DatabaseAdapter) ListSalaryCostDetails(salaryCostID int64) ([]models.Sa
 	return salaryCostDetails, nil
 }
 
-func (d *DatabaseAdapter) CalculateSalaryCostDetails(salaryCostID int64, userID int64) error {
+func (d *DatabaseAdapter) CalculateSalaryCostDetails(userID int64, salaryCostID int64) error {
 	cost, err := d.GetSalaryCost(userID, salaryCostID)
 	if err != nil {
 		return err

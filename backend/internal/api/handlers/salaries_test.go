@@ -219,7 +219,7 @@ func TestSalaryExecutionDates(t *testing.T) {
 			salary, err := apiService.CreateSalary(testCase.CreateData, user.ID, employee.ID)
 			assert.NoError(t, err)
 
-			err = apiService.DeleteSalary(salary.ID, user.ID)
+			err = apiService.DeleteSalary(user.ID, salary.ID)
 			assert.NoError(t, err)
 
 			if salary.NextExecutionDate != nil {

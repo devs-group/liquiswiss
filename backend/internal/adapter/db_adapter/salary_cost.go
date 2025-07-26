@@ -183,7 +183,7 @@ func (d *DatabaseAdapter) UpdateSalaryCost(payload models.CreateSalaryCost, user
 	return nil
 }
 
-func (d *DatabaseAdapter) DeleteSalaryCost(salaryCostID int64, userID int64) error {
+func (d *DatabaseAdapter) DeleteSalaryCost(userID int64, salaryCostID int64) error {
 	query, err := sqlQueries.ReadFile("queries/delete_salary_cost.sql")
 	if err != nil {
 		return err

@@ -23,7 +23,7 @@ func (d *DatabaseAdapter) StoreRefreshTokenID(userID int64, tokenId string, expi
 	return nil
 }
 
-func (d *DatabaseAdapter) CheckRefreshToken(tokenID string, userID int64) (bool, error) {
+func (d *DatabaseAdapter) CheckRefreshToken(userID int64, tokenID string) (bool, error) {
 	query, err := sqlQueries.ReadFile("queries/get_refresh_token.sql")
 	if err != nil {
 		return false, err
@@ -38,7 +38,7 @@ func (d *DatabaseAdapter) CheckRefreshToken(tokenID string, userID int64) (bool,
 	return exists, nil
 }
 
-func (d *DatabaseAdapter) DeleteRefreshToken(tokenID string, userID int64) error {
+func (d *DatabaseAdapter) DeleteRefreshToken(userID int64, tokenID string) error {
 	query, err := sqlQueries.ReadFile("queries/delete_refresh_token.sql")
 	if err != nil {
 		return err

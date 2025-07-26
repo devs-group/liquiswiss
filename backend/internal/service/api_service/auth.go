@@ -245,7 +245,7 @@ func (a *APIService) clearRefreshTokenFromDatabase(refreshToken string) {
 		refreshClaims, err := auth.VerifyToken(refreshToken)
 		if err == nil {
 			// Delete the refresh token from the database
-			err = a.dbService.DeleteRefreshToken(refreshClaims.ID, refreshClaims.UserID)
+			err = a.dbService.DeleteRefreshToken(refreshClaims.UserID, refreshClaims.ID)
 			if err != nil {
 				logger.Logger.Error(err)
 			}

@@ -45,7 +45,7 @@ func AuthMiddleware(c *gin.Context) {
 		}
 
 		// Check if the refresh token is valid in the database
-		valid, err := databaseService.CheckRefreshToken(refreshClaims.ID, refreshClaims.UserID)
+		valid, err := databaseService.CheckRefreshToken(refreshClaims.UserID, refreshClaims.ID)
 		if err != nil || !valid {
 			// If the refresh token is not valid or not found, delete both tokens and abort
 			auth.ClearAuthCookies(c)

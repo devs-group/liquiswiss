@@ -161,7 +161,7 @@ func (a *APIService) UpdateSalary(payload models.UpdateSalary, userID int64, sal
 	return salary, nil
 }
 
-func (a *APIService) DeleteSalary(salaryID int64, userID int64) error {
+func (a *APIService) DeleteSalary(userID int64, salaryID int64) error {
 	existingSalary, err := a.GetSalary(userID, salaryID)
 	if err != nil {
 		logger.Logger.Error(err)

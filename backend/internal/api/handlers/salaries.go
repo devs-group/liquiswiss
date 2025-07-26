@@ -102,7 +102,7 @@ func CreateSalary(apiService api_service.IAPIService, c *gin.Context) {
 	}
 
 	// Action
-	salary, err := apiService.CreateSalary(payload, employeeID, userID)
+	salary, err := apiService.CreateSalary(payload, userID, employeeID)
 	if err != nil {
 		switch err {
 		case sql.ErrNoRows:
@@ -166,7 +166,7 @@ func DeleteSalary(apiService api_service.IAPIService, c *gin.Context) {
 	}
 
 	// Action
-	err = apiService.DeleteSalary(salaryID, userID)
+	err = apiService.DeleteSalary(userID, salaryID)
 	if err != nil {
 		c.Status(http.StatusInternalServerError)
 		return

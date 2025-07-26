@@ -113,7 +113,7 @@ func (d *DatabaseAdapter) UpdateProfile(payload models.UpdateUser, userID int64)
 	return nil
 }
 
-func (d *DatabaseAdapter) UpdatePassword(password string, userID int64) error {
+func (d *DatabaseAdapter) UpdatePassword(userID int64, password string) error {
 	// Base query
 	query := "UPDATE users SET "
 	queryBuild := []string{}
@@ -225,7 +225,7 @@ func (d *DatabaseAdapter) CreateResetPassword(email, code string, delay time.Dur
 	return affected > 0, nil
 }
 
-func (d *DatabaseAdapter) ValidateResetPassword(email, code string, hours time.Duration) (int64, error) {
+func (d *DatabaseAdapter) ValidateResetPassword(email, code string, validity time.Duration) (int64, error) {
 	query, err := sqlQueries.ReadFile("queries/validate_reset_password.sql")
 	if err != nil {
 		return 0, err
@@ -238,7 +238,7 @@ func (d *DatabaseAdapter) ValidateResetPassword(email, code string, hours time.D
 	defer stmt.Close()
 
 	var id int64
-	err = stmt.QueryRow(email, code, hours.Hours()).Scan(&id)
+	err = stmt.QueryRow(email, code, validity.Hours()).Scan(&id)
 	if err != nil {
 		return 0, err
 	}

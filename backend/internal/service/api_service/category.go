@@ -35,7 +35,7 @@ func (a *APIService) GetCategory(userID int64, categoryID int64) (*models.Catego
 }
 
 func (a *APIService) CreateCategory(payload models.CreateCategory, userID *int64) (*models.Category, error) {
-	categoryID, err := a.dbService.CreateCategory(userID, payload)
+	categoryID, err := a.dbService.CreateCategory(payload, userID)
 	if err != nil {
 		logger.Logger.Error(err)
 		return nil, err
@@ -54,7 +54,7 @@ func (a *APIService) CreateCategory(payload models.CreateCategory, userID *int64
 }
 
 func (a *APIService) UpdateCategory(payload models.UpdateCategory, userID int64, categoryID int64) (*models.Category, error) {
-	err := a.dbService.UpdateCategory(userID, payload, categoryID)
+	err := a.dbService.UpdateCategory(payload, userID, categoryID)
 	if err != nil {
 		logger.Logger.Error(err)
 		return nil, err

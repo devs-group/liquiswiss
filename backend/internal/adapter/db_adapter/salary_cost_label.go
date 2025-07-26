@@ -113,7 +113,7 @@ func (d *DatabaseAdapter) UpdateSalaryCostLabel(payload models.CreateSalaryCostL
 	return nil
 }
 
-func (d *DatabaseAdapter) DeleteSalaryCostLabel(salaryCostLabelID int64, userID int64) error {
+func (d *DatabaseAdapter) DeleteSalaryCostLabel(userID int64, salaryCostLabelID int64) error {
 	query, err := sqlQueries.ReadFile("queries/delete_salary_cost_label.sql")
 	if err != nil {
 		return err

@@ -382,7 +382,7 @@ func (mr *MockIAPIServiceMockRecorder) DeleteRegistration(registrationID, email 
 }
 
 // DeleteSalary mocks base method.
-func (m *MockIAPIService) DeleteSalary(salaryID, userID int64) error {
+func (m *MockIAPIService) DeleteSalary(userID int64, salaryID int64) error {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "DeleteSalary", salaryID, userID)
 	ret0, _ := ret[0].(error)

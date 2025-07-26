@@ -36,7 +36,7 @@ func (a *APIService) ListForecastDetails(userID int64, limit int64) ([]models.Fo
 	return forecastDetails, nil
 }
 
-func (a *APIService) ListForecastExclusions(userID, relatedID int64, relatedTable string) (map[string]bool, error) {
+func (a *APIService) ListForecastExclusions(userID int64, relatedID int64, relatedTable string) (map[string]bool, error) {
 	forecastExclusions, err := a.dbService.ListForecastExclusions(userID, relatedID, relatedTable)
 	if err != nil {
 		logger.Logger.Error(err)

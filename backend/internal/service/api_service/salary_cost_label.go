@@ -77,13 +77,13 @@ func (a *APIService) UpdateSalaryCostLabel(payload models.CreateSalaryCostLabel,
 	return salaryCostLabel, nil
 }
 
-func (a *APIService) DeleteSalaryCostLabel(salaryCostLabelID int64, userID int64) error {
+func (a *APIService) DeleteSalaryCostLabel(userID int64, salaryCostLabelID int64) error {
 	existingSalaryCostLabel, err := a.dbService.GetSalaryCostLabel(userID, salaryCostLabelID)
 	if err != nil {
 		logger.Logger.Error(err)
 		return err
 	}
-	err = a.dbService.DeleteSalaryCostLabel(existingSalaryCostLabel.ID, userID)
+	err = a.dbService.DeleteSalaryCostLabel(userID, existingSalaryCostLabel.ID)
 	if err != nil {
 		logger.Logger.Error(err)
 		return err

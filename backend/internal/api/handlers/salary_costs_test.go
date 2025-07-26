@@ -580,7 +580,7 @@ func TestMonthlySalaryWithoutToDate(t *testing.T) {
 
 			assert.Equal(t, int64(testCase.ExpectedEmployeeDeductions), int64(updatedSalary.EmployeeDeductions), "updatedSalary.EmployeeDeductions")
 
-			err = apiService.DeleteSalaryCost(salaryCost.ID, user.ID)
+			err = apiService.DeleteSalaryCost(user.ID, salaryCost.ID)
 			assert.NoError(t, err)
 
 			assert.Equal(t, int64(testCase.ExpectedCalculatedAmount), int64(salaryCost.CalculatedAmount), "salaryCost.CalculatedAmount")
@@ -932,7 +932,7 @@ func TestMonthlySalaryWithToDate(t *testing.T) {
 
 			assert.Equal(t, int64(testCase.ExpectedEmployeeDeductions), int64(updatedSalary.EmployeeDeductions), "updatedSalary.EmployeeDeductions")
 
-			err = apiService.DeleteSalaryCost(salaryCost.ID, user.ID)
+			err = apiService.DeleteSalaryCost(user.ID, salaryCost.ID)
 			assert.NoError(t, err)
 
 			assert.Equal(t, int64(testCase.ExpectedCalculatedAmount), int64(salaryCost.CalculatedAmount), "salaryCost.CalculatedAmount")
@@ -1089,7 +1089,7 @@ func TestMultipleSalaryCases(t *testing.T) {
 
 			assert.Equal(t, int64(testCase.ExpectedEmployeeDeductions), int64(updatedSalary.EmployeeDeductions), "updatedSalary.EmployeeDeductions")
 
-			err = apiService.DeleteSalaryCost(salaryCost.ID, user.ID)
+			err = apiService.DeleteSalaryCost(user.ID, salaryCost.ID)
 			assert.NoError(t, err)
 
 			assert.Equal(t, int64(testCase.ExpectedCalculatedAmount), int64(salaryCost.CalculatedAmount), "salaryCost.CalculatedAmount")
@@ -1126,7 +1126,7 @@ func TestMultipleSalaryCases(t *testing.T) {
 
 			assert.Equal(t, int64(testCase.ExpectedEmployeeDeductions), int64(updatedSalary.EmployeeDeductions), "updatedSalary.EmployeeDeductions")
 
-			err = apiService.DeleteSalaryCost(salaryCost.ID, user.ID)
+			err = apiService.DeleteSalaryCost(user.ID, salaryCost.ID)
 			assert.NoError(t, err)
 
 			assert.Equal(t, int64(testCase.ExpectedCalculatedAmount), int64(salaryCost.CalculatedAmount), "salaryCost.CalculatedAmount")

@@ -183,7 +183,7 @@ func (d *DatabaseAdapter) UpdateEmployee(payload models.UpdateEmployee, userID i
 	return nil
 }
 
-func (d *DatabaseAdapter) DeleteEmployee(employeeID int64, userID int64) error {
+func (d *DatabaseAdapter) DeleteEmployee(userID int64, employeeID int64) error {
 	query, err := sqlQueries.ReadFile("queries/delete_employee.sql")
 	if err != nil {
 		return err

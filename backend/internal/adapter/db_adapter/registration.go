@@ -51,7 +51,7 @@ func (d *DatabaseAdapter) DeleteRegistration(registrationID int64, email string)
 	return nil
 }
 
-func (d *DatabaseAdapter) ValidateRegistration(email, code string, hours time.Duration) (int64, error) {
+func (d *DatabaseAdapter) ValidateRegistration(email, code string, validity time.Duration) (int64, error) {
 	query, err := sqlQueries.ReadFile("queries/validate_registration.sql")
 	if err != nil {
 		return 0, err
@@ -64,7 +64,7 @@ func (d *DatabaseAdapter) ValidateRegistration(email, code string, hours time.Du
 	defer stmt.Close()
 
 	var id int64
-	err = stmt.QueryRow(email, code, hours.Hours()).Scan(&id)
+	err = stmt.QueryRow(email, code, validity.Hours()).Scan(&id)
 	if err != nil {
 		return 0, err
 	}

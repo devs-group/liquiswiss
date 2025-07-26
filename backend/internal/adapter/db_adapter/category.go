@@ -50,7 +50,7 @@ func (d *DatabaseAdapter) GetCategory(userID int64, categoryID int64) (*models.C
 	return &category, nil
 }
 
-func (d *DatabaseAdapter) CreateCategory(userID *int64, payload models.CreateCategory) (int64, error) {
+func (d *DatabaseAdapter) CreateCategory(payload models.CreateCategory, userID *int64) (int64, error) {
 	query, err := sqlQueries.ReadFile("queries/create_category.sql")
 	if err != nil {
 		return 0, err
@@ -75,7 +75,7 @@ func (d *DatabaseAdapter) CreateCategory(userID *int64, payload models.CreateCat
 	return id, nil
 }
 
-func (d *DatabaseAdapter) UpdateCategory(userID int64, payload models.UpdateCategory, categoryID int64) error {
+func (d *DatabaseAdapter) UpdateCategory(payload models.UpdateCategory, userID int64, categoryID int64) error {
 	query := "UPDATE categories SET "
 	queryBuild := []string{}
 	args := []interface{}{}
