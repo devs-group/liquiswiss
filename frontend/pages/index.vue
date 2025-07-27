@@ -47,6 +47,9 @@
               show-buttons
               button-layout="horizontal"
               :step="1"
+              :min="1"
+              :allow-empty="false"
+              size="small"
               mode="decimal"
               :suffix="forecastMonths == 1 ? ' Monat' : ' Monate'"
               :max="36"
