@@ -42,13 +42,22 @@
             <p class="text-sm">
               Zeitraum:
             </p>
-            <Select
+            <InputNumber
               v-model="forecastMonths"
-              :options="monthChoices"
-              option-label="label"
-              option-value="value"
-              empty-message="Keine Auswahl gefunden"
-            />
+              show-buttons
+              button-layout="horizontal"
+              :step="1"
+              mode="decimal"
+              :suffix="forecastMonths == 1 ? ' Monat' : ' Monate'"
+              :max="36"
+            >
+              <template #incrementbuttonicon>
+                <span class="pi pi-plus" />
+              </template>
+              <template #decrementbuttonicon>
+                <span class="pi pi-minus" />
+              </template>
+            </InputNumber>
           </div>
           <div class="flex items-center gap-2">
             <p class="text-sm">
@@ -248,32 +257,6 @@ useHead({
 
 const utcFormatter = new Intl.DateTimeFormat(Constants.BASE_LOCALE_CODE, { month: 'long', year: 'numeric', timeZone: 'UTC' })
 const localFormatter = new Intl.DateTimeFormat(Constants.BASE_LOCALE_CODE, { month: 'long', year: 'numeric' })
-const monthChoices = [
-  {
-    label: '6 Monate',
-    value: 6,
-  },
-  {
-    label: '12 Monate',
-    value: 13,
-  },
-  {
-    label: '18 Monate',
-    value: 19,
-  },
-  {
-    label: '24 Monate',
-    value: 25,
-  },
-  {
-    label: '30 Monate',
-    value: 31,
-  },
-  {
-    label: '36 Monate',
-    value: 37,
-  },
-]
 
 const { getOrganisationCurrencyCode, getOrganisationCurrencyLocaleCode } = useAuth()
 const { useFetchListForecast, listForecasts, useFetchListForecastDetails, listForecastDetails, forecasts, forecastDetails, calculateForecast } = useForecasts()
@@ -286,7 +269,11 @@ const forecastErrorMessage = ref('')
 const forecastDetailsErrorMessage = ref('')
 const forecastCalculateErrorMessage = ref('')
 
-await useFetchListForecast(forecastMonths.value)
+const forecastMonthsComputed = computed(() => {
+  return forecastMonths.value + 1
+})
+
+await useFetchListForecast(forecastMonthsComputed.value)
   .catch((reason) => {
     forecastErrorMessage.value = reason
   })
@@ -297,7 +284,7 @@ await useFetchListBankAccounts()
   })
 
 if (forecastShowRevenueDetails.value || forecastShowExpenseDetails.value) {
-  await useFetchListForecastDetails(forecastMonths.value)
+  await useFetchListForecastDetails(forecastMonthsComputed.value)
     .catch((reason) => {
       forecastDetailsErrorMessage.value = reason
     })
@@ -329,10 +316,10 @@ const onCalculateForecast = () => {
   isLoading.value = true
   calculateForecast()
     .then(async () => {
-      await listForecasts(forecastMonths.value)
+      await listForecasts(forecastMonthsComputed.value)
         .then(async () => {
           if (forecastShowRevenueDetails.value || forecastShowExpenseDetails.value) {
-            await listForecastDetails(forecastMonths.value)
+            await listForecastDetails(forecastMonthsComputed.value)
               .catch((reason) => {
                 forecastDetailsErrorMessage.value = reason
               })
@@ -364,7 +351,7 @@ const onToggleExpenseDetails = async () => {
   forecastShowExpenseDetails.value = !forecastShowExpenseDetails.value
   if (forecastShowExpenseDetails.value) {
     isLoading.value = true
-    await listForecastDetails(forecastMonths.value)
+    await listForecastDetails(forecastMonthsComputed.value)
       .catch((reason) => {
         forecastDetailsErrorMessage.value = reason
       })
@@ -372,7 +359,7 @@ const onToggleExpenseDetails = async () => {
   }
 }
 
-watch(forecastMonths, (value) => {
+watch(forecastMonthsComputed, (value) => {
   isLoading.value = true
   listForecasts(value)
     .then(async () => {
