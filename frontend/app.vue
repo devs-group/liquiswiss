@@ -1,7 +1,7 @@
 <template>
-  <div class="flex min-h-screen">
+  <div class="flex min-h-screen max-h-screen overflow-y-hidden">
     <DesktopMenu v-if="isAuthenticated" />
-    <div class="flex flex-col gap-4 p-4 flex-1 overflow-hidden">
+    <div class="flex flex-col gap-4 p-4 flex-1 overflow-auto">
       <MobileMenu v-if="isAuthenticated" />
       <div class="w-full h-full">
         <NuxtPage />

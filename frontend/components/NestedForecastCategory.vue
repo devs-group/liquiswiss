@@ -3,7 +3,7 @@
     class="w-full flex items-center col-span-full"
   >
     <div
-      class="group flex gap-1 border-b border-l border-zinc-600 dark:border-zinc-400 p-1 min-w-28"
+      class="group flex gap-1 border-b border-l border-r border-zinc-600 dark:border-zinc-400 font-semibold p-1 min-w-28 max-w-28 sticky -left-4"
       :class="[getColumnColor, { 'cursor-pointer': hasChildren }]"
       @click="onToggleChildren(category.name)"
     >
@@ -20,10 +20,10 @@
       />
     </div>
     <div
-      v-for="data in forecastDetails"
+      v-for="(data, i) in forecastDetails"
       :key="data.forecastID"
-      class="w-full border-b border-l last:border-r border-zinc-600 dark:border-zinc-400 p-1 min-w-40"
-      :class="[getColumnColor]"
+      class="w-full border-b last:border-r border-zinc-600 dark:border-zinc-400 p-1 min-w-40"
+      :class="[getColumnColor, i > 0 ? 'border-l' : '']"
     >
       <NestedForecastAmount
         :category="category"
@@ -116,11 +116,11 @@ const getColumnColor = computed(() => {
   switch (props.depth) {
     // Case not supported, just in case someone adds it they will immediately notice it in the frontend
     case 2:
-      return 'bg-white dark:bg-black'
+      return 'white dark:bg-black'
     case 1:
-      return 'bg-zinc-100 dark:bg-zinc-900'
+      return 'bg-orange-50 dark:bg-zinc-900'
     default:
-      return 'bg-zinc-300 dark:bg-zinc-800'
+      return 'bg-orange-100 dark:bg-zinc-800'
   }
 })
 

@@ -100,46 +100,48 @@
           </div>
         </ClientOnly>
 
-        <div class="relative flex flex-col overflow-x-auto pb-2">
-          <div class="grid grid-cols-12 items-center">
-            <div class="flex items-center col-span-full">
-              <div class="border-t border-b border-l border-zinc-600 dark:border-zinc-400 bg-zinc-300 dark:bg-zinc-700 p-2 min-w-28">
-                <p class="text-xs">
-                  &nbsp;
-                </p>
-              </div>
+        <div class="flex flex-col">
+          <div class="sticky -top-4 flex">
+            <div class="border-t border-b border-l border-r border-zinc-600 dark:border-zinc-400 bg-zinc-300 dark:bg-zinc-700 p-2 min-w-28 max-w-28" />
+            <div class="flex">
               <div
                 v-for="month in months"
                 :key="month"
-                class="w-full border-t border-b border-l last:border-r border-zinc-600 dark:border-zinc-400 bg-zinc-300 dark:bg-zinc-700 p-2 min-w-40"
+                class="w-full border-t border-b last:border-r border-zinc-600 dark:border-zinc-400 bg-zinc-300 dark:bg-zinc-700 p-2 min-w-40"
               >
                 <p class="text-xs text-center font-bold">
                   {{ month }}
                 </p>
               </div>
             </div>
-
-            <div class="flex items-center col-span-full">
-              <div
-                class="group flex gap-1 cursor-pointer border-b border-l border-zinc-600 dark:border-zinc-400 bg-zinc-400 dark:bg-zinc-600 p-2 min-w-28"
-                @click="onToggleRevenueDetails"
-              >
-                <p class="text-xs font-bold">
-                  Einnahmen
-                </p>
-                <i
-                  class="pi opacity-0 group-hover:opacity-100 transition-opacity"
-                  :class="{ 'pi-sort-down': forecastShowRevenueDetails, 'pi-sort-up': !forecastShowRevenueDetails }"
-                />
+          </div>
+          <div class="flex flex-col w-full">
+            <div class="flex items-center">
+              <div class="sticky -left-4 min-w-28 max-w-28">
+                <div
+                  class="group flex gap-1 cursor-pointer border-b border-l border-r border-zinc-600 dark:border-zinc-400 bg-zinc-400 dark:bg-zinc-600 p-2 min-w-28 max-w-28"
+                  @click="onToggleRevenueDetails"
+                >
+                  <p class="text-xs font-bold">
+                    Einnahmen
+                  </p>
+                  <i
+                    class="pi opacity-0 group-hover:opacity-100 transition-opacity"
+                    :class="{ 'pi-sort-down': forecastShowRevenueDetails, 'pi-sort-up': !forecastShowRevenueDetails }"
+                  />
+                </div>
               </div>
-              <div
-                v-for="(revenue, i) in revenues"
-                :key="i"
-                class="w-full border-b border-l last:border-r border-zinc-600 dark:border-zinc-400 bg-liqui-green p-2 min-w-40"
-              >
-                <p class="text-xs text-center">
-                  {{ revenue.formatted }} {{ getOrganisationCurrencyCode }}
-                </p>
+              <div class="flex">
+                <div
+                  v-for="(revenue, i) in revenues"
+                  :key="i"
+                  class="w-full border-b last:border-r border-zinc-600 dark:border-zinc-400 bg-liqui-green p-2 min-w-40"
+                  :class="{ 'border-l': i > 0 }"
+                >
+                  <p class="text-xs text-center">
+                    {{ revenue.formatted }} {{ getOrganisationCurrencyCode }}
+                  </p>
+                </div>
               </div>
             </div>
 
@@ -155,9 +157,9 @@
               />
             </template>
 
-            <div class="flex items-center col-span-full">
+            <div class="flex items-center">
               <div
-                class="group flex gap-1 cursor-pointer border-b border-l border-zinc-600 dark:border-zinc-400 bg-zinc-400 dark:bg-zinc-600 p-2 min-w-28"
+                class="group sticky -left-4 flex gap-1 cursor-pointer border-b border-l border-r border-zinc-600 dark:border-zinc-400 bg-zinc-400 dark:bg-zinc-600 p-2 min-w-28 max-w-28"
                 @click="onToggleExpenseDetails"
               >
                 <p class="text-xs font-bold">
@@ -171,7 +173,8 @@
               <div
                 v-for="(expense, i) in expenses"
                 :key="i"
-                class="w-full border-b border-l last:border-r border-zinc-600 dark:border-zinc-400 bg-liqui-red p-2 min-w-40"
+                class="w-full border-b last:border-r border-zinc-600 dark:border-zinc-400 bg-liqui-red p-2 min-w-40"
+                :class="{ 'border-l': i > 0 }"
               >
                 <p class="text-xs text-center">
                   {{ expense.formatted }} {{ getOrganisationCurrencyCode }}
@@ -191,8 +194,8 @@
               />
             </template>
 
-            <div class="flex items-center col-span-full">
-              <div class="cursor-default border-b border-l border-zinc-600 dark:border-zinc-400 bg-zinc-300 dark:bg-zinc-700 p-2 min-w-28">
+            <div class="flex items-center">
+              <div class="sticky -left-4 cursor-default border-b border-l border-r border-zinc-600 dark:border-zinc-400 bg-zinc-300 dark:bg-zinc-700 p-2 min-w-28">
                 <p class="text-xs">
                   Cashflow
                 </p>
@@ -200,8 +203,8 @@
               <div
                 v-for="(cashflow, i) in cashflows"
                 :key="i"
-                class="w-full border-b border-l last:border-r border-zinc-600 dark:border-zinc-400 p-2 min-w-40"
-                :class="{ 'text-liqui-red': cashflow.amount < 0, 'text-liqui-green': cashflow.amount > 0 }"
+                class="w-full border-b last:border-r border-zinc-600 dark:border-zinc-400 p-2 min-w-40"
+                :class="{ 'text-liqui-red': cashflow.amount < 0, 'text-liqui-green': cashflow.amount > 0, 'border-l': i > 0 }"
               >
                 <p class="text-xs text-center">
                   {{ cashflow.formatted }} {{ getOrganisationCurrencyCode }}
@@ -209,8 +212,8 @@
               </div>
             </div>
 
-            <div class="flex items-center col-span-full">
-              <div class="cursor-default border-b border-l border-zinc-600 dark:border-zinc-400 bg-zinc-300 dark:bg-zinc-700 p-2 min-w-28">
+            <div class="flex items-center">
+              <div class="sticky -left-4 cursor-default border-b border-l border-r border-zinc-600 dark:border-zinc-400 bg-zinc-300 dark:bg-zinc-700 p-2 min-w-28">
                 <p class="text-xs">
                   Endsaldo
                 </p>
@@ -218,8 +221,8 @@
               <div
                 v-for="(saldo, i) in saldos"
                 :key="i"
-                class="w-full border-b border-l last:border-r border-zinc-600 dark:border-zinc-400 p-2 min-w-40"
-                :class="{ 'bg-liqui-red': saldo.amount < 0, 'bg-liqui-green': saldo.amount > 0 }"
+                class="w-full border-b last:border-r border-zinc-600 dark:border-zinc-400 p-2 min-w-40"
+                :class="{ 'bg-liqui-red': saldo.amount < 0, 'bg-liqui-green': saldo.amount > 0, 'border-l': i > 0 }"
               >
                 <p class="text-xs text-center font-bold truncate">
                   {{ saldo.formatted }} {{ getOrganisationCurrencyCode }}
@@ -228,23 +231,23 @@
             </div>
           </div>
         </div>
-      </div>
 
-      <div class="bg-zinc-50 dark:bg-zinc-800">
-        <ClientOnly>
-          <Chart
-            type="line"
-            :data="chartData"
-            :options="chartOptions"
-            class="h-80"
-          />
-          <template #fallback>
-            <Skeleton class="!h-80" />
-          </template>
-        </ClientOnly>
-      </div>
+        <div class="bg-zinc-50 dark:bg-zinc-800">
+          <ClientOnly>
+            <Chart
+              type="line"
+              :data="chartData"
+              :options="chartOptions"
+              class="h-80"
+            />
+            <template #fallback>
+              <Skeleton class="!h-80" />
+            </template>
+          </ClientOnly>
+        </div>
 
-      <FullProgressSpinner :show="isLoading" />
+        <FullProgressSpinner :show="isLoading" />
+      </div>
     </div>
   </div>
 </template>
