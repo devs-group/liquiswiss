@@ -146,11 +146,9 @@ const onCreateCost = () => {
     data: {
       salary: salary.value,
     },
-    onClose: (options) => {
-      if (options?.data) {
-        requiresRefresh.value = true
-        onListSalaryCosts()
-      }
+    onClose: () => {
+      requiresRefresh.value = true
+      onListSalaryCosts()
     },
   })
 }
@@ -166,11 +164,9 @@ const onCloneCost = (costToClone: SalaryCostResponse) => {
       salaryCostToEdit: costToClone,
       isClone: true,
     },
-    onClose: (options) => {
-      if (options?.data) {
-        requiresRefresh.value = true
-        onListSalaryCosts()
-      }
+    onClose: () => {
+      requiresRefresh.value = true
+      onListSalaryCosts()
     },
   })
 }
@@ -185,11 +181,9 @@ const onEditCost = (costToEdit: SalaryCostResponse) => {
       salary: salary.value,
       salaryCostToEdit: costToEdit,
     },
-    onClose: (options) => {
-      if (options?.data) {
-        requiresRefresh.value = true
-        onListSalaryCosts()
-      }
+    onClose: () => {
+      requiresRefresh.value = true
+      onListSalaryCosts()
     },
   })
 }

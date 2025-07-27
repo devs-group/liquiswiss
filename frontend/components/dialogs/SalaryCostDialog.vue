@@ -417,19 +417,19 @@ const onCreateEmployeeCostLabel = () => {
       ...ModalConfig,
     },
     onClose: (options) => {
-      if (options?.data) {
-        const isLoadingCostLabels = ref(true)
-        listSalaryCostsLabels(false)
-          .then(() => {
+      const isLoadingCostLabels = ref(true)
+      listSalaryCostsLabels(false)
+        .then(() => {
+          if (options?.data) {
             setFieldValue('labelID', options.data)
-          })
-          .catch(() => {
-            employeesCostLabelsErrorMessage.value = 'Lohnkosten Labels konnten nicht geladen werden'
-          })
-          .finally(() => {
-            isLoadingCostLabels.value = false
-          })
-      }
+          }
+        })
+        .catch(() => {
+          employeesCostLabelsErrorMessage.value = 'Lohnkosten Labels konnten nicht geladen werden'
+        })
+        .finally(() => {
+          isLoadingCostLabels.value = false
+        })
     },
   })
 }
@@ -444,19 +444,19 @@ const onEditEmployeeCostLabel = (employeeCostLabelToEdit: SalaryCostLabelRespons
       employeeCostLabelToEdit: employeeCostLabelToEdit,
     },
     onClose: (options) => {
-      if (options?.data) {
-        const isLoadingCostLabels = ref(true)
-        listSalaryCostsLabels(false)
-          .then(() => {
+      const isLoadingCostLabels = ref(true)
+      listSalaryCostsLabels(false)
+        .then(() => {
+          if (options?.data) {
             setFieldValue('labelID', options.data)
-          })
-          .catch(() => {
-            employeesCostLabelsErrorMessage.value = 'Lohnkosten Labels konnten nicht geladen werden'
-          })
-          .finally(() => {
-            isLoadingCostLabels.value = false
-          })
-      }
+          }
+        })
+        .catch(() => {
+          employeesCostLabelsErrorMessage.value = 'Lohnkosten Labels konnten nicht geladen werden'
+        })
+        .finally(() => {
+          isLoadingCostLabels.value = false
+        })
     },
   })
 }

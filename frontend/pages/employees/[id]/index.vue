@@ -377,16 +377,14 @@ const onSalaryDeleted = () => {
 }
 
 const onClosedSalaryDialog = (options: DynamicDialogCloseOptions) => {
-  if (options?.data === true) {
-    // Refetch employee to set proper active salary
-    getEmployee(employeeID)
-      .then((value) => {
-        employee.value = value
-      })
-      .catch((reason) => {
-        employeeLoadErrorMessage.value = reason
-      })
-  }
+  // Refetch employee to set proper active salary
+  getEmployee(employeeID)
+    .then((value) => {
+      employee.value = value
+    })
+    .catch((reason) => {
+      employeeLoadErrorMessage.value = reason
+    })
 }
 
 const onLoadMoreSalaries = async () => {

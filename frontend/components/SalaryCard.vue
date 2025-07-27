@@ -197,10 +197,8 @@ const onShowCostOverview = () => {
     data: {
       salary: props.salary,
     },
-    onClose: (options) => {
-      if (options?.data) {
-        listSalaries(props.salary.employeeID)
-      }
+    onClose: () => {
+      listSalaries(props.salary.employeeID)
     },
   })
 }
@@ -214,10 +212,8 @@ const onCopyAllCosts = () => {
     data: {
       salary: props.salary,
     },
-    onClose: (options) => {
-      if (options?.data) {
-        listSalaries(props.salary.employeeID)
-      }
+    onClose: () => {
+      listSalaries(props.salary.employeeID)
     },
   })
 }

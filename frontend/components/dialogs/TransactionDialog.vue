@@ -573,7 +573,7 @@ const onCreateVat = () => {
       header: 'Neue Mehrwertsteuer anlegen',
       ...ModalConfig,
     },
-    onClose: (options) => {
+    onClose: () => {
       if (options?.data) {
         setFieldValue('vat', options.data)
       }
@@ -590,7 +590,7 @@ const onEditVat = (vatToEdit: VatResponse) => {
     data: {
       vatToEdit,
     },
-    onClose: (options) => {
+    onClose: () => {
       if (options?.data) {
         setFieldValue('vat', options.data)
       }
