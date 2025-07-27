@@ -79,6 +79,7 @@
         v-model="currency"
         empty-message="Keine Währungen gefunden"
         filter
+        auto-filter-focus
         empty-filter-message="Keine Resultate gefunden"
         :options="currencies"
         :option-label="getCurrencyLabel"
@@ -107,14 +108,21 @@
         >{{ amountInBaseCurrency }}</small>
       </div>
       <div class="flex item-center gap-2">
-        <InputText
+        <InputNumber
           v-bind="amountProps"
-          id="name"
+          id="amount"
           v-model="amount"
-          class="flex-1"
           :class="{ 'p-invalid': errors['amount']?.length }"
-          type="text"
-          @input="onParseAmount"
+          mode="currency"
+          :allow-empty="false"
+          :currency="selectedCurrencyCode"
+          currency-display="code"
+          :locale="selectedLocalCode"
+          fluid
+          :max-fraction-digits="2"
+          @paste="onParseAmount"
+          @input="event => amount = event.value"
+          @focus="selectAllOnFocus"
         />
         <AmountInvertButton
           :amount="amount"
@@ -370,6 +378,7 @@ import AmountInvertButton from '~/components/AmountInvertButton.vue'
 import { ModalConfig } from '~/config/dialog-props'
 import VatDialog from '~/components/dialogs/VatDialog.vue'
 import type { VatResponse } from '~/models/vat'
+import { selectAllOnFocus } from '~/utils/element-helper'
 
 const dialogRef = inject<ITransactionFormDialog>('dialogRef')!
 
@@ -515,8 +524,10 @@ const onSubmit = handleSubmit((values) => {
 })
 
 const onParseAmount = (event: Event) => {
-  if (event instanceof InputEvent) {
-    parseNumberInput(event, amount, true)
+  if (event instanceof ClipboardEvent) {
+    const pastedText = event.clipboardData?.getData('text') ?? ''
+    const parsedAmount = parseCurrency(pastedText, true)
+    amount.value = parsedAmount.length > 0 ? parseFloat(parsedAmount) : 0
   }
 }
 
@@ -635,6 +646,7 @@ const isRepeatingTransaction = computed(() => {
   return type.value === TransactionType.Repeating
 })
 const selectedCurrencyCode = computed(() => currencies.value.find(c => c.id == currency.value)?.code)
+const selectedLocalCode = computed(() => currencies.value.find(c => c.id == currency.value)?.localeCode)
 const amountInBaseCurrency = computed(() => {
   let baseAmount = amount.value
   if (selectedCurrencyCode.value) {

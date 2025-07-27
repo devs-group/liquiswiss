@@ -8,7 +8,11 @@ export const scrollToParentBottom = (elementID: string) => {
   }
 }
 
-export const parseNumberInput = (event: InputEvent, amount: Ref<number>, allowNegative: boolean) => {
+export const selectAllOnFocus = (event: Event) => {
+  (event.target as HTMLInputElement).select()
+}
+
+export const parseNumberInput = (event: InputEvent | ClipboardEvent, amount: Ref<number>, allowNegative: boolean) => {
   const element = event.target as HTMLInputElement
   const cursorPosition = element.selectionStart || 0
   const lengthBefore = element.value.length

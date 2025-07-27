@@ -50,6 +50,7 @@
               mode="decimal"
               :suffix="forecastMonths == 1 ? ' Monat' : ' Monate'"
               :max="36"
+              @input="event => forecastMonths = event.value"
             >
               <template #incrementbuttonicon>
                 <span class="pi pi-plus" />

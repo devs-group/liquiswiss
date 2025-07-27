@@ -48,6 +48,7 @@
             :class="{ 'p-invalid': errors['currencyID']?.length }"
             :options="currencies"
             filter
+            auto-filter-focus
             empty-filter-message="Keine Resultate gefunden"
             :option-label="getCurrencyLabel"
             option-value="id"

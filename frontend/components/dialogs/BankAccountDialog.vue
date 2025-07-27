@@ -20,6 +20,29 @@
     </div>
 
     <div class="flex flex-col gap-2 col-span-full md:col-span-1">
+      <label
+        class="text-sm font-bold"
+        for="name"
+      >Währung *</label>
+      <Select
+        v-bind="currencyProps"
+        id="name"
+        v-model="currency"
+        empty-message="Keine Währungen gefunden"
+        filter
+        auto-filter-focus
+        empty-filter-message="Keine Resultate gefunden"
+        :options="currencies"
+        :option-label="getCurrencyLabel"
+        option-value="id"
+        placeholder="Bitte wählen"
+        :class="{ 'p-invalid': errors['currency']?.length }"
+        type="text"
+      />
+      <small class="text-liqui-red">{{ errors["currency"] || '&nbsp;' }}</small>
+    </div>
+
+    <div class="flex flex-col gap-2 col-span-full md:col-span-1">
       <div class="flex items-center gap-2">
         <label
           class="text-sm font-bold"
@@ -31,14 +54,21 @@
         />
       </div>
       <div class="flex item-center gap-2">
-        <InputText
+        <InputNumber
           v-bind="amountProps"
-          id="name"
+          id="amount"
           v-model="amount"
-          class="flex-1"
           :class="{ 'p-invalid': errors['amount']?.length }"
-          type="text"
-          @input="onParseAmount"
+          mode="currency"
+          :allow-empty="false"
+          :currency="selectedCurrencyCode"
+          currency-display="code"
+          :locale="selectedLocalCode"
+          fluid
+          :max-fraction-digits="2"
+          @paste="onParseAmount"
+          @input="event => amount = event.value"
+          @focus="selectAllOnFocus"
         />
         <AmountInvertButton
           :amount="amount"
@@ -46,28 +76,6 @@
         />
       </div>
       <small class="text-liqui-red">{{ errors["amount"] || '&nbsp;' }}</small>
-    </div>
-
-    <div class="flex flex-col gap-2 col-span-full md:col-span-1">
-      <label
-        class="text-sm font-bold"
-        for="name"
-      >Währung *</label>
-      <Select
-        v-bind="currencyProps"
-        id="name"
-        v-model="currency"
-        empty-message="Keine Währungen gefunden"
-        filter
-        empty-filter-message="Keine Resultate gefunden"
-        :options="currencies"
-        :option-label="getCurrencyLabel"
-        option-value="id"
-        placeholder="Bitte wählen"
-        :class="{ 'p-invalid': errors['currency']?.length }"
-        type="text"
-      />
-      <small class="text-liqui-red">{{ errors["currency"] || '&nbsp;' }}</small>
     </div>
 
     <hr class="my-4 col-span-full">
@@ -115,6 +123,7 @@ import type { IBankAccountFormDialog } from '~/interfaces/dialog-interfaces'
 import { Config } from '~/config/config'
 import type { BankAccountFormData } from '~/models/bank-account'
 import AmountInvertButton from '~/components/AmountInvertButton.vue'
+import { selectAllOnFocus } from '~/utils/element-helper'
 
 const dialogRef = inject<IBankAccountFormDialog>('dialogRef')!
 
@@ -150,8 +159,10 @@ const [amount, amountProps] = defineField('amount')
 const [currency, currencyProps] = defineField('currency')
 
 const onParseAmount = (event: Event) => {
-  if (event instanceof InputEvent) {
-    parseNumberInput(event, amount, true)
+  if (event instanceof ClipboardEvent) {
+    const pastedText = event.clipboardData?.getData('text') ?? ''
+    const parsedAmount = parseCurrency(pastedText, true)
+    amount.value = parsedAmount.length > 0 ? parseFloat(parsedAmount) : 0
   }
 }
 
@@ -242,4 +253,7 @@ const onDeleteBankAccount = () => {
 const onInvertAmount = () => {
   amount.value *= -1
 }
+
+const selectedCurrencyCode = computed(() => currencies.value.find(c => c.id == currency.value)?.code)
+const selectedLocalCode = computed(() => currencies.value.find(c => c.id == currency.value)?.localeCode)
 </script>

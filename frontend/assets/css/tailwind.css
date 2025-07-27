@@ -1,12 +1,22 @@
 @layer tailwind-base, primevue, liquiswiss, tailwind-utilities;
 
 @layer liquiswiss {
+    .max-dialog-maximized-mobile {
+        width: 65vw !important;
+        height: 96vh !important;
+        max-height: 96% !important;
+    }
+    @media (max-width: 1024px) {
+        .max-dialog-maximized-mobile {
+            width: 96vw !important;
+            height: 96vh !important;
+            max-height: 96% !important;
+        }
+    }
     @media (max-width: 767px) {
         .max-dialog-maximized-mobile {
             width: 100vw !important;
             height: 100vh !important;
-            top: 0 !important;
-            left: 0 !important;
             max-height: 100% !important;
             height: 100% !important;
             border-radius: 0 !important;

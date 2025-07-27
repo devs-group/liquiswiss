@@ -35,6 +35,8 @@
         :options="salaryCostsLabels.data"
         option-label="name"
         option-value="id"
+        filter
+        auto-filter-focus
         placeholder="Bitte wählen"
         :loading="isLoadingCostLabels"
         :disabled="isLoadingCostLabels"
@@ -168,14 +170,22 @@
           Nur Prozentwerte (von 0 bis 100)
         </p>
       </div>
-      <InputText
+      <InputNumber
         v-bind="amountProps"
         id="amount"
         v-model="amount"
         :class="{ 'p-invalid': errors['amount']?.length }"
-        type="text"
+        mode="currency"
+        :allow-empty="false"
+        :currency="selectedCurrencyCode"
+        currency-display="code"
+        :locale="selectedLocalCode"
+        fluid
+        :max-fraction-digits="2"
         :disabled="isLoading"
-        @input="onParseAmount"
+        @paste="onParseAmount"
+        @input="event => amount = event.value"
+        @focus="selectAllOnFocus"
       />
       <small class="text-liqui-red">{{ errors["amount"] }}</small>
     </div>
@@ -272,6 +282,7 @@ import {
 import { ModalConfig } from '~/config/dialog-props'
 import SalaryCostLabelDialog from '~/components/dialogs/SalaryCostLabelDialog.vue'
 import { SalaryCostUtils } from '~/utils/models/salary-cost-utils'
+import { selectAllOnFocus } from '~/utils/element-helper'
 
 const dialogRef = inject<ISalaryCostFormDialog>('dialogRef')!
 
@@ -392,8 +403,10 @@ const onSubmit = handleSubmit((values) => {
 })
 
 const onParseAmount = (event: Event) => {
-  if (event instanceof InputEvent) {
-    parseNumberInput(event, amount as Ref<number>, false)
+  if (event instanceof ClipboardEvent) {
+    const pastedText = event.clipboardData?.getData('text') ?? ''
+    const parsedAmount = parseCurrency(pastedText, false)
+    amount.value = parsedAmount.length > 0 ? parseFloat(parsedAmount) : 0
   }
 }
 
@@ -490,4 +503,6 @@ const onDeleteEmployeeCostLabel = (employeeCostLabelToDelete: SalaryCostLabelRes
 
 const isOnce = computed(() => cycle.value as CycleType == CycleType.Once)
 const isFixedAmount = computed(() => amountType.value == EmployeeCostType.Fixed)
+const selectedCurrencyCode = computed(() => salary.currency.code)
+const selectedLocalCode = computed(() => salary.currency.localeCode)
 </script>

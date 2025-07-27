@@ -8,14 +8,20 @@
         class="text-sm font-bold"
         for="value"
       >Prozentualer Wert *</label>
-      <InputText
+      <InputNumber
         v-bind="valueProps"
         id="value"
         v-model="value"
+        suffix=" %"
         :class="{ 'p-invalid': errors['value']?.length }"
-        type="text"
+        mode="decimal"
+        :allow-empty="false"
         placeholder="Beispiel: 8.1"
-        @input="onParseAmount"
+        fluid
+        :max-fraction-digits="2"
+        @paste="onParseAmount"
+        @input="event => value = event.value"
+        @focus="selectAllOnFocus"
       />
       <div class="flex justify-between gap-2">
         <small class="text-liqui-red">{{ errors["value"] || '&nbsp;' }}</small>
@@ -56,6 +62,7 @@ import * as yup from 'yup'
 import type { IVatFormDialog } from '~/interfaces/dialog-interfaces'
 import { Config } from '~/config/config'
 import type { VatFormData } from '~/models/vat'
+import { selectAllOnFocus } from '~/utils/element-helper'
 
 const dialogRef = inject<IVatFormDialog>('dialogRef')!
 
@@ -135,8 +142,10 @@ const onSubmit = handleSubmit((values) => {
 })
 
 const onParseAmount = (event: Event) => {
-  if (event instanceof InputEvent) {
-    parseNumberInput(event, value as Ref<number>, false)
+  if (event instanceof ClipboardEvent) {
+    const pastedText = event.clipboardData?.getData('text') ?? ''
+    const parsedAmount = parseCurrency(pastedText, false)
+    value.value = parsedAmount.length > 0 ? parseFloat(parsedAmount) : 0
   }
 }
 </script>

@@ -40,29 +40,6 @@
       </div>
 
       <div class="flex flex-col gap-2 col-span-full md:col-span-1">
-        <div class="flex items-center gap-2">
-          <label
-            class="text-sm font-bold"
-            for="salary-per-month"
-          >Bruttolohn *</label>
-          <i
-            v-tooltip.top="'Empfehlung: Bruttolohn angeben und Lohnkosten separat erfassen'"
-            class="pi pi-info-circle"
-          />
-        </div>
-        <InputText
-          v-bind="amountProps"
-          id="salary"
-          v-model="amount"
-          :class="{ 'p-invalid': errors['amount']?.length }"
-          type="text"
-          :disabled="isLoading"
-          @input="onParseAmount"
-        />
-        <small class="text-liqui-red">{{ errors["amount"] || '&nbsp;' }}</small>
-      </div>
-
-      <div class="flex flex-col gap-2 col-span-full md:col-span-1">
         <label
           class="text-sm font-bold"
           for="salary-currencyID"
@@ -73,6 +50,7 @@
           v-model="currencyID"
           empty-message="Keine Währungen gefunden"
           filter
+          auto-filter-focus
           empty-filter-message="Keine Resultate gefunden"
           :disabled="isLoading"
           :class="{ 'p-invalid': errors['currencyID']?.length }"
@@ -82,6 +60,37 @@
           placeholder="Bitte wählen"
         />
         <small class="text-liqui-red">{{ errors["currencyID"] || '&nbsp;' }}</small>
+      </div>
+
+      <div class="flex flex-col gap-2 col-span-full md:col-span-1">
+        <div class="flex items-center gap-2">
+          <label
+            class="text-sm font-bold"
+            for="salary-per-month"
+          >Bruttolohn *</label>
+          <i
+            v-tooltip.top="'Empfehlung: Bruttolohn angeben und Lohnkosten separat erfassen'"
+            class="pi pi-info-circle"
+          />
+        </div>
+        <InputNumber
+          v-bind="amountProps"
+          id="amount"
+          v-model="amount"
+          :class="{ 'p-invalid': errors['amount']?.length }"
+          mode="currency"
+          :allow-empty="false"
+          :currency="selectedCurrencyCode"
+          currency-display="code"
+          :locale="selectedLocalCode"
+          fluid
+          :max-fraction-digits="2"
+          :disabled="isLoading"
+          @paste="onParseAmount"
+          @input="event => amount = event.value"
+          @focus="selectAllOnFocus"
+        />
+        <small class="text-liqui-red">{{ errors["amount"] || '&nbsp;' }}</small>
       </div>
 
       <div class="flex flex-col gap-2 col-span-full md:col-span-1">
@@ -237,6 +246,7 @@ import type { SalaryPUTFormData } from '~/models/employee'
 import { CycleType } from '~/config/enums'
 import { SalaryUtils } from '~/utils/models/salary-utils'
 import { SalaryCycleTypeToOptions } from '~/utils/enum-helper'
+import { selectAllOnFocus } from '~/utils/element-helper'
 
 const dialogRef = inject<ISalaryFormDialog>('dialogRef')!
 
@@ -283,8 +293,10 @@ const [fromDate, fromDateProps] = defineField('fromDate')
 const [cycle, cycleProps] = defineField('cycle')
 
 const onParseAmount = (event: Event) => {
-  if (event instanceof InputEvent) {
-    parseNumberInput(event, amount, false)
+  if (event instanceof ClipboardEvent) {
+    const pastedText = event.clipboardData?.getData('text') ?? ''
+    const parsedAmount = parseCurrency(pastedText, false)
+    amount.value = parsedAmount.length > 0 ? parseFloat(parsedAmount) : 0
   }
 }
 
@@ -397,4 +409,7 @@ const onDeleteSalary = () => {
     },
   })
 }
+
+const selectedCurrencyCode = computed(() => currencies.value.find(c => c.id == currencyID.value)?.code)
+const selectedLocalCode = computed(() => currencies.value.find(c => c.id == currencyID.value)?.localeCode)
 </script>
