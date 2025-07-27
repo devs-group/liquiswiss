@@ -20,12 +20,13 @@
         v-if="employee.hoursPerMonth !== null"
         class="flex flex-col gap-2 text-sm"
       >
-        <p
+        <Message
           v-if="employee.isTerminated"
-          class="text-orange-500 font-bold"
+          severity="warn"
+          size="small"
         >
-          Arbeitsverhältniss aufgelöst
-        </p>
+          Arbeitsverhältniss aktuell aufgelöst
+        </Message>
         <p
           v-else-if="!employee.isInFuture"
           class="text-green-500 font-bold"
@@ -51,6 +52,12 @@
           </p>
           <p v-if="employee.toDate">
             <strong>Gültig bis</strong> {{ DateStringToFormattedDate(employee.toDate) }}
+          </p>
+          <p
+            v-if="employee.willBeTerminated"
+            class="text-orange-500 font-bold"
+          >
+            Austritt angesetzt
           </p>
         </template>
       </div>

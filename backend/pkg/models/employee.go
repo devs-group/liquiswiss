@@ -17,6 +17,7 @@ type Employee struct {
 	IsInFuture          bool          `db:"-" json:"isInFuture"`
 	WithSeparateCosts   bool          `db:"-" json:"withSeparateCosts"`
 	IsTerminated        bool          `db:"-" json:"isTerminated"`
+	WillBeTerminated    bool          `db:"-" json:"willBeTerminated"`
 	SalaryID            *int64        `db:"-" json:"salaryID"`
 }
 

@@ -105,7 +105,7 @@
         @click="onCreateSalary"
       />
       <Button
-        v-if="!employee?.isTerminated"
+        v-if="salariesWithoutTermination.length > 0"
         class="self-end"
         :loading="isSubmitting"
         label="Austritt hinzufügen"
@@ -217,6 +217,10 @@ const employeeUpdateMessage = ref('')
 const employeeUpdateErrorMessage = ref('')
 const employeeDeleteErrorMessage = ref('')
 const salaryErrorMessage = ref('')
+
+const salariesWithoutTermination = computed(() => {
+  return salaries.value.data.filter(s => !s.isTermination)
+})
 
 if (
   route.params.id

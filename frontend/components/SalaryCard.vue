@@ -106,8 +106,18 @@
         v-else
         class="flex flex-col gap-2 text-sm"
       >
-        <Message severity="warn">
-          Austritt
+        <Message
+          severity="warn"
+          size="small"
+        >
+          <p
+            v-if="salary.toDate"
+          >
+            Austritt bis {{ toDateFormatted }}
+          </p>
+          <p v-else>
+            Dauerhafter Austritt
+          </p>
         </Message>
       </div>
     </template>

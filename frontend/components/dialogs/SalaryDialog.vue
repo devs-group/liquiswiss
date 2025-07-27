@@ -177,14 +177,31 @@
         <DatePicker
           v-model="fromDate"
           v-bind="fromDateProps"
+          :disabled-dates="getDisabledDates"
           date-format="dd.mm.yy"
           show-icon
           show-button-bar
           :class="{ 'p-invalid': errors['fromDate']?.length }"
-          :disabled="isLoading"
+          :disabled="isLoading || terminationErrorMessage.length > 0"
         />
+        <small
+          v-if="getEarliestRecommendedTerminationDate"
+          class="text-liqui-blue"
+        >
+          Vorschlag für nächsten Austritt: {{ DateStringToFormattedDate(getEarliestRecommendedTerminationDate) }}
+        </small>
         <small class="text-liqui-red">{{ errors["fromDate"] || '&nbsp;' }}</small>
       </div>
+
+      <Message
+        v-if="terminationErrorMessage.length"
+        severity="error"
+        size="small"
+        :closable="false"
+        class="col-span-full"
+      >
+        {{ terminationErrorMessage }}
+      </Message>
 
       <Message
         severity="warn"
@@ -222,7 +239,7 @@
         @click="dialogRef.close()"
       />
       <div
-        v-if="!isCreate"
+        v-if="!isCreate && !isTermination"
         class="flex justify-end col-span-full"
       >
         <Button
@@ -251,7 +268,7 @@ import { selectAllOnFocus } from '~/utils/element-helper'
 const dialogRef = inject<ISalaryFormDialog>('dialogRef')!
 
 const { getOrganisationCurrencyID } = useAuth()
-const { createSalary, updateSalary, deleteSalary, listSalaries } = useSalaries()
+const { createSalary, updateSalary, deleteSalary, listSalaries, salaries } = useSalaries()
 const { currencies, getCurrencyLabel } = useGlobalData()
 const confirm = useConfirm()
 const toast = useToast()
@@ -264,6 +281,36 @@ const isTermination = ref(dialogRef.value.data?.isTermination)
 const isClone = ref(dialogRef.value.data?.isClone)
 const isCreate = computed(() => !isTermination.value && (isClone.value || !salary.value?.id))
 const errorMessage = ref('')
+const terminationErrorMessage = ref('')
+
+if (isTermination.value) {
+  // Only for termination to be able to set the earliest allowed termination date
+  isLoading.value = true
+  await listSalaries(employeeID)
+    .catch(() => {
+      terminationErrorMessage.value = 'Fehler beim Laden der Löhne'
+    })
+    .finally(() => {
+      isLoading.value = false
+    })
+}
+
+const selectedCurrencyCode = computed(() => currencies.value.find(c => c.id == currencyID.value)?.code)
+const selectedLocalCode = computed(() => currencies.value.find(c => c.id == currencyID.value)?.localeCode)
+const getEarliestRecommendedTerminationDate = computed(() => {
+  const s = salaries.value.data.filter(s => !s.isTermination)
+  if (s.length > 0) {
+    const latestSalary = s[0]
+    if (latestSalary.nextExecutionDate) {
+      return DateAddDays(DateToUTCDate(latestSalary.nextExecutionDate), 1)
+    }
+  }
+  return undefined
+})
+const getDisabledDates = computed(() => {
+  const s = salaries.value.data.filter(s => !s.isTermination)
+  return s.map(sl => DateToUTCDate(sl.fromDate))
+})
 
 const { defineField, errors, handleSubmit, meta } = useForm({
   validationSchema: yup.object({
@@ -280,7 +327,7 @@ const { defineField, errors, handleSubmit, meta } = useForm({
     amount: isNumber(salary.value?.amount) ? AmountToFloat(salary.value!.amount) : 0,
     currencyID: salary.value?.currency.id ?? getOrganisationCurrencyID.value,
     vacationDaysPerYear: salary.value?.vacationDaysPerYear ?? 0,
-    fromDate: salary.value?.fromDate ? DateToUTCDate(salary.value.fromDate) : null,
+    fromDate: salary.value?.fromDate ? DateToUTCDate(salary.value.fromDate) : isTermination.value ? getEarliestRecommendedTerminationDate.value : null,
     cycle: salary.value?.cycle ?? CycleType.Monthly,
   } as SalaryPUTFormData,
 })
@@ -409,7 +456,4 @@ const onDeleteSalary = () => {
     },
   })
 }
-
-const selectedCurrencyCode = computed(() => currencies.value.find(c => c.id == currencyID.value)?.code)
-const selectedLocalCode = computed(() => currencies.value.find(c => c.id == currencyID.value)?.localeCode)
 </script>

@@ -21,6 +21,7 @@ export interface EmployeeResponse {
   isInFuture: boolean
   withSeparateCosts: boolean
   isTerminated: boolean
+  willBeTerminated: boolean
   salaryID: number | null
 }
 
