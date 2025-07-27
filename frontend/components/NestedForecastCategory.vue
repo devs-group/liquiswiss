@@ -30,6 +30,7 @@
         :forecast-detail="data"
         :currency-code="currencyCode"
         :forecast-type="forecastType"
+        @on-recalculate-forecasts="onRecalculateForecasts"
       />
     </div>
   </div>

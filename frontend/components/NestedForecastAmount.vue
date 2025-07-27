@@ -7,10 +7,10 @@
       {{ amountFormatted(getCategoryAmount) }} {{ currencyCode }}
     </p>
     <i
-      v-if="getCategoryRelatedValue(forecastDetail, category.name, forecastType, 'relatedID') && getCategoryAmount"
+      v-if="relatedID && (getCategoryAmount || isExcluded)"
       class="pi !text-2xs cursor-pointer hover:scale-125 transition-transform"
       :class="[getExclusionIcon]"
-      @click="onExcludeForecast(forecastDetail, category.name, forecastType)"
+      @click="onExcludeForecast()"
     />
   </div>
 </template>
@@ -48,20 +48,14 @@ const props = defineProps({
   },
 })
 
-const onExcludeForecast = (
-  data: ForecastDetailResponse,
-  categoryName: string,
-  type: 'revenue' | 'expense') => {
-  const relatedID = getCategoryRelatedValue(data, categoryName, type, 'relatedID')
-  const relatedTable = getCategoryRelatedValue(data, categoryName, type, 'relatedTable')
-  const isExcluded = getCategoryRelatedValue(data, categoryName, type, 'isExcluded')
-  if (relatedID && relatedTable) {
-    if (!isExcluded) {
-      excludeForecast(data.month, relatedID as number, relatedTable as string)
+const onExcludeForecast = () => {
+  if (relatedID.value && relatedTable.value) {
+    if (!isExcluded.value) {
+      excludeForecast(props.forecastDetail.month, relatedID.value as number, relatedTable.value as string)
         .then(() => {
           toast.add({
             summary: 'Erfolg',
-            detail: `Prognose wird für Monat "${data.month}" ausgeschlossen"`,
+            detail: `Prognose wird für Monat "${props.forecastDetail.month}" ausgeschlossen"`,
             severity: 'success',
             life: Config.TOAST_LIFE_TIME_MEDIUM,
           })
@@ -69,7 +63,7 @@ const onExcludeForecast = (
         .catch(() => {
           toast.add({
             summary: 'Fehler',
-            detail: `Ausschliessen der Prognose für Monat "${data.month}" fehlgeschlagen`,
+            detail: `Ausschliessen der Prognose für Monat "${props.forecastDetail.month}" fehlgeschlagen`,
             severity: 'error',
             life: Config.TOAST_LIFE_TIME_MEDIUM,
           })
@@ -79,11 +73,11 @@ const onExcludeForecast = (
         })
     }
     else {
-      includeForecast(data.month, relatedID as number, relatedTable as string)
+      includeForecast(props.forecastDetail.month, relatedID.value as number, relatedTable.value as string)
         .then(() => {
           toast.add({
             summary: 'Erfolg',
-            detail: `Prognose wird für Monat "${data.month}" berücksichtigt`,
+            detail: `Prognose wird für Monat "${props.forecastDetail.month}" berücksichtigt`,
             severity: 'success',
             life: Config.TOAST_LIFE_TIME_MEDIUM,
           })
@@ -91,7 +85,7 @@ const onExcludeForecast = (
         .catch(() => {
           toast.add({
             summary: 'Fehler',
-            detail: `Berücksichtigen der Prognose für Monat "${data.month}" fehlgeschlagen`,
+            detail: `Berücksichtigen der Prognose für Monat "${props.forecastDetail.month}" fehlgeschlagen`,
             severity: 'error',
             life: Config.TOAST_LIFE_TIME_MEDIUM,
           })
@@ -134,9 +128,17 @@ const getCategoryRelatedValue = (
   return findValueRecursively(data, categoryName)
 }
 
+const isExcluded = computed(() => {
+  return getCategoryRelatedValue(props.forecastDetail, props.category.name, props.forecastType, 'isExcluded')
+})
+const relatedID = computed(() => {
+  return getCategoryRelatedValue(props.forecastDetail, props.category.name, props.forecastType, 'relatedID')
+})
+const relatedTable = computed(() => {
+  return getCategoryRelatedValue(props.forecastDetail, props.category.name, props.forecastType, 'relatedTable')
+})
 const getExclusionIcon = computed(() => {
-  const isExcluded = getCategoryRelatedValue(props.forecastDetail, props.category.name, props.forecastType, 'isExcluded')
-  return isExcluded ? 'pi-history text-liqui-blue' : 'pi-check-square text-liqui-green'
+  return isExcluded.value ? 'pi-history text-liqui-blue' : 'pi-check-square text-liqui-green'
 })
 
 const getCategoryAmount = computed((): number => {
