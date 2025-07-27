@@ -57,6 +57,7 @@ func (d *DatabaseAdapter) ListEmployees(userID int64, page int64, limit int64, s
 			&toDate,
 			&employee.IsInFuture,
 			&employee.WithSeparateCosts,
+			&employee.IsTerminated,
 			&employee.SalaryID,
 			&totalCount,
 		)
@@ -106,6 +107,7 @@ func (d *DatabaseAdapter) GetEmployee(userID int64, employeeID int64) (*models.E
 		&toDate,
 		&employee.IsInFuture,
 		&employee.WithSeparateCosts,
+		&employee.IsTerminated,
 		&employee.SalaryID,
 	)
 	if err != nil {

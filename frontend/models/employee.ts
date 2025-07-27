@@ -19,6 +19,8 @@ export interface EmployeeResponse {
   fromDate?: string | null
   toDate?: string | null
   isInFuture: boolean
+  withSeparateCosts: boolean
+  isTerminated: boolean
   salaryID: number | null
 }
 
@@ -63,6 +65,7 @@ export interface SalaryResponse {
   fromDate: string
   toDate: string | null
   withSeparateCosts: boolean
+  isTermination: boolean
   nextExecutionDate: string | null
   employeeDeductions: number
   employerCosts: number
@@ -103,6 +106,7 @@ export interface SalaryPUTFormData {
   vacationDaysPerYear: number
   fromDate: Date
   withSeparateCosts: boolean
+  isTermination: boolean
 }
 
 export interface SalaryPATCHFormData {

@@ -21,7 +21,13 @@
         class="flex flex-col gap-2 text-sm"
       >
         <p
-          v-if="!employee.isInFuture"
+          v-if="employee.isTerminated"
+          class="text-orange-500 font-bold"
+        >
+          Arbeitsverhältniss aufgelöst
+        </p>
+        <p
+          v-else-if="!employee.isInFuture"
           class="text-green-500 font-bold"
         >
           Aktuelle Daten:
@@ -32,19 +38,21 @@
         >
           Kommende Daten:
         </p>
-        <p>{{ employee.hoursPerMonth }} Arbeitsstunden / Monat</p>
-        <p>
-          {{ salaryFormatted }} {{ employee.currency?.code }} / {{ cycle }}
-        </p>
-        <p>
-          {{ employee.vacationDaysPerYear }} Urlaubstage / Jahr
-        </p>
-        <p v-if="employee.fromDate">
-          <strong>Gültig {{ employee.isInFuture ? 'ab' : 'seit' }}</strong> {{ DateStringToFormattedDate(employee.fromDate) }}
-        </p>
-        <p v-if="employee.toDate">
-          <strong>Gültig bis</strong> {{ DateStringToFormattedDate(employee.toDate) }}
-        </p>
+        <template v-if="!employee.isTerminated">
+          <p>{{ employee.hoursPerMonth }} Arbeitsstunden / Monat</p>
+          <p>
+            {{ salaryFormatted }} {{ employee.currency?.code }} / {{ cycle }}
+          </p>
+          <p>
+            {{ employee.vacationDaysPerYear }} Urlaubstage / Jahr
+          </p>
+          <p v-if="employee.fromDate">
+            <strong>Gültig {{ employee.isInFuture ? 'ab' : 'seit' }}</strong> {{ DateStringToFormattedDate(employee.fromDate) }}
+          </p>
+          <p v-if="employee.toDate">
+            <strong>Gültig bis</strong> {{ DateStringToFormattedDate(employee.toDate) }}
+          </p>
+        </template>
       </div>
       <div
         v-else

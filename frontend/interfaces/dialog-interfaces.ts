@@ -20,6 +20,7 @@ export interface ISalaryFormDialog {
     close: (data: boolean) => boolean
     data: {
       isClone: boolean
+      isTermination: boolean
       employeeID: number
       salary?: SalaryResponse
     }

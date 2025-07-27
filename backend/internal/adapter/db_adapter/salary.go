@@ -77,6 +77,7 @@ func (d *DatabaseAdapter) GetSalary(userID int64, salaryID int64) (*models.Salar
 		&salary.FromDate,
 		&toDate,
 		&salary.WithSeparateCosts,
+		&salary.IsTermination,
 		&salary.DBDate,
 	)
 	if err != nil {
@@ -149,6 +150,7 @@ func (d *DatabaseAdapter) CreateSalary(payload models.CreateSalary, userID int64
 		fromDate,
 		toDate,
 		payload.WithSeparateCosts,
+		payload.IsTermination,
 		employeeID,
 		userID,
 	)

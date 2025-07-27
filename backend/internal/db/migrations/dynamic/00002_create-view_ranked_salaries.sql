@@ -36,6 +36,7 @@ WITH ranked_salary AS (
             ), 0) AS INTEGER
         ) AS employer_costs,
         s.with_separate_costs,
+        s.is_termination,
         ROW_NUMBER() OVER (
             PARTITION BY employee_id
             ORDER BY
@@ -58,7 +59,8 @@ WITH ranked_salary AS (
         s.vacation_days_per_year,
         s.from_date,
         s.to_date,
-        s.with_separate_costs
+        s.with_separate_costs,
+        s.is_termination
 )
 SELECT * FROM ranked_salary;
 -- +goose StatementEnd

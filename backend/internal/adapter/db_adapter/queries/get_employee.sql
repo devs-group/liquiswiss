@@ -13,6 +13,7 @@ SELECT
     rs.to_date,
     COALESCE(rs.is_in_future, false) AS is_in_future,
     COALESCE(rs.with_separate_costs, false) AS with_separate_costs,
+    COALESCE(rs.is_termination, false) AS is_termination,
     rs.id AS salary_id
 FROM employees e
 LEFT JOIN ranked_salaries rs ON e.id = rs.employee_id AND rs.rn = 1

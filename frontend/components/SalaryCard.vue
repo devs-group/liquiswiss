@@ -7,6 +7,7 @@
         </p>
         <div class="flex gap-2 justify-end">
           <Button
+            v-if="!isTermination"
             severity="help"
             icon="pi pi-copy"
             outlined
@@ -14,14 +15,23 @@
             @click="$emit('onClone', salary)"
           />
           <Button
+            v-if="!isTermination"
             icon="pi pi-pencil"
             outlined
             rounded
             @click="$emit('onEdit', salary)"
           />
+          <Button
+            v-if="isTermination"
+            icon="pi pi-trash"
+            severity="danger"
+            outlined
+            rounded
+            @click="onDeleteSalary"
+          />
         </div>
         <p
-          v-if="isActive"
+          v-if="isActive && !isTermination"
           class="absolute -top-9 left-0 whitespace-nowrap text-sm bg-liqui-green p-2 rounded-xl font-bold text-center"
         >
           Aktiver Lohn
@@ -29,7 +39,10 @@
       </div>
     </template>
     <template #content>
-      <div class="flex flex-col gap-2 text-sm">
+      <div
+        v-if="!isTermination"
+        class="flex flex-col gap-2 text-sm"
+      >
         <p>{{ salary.hoursPerMonth }} Arbeitsstunden / Monat</p>
         <div class="flex flex-col">
           <p v-if="withSeparateCosts">
@@ -89,6 +102,14 @@
           />
         </div>
       </div>
+      <div
+        v-else
+        class="flex flex-col gap-2 text-sm"
+      >
+        <Message severity="warn">
+          Austritt
+        </Message>
+      </div>
     </template>
   </Card>
 </template>
@@ -103,8 +124,11 @@ import { SalaryUtils } from '~/utils/models/salary-utils'
 
 const toast = useToast()
 const dialog = useDialog()
+const confirm = useConfirm()
 
-const { updateSalary, listSalaries } = useSalaries()
+const isDeletingSalary = ref(false)
+
+const { updateSalary, listSalaries, deleteSalary } = useSalaries()
 
 const props = defineProps({
   salary: {
@@ -117,12 +141,14 @@ const props = defineProps({
   },
 })
 
-defineEmits<{
+const emits = defineEmits<{
   onEdit: [salary: SalaryResponse]
   onClone: [salary: SalaryResponse]
+  onDeleted: []
 }>()
 
 const withSeparateCosts = ref(props.salary.withSeparateCosts)
+const isTermination = ref(props.salary.isTermination)
 
 watch(withSeparateCosts, (value) => {
   updateSalary(props.salary.employeeID, {
@@ -192,6 +218,48 @@ const onCopyAllCosts = () => {
       if (options?.data) {
         listSalaries(props.salary.employeeID)
       }
+    },
+  })
+}
+
+const onDeleteSalary = () => {
+  confirm.require({
+    header: 'Löschen',
+    message: `Austritt vom "${fromDateFormatted.value}" vollständig löschen?`,
+    icon: 'pi pi-exclamation-triangle',
+    rejectLabel: 'Nein',
+    acceptLabel: 'Ja',
+    accept: () => {
+      if (props.salary) {
+        isDeletingSalary.value = false
+        deleteSalary(props.salary.employeeID, props.salary.id)
+          .then(() => {
+            toast.add({
+              summary: 'Erfolg',
+              detail: `Austritt wurde gelöscht`,
+              severity: 'success',
+              life: Config.TOAST_LIFE_TIME,
+            })
+            emits('onDeleted')
+            listSalaries(props.salary.employeeID)
+          })
+          .catch(() => {
+            toast.add({
+              summary: 'Fehler',
+              detail: `Austritt konnte nicht gelöscht werden`,
+              severity: 'error',
+              life: Config.TOAST_LIFE_TIME_SHORT,
+            })
+            nextTick(() => {
+              scrollToParentBottom('salary-form')
+            })
+          })
+          .finally(() => {
+            isDeletingSalary.value = false
+          })
+      }
+    },
+    reject: () => {
     },
   })
 }

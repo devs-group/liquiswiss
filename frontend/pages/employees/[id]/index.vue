@@ -96,13 +96,24 @@
       </p>
       <hr class="h-0.5 bg-black flex-1">
     </div>
-    <Button
-      class="self-end"
-      :loading="isSubmitting"
-      label="Lohn hinzufügen"
-      icon="pi pi-history"
-      @click="onCreateSalary"
-    />
+    <div class="flex justify-end gap-2">
+      <Button
+        class="self-end"
+        :loading="isSubmitting"
+        label="Lohn hinzufügen"
+        icon="pi pi-history"
+        @click="onCreateSalary"
+      />
+      <Button
+        v-if="!employee?.isTerminated"
+        class="self-end"
+        :loading="isSubmitting"
+        label="Austritt hinzufügen"
+        icon="pi pi-ban"
+        severity="warn"
+        @click="onCreateTermination"
+      />
+    </div>
 
     <Message
       v-if="salaryErrorMessage.length"
@@ -115,7 +126,7 @@
 
     <div
       v-if="salaries?.data.length"
-      class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 2xl:grid-cols-4 gap-4"
+      class="relative grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 2xl:grid-cols-4 gap-4"
     >
       <SalaryCard
         v-for="salary in salaries.data"
@@ -124,6 +135,7 @@
         :is-active="employee?.salaryID == salary.id"
         @on-edit="onUpdateSalary"
         @on-clone="onCloneSalary"
+        @on-deleted="onSalaryDeleted"
       />
     </div>
 
@@ -316,6 +328,20 @@ const onCreateSalary = () => {
   })
 }
 
+const onCreateTermination = () => {
+  dialog.open(SalaryDialog, {
+    data: {
+      employeeID,
+      isTermination: true,
+    },
+    props: {
+      header: 'Austritt hinzufügen',
+      ...ModalConfig,
+    },
+    onClose: onClosedSalaryDialog,
+  })
+}
+
 const onUpdateSalary = (salary: SalaryResponse) => {
   dialog.open(SalaryDialog, {
     data: {
@@ -343,6 +369,11 @@ const onCloneSalary = (salary: SalaryResponse) => {
     },
     onClose: onClosedSalaryDialog,
   })
+}
+
+const onSalaryDeleted = () => {
+  // Simply to reload
+  onClosedSalaryDialog({ data: true, type: 'config-close' })
 }
 
 const onClosedSalaryDialog = (options: DynamicDialogCloseOptions) => {

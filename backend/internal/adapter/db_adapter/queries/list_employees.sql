@@ -13,6 +13,7 @@ SELECT
     rs.to_date,
     COALESCE(rs.is_in_future, false) AS is_in_future,
     COALESCE(rs.with_separate_costs, false) AS with_separate_costs,
+    COALESCE(rs.is_termination, false) AS is_termination,
     rs.id AS salary_id,
     COUNT(*) OVER () AS total_count
 FROM employees e

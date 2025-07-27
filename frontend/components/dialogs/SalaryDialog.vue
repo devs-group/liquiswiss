@@ -4,153 +4,187 @@
     class="grid grid-cols-2 gap-2"
     @submit.prevent
   >
-    <div class="flex flex-col gap-2 col-span-full md:col-span-1">
-      <label
-        class="text-sm font-bold"
-        for="hours-per-month"
-      >Arbeitsstunden pro Monat *</label>
-      <InputText
-        v-bind="hoursPerMonthProps"
-        id="hours-per-month"
-        v-model.number="hoursPerMonth"
-        :class="{ 'p-invalid': errors['hoursPerMonth']?.length }"
-        type="number"
-        min="0"
-        :disabled="isLoading"
-      />
-      <small class="text-liqui-red">{{ errors["hoursPerMonth"] || '&nbsp;' }}</small>
-    </div>
-
-    <div class="flex flex-col gap-2 col-span-full md:col-span-1">
-      <label
-        class="text-sm font-bold"
-        for="vacation-days-per-year"
-      >Urlaubstage pro Jahr *</label>
-      <InputText
-        v-bind="vacationDaysPerYearProps"
-        id="vacation-days-per-year"
-        v-model.number="vacationDaysPerYear"
-        :class="{ 'p-invalid': errors['vacationDaysPerYear']?.length }"
-        type="number"
-        min="0"
-        :disabled="isLoading"
-      />
-      <small class="text-liqui-red">{{ errors["vacationDaysPerYear"] || '&nbsp;' }}</small>
-    </div>
-
-    <div class="flex flex-col gap-2 col-span-full md:col-span-1">
-      <div class="flex items-center gap-2">
+    <template v-if="!isTermination">
+      <div class="flex flex-col gap-2 col-span-full md:col-span-1">
         <label
           class="text-sm font-bold"
-          for="salary-per-month"
-        >Bruttolohn *</label>
-        <i
-          v-tooltip.top="'Empfehlung: Bruttolohn angeben und Lohnkosten separat erfassen'"
-          class="pi pi-info-circle"
+          for="hours-per-month"
+        >Arbeitsstunden pro Monat *</label>
+        <InputText
+          v-bind="hoursPerMonthProps"
+          id="hours-per-month"
+          v-model.number="hoursPerMonth"
+          :class="{ 'p-invalid': errors['hoursPerMonth']?.length }"
+          type="number"
+          min="0"
+          :disabled="isLoading"
         />
+        <small class="text-liqui-red">{{ errors["hoursPerMonth"] || '&nbsp;' }}</small>
       </div>
-      <InputText
-        v-bind="amountProps"
-        id="salary"
-        v-model="amount"
-        :class="{ 'p-invalid': errors['amount']?.length }"
-        type="text"
-        :disabled="isLoading"
-        @input="onParseAmount"
-      />
-      <small class="text-liqui-red">{{ errors["amount"] || '&nbsp;' }}</small>
-    </div>
 
-    <div class="flex flex-col gap-2 col-span-full md:col-span-1">
-      <label
-        class="text-sm font-bold"
-        for="salary-currencyID"
-      >Währung des Lohns *</label>
-      <Select
-        v-bind="currencyIDProps"
-        id="currency-id"
-        v-model="currencyID"
-        empty-message="Keine Währungen gefunden"
-        filter
-        empty-filter-message="Keine Resultate gefunden"
-        :disabled="isLoading"
-        :class="{ 'p-invalid': errors['currencyID']?.length }"
-        :options="currencies"
-        :option-label="getCurrencyLabel"
-        option-value="id"
-        placeholder="Bitte wählen"
-      />
-      <small class="text-liqui-red">{{ errors["currencyID"] || '&nbsp;' }}</small>
-    </div>
-
-    <div class="flex flex-col gap-2 col-span-full md:col-span-1">
-      <div class="flex items-center gap-2">
+      <div class="flex flex-col gap-2 col-span-full md:col-span-1">
         <label
           class="text-sm font-bold"
           for="vacation-days-per-year"
-        >Von *</label>
-        <i
-          v-tooltip.top="'Das &quot;Bis&quot; Datum wird automatisch berechnet'"
-          class="pi pi-info-circle"
+        >Urlaubstage pro Jahr *</label>
+        <InputText
+          v-bind="vacationDaysPerYearProps"
+          id="vacation-days-per-year"
+          v-model.number="vacationDaysPerYear"
+          :class="{ 'p-invalid': errors['vacationDaysPerYear']?.length }"
+          type="number"
+          min="0"
+          :disabled="isLoading"
         />
+        <small class="text-liqui-red">{{ errors["vacationDaysPerYear"] || '&nbsp;' }}</small>
       </div>
-      <DatePicker
-        v-model="fromDate"
-        v-bind="fromDateProps"
-        date-format="dd.mm.yy"
-        show-icon
-        show-button-bar
-        :class="{ 'p-invalid': errors['fromDate']?.length }"
-        :disabled="isLoading"
-      />
-      <small class="text-liqui-red">{{ errors["fromDate"] || '&nbsp;' }}</small>
-    </div>
 
-    <div class="flex flex-col gap-2 col-span-full md:col-span-1">
-      <label
-        class="text-sm font-bold"
-        for="name"
-      >Zahlungszyklus *</label>
-      <Select
-        v-bind="cycleProps"
-        id="cycle"
-        v-model="cycle"
-        empty-message="Keine Zyklen gefunden"
-        :options="SalaryCycleTypeToOptions()"
-        option-label="name"
-        option-value="value"
-        placeholder="Bitte wählen"
-        :class="{ 'p-invalid': errors['cycle']?.length }"
-        type="text"
-      />
-      <small class="text-liqui-red">{{ errors["cycle"] || '&nbsp;' }}</small>
-    </div>
+      <div class="flex flex-col gap-2 col-span-full md:col-span-1">
+        <div class="flex items-center gap-2">
+          <label
+            class="text-sm font-bold"
+            for="salary-per-month"
+          >Bruttolohn *</label>
+          <i
+            v-tooltip.top="'Empfehlung: Bruttolohn angeben und Lohnkosten separat erfassen'"
+            class="pi pi-info-circle"
+          />
+        </div>
+        <InputText
+          v-bind="amountProps"
+          id="salary"
+          v-model="amount"
+          :class="{ 'p-invalid': errors['amount']?.length }"
+          type="text"
+          :disabled="isLoading"
+          @input="onParseAmount"
+        />
+        <small class="text-liqui-red">{{ errors["amount"] || '&nbsp;' }}</small>
+      </div>
 
-    <Message
-      v-if="isClone && SalaryUtils.hasCosts(salary!)"
-      severity="warn"
-      size="small"
-      class="col-span-full"
-    >
-      Achtung: Lohnkosten werden aktuell nicht geklont, diese können nachträglich separat übertragen werden
-    </Message>
-    <Message
-      v-else-if="isCreate"
-      severity="info"
-      size="small"
-      class="col-span-full"
-    >
-      Lohnkosten können separat, direkt nach dem Erstellen hinzugefügt werden
-    </Message>
+      <div class="flex flex-col gap-2 col-span-full md:col-span-1">
+        <label
+          class="text-sm font-bold"
+          for="salary-currencyID"
+        >Währung des Lohns *</label>
+        <Select
+          v-bind="currencyIDProps"
+          id="currency-id"
+          v-model="currencyID"
+          empty-message="Keine Währungen gefunden"
+          filter
+          empty-filter-message="Keine Resultate gefunden"
+          :disabled="isLoading"
+          :class="{ 'p-invalid': errors['currencyID']?.length }"
+          :options="currencies"
+          :option-label="getCurrencyLabel"
+          option-value="id"
+          placeholder="Bitte wählen"
+        />
+        <small class="text-liqui-red">{{ errors["currencyID"] || '&nbsp;' }}</small>
+      </div>
 
-    <Message
-      v-if="!isCreate && salary?.withSeparateCosts"
-      severity="info"
-      size="small"
-      class="col-span-full"
-    >
-      Hinweis: Für diesen Lohn werden Lohnkosten separat geführt
-    </Message>
+      <div class="flex flex-col gap-2 col-span-full md:col-span-1">
+        <div class="flex items-center gap-2">
+          <label
+            class="text-sm font-bold"
+            for="vacation-days-per-year"
+          >Von *</label>
+          <i
+            v-tooltip.top="'Das &quot;Bis&quot; Datum wird automatisch berechnet'"
+            class="pi pi-info-circle"
+          />
+        </div>
+        <DatePicker
+          v-model="fromDate"
+          v-bind="fromDateProps"
+          date-format="dd.mm.yy"
+          show-icon
+          show-button-bar
+          :class="{ 'p-invalid': errors['fromDate']?.length }"
+          :disabled="isLoading"
+        />
+        <small class="text-liqui-red">{{ errors["fromDate"] || '&nbsp;' }}</small>
+      </div>
+
+      <div class="flex flex-col gap-2 col-span-full md:col-span-1">
+        <label
+          class="text-sm font-bold"
+          for="name"
+        >Zahlungszyklus *</label>
+        <Select
+          v-bind="cycleProps"
+          id="cycle"
+          v-model="cycle"
+          empty-message="Keine Zyklen gefunden"
+          :options="SalaryCycleTypeToOptions()"
+          option-label="name"
+          option-value="value"
+          placeholder="Bitte wählen"
+          :class="{ 'p-invalid': errors['cycle']?.length }"
+          type="text"
+        />
+        <small class="text-liqui-red">{{ errors["cycle"] || '&nbsp;' }}</small>
+      </div>
+
+      <Message
+        v-if="isClone && SalaryUtils.hasCosts(salary!)"
+        severity="warn"
+        size="small"
+        class="col-span-full"
+      >
+        Achtung: Lohnkosten werden aktuell nicht geklont, diese können nachträglich separat übertragen werden
+      </Message>
+      <Message
+        v-else-if="isCreate"
+        severity="info"
+        size="small"
+        class="col-span-full"
+      >
+        Lohnkosten können separat, direkt nach dem Erstellen hinzugefügt werden
+      </Message>
+
+      <Message
+        v-if="!isCreate && salary?.withSeparateCosts"
+        severity="info"
+        size="small"
+        class="col-span-full"
+      >
+        Hinweis: Für diesen Lohn werden Lohnkosten separat geführt
+      </Message>
+    </template>
+    <template v-else>
+      <div class="flex flex-col gap-2 col-span-full md:col-span-1">
+        <div class="flex items-center gap-2">
+          <label
+            class="text-sm font-bold"
+            for="vacation-days-per-year"
+          >Von *</label>
+          <i
+            v-tooltip.top="'Empfehlung: Letzter Arbeitstag bzw. NACH letzter Lohnzahlung'"
+            class="pi pi-info-circle"
+          />
+        </div>
+        <DatePicker
+          v-model="fromDate"
+          v-bind="fromDateProps"
+          date-format="dd.mm.yy"
+          show-icon
+          show-button-bar
+          :class="{ 'p-invalid': errors['fromDate']?.length }"
+          :disabled="isLoading"
+        />
+        <small class="text-liqui-red">{{ errors["fromDate"] || '&nbsp;' }}</small>
+      </div>
+
+      <Message
+        severity="warn"
+        size="small"
+        class="col-span-full"
+      >
+        Austritt = Auflösung des Arbeitsverhältnisses
+      </Message>
+    </template>
 
     <hr class="my-4 col-span-full">
 
@@ -207,7 +241,7 @@ import { SalaryCycleTypeToOptions } from '~/utils/enum-helper'
 const dialogRef = inject<ISalaryFormDialog>('dialogRef')!
 
 const { getOrganisationCurrencyID } = useAuth()
-const { createSalary, updateSalary, deleteSalary } = useSalaries()
+const { createSalary, updateSalary, deleteSalary, listSalaries } = useSalaries()
 const { currencies, getCurrencyLabel } = useGlobalData()
 const confirm = useConfirm()
 const toast = useToast()
@@ -216,8 +250,9 @@ const toast = useToast()
 const isLoading = ref(false)
 const employeeID = dialogRef.value.data!.employeeID
 const salary = ref(dialogRef.value.data!.salary)
+const isTermination = ref(dialogRef.value.data?.isTermination)
 const isClone = ref(dialogRef.value.data?.isClone)
-const isCreate = computed(() => isClone.value || !salary.value?.id)
+const isCreate = computed(() => !isTermination.value && (isClone.value || !salary.value?.id))
 const errorMessage = ref('')
 
 const { defineField, errors, handleSubmit, meta } = useForm({
@@ -279,6 +314,30 @@ const onSubmit = handleSubmit((values) => {
         isLoading.value = false
       })
   }
+  else if (isTermination.value) {
+    createSalary(employeeID, {
+      ...values,
+      isTermination: true,
+    })
+      .then(() => {
+        dialogRef.value.close(true)
+        toast.add({
+          summary: 'Erfolg',
+          detail: `Austritt wurde angelegt`,
+          severity: 'success',
+          life: Config.TOAST_LIFE_TIME,
+        })
+      })
+      .catch(() => {
+        errorMessage.value = `Austritt konnte nicht angelegt werden`
+        nextTick(() => {
+          scrollToParentBottom('salary-form')
+        })
+      })
+      .finally(() => {
+        isLoading.value = false
+      })
+  }
   else {
     updateSalary(employeeID, values)
       .then(() => {
@@ -321,6 +380,7 @@ const onDeleteSalary = () => {
               life: Config.TOAST_LIFE_TIME,
             })
             dialogRef.value.close(true)
+            listSalaries(employeeID)
           })
           .catch(() => {
             errorMessage.value = `Lohn konnte nicht gelöscht werden`

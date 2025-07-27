@@ -89,7 +89,6 @@ export default function useSalaries() {
       await $fetch(`/api/employees/salary/${salaryID}`, {
         method: 'DELETE',
       })
-      await listSalaries(employeeID)
     }
     catch {
       return Promise.reject('Fehler beim Löschen des Lohns')
