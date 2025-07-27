@@ -183,7 +183,6 @@
 <script setup lang="ts">
 import { useForm } from 'vee-validate'
 import * as yup from 'yup'
-import type { DynamicDialogCloseOptions } from 'primevue/dynamicdialogoptions'
 import { ModalConfig } from '~/config/dialog-props'
 import { Config } from '~/config/config'
 import type { EmployeeFormData, EmployeeResponse, SalaryResponse } from '~/models/employee'
@@ -376,7 +375,7 @@ const onSalaryDeleted = () => {
   onClosedSalaryDialog({ data: true, type: 'config-close' })
 }
 
-const onClosedSalaryDialog = (options: DynamicDialogCloseOptions) => {
+const onClosedSalaryDialog = () => {
   // Refetch employee to set proper active salary
   getEmployee(employeeID)
     .then((value) => {
