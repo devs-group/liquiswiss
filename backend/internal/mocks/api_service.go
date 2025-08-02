@@ -620,18 +620,18 @@ func (mr *MockIAPIServiceMockRecorder) GetSalary(userID, salaryID any) *gomock.C
 }
 
 // GetSalaryCost mocks base method.
-func (m *MockIAPIService) GetSalaryCost(userID, salaryCostID int64) (*models.SalaryCost, error) {
+func (m *MockIAPIService) GetSalaryCost(userID, salaryCostID int64, skipPrevious bool) (*models.SalaryCost, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "GetSalaryCost", userID, salaryCostID)
+	ret := m.ctrl.Call(m, "GetSalaryCost", userID, salaryCostID, skipPrevious)
 	ret0, _ := ret[0].(*models.SalaryCost)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
 
 // GetSalaryCost indicates an expected call of GetSalaryCost.
-func (mr *MockIAPIServiceMockRecorder) GetSalaryCost(userID, salaryCostID any) *gomock.Call {
+func (mr *MockIAPIServiceMockRecorder) GetSalaryCost(userID, salaryCostID, skipPrevious any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetSalaryCost", reflect.TypeOf((*MockIAPIService)(nil).GetSalaryCost), userID, salaryCostID)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetSalaryCost", reflect.TypeOf((*MockIAPIService)(nil).GetSalaryCost), userID, salaryCostID, skipPrevious)
 }
 
 // GetSalaryCostLabel mocks base method.
@@ -850,9 +850,9 @@ func (mr *MockIAPIServiceMockRecorder) ListSalaryCostLabels(userID, page, limit 
 }
 
 // ListSalaryCosts mocks base method.
-func (m *MockIAPIService) ListSalaryCosts(userID, salaryID, page, limit int64) ([]models.SalaryCost, int64, error) {
+func (m *MockIAPIService) ListSalaryCosts(userID, salaryID, page, limit int64, skipPrevious bool) ([]models.SalaryCost, int64, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "ListSalaryCosts", userID, salaryID, page, limit)
+	ret := m.ctrl.Call(m, "ListSalaryCosts", userID, salaryID, page, limit, skipPrevious)
 	ret0, _ := ret[0].([]models.SalaryCost)
 	ret1, _ := ret[1].(int64)
 	ret2, _ := ret[2].(error)
@@ -860,9 +860,9 @@ func (m *MockIAPIService) ListSalaryCosts(userID, salaryID, page, limit int64) (
 }
 
 // ListSalaryCosts indicates an expected call of ListSalaryCosts.
-func (mr *MockIAPIServiceMockRecorder) ListSalaryCosts(userID, salaryID, page, limit any) *gomock.Call {
+func (mr *MockIAPIServiceMockRecorder) ListSalaryCosts(userID, salaryID, page, limit, skipPrevious any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ListSalaryCosts", reflect.TypeOf((*MockIAPIService)(nil).ListSalaryCosts), userID, salaryID, page, limit)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ListSalaryCosts", reflect.TypeOf((*MockIAPIService)(nil).ListSalaryCosts), userID, salaryID, page, limit, skipPrevious)
 }
 
 // ListTransactions mocks base method.

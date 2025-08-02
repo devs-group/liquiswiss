@@ -8,14 +8,14 @@ import (
 	"time"
 )
 
-func (a *APIService) ListSalaryCosts(userID int64, salaryID int64, page int64, limit int64) ([]models.SalaryCost, int64, error) {
+func (a *APIService) ListSalaryCosts(userID int64, salaryID int64, page int64, limit int64, skipPrevious bool) ([]models.SalaryCost, int64, error) {
 	salaryCosts, totalCount, err := a.dbService.ListSalaryCosts(userID, salaryID, page, limit)
 	if err != nil {
 		return nil, 0, err
 	}
 	for i := range salaryCosts {
 		salaryCost := salaryCosts[i]
-		updatedSalaryCost, err := a.applyCostCalculation(&salaryCost)
+		updatedSalaryCost, err := a.applyCostCalculation(&salaryCost, skipPrevious)
 		if err != nil {
 			return nil, 0, err
 		}
@@ -28,13 +28,13 @@ func (a *APIService) ListSalaryCosts(userID int64, salaryID int64, page int64, l
 	return salaryCosts, totalCount, err
 }
 
-func (a *APIService) GetSalaryCost(userID int64, salaryCostID int64) (*models.SalaryCost, error) {
+func (a *APIService) GetSalaryCost(userID int64, salaryCostID int64, skipPrevious bool) (*models.SalaryCost, error) {
 	salaryCost, err := a.dbService.GetSalaryCost(userID, salaryCostID)
 	if err != nil {
 		logger.Logger.Error(err)
 		return nil, err
 	}
-	salaryCost, err = a.applyCostCalculation(salaryCost)
+	salaryCost, err = a.applyCostCalculation(salaryCost, skipPrevious)
 	if err != nil {
 		return nil, err
 	}
@@ -57,7 +57,7 @@ func (a *APIService) CreateSalaryCost(payload models.CreateSalaryCost, userID in
 		logger.Logger.Error(err)
 		return nil, err
 	}
-	salaryCost, err := a.GetSalaryCost(userID, salaryCostID)
+	salaryCost, err := a.GetSalaryCost(userID, salaryCostID, true)
 	if err != nil {
 		logger.Logger.Error(err)
 		return nil, err
@@ -77,7 +77,7 @@ func (a *APIService) CreateSalaryCost(payload models.CreateSalaryCost, userID in
 }
 
 func (a *APIService) UpdateSalaryCost(payload models.CreateSalaryCost, userID int64, salaryCostID int64) (*models.SalaryCost, error) {
-	_, err := a.GetSalaryCost(userID, salaryCostID)
+	_, err := a.GetSalaryCost(userID, salaryCostID, true)
 	if err != nil {
 		logger.Logger.Error(err)
 		return nil, err
@@ -92,7 +92,7 @@ func (a *APIService) UpdateSalaryCost(payload models.CreateSalaryCost, userID in
 		logger.Logger.Error(err)
 		return nil, err
 	}
-	salaryCost, err := a.GetSalaryCost(userID, salaryCostID)
+	salaryCost, err := a.GetSalaryCost(userID, salaryCostID, true)
 	if err != nil {
 		logger.Logger.Error(err)
 		return nil, err
@@ -112,7 +112,7 @@ func (a *APIService) UpdateSalaryCost(payload models.CreateSalaryCost, userID in
 }
 
 func (a *APIService) DeleteSalaryCost(userID int64, salaryCostID int64) error {
-	existingSalaryCost, err := a.GetSalaryCost(userID, salaryCostID)
+	existingSalaryCost, err := a.GetSalaryCost(userID, salaryCostID, true)
 	if err != nil {
 		logger.Logger.Error(err)
 		return err
@@ -151,7 +151,7 @@ func (a *APIService) CopySalaryCosts(payload models.CopySalaryCosts, userID int6
 	return nil
 }
 
-func (a *APIService) applyCostCalculation(salaryCost *models.SalaryCost) (*models.SalaryCost, error) {
+func (a *APIService) applyCostCalculation(salaryCost *models.SalaryCost, skipPrevious bool) (*models.SalaryCost, error) {
 	costDetails, err := a.dbService.ListSalaryCostDetails(salaryCost.ID)
 	if err != nil {
 		return nil, err
@@ -164,11 +164,15 @@ func (a *APIService) applyCostCalculation(salaryCost *models.SalaryCost) (*model
 	var next *models.SalaryCostDetail
 	for i := range costDetails {
 		costDetail := costDetails[i]
+		if costDetail.IsExtraMonth && skipPrevious {
+			continue
+		}
 		dt, err := time.Parse("2006-01", costDetail.Month)
 		if err != nil {
 			continue
 		}
-		if currDate.Format("2006-01") == costDetail.Month || dt.After(currDate) {
+		currDateAsMonth := currDate.Format("2006-01")
+		if currDateAsMonth == costDetail.Month || dt.After(currDate) {
 			next = &costDetail
 			break
 		}

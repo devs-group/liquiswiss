@@ -35,7 +35,7 @@ func ListSalaryCosts(apiService api_service.IAPIService, c *gin.Context) {
 	}
 
 	// Action
-	salaryCosts, totalCount, err := apiService.ListSalaryCosts(userID, salaryID, page, limit)
+	salaryCosts, totalCount, err := apiService.ListSalaryCosts(userID, salaryID, page, limit, true)
 	if err != nil {
 		c.Status(http.StatusInternalServerError)
 		return
@@ -62,7 +62,7 @@ func GetSalaryCost(apiService api_service.IAPIService, c *gin.Context) {
 	}
 
 	// Action
-	salaryCost, err := apiService.GetSalaryCost(userID, salaryCostID)
+	salaryCost, err := apiService.GetSalaryCost(userID, salaryCostID, true)
 	if err != nil {
 		switch err {
 		case sql.ErrNoRows:

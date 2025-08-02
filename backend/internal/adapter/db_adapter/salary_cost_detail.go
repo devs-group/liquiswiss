@@ -28,6 +28,7 @@ func (d *DatabaseAdapter) ListSalaryCostDetails(salaryCostID int64) ([]models.Sa
 			&salaryCostDetail.Month,
 			&salaryCostDetail.Amount,
 			&salaryCostDetail.Divider,
+			&salaryCostDetail.IsExtraMonth,
 			&salaryCostDetail.CostID,
 		)
 		if err != nil {
@@ -71,6 +72,7 @@ func (d *DatabaseAdapter) CalculateSalaryCostDetails(userID int64, salaryCostID 
 		return nil
 	}
 	nextCostExecution := time.Time(*currCostExecutionPtr)
+	nextCostExecution = addCycle(nextCostExecution, cost.Cycle, -cost.RelativeOffset)
 
 	today := utils.GetTodayAsUTC()
 	maxEndDate := today.AddDate(utils.MaxForecastYears, 0, 0)
@@ -85,7 +87,10 @@ func (d *DatabaseAdapter) CalculateSalaryCostDetails(userID int64, salaryCostID 
 		toDate = time.Date(toDate.Year(), toDate.Month()+1, 0, 23, 59, 59, 999999999, toDate.Location())
 	}
 
+	i := 0
 	for {
+		i++
+
 		// 1. Accumulate backwards
 		validMonths := []time.Time{}
 		hasEnded := false
@@ -105,11 +110,13 @@ func (d *DatabaseAdapter) CalculateSalaryCostDetails(userID int64, salaryCostID 
 		totalAmount := amountPerMonth * uint64(len(validMonths))
 		if totalAmount > 0 {
 			monthStr := nextCostExecution.Format("2006-01")
+			isExtraMonth := i == 1 && cost.Cycle != utils.CycleOnce
 			payload := models.CreateSalaryCostDetail{
-				Month:   monthStr,
-				Amount:  totalAmount,
-				Divider: uint(len(validMonths)),
-				CostID:  cost.ID,
+				Month:        monthStr,
+				Amount:       totalAmount,
+				Divider:      uint(len(validMonths)),
+				IsExtraMonth: isExtraMonth,
+				CostID:       cost.ID,
 			}
 			_, err := d.UpsertSalaryCostDetails(payload)
 			if err != nil {
@@ -144,6 +151,7 @@ func (d *DatabaseAdapter) UpsertSalaryCostDetails(payload models.CreateSalaryCos
 		payload.Month,
 		payload.Amount,
 		payload.Divider,
+		payload.IsExtraMonth,
 		payload.CostID,
 	)
 	if err != nil {

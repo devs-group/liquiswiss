@@ -49,8 +49,8 @@ type IAPIService interface {
 	UpdateSalary(payload models.UpdateSalary, userID int64, salaryID int64) (*models.Salary, error)
 	DeleteSalary(userID int64, salaryID int64) error
 
-	ListSalaryCosts(userID int64, salaryID int64, page int64, limit int64) ([]models.SalaryCost, int64, error)
-	GetSalaryCost(userID int64, salaryCostID int64) (*models.SalaryCost, error)
+	ListSalaryCosts(userID int64, salaryID int64, page int64, limit int64, skipPrevious bool) ([]models.SalaryCost, int64, error)
+	GetSalaryCost(userID int64, salaryCostID int64, skipPrevious bool) (*models.SalaryCost, error)
 	CreateSalaryCost(payload models.CreateSalaryCost, userID int64, salaryID int64) (*models.SalaryCost, error)
 	UpdateSalaryCost(payload models.CreateSalaryCost, userID int64, salaryCostID int64) (*models.SalaryCost, error)
 	DeleteSalaryCost(userID int64, salaryCostID int64) error

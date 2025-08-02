@@ -447,7 +447,7 @@ func (a *APIService) CalculateForecast(userID int64) ([]models.Forecast, error) 
 			// Calculate the separate costs if wanted
 			var salaryCosts []models.SalaryCost
 			if salary.WithSeparateCosts {
-				salaryCosts, _, err = a.ListSalaryCosts(userID, salary.ID, page, limit)
+				salaryCosts, _, err = a.ListSalaryCosts(userID, salary.ID, page, limit, false)
 				if err != nil {
 					return nil, err
 				}
