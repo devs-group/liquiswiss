@@ -39,5 +39,6 @@ type CreateSalaryCost struct {
 }
 
 type CopySalaryCosts struct {
-	IDs []int64 `db:"-" json:"ids" validate:"required"`
+	IDs            []int64 `db:"-" json:"ids" validate:"omitempty,dive,gt=0"`
+	SourceSalaryID *int64  `db:"-" json:"sourceSalaryID" validate:"omitempty,gt=0"`
 }

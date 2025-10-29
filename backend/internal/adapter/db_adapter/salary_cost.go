@@ -256,3 +256,23 @@ func (d *DatabaseAdapter) CopySalaryCosts(payload models.CopySalaryCosts, userID
 
 	return nil
 }
+
+func (d *DatabaseAdapter) DeleteSalaryCostsBySalaryID(salaryID int64) error {
+	query, err := sqlQueries.ReadFile("queries/delete_salary_costs_by_salary.sql")
+	if err != nil {
+		return err
+	}
+
+	stmt, err := d.db.Prepare(string(query))
+	if err != nil {
+		return err
+	}
+	defer stmt.Close()
+
+	_, err = stmt.Exec(salaryID)
+	if err != nil {
+		return err
+	}
+
+	return nil
+}

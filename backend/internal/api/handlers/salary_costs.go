@@ -200,6 +200,11 @@ func CopySalaryCosts(apiService api_service.IAPIService, c *gin.Context) {
 		return
 	}
 
+	if len(payload.IDs) == 0 && payload.SourceSalaryID == nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "Es wurden keine Lohnkosten zum Kopieren ausgewählt"})
+		return
+	}
+
 	// Action
 	err = apiService.CopySalaryCosts(payload, userID, salaryID)
 	if err != nil {

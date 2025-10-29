@@ -514,6 +514,20 @@ func (mr *MockIDatabaseAdapterMockRecorder) DeleteSalaryCostLabel(userID, salary
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "DeleteSalaryCostLabel", reflect.TypeOf((*MockIDatabaseAdapter)(nil).DeleteSalaryCostLabel), userID, salaryCostLabelID)
 }
 
+// DeleteSalaryCostsBySalaryID mocks base method.
+func (m *MockIDatabaseAdapter) DeleteSalaryCostsBySalaryID(salaryID int64) error {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "DeleteSalaryCostsBySalaryID", salaryID)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// DeleteSalaryCostsBySalaryID indicates an expected call of DeleteSalaryCostsBySalaryID.
+func (mr *MockIDatabaseAdapterMockRecorder) DeleteSalaryCostsBySalaryID(salaryID any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "DeleteSalaryCostsBySalaryID", reflect.TypeOf((*MockIDatabaseAdapter)(nil).DeleteSalaryCostsBySalaryID), salaryID)
+}
+
 // DeleteTransaction mocks base method.
 func (m *MockIDatabaseAdapter) DeleteTransaction(userID, transactionID int64) error {
 	m.ctrl.T.Helper()

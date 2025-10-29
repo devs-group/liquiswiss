@@ -30,9 +30,9 @@ export const DateToEuropeZurichDate = (date: string | Date) => {
 export const DateToApiFormat = (date: string | Date) => {
   const dateToFormat = date instanceof Date ? date : new Date(date)
 
-  const year = dateToFormat.getUTCFullYear() // Use UTC methods to avoid time zone shift
-  const month = (dateToFormat.getUTCMonth() + 1).toString().padStart(2, '0') // Ensure two digits for the month
-  const day = dateToFormat.getUTCDate().toString().padStart(2, '0') // Ensure two digits for the day
+  const year = dateToFormat.getFullYear()
+  const month = (dateToFormat.getMonth() + 1).toString().padStart(2, '0')
+  const day = dateToFormat.getDate().toString().padStart(2, '0')
 
   return `${year}-${month}-${day}`
 }

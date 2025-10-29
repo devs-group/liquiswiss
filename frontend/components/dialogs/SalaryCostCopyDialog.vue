@@ -152,6 +152,9 @@ const onCopy = () => {
         life: Config.TOAST_LIFE_TIME,
       })
     })
+    .finally(() => {
+      isCopying.value = false
+    })
 }
 
 const onSalaryCostSelection = (salaryCost: SalaryCostResponse, isSelected: boolean) => {

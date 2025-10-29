@@ -46,8 +46,15 @@
         Noch keine Lohnkosten vorhanden
       </p>
       <div
-        class="flex col-span-full justify-end"
+        class="flex flex-wrap col-span-full justify-end gap-2"
       >
+        <Button
+          v-if="withSeparateCosts"
+          icon="pi pi-users"
+          severity="help"
+          label="Von anderem Mitarbeiter kopieren"
+          @click="onCopyFromOtherEmployee"
+        />
         <Button
           icon="pi pi-plus"
           label="Lohnkosten hinzufügen"
@@ -78,6 +85,7 @@ import type { SalaryCostResponse } from '~/models/employee'
 import SalaryCostCard from '~/components/SalaryCostCard.vue'
 import { ModalConfig } from '~/config/dialog-props'
 import SalaryCostDialog from '~/components/dialogs/SalaryCostDialog.vue'
+import SalaryCostCopyOtherDialog from '~/components/dialogs/SalaryCostCopyOtherDialog.vue'
 import { SalaryCostUtils } from '~/utils/models/salary-cost-utils'
 import {
   type EmployeeCostOverviewTypeFilterToStringDefinition,
@@ -101,6 +109,7 @@ const costsErrorMessage = ref('')
 const costs = ref<SalaryCostResponse[]>([])
 const search = ref('')
 const filterType = ref<EmployeeCostOverviewTypeFilterToStringDefinition>(EmployeeCostOverviewType.All)
+const withSeparateCosts = computed(() => salary.value?.withSeparateCosts ?? false)
 
 const filteredSalaryCosts = computed(() => {
   return costs.value
@@ -149,6 +158,24 @@ const onCreateCost = () => {
     onClose: () => {
       requiresRefresh.value = true
       onListSalaryCosts()
+    },
+  })
+}
+
+const onCopyFromOtherEmployee = () => {
+  dialog.open(SalaryCostCopyOtherDialog, {
+    props: {
+      header: 'Lohnkosten kopieren',
+      ...ModalConfig,
+    },
+    data: {
+      salary: salary.value,
+    },
+    onClose: (copied?: boolean) => {
+      if (copied) {
+        requiresRefresh.value = true
+        onListSalaryCosts()
+      }
     },
   })
 }

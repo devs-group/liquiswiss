@@ -142,6 +142,34 @@ func (a *APIService) DeleteSalaryCost(userID int64, salaryCostID int64) error {
 }
 
 func (a *APIService) CopySalaryCosts(payload models.CopySalaryCosts, userID int64, salaryID int64) error {
+	if payload.SourceSalaryID != nil && len(payload.IDs) == 0 {
+		sourceCosts, _, err := a.ListSalaryCosts(userID, *payload.SourceSalaryID, 1, 1000, true)
+		if err != nil {
+			logger.Logger.Error(err)
+			return err
+		}
+		if len(sourceCosts) == 0 {
+			return fmt.Errorf("keine Lohnkosten zum Kopieren gefunden")
+		}
+		ids := make([]int64, 0, len(sourceCosts))
+		for _, cost := range sourceCosts {
+			ids = append(ids, cost.ID)
+		}
+		payload.IDs = ids
+	}
+
+	if len(payload.IDs) == 0 {
+		return fmt.Errorf("keine Lohnkosten zum Kopieren gefunden")
+	}
+
+	if payload.SourceSalaryID != nil {
+		err := a.dbService.DeleteSalaryCostsBySalaryID(salaryID)
+		if err != nil {
+			logger.Logger.Error(err)
+			return err
+		}
+	}
+
 	err := a.dbService.CopySalaryCosts(payload, userID, salaryID)
 	if err != nil {
 		logger.Logger.Error(err)

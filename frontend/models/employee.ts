@@ -96,6 +96,7 @@ export interface SalaryCostFormData {
 
 export interface SalaryCostCopyFormData {
   ids: number[]
+  sourceSalaryID?: number
 }
 
 export interface SalaryPUTFormData {

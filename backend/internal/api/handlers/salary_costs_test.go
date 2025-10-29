@@ -1746,6 +1746,91 @@ func TestSalaryCostPersistsAfterSalaryTransition(t *testing.T) {
 	assert.NoError(t, err)
 }
 
+func TestCopySalaryCostsAcrossEmployees(t *testing.T) {
+	conn := SetupTestEnvironment(t)
+	defer conn.Close()
+
+	dbAdapter := db_adapter.NewDatabaseAdapter(conn)
+	sendgridService := sendgrid_adapter.NewSendgridAdapter("")
+	apiService := api_service.NewAPIService(dbAdapter, sendgridService)
+
+	currency, err := CreateCurrency(apiService, "CHF", "Swiss Franc", "de-CH")
+	assert.NoError(t, err)
+
+	user, _, err := CreateUserWithOrganisation(
+		apiService, dbAdapter, "copy-source@liquiswiss.com", "test", "Copy Org",
+	)
+	assert.NoError(t, err)
+
+	sourceEmployee, err := CreateEmployee(apiService, user.ID, "Source Employee")
+	assert.NoError(t, err)
+
+	targetEmployee, err := CreateEmployee(apiService, user.ID, "Target Employee")
+	assert.NoError(t, err)
+
+	sourceSalary, err := apiService.CreateSalary(models.CreateSalary{
+		HoursPerMonth:       160,
+		Amount:              7000_00,
+		Cycle:               "monthly",
+		CurrencyID:          *currency.ID,
+		VacationDaysPerYear: 25,
+		FromDate:            "2025-01-01",
+		ToDate:              nil,
+		WithSeparateCosts:   true,
+	}, user.ID, sourceEmployee.ID)
+	assert.NoError(t, err)
+
+	targetSalary, err := apiService.CreateSalary(models.CreateSalary{
+		HoursPerMonth:       160,
+		Amount:              6500_00,
+		Cycle:               "monthly",
+		CurrencyID:          *currency.ID,
+		VacationDaysPerYear: 25,
+		FromDate:            "2025-03-01",
+		ToDate:              nil,
+		WithSeparateCosts:   true,
+	}, user.ID, targetEmployee.ID)
+	assert.NoError(t, err)
+
+	// Existing cost on target salary should be replaced
+	originalTargetCost, err := apiService.CreateSalaryCost(models.CreateSalaryCost{
+		Cycle:            "monthly",
+		AmountType:       "fixed",
+		Amount:           999_00,
+		DistributionType: "employee",
+		RelativeOffset:   1,
+		TargetDate:       nil,
+		LabelID:          nil,
+	}, user.ID, targetSalary.ID)
+	assert.NoError(t, err)
+
+	createdCost, err := apiService.CreateSalaryCost(models.CreateSalaryCost{
+		Cycle:            "monthly",
+		AmountType:       "fixed",
+		Amount:           250_00,
+		DistributionType: "employee",
+		RelativeOffset:   2,
+		TargetDate:       nil,
+		LabelID:          nil,
+	}, user.ID, sourceSalary.ID)
+	assert.NoError(t, err)
+
+	sourceSalaryID := sourceSalary.ID
+	err = apiService.CopySalaryCosts(models.CopySalaryCosts{
+		SourceSalaryID: &sourceSalaryID,
+	}, user.ID, targetSalary.ID)
+	assert.NoError(t, err)
+
+	copiedCosts, _, err := apiService.ListSalaryCosts(user.ID, targetSalary.ID, 1, 10, true)
+	assert.NoError(t, err)
+	assert.Len(t, copiedCosts, 1)
+	assert.NotEqual(t, createdCost.ID, copiedCosts[0].ID)
+	assert.EqualValues(t, createdCost.Amount, copiedCosts[0].Amount)
+	assert.Equal(t, createdCost.Cycle, copiedCosts[0].Cycle)
+	assert.Equal(t, createdCost.RelativeOffset, copiedCosts[0].RelativeOffset)
+	assert.NotEqual(t, originalTargetCost.ID, copiedCosts[0].ID)
+}
+
 func TestMonthlySalaryInBetweenMonthWithoutToDate(t *testing.T) {
 	conn := SetupTestEnvironment(t)
 	defer conn.Close()
