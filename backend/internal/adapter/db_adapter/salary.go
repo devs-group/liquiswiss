@@ -126,6 +126,14 @@ func (d *DatabaseAdapter) CreateSalary(payload models.CreateSalary, userID int64
 		return 0, 0, 0, err
 	}
 
+	if payload.IsTermination {
+		payload.HoursPerMonth = 0
+		payload.Amount = 0
+		payload.VacationDaysPerYear = 0
+		payload.WithSeparateCosts = false
+		payload.ToDate = nil
+	}
+
 	var toDate sql.NullTime
 	if payload.ToDate != nil {
 		parsedToDate, err := time.Parse(utils.InternalDateFormat, *payload.ToDate)
@@ -138,7 +146,9 @@ func (d *DatabaseAdapter) CreateSalary(payload models.CreateSalary, userID int64
 	}
 
 	// Activate separate costs by default
-	payload.WithSeparateCosts = true
+	if !payload.IsTermination {
+		payload.WithSeparateCosts = true
+	}
 
 	res, err := stmt.Exec(
 		employeeID,

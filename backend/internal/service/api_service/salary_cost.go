@@ -1,6 +1,7 @@
 package api_service
 
 import (
+	"fmt"
 	"liquiswiss/pkg/logger"
 	"liquiswiss/pkg/models"
 	"liquiswiss/pkg/types"
@@ -47,6 +48,15 @@ func (a *APIService) GetSalaryCost(userID int64, salaryCostID int64, skipPreviou
 }
 
 func (a *APIService) CreateSalaryCost(payload models.CreateSalaryCost, userID int64, salaryID int64) (*models.SalaryCost, error) {
+	salary, err := a.dbService.GetSalary(userID, salaryID)
+	if err != nil {
+		logger.Logger.Error(err)
+		return nil, err
+	}
+	if salary.IsTermination {
+		return nil, fmt.Errorf("cannot attach costs to a termination salary")
+	}
+
 	salaryCostID, err := a.dbService.CreateSalaryCost(payload, userID, salaryID)
 	if err != nil {
 		logger.Logger.Error(err)
@@ -161,33 +171,69 @@ func (a *APIService) applyCostCalculation(salaryCost *models.SalaryCost, skipPre
 
 	currDate := time.Time(salaryCost.DBDate)
 
-	var next *models.SalaryCostDetail
+	var nextDetail *models.SalaryCostDetail
+	var previousDetail *models.SalaryCostDetail
+	var lastValidDetail *models.SalaryCostDetail
+	var secondLastValidDetail *models.SalaryCostDetail
+
 	for i := range costDetails {
-		costDetail := costDetails[i]
-		if costDetail.IsExtraMonth && skipPrevious {
+		detail := &costDetails[i]
+		if detail.IsExtraMonth && skipPrevious {
 			continue
 		}
-		dt, err := time.Parse("2006-01", costDetail.Month)
+		dt, err := time.Parse("2006-01", detail.Month)
 		if err != nil {
 			continue
 		}
 		currDateAsMonth := currDate.Format("2006-01")
-		if currDateAsMonth == costDetail.Month || dt.After(currDate) {
-			next = &costDetail
+		if currDateAsMonth == detail.Month || dt.After(currDate) {
+			// Found the first future (or current) detail.
+			if !skipPrevious && lastValidDetail != nil {
+				// When including previous executions, surface the most recent
+				// already accounted cost instead of jumping ahead.
+				nextDetail = lastValidDetail
+				previousDetail = secondLastValidDetail
+			} else {
+				nextDetail = detail
+				previousDetail = lastValidDetail
+			}
 			break
+		}
+		// Track history to be able to surface the latest executed cost when requested.
+		secondLastValidDetail = lastValidDetail
+		lastValidDetail = detail
+	}
+
+	if nextDetail == nil {
+		// We have not found any detail in the future.
+		if !skipPrevious && lastValidDetail != nil {
+			// Use the most recent executed cost.
+			nextDetail = lastValidDetail
+			previousDetail = secondLastValidDetail
+		}
+		// If skipPrevious is true we intentionally keep nextDetail nil here.
+	}
+
+	if previousDetail != nil {
+		prevDt, err := time.Parse("2006-01", previousDetail.Month)
+		if err == nil {
+			prevAsDate := types.AsDate(prevDt)
+			salaryCost.CalculatedPreviousExecutionDate = &prevAsDate
 		}
 	}
 
-	if next != nil {
-		dt, err := time.Parse("2006-01", next.Month)
+	if nextDetail != nil {
+		dt, err := time.Parse("2006-01", nextDetail.Month)
 		if err != nil {
 			return nil, err
 		}
 		dtAsDate := types.AsDate(dt)
-		//salaryCost.CalculatedPreviousExecutionDate = ??
 		salaryCost.CalculatedNextExecutionDate = &dtAsDate
-		salaryCost.CalculatedNextCost = next.Amount
-		salaryCost.CalculatedAmount = next.Amount / uint64(next.Divider)
+		salaryCost.CalculatedNextCost = nextDetail.Amount
+		if nextDetail.Divider > 0 {
+			salaryCost.CalculatedAmount = nextDetail.Amount / uint64(nextDetail.Divider)
+		}
 	}
+
 	return salaryCost, nil
 }

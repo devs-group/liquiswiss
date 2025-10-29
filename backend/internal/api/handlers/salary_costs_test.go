@@ -1287,6 +1287,465 @@ func TestLongOffsetScenariosAtTheEndOfMonth(t *testing.T) {
 	}
 }
 
+func TestSalaryCostWithPastPaymentsRelativeOffset(t *testing.T) {
+	conn := SetupTestEnvironment(t)
+	defer conn.Close()
+
+	dbAdapter := db_adapter.NewDatabaseAdapter(conn)
+	sendgridService := sendgrid_adapter.NewSendgridAdapter("")
+	apiService := api_service.NewAPIService(dbAdapter, sendgridService)
+
+	currency, err := CreateCurrency(apiService, "CHF", "Swiss Franc", "de-CH")
+	assert.NoError(t, err)
+
+	user, _, err := CreateUserWithOrganisation(
+		apiService, dbAdapter, "past-offset@liquiswiss.com", "test", "Past Offset Org",
+	)
+	assert.NoError(t, err)
+
+	employee, err := CreateEmployee(apiService, user.ID, "Past Offset Employee")
+	assert.NoError(t, err)
+
+	salary, err := apiService.CreateSalary(models.CreateSalary{
+		HoursPerMonth:       160,
+		Amount:              10000_00,
+		Cycle:               "monthly",
+		CurrencyID:          *currency.ID,
+		VacationDaysPerYear: 25,
+		FromDate:            "2025-01-26",
+		ToDate:              nil,
+		WithSeparateCosts:   true,
+	}, user.ID, employee.ID)
+	assert.NoError(t, err)
+
+	err = SetDatabaseTime(conn, "2026-03-15")
+	assert.NoError(t, err)
+
+	parsedDatabaseTime, err := time.Parse(utils.InternalDateFormat, "2026-03-15")
+	assert.NoError(t, err)
+	utils.DefaultClock.SetFixedTime(&parsedDatabaseTime)
+	defer func() {
+		utils.DefaultClock.SetFixedTime(nil)
+	}()
+
+	createPayload := models.CreateSalaryCost{
+		Cycle:            "monthly",
+		AmountType:       "fixed",
+		Amount:           450_00,
+		DistributionType: "employee",
+		RelativeOffset:   6,
+		TargetDate:       nil,
+		LabelID:          nil,
+	}
+
+	salaryCost, err := apiService.CreateSalaryCost(createPayload, user.ID, salary.ID)
+	assert.NoError(t, err)
+
+	assert.GreaterOrEqual(t, len(salaryCost.CalculatedCostDetails), 2)
+	firstDetail := salaryCost.CalculatedCostDetails[0]
+	assert.Equal(t, "2026-03", firstDetail.Month)
+	assert.True(t, firstDetail.IsExtraMonth)
+	assert.Equal(t, uint(6), firstDetail.Divider)
+	assert.Equal(t, int64(450_00*6), int64(firstDetail.Amount))
+
+	secondDetail := salaryCost.CalculatedCostDetails[1]
+	assert.Equal(t, "2026-09", secondDetail.Month)
+	assert.False(t, secondDetail.IsExtraMonth)
+	assert.Equal(t, uint(6), secondDetail.Divider)
+	assert.Equal(t, int64(450_00*6), int64(secondDetail.Amount))
+
+	assert.Equal(t, int64(450_00), int64(salaryCost.CalculatedAmount))
+	assert.Equal(t, int64(450_00*6), int64(salaryCost.CalculatedNextCost))
+	assert.Equal(t, "2026-09-01", salaryCost.CalculatedNextExecutionDate.ToFormattedTime(utils.InternalDateFormat))
+
+	// When including past salary payments, the next execution should point to the current block.
+	costIncludingPast, err := apiService.GetSalaryCost(user.ID, salaryCost.ID, false)
+	assert.NoError(t, err)
+	assert.Equal(t, "2026-03-01", costIncludingPast.CalculatedNextExecutionDate.ToFormattedTime(utils.InternalDateFormat))
+	assert.Equal(t, int64(450_00), int64(costIncludingPast.CalculatedAmount))
+	assert.Equal(t, int64(450_00*6), int64(costIncludingPast.CalculatedNextCost))
+	assert.True(t, costIncludingPast.CalculatedCostDetails[0].IsExtraMonth)
+
+	listWithPast, _, err := apiService.ListSalaryCosts(user.ID, salary.ID, 1, 10, false)
+	assert.NoError(t, err)
+	if assert.Len(t, listWithPast, 1) {
+		assert.Equal(t, "2026-03-01", listWithPast[0].CalculatedNextExecutionDate.ToFormattedTime(utils.InternalDateFormat))
+		assert.Equal(t, int64(450_00*6), int64(listWithPast[0].CalculatedNextCost))
+	}
+
+	err = apiService.DeleteSalaryCost(user.ID, salaryCost.ID)
+	assert.NoError(t, err)
+}
+
+func TestSalaryCostWithPastPaymentsAndTargetDate(t *testing.T) {
+	conn := SetupTestEnvironment(t)
+	defer conn.Close()
+
+	dbAdapter := db_adapter.NewDatabaseAdapter(conn)
+	sendgridService := sendgrid_adapter.NewSendgridAdapter("")
+	apiService := api_service.NewAPIService(dbAdapter, sendgridService)
+
+	currency, err := CreateCurrency(apiService, "CHF", "Swiss Franc", "de-CH")
+	assert.NoError(t, err)
+
+	user, _, err := CreateUserWithOrganisation(
+		apiService, dbAdapter, "target-date@liquiswiss.com", "test", "Target Date Org",
+	)
+	assert.NoError(t, err)
+
+	employee, err := CreateEmployee(apiService, user.ID, "Target Date Employee")
+	assert.NoError(t, err)
+
+	salary, err := apiService.CreateSalary(models.CreateSalary{
+		HoursPerMonth:       160,
+		Amount:              10000_00,
+		Cycle:               "monthly",
+		CurrencyID:          *currency.ID,
+		VacationDaysPerYear: 25,
+		FromDate:            "2025-01-26",
+		ToDate:              nil,
+		WithSeparateCosts:   true,
+	}, user.ID, employee.ID)
+	assert.NoError(t, err)
+
+	err = SetDatabaseTime(conn, "2026-05-20")
+	assert.NoError(t, err)
+
+	parsedDatabaseTime, err := time.Parse(utils.InternalDateFormat, "2026-05-20")
+	assert.NoError(t, err)
+	utils.DefaultClock.SetFixedTime(&parsedDatabaseTime)
+	defer func() {
+		utils.DefaultClock.SetFixedTime(nil)
+	}()
+
+	createPayload := models.CreateSalaryCost{
+		Cycle:            "monthly",
+		AmountType:       "fixed",
+		Amount:           300_00,
+		DistributionType: "employer",
+		RelativeOffset:   12,
+		TargetDate:       utils.StringAsPointer("2025-01-26"),
+		LabelID:          nil,
+	}
+
+	salaryCost, err := apiService.CreateSalaryCost(createPayload, user.ID, salary.ID)
+	assert.NoError(t, err)
+
+	assert.GreaterOrEqual(t, len(salaryCost.CalculatedCostDetails), 2)
+	firstDetail := salaryCost.CalculatedCostDetails[0]
+	assert.Equal(t, "2026-01", firstDetail.Month)
+	assert.True(t, firstDetail.IsExtraMonth)
+	assert.Equal(t, uint(12), firstDetail.Divider)
+	assert.Equal(t, int64(300_00*12), int64(firstDetail.Amount))
+
+	assert.Equal(t, int64(300_00), int64(salaryCost.CalculatedAmount))
+	assert.Equal(t, int64(300_00*12), int64(salaryCost.CalculatedNextCost))
+	assert.Equal(t, "2027-01-01", salaryCost.CalculatedNextExecutionDate.ToFormattedTime(utils.InternalDateFormat))
+
+	costIncludingPast, err := apiService.GetSalaryCost(user.ID, salaryCost.ID, false)
+	assert.NoError(t, err)
+	assert.Equal(t, "2026-01-01", costIncludingPast.CalculatedNextExecutionDate.ToFormattedTime(utils.InternalDateFormat))
+	assert.Equal(t, int64(300_00*12), int64(costIncludingPast.CalculatedNextCost))
+
+	listWithPast, _, err := apiService.ListSalaryCosts(user.ID, salary.ID, 1, 10, false)
+	assert.NoError(t, err)
+	if assert.Len(t, listWithPast, 1) {
+		assert.Equal(t, "2026-01-01", listWithPast[0].CalculatedNextExecutionDate.ToFormattedTime(utils.InternalDateFormat))
+		assert.Equal(t, int64(300_00*12), int64(listWithPast[0].CalculatedNextCost))
+	}
+
+	err = apiService.DeleteSalaryCost(user.ID, salaryCost.ID)
+	assert.NoError(t, err)
+}
+
+func TestSalaryCostTargetDateLeapYearMonthly(t *testing.T) {
+	conn := SetupTestEnvironment(t)
+	defer conn.Close()
+
+	dbAdapter := db_adapter.NewDatabaseAdapter(conn)
+	sendgridService := sendgrid_adapter.NewSendgridAdapter("")
+	apiService := api_service.NewAPIService(dbAdapter, sendgridService)
+
+	currency, err := CreateCurrency(apiService, "CHF", "Swiss Franc", "de-CH")
+	assert.NoError(t, err)
+
+	user, _, err := CreateUserWithOrganisation(
+		apiService, dbAdapter, "leap-monthly@liquiswiss.com", "test", "Leap Monthly Org",
+	)
+	assert.NoError(t, err)
+
+	employee, err := CreateEmployee(apiService, user.ID, "Leap Monthly Employee")
+	assert.NoError(t, err)
+
+	salary, err := apiService.CreateSalary(models.CreateSalary{
+		HoursPerMonth:       160,
+		Amount:              10000_00,
+		Cycle:               "monthly",
+		CurrencyID:          *currency.ID,
+		VacationDaysPerYear: 25,
+		FromDate:            "2024-01-31",
+		ToDate:              nil,
+		WithSeparateCosts:   true,
+	}, user.ID, employee.ID)
+	assert.NoError(t, err)
+
+	err = SetDatabaseTime(conn, "2024-03-05")
+	assert.NoError(t, err)
+
+	parsedDatabaseTime, err := time.Parse(utils.InternalDateFormat, "2024-03-05")
+	assert.NoError(t, err)
+	utils.DefaultClock.SetFixedTime(&parsedDatabaseTime)
+	defer func() {
+		utils.DefaultClock.SetFixedTime(nil)
+	}()
+
+	createPayload := models.CreateSalaryCost{
+		Cycle:            "monthly",
+		AmountType:       "fixed",
+		Amount:           275_00,
+		DistributionType: "employer",
+		RelativeOffset:   1,
+		TargetDate:       utils.StringAsPointer("2024-02-29"),
+		LabelID:          nil,
+	}
+
+	salaryCost, err := apiService.CreateSalaryCost(createPayload, user.ID, salary.ID)
+	assert.NoError(t, err)
+
+	if assert.NotNil(t, salaryCost.CalculatedNextExecutionDate) {
+		assert.Equal(t, "2024-03-01", salaryCost.CalculatedNextExecutionDate.ToFormattedTime(utils.InternalDateFormat))
+	}
+	assert.Equal(t, int64(275_00), int64(salaryCost.CalculatedAmount))
+	assert.Equal(t, int64(275_00), int64(salaryCost.CalculatedNextCost))
+
+	assert.GreaterOrEqual(t, len(salaryCost.CalculatedCostDetails), 3)
+	firstDetail := salaryCost.CalculatedCostDetails[0]
+	assert.Equal(t, "2024-02", firstDetail.Month)
+	assert.True(t, firstDetail.IsExtraMonth)
+	assert.Equal(t, uint(1), firstDetail.Divider)
+	assert.Equal(t, int64(275_00), int64(firstDetail.Amount))
+
+	foundFebNonLeap := false
+	for _, detail := range salaryCost.CalculatedCostDetails {
+		if detail.Month == "2025-02" {
+			foundFebNonLeap = true
+			assert.Equal(t, uint(1), detail.Divider)
+			assert.Equal(t, int64(275_00), int64(detail.Amount))
+			break
+		}
+	}
+	assert.True(t, foundFebNonLeap, "expected a detail for February in the non-leap year 2025")
+
+	costIncludingPast, err := apiService.GetSalaryCost(user.ID, salaryCost.ID, false)
+	assert.NoError(t, err)
+	if assert.NotNil(t, costIncludingPast.CalculatedNextExecutionDate) {
+		assert.Equal(t, "2024-02-01", costIncludingPast.CalculatedNextExecutionDate.ToFormattedTime(utils.InternalDateFormat))
+	}
+	assert.Equal(t, int64(275_00), int64(costIncludingPast.CalculatedAmount))
+	assert.Equal(t, int64(275_00), int64(costIncludingPast.CalculatedNextCost))
+
+	err = apiService.DeleteSalaryCost(user.ID, salaryCost.ID)
+	assert.NoError(t, err)
+}
+
+func TestSalaryCostTargetDateLeapYearAnnualOffset(t *testing.T) {
+	conn := SetupTestEnvironment(t)
+	defer conn.Close()
+
+	dbAdapter := db_adapter.NewDatabaseAdapter(conn)
+	sendgridService := sendgrid_adapter.NewSendgridAdapter("")
+	apiService := api_service.NewAPIService(dbAdapter, sendgridService)
+
+	currency, err := CreateCurrency(apiService, "CHF", "Swiss Franc", "de-CH")
+	assert.NoError(t, err)
+
+	user, _, err := CreateUserWithOrganisation(
+		apiService, dbAdapter, "leap-annual@liquiswiss.com", "test", "Leap Annual Org",
+	)
+	assert.NoError(t, err)
+
+	employee, err := CreateEmployee(apiService, user.ID, "Leap Annual Employee")
+	assert.NoError(t, err)
+
+	salary, err := apiService.CreateSalary(models.CreateSalary{
+		HoursPerMonth:       160,
+		Amount:              10000_00,
+		Cycle:               "monthly",
+		CurrencyID:          *currency.ID,
+		VacationDaysPerYear: 25,
+		FromDate:            "2024-01-31",
+		ToDate:              nil,
+		WithSeparateCosts:   true,
+	}, user.ID, employee.ID)
+	assert.NoError(t, err)
+
+	err = SetDatabaseTime(conn, "2025-03-10")
+	assert.NoError(t, err)
+
+	parsedDatabaseTime, err := time.Parse(utils.InternalDateFormat, "2025-03-10")
+	assert.NoError(t, err)
+	utils.DefaultClock.SetFixedTime(&parsedDatabaseTime)
+	defer func() {
+		utils.DefaultClock.SetFixedTime(nil)
+	}()
+
+	createPayload := models.CreateSalaryCost{
+		Cycle:            "monthly",
+		AmountType:       "fixed",
+		Amount:           3600_00,
+		DistributionType: "employer",
+		RelativeOffset:   12,
+		TargetDate:       utils.StringAsPointer("2024-02-29"),
+		LabelID:          nil,
+	}
+
+	salaryCost, err := apiService.CreateSalaryCost(createPayload, user.ID, salary.ID)
+	assert.NoError(t, err)
+
+	assert.GreaterOrEqual(t, len(salaryCost.CalculatedCostDetails), 2)
+	firstDetail := salaryCost.CalculatedCostDetails[0]
+	assert.Equal(t, "2025-02", firstDetail.Month)
+	assert.True(t, firstDetail.IsExtraMonth)
+	assert.Equal(t, uint(12), firstDetail.Divider)
+	assert.Equal(t, int64(3600_00*12), int64(firstDetail.Amount))
+
+	secondDetail := salaryCost.CalculatedCostDetails[1]
+	assert.Equal(t, "2026-02", secondDetail.Month)
+	assert.False(t, secondDetail.IsExtraMonth)
+	assert.Equal(t, uint(12), secondDetail.Divider)
+
+	if assert.NotNil(t, salaryCost.CalculatedNextExecutionDate) {
+		assert.Equal(t, "2026-02-01", salaryCost.CalculatedNextExecutionDate.ToFormattedTime(utils.InternalDateFormat))
+	}
+	assert.Equal(t, int64(3600_00), int64(salaryCost.CalculatedAmount))
+	assert.Equal(t, int64(3600_00*12), int64(salaryCost.CalculatedNextCost))
+
+	costIncludingPast, err := apiService.GetSalaryCost(user.ID, salaryCost.ID, false)
+	assert.NoError(t, err)
+	if assert.NotNil(t, costIncludingPast.CalculatedNextExecutionDate) {
+		assert.Equal(t, "2025-02-01", costIncludingPast.CalculatedNextExecutionDate.ToFormattedTime(utils.InternalDateFormat))
+	}
+	assert.Equal(t, int64(3600_00), int64(costIncludingPast.CalculatedAmount))
+	assert.Equal(t, int64(3600_00*12), int64(costIncludingPast.CalculatedNextCost))
+
+	err = apiService.DeleteSalaryCost(user.ID, salaryCost.ID)
+	assert.NoError(t, err)
+}
+
+func TestSalaryCostPersistsAfterSalaryTransition(t *testing.T) {
+	conn := SetupTestEnvironment(t)
+	defer conn.Close()
+
+	dbAdapter := db_adapter.NewDatabaseAdapter(conn)
+	sendgridService := sendgrid_adapter.NewSendgridAdapter("")
+	apiService := api_service.NewAPIService(dbAdapter, sendgridService)
+
+	currency, err := CreateCurrency(apiService, "CHF", "Swiss Franc", "de-CH")
+	assert.NoError(t, err)
+
+	user, _, err := CreateUserWithOrganisation(
+		apiService, dbAdapter, "transition@liquiswiss.com", "test", "Transition Org",
+	)
+	assert.NoError(t, err)
+
+	employee, err := CreateEmployee(apiService, user.ID, "Transition Employee")
+	assert.NoError(t, err)
+
+	err = SetDatabaseTime(conn, "2025-03-15")
+	assert.NoError(t, err)
+
+	parsedDatabaseTime, err := time.Parse(utils.InternalDateFormat, "2025-03-15")
+	assert.NoError(t, err)
+	utils.DefaultClock.SetFixedTime(&parsedDatabaseTime)
+
+	salary1, err := apiService.CreateSalary(models.CreateSalary{
+		HoursPerMonth:       160,
+		Amount:              9000_00,
+		Cycle:               "monthly",
+		CurrencyID:          *currency.ID,
+		VacationDaysPerYear: 25,
+		FromDate:            "2025-01-26",
+		ToDate:              utils.StringAsPointer("2025-06-26"),
+		WithSeparateCosts:   true,
+	}, user.ID, employee.ID)
+	assert.NoError(t, err)
+
+	initialCost, err := apiService.CreateSalaryCost(models.CreateSalaryCost{
+		Cycle:            "monthly",
+		AmountType:       "fixed",
+		Amount:           400_00,
+		DistributionType: "employee",
+		RelativeOffset:   3,
+		TargetDate:       nil,
+		LabelID:          nil,
+	}, user.ID, salary1.ID)
+	assert.NoError(t, err)
+
+	preTransitionCost, err := apiService.GetSalaryCost(user.ID, initialCost.ID, false)
+	assert.NoError(t, err)
+	assert.GreaterOrEqual(t, len(preTransitionCost.CalculatedCostDetails), 2)
+	assert.Equal(t, "2025-03", preTransitionCost.CalculatedCostDetails[0].Month)
+	assert.Equal(t, uint(2), preTransitionCost.CalculatedCostDetails[0].Divider)
+	assert.Equal(t, int64(preTransitionCost.CalculatedCostDetails[0].Amount), int64(preTransitionCost.CalculatedCostDetails[0].Divider)*int64(400_00))
+
+	err = SetDatabaseTime(conn, "2025-07-05")
+	assert.NoError(t, err)
+
+	nextParsedDatabaseTime, err := time.Parse(utils.InternalDateFormat, "2025-07-05")
+	assert.NoError(t, err)
+	utils.DefaultClock.SetFixedTime(&nextParsedDatabaseTime)
+
+	salary2, err := apiService.CreateSalary(models.CreateSalary{
+		HoursPerMonth:       165,
+		Amount:              9500_00,
+		Cycle:               "monthly",
+		CurrencyID:          *currency.ID,
+		VacationDaysPerYear: 25,
+		FromDate:            "2025-06-27",
+		ToDate:              nil,
+		WithSeparateCosts:   true,
+	}, user.ID, employee.ID)
+	assert.NoError(t, err)
+	assert.NotNil(t, salary2)
+
+	err = SetDatabaseTime(conn, "2025-08-10")
+	assert.NoError(t, err)
+
+	finalParsedDatabaseTime, err := time.Parse(utils.InternalDateFormat, "2025-08-10")
+	assert.NoError(t, err)
+	utils.DefaultClock.SetFixedTime(&finalParsedDatabaseTime)
+	defer func() {
+		utils.DefaultClock.SetFixedTime(nil)
+	}()
+
+	postTransitionCost, err := apiService.GetSalaryCost(user.ID, initialCost.ID, false)
+	assert.NoError(t, err)
+
+	if assert.NotNil(t, postTransitionCost.CalculatedNextExecutionDate) {
+		assert.Equal(t, "2025-06-01", postTransitionCost.CalculatedNextExecutionDate.ToFormattedTime(utils.InternalDateFormat))
+	}
+	assert.Equal(t, int64(400_00), int64(postTransitionCost.CalculatedAmount))
+	assert.Equal(t, int64(400_00*3), int64(postTransitionCost.CalculatedNextCost))
+
+	assert.GreaterOrEqual(t, len(postTransitionCost.CalculatedCostDetails), 1)
+	var detailMonths []string
+	var juneDetail *models.SalaryCostDetail
+	for i := range postTransitionCost.CalculatedCostDetails {
+		detail := postTransitionCost.CalculatedCostDetails[i]
+		detailMonths = append(detailMonths, detail.Month)
+		if detail.Month == "2025-06" {
+			juneDetail = &detail
+		}
+	}
+	if assert.NotNilf(t, juneDetail, "expected salary cost detail for June 2025; got %v", detailMonths) {
+		assert.Equal(t, uint(3), juneDetail.Divider)
+		assert.Equal(t, int64(400_00*3), int64(juneDetail.Amount))
+	}
+
+	err = apiService.DeleteSalaryCost(user.ID, initialCost.ID)
+	assert.NoError(t, err)
+}
+
 func TestMonthlySalaryInBetweenMonthWithoutToDate(t *testing.T) {
 	conn := SetupTestEnvironment(t)
 	defer conn.Close()

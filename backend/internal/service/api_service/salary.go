@@ -202,6 +202,17 @@ func (a *APIService) DeleteSalary(userID int64, salaryID int64) error {
 }
 
 func (a *APIService) applySalaryCalculations(userID int64, salary *models.Salary) (*models.Salary, error) {
+	if salary.IsTermination {
+		salary.Amount = 0
+		salary.HoursPerMonth = 0
+		salary.VacationDaysPerYear = 0
+		salary.EmployeeDeductions = 0
+		salary.EmployerCosts = 0
+		salary.WithSeparateCosts = false
+		salary.NextExecutionDate = nil
+		return salary, nil
+	}
+
 	// TODO: Think about how to handle the LIMIT here better
 	salaryCosts, _, err := a.ListSalaryCosts(userID, salary.ID, 1, 1000, true)
 	if err != nil {

@@ -232,3 +232,71 @@ func TestSalaryExecutionDates(t *testing.T) {
 		})
 	}
 }
+
+func TestTerminationSalaryResetsFinancialData(t *testing.T) {
+	conn := SetupTestEnvironment(t)
+	defer conn.Close()
+
+	dbAdapter := db_adapter.NewDatabaseAdapter(conn)
+	sendgridService := sendgrid_adapter.NewSendgridAdapter("")
+	apiService := api_service.NewAPIService(dbAdapter, sendgridService)
+
+	currency, err := CreateCurrency(apiService, "CHF", "Swiss Franc", "de-CH")
+	assert.NoError(t, err)
+
+	user, _, err := CreateUserWithOrganisation(
+		apiService, dbAdapter, "termination@test.com", "test", "Termination Org",
+	)
+	assert.NoError(t, err)
+
+	employee, err := CreateEmployee(apiService, user.ID, "Austritt Employee")
+	assert.NoError(t, err)
+
+	// Create an active salary to have context
+	_, err = apiService.CreateSalary(models.CreateSalary{
+		HoursPerMonth:       160,
+		Amount:              9000_00,
+		Cycle:               "monthly",
+		CurrencyID:          *currency.ID,
+		VacationDaysPerYear: 25,
+		FromDate:            "2025-11-01",
+		ToDate:              utils.StringAsPointer("2026-01-31"),
+		WithSeparateCosts:   true,
+		IsTermination:       false,
+	}, user.ID, employee.ID)
+	assert.NoError(t, err)
+
+	terminationSalary, err := apiService.CreateSalary(models.CreateSalary{
+		HoursPerMonth:       160,
+		Amount:              7000_00,
+		Cycle:               "monthly",
+		CurrencyID:          *currency.ID,
+		VacationDaysPerYear: 20,
+		FromDate:            "2026-02-01",
+		ToDate:              utils.StringAsPointer("2026-02-28"),
+		WithSeparateCosts:   true,
+		IsTermination:       true,
+	}, user.ID, employee.ID)
+	assert.NoError(t, err)
+
+	assert.Equal(t, uint16(0), terminationSalary.HoursPerMonth)
+	assert.Equal(t, uint16(0), terminationSalary.VacationDaysPerYear)
+	assert.Equal(t, uint64(0), terminationSalary.Amount)
+	assert.False(t, terminationSalary.WithSeparateCosts)
+	assert.True(t, terminationSalary.IsTermination)
+	assert.Nil(t, terminationSalary.ToDate)
+	assert.Nil(t, terminationSalary.NextExecutionDate)
+	assert.EqualValues(t, 0, terminationSalary.EmployeeDeductions)
+	assert.EqualValues(t, 0, terminationSalary.EmployerCosts)
+
+	_, err = apiService.CreateSalaryCost(models.CreateSalaryCost{
+		Cycle:            "monthly",
+		AmountType:       "fixed",
+		Amount:           100_00,
+		DistributionType: "employee",
+		RelativeOffset:   1,
+		TargetDate:       nil,
+		LabelID:          nil,
+	}, user.ID, terminationSalary.ID)
+	assert.Error(t, err)
+}
