@@ -10,6 +10,7 @@ type Transaction struct {
 	Amount      int64                `db:"amount" json:"amount"`
 	VatAmount   int64                `db:"vat_amount" json:"vatAmount"`
 	VatIncluded bool                 `db:"vat_included" json:"vatIncluded"`
+	IsDisabled  bool                 `db:"is_disabled" json:"isDisabled"`
 	Cycle       *string              `db:"cycle" json:"cycle"`
 	Type        string               `db:"type" json:"type"`
 	StartDate   types.AsDate         `db:"start_date" json:"startDate"`
@@ -57,4 +58,5 @@ type UpdateTransaction struct {
 	Employee    *int64  `json:"employee" validate:"omitempty"`
 	Vat         *int64  `json:"vat" validate:"omitempty"`
 	VatIncluded *bool   `json:"vatIncluded" validate:"omitempty"`
+	IsDisabled  *bool   `json:"isDisabled" validate:"omitempty"`
 }

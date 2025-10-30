@@ -1,11 +1,11 @@
 <template>
-  <Card>
+  <Card :class="{ 'opacity-60': isDisabled }">
     <template #title>
       <div class="relative flex items-center justify-between">
         <p class="truncate text-base">
           Von {{ fromDateFormatted }}
         </p>
-        <div class="flex gap-2 justify-end">
+        <div class="flex gap-2 items-center justify-end">
           <Button
             v-if="!isTermination"
             severity="help"
@@ -36,6 +36,12 @@
         >
           Aktiver Lohn
         </p>
+        <p
+          v-else-if="!isTermination && isDisabled"
+          class="absolute -top-9 left-0 whitespace-nowrap text-sm bg-zinc-400 p-2 rounded-xl font-bold text-center text-zinc-900"
+        >
+          Deaktiviert
+        </p>
       </div>
     </template>
     <template #content>
@@ -43,6 +49,14 @@
         v-if="!isTermination"
         class="flex flex-col gap-2 text-sm"
       >
+        <Message
+          v-if="isDisabled"
+          severity="warn"
+          size="small"
+          :closable="false"
+        >
+          Dieser Lohn ist deaktiviert und wird nicht berechnet.
+        </Message>
         <p>{{ salary.hoursPerMonth }} Arbeitsstunden / Monat</p>
         <div class="flex flex-col">
           <p v-if="withSeparateCosts">
@@ -81,12 +95,14 @@
           <div class="flex items-center">
             <ToggleSwitch
               id="with-separate-costs"
-              v-model="withSeparateCosts"
+              :model-value="withSeparateCosts"
+              :disabled="isDisabled"
+              @update:model-value="onToggleSeparateCosts"
             />
           </div>
         </div>
         <div
-          v-if="withSeparateCosts"
+          v-if="withSeparateCosts && !isDisabled"
           class="flex items-center gap-2"
         >
           <Button
@@ -101,6 +117,16 @@
             @click="onShowCostOverview"
           />
         </div>
+        <p class="flex items-center gap-2">
+          <span>Status:</span>
+          <ToggleSwitch
+            id="salary-card-active"
+            class="scale-[0.65] origin-left"
+            :model-value="!isDisabled"
+            :disabled="isUpdatingDisabled"
+            @update:model-value="onToggleDisabled"
+          />
+        </p>
       </div>
       <div
         v-else
@@ -159,8 +185,23 @@ const emits = defineEmits<{
 
 const withSeparateCosts = ref(props.salary.withSeparateCosts)
 const isTermination = ref(props.salary.isTermination)
+const isDisabled = ref(props.salary.isDisabled)
+const isUpdatingDisabled = ref(false)
 
-watch(withSeparateCosts, (value) => {
+watch(() => props.salary.withSeparateCosts, (value) => {
+  withSeparateCosts.value = value
+})
+
+watch(() => props.salary.isDisabled, (value) => {
+  isDisabled.value = value
+})
+
+const onToggleSeparateCosts = (value: boolean) => {
+  if (isDisabled.value) {
+    return
+  }
+  const previous = withSeparateCosts.value
+  withSeparateCosts.value = value
   updateSalary(props.salary.employeeID, {
     id: props.salary.id,
     cycle: props.salary.cycle,
@@ -174,7 +215,51 @@ watch(withSeparateCosts, (value) => {
         life: Config.TOAST_LIFE_TIME_SHORT,
       })
     })
-})
+    .catch(() => {
+      withSeparateCosts.value = previous
+      toast.add({
+        summary: 'Fehler',
+        detail: `Änderung konnte nicht gespeichert werden`,
+        severity: 'error',
+        life: Config.TOAST_LIFE_TIME_SHORT,
+      })
+    })
+}
+
+const onToggleDisabled = (isActive: boolean) => {
+  const previous = isDisabled.value
+  const nextDisabled = !isActive
+  if (previous === nextDisabled) {
+    return
+  }
+  isDisabled.value = nextDisabled
+  isUpdatingDisabled.value = true
+  updateSalary(props.salary.employeeID, {
+    id: props.salary.id,
+    cycle: props.salary.cycle,
+    isDisabled: nextDisabled,
+  })
+    .then(() => {
+      toast.add({
+        summary: 'Erfolg',
+        detail: nextDisabled ? 'Lohn deaktiviert' : 'Lohn aktiviert',
+        severity: 'info',
+        life: Config.TOAST_LIFE_TIME_SHORT,
+      })
+    })
+    .catch(() => {
+      isDisabled.value = previous
+      toast.add({
+        summary: 'Fehler',
+        detail: 'Status konnte nicht geändert werden',
+        severity: 'error',
+        life: Config.TOAST_LIFE_TIME_SHORT,
+      })
+    })
+    .finally(() => {
+      isUpdatingDisabled.value = false
+    })
+}
 
 const grossSalaryFormatted = computed(
   () => SalaryUtils.grossSalaryFormatted(props.salary),

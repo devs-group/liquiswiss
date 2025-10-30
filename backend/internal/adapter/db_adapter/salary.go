@@ -78,6 +78,7 @@ func (d *DatabaseAdapter) GetSalary(userID int64, salaryID int64) (*models.Salar
 		&toDate,
 		&salary.WithSeparateCosts,
 		&salary.IsTermination,
+		&salary.IsDisabled,
 		&salary.DBDate,
 	)
 	if err != nil {
@@ -181,7 +182,7 @@ func (d *DatabaseAdapter) CreateSalary(payload models.CreateSalary, userID int64
 	var previous models.Salary
 	if err := tx.QueryRow(`
         SELECT id, from_date, to_date, cycle FROM salaries 
-        WHERE employee_id = ? AND from_date < ? AND id != ?
+        WHERE employee_id = ? AND from_date < ? AND id != ? AND is_disabled = 0
         ORDER BY from_date DESC LIMIT 1
     `, employeeID, payload.FromDate, salaryID).
 		Scan(&previous.ID, &previous.FromDate, &previous.ToDate, &previous.Cycle); err != nil && err != sql.ErrNoRows {
@@ -221,7 +222,7 @@ func (d *DatabaseAdapter) CreateSalary(payload models.CreateSalary, userID int64
 	var next models.Salary
 	if err := tx.QueryRow(`
 	   SELECT id, from_date, to_date FROM salaries
-       WHERE employee_id = ? AND from_date > ? AND id != ?
+       WHERE employee_id = ? AND from_date > ? AND id != ? AND is_disabled = 0
 	   ORDER BY from_date ASC LIMIT 1
 	`, employeeID, payload.FromDate, salaryID).
 		Scan(&next.ID, &next.FromDate, &next.ToDate); err != nil && err != sql.ErrNoRows {
@@ -315,6 +316,10 @@ func (d *DatabaseAdapter) UpdateSalary(payload models.UpdateSalary, employeeID i
 		queryBuild = append(queryBuild, "with_separate_costs = ?")
 		args = append(args, *payload.WithSeparateCosts)
 	}
+	if payload.IsDisabled != nil {
+		queryBuild = append(queryBuild, "is_disabled = ?")
+		args = append(args, *payload.IsDisabled)
+	}
 	// Always consider ToDate in case it is set back to null
 	queryBuild = append(queryBuild, "to_date = ?")
 	if payload.ToDate != nil {
@@ -351,7 +356,7 @@ func (d *DatabaseAdapter) UpdateSalary(payload models.UpdateSalary, employeeID i
 	var previous models.Salary
 	if err := tx.QueryRow(`
         SELECT id, from_date, to_date, cycle FROM salaries 
-        WHERE employee_id = ? AND from_date < ? AND id != ?
+        WHERE employee_id = ? AND from_date < ? AND id != ? AND is_disabled = 0
         ORDER BY from_date DESC LIMIT 1
     `, employeeID, payload.FromDate, salaryID).
 		Scan(&previous.ID, &previous.FromDate, &previous.ToDate, &previous.Cycle); err != nil && err != sql.ErrNoRows {
@@ -379,7 +384,7 @@ func (d *DatabaseAdapter) UpdateSalary(payload models.UpdateSalary, employeeID i
 	var next models.Salary
 	if err := tx.QueryRow(`
 	   SELECT id, from_date, to_date FROM salaries
-       WHERE employee_id = ? AND from_date > ? AND id != ?
+       WHERE employee_id = ? AND from_date > ? AND id != ? AND is_disabled = 0
 	   ORDER BY from_date ASC LIMIT 1
 	`, employeeID, payload.FromDate, salaryID).Scan(&next.ID, &next.FromDate, &next.ToDate); err != nil && err != sql.ErrNoRows {
 		return 0, 0, err
@@ -448,7 +453,7 @@ func (d *DatabaseAdapter) DeleteSalary(toDeleteSalary *models.Salary, userID int
 	var previous models.Salary
 	if err := tx.QueryRow(`
         SELECT id, from_date, to_date, cycle FROM salaries 
-        WHERE employee_id = ? AND from_date < ? AND id != ?
+        WHERE employee_id = ? AND from_date < ? AND id != ? AND is_disabled = 0
         ORDER BY from_date DESC LIMIT 1
     `, toDeleteSalary.EmployeeID, currentFromDateFormatted, toDeleteSalary.ID,
 	).Scan(&previous.ID, &previous.FromDate, &previous.ToDate, &previous.Cycle); err != nil && err != sql.ErrNoRows {
@@ -457,7 +462,7 @@ func (d *DatabaseAdapter) DeleteSalary(toDeleteSalary *models.Salary, userID int
 	var next models.Salary
 	if err := tx.QueryRow(`
 	   SELECT id, from_date, to_date FROM salaries
-       WHERE employee_id = ? AND from_date > ? AND id != ?
+       WHERE employee_id = ? AND from_date > ? AND id != ? AND is_disabled = 0
 	   ORDER BY from_date ASC LIMIT 1
 	`, toDeleteSalary.EmployeeID, currentFromDateFormatted, toDeleteSalary.ID,
 	).Scan(&next.ID, &next.FromDate, &next.ToDate); err != nil && err != sql.ErrNoRows {

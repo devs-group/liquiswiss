@@ -91,6 +91,7 @@ func (d *DatabaseAdapter) GetTransaction(userID int64, transactionID int64) (*mo
 		&transaction.Amount,
 		&transaction.VatAmount,
 		&transaction.VatIncluded,
+		&transaction.IsDisabled,
 		&transaction.Cycle,
 		&transaction.Type,
 		&startDate,
@@ -238,6 +239,10 @@ func (d *DatabaseAdapter) UpdateTransaction(payload models.UpdateTransaction, us
 	if payload.VatIncluded != nil {
 		queryBuild = append(queryBuild, "vat_included = ?")
 		args = append(args, *payload.VatIncluded)
+	}
+	if payload.IsDisabled != nil {
+		queryBuild = append(queryBuild, "is_disabled = ?")
+		args = append(args, *payload.IsDisabled)
 	}
 
 	// Add WHERE clause

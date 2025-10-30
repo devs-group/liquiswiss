@@ -109,6 +109,9 @@ func (a *APIService) CalculateForecast(userID int64) ([]models.Forecast, error) 
 	forecastMap := make(map[string]map[string]int64)
 	forecastDetailMap := make(map[string]*models.ForecastDetails)
 	for _, transaction := range transactions {
+		if transaction.IsDisabled {
+			continue
+		}
 		fiatRate := models.GetFiatRateFromCurrency(fiatRates, baseCurrency, *transaction.Currency.Code)
 		amount := models.CalculateAmountWithFiatRate(transaction.Amount, fiatRate)
 		if transaction.Vat != nil && !transaction.VatIncluded {
@@ -334,6 +337,9 @@ func (a *APIService) CalculateForecast(userID int64) ([]models.Forecast, error) 
 			return nil, err
 		}
 		for _, salary := range salaries {
+			if salary.IsDisabled {
+				continue
+			}
 			fromDate := time.Time(salary.FromDate)
 			toDate := lastDayOfMaxEndDate
 			if salary.ToDate != nil {

@@ -1,5 +1,5 @@
 import type { FetchError } from 'ofetch'
-import type { ListTransactionResponse, TransactionFormData, TransactionResponse } from '~/models/transaction'
+import type { ListTransactionResponse, TransactionFormData, TransactionPatchData, TransactionResponse } from '~/models/transaction'
 import { DefaultListResponse } from '~/models/default-data'
 
 export default function useTransactions() {
@@ -105,6 +105,31 @@ export default function useTransactions() {
     }
   }
 
+  const patchTransaction = async (payload: TransactionPatchData) => {
+    try {
+      const body: Record<string, unknown> = { ...payload }
+      if (body.amount !== undefined) {
+        body.amount = AmountToInteger(body.amount as number)
+      }
+      if (body.startDate instanceof Date) {
+        body.startDate = DateToApiFormat(body.startDate)
+      }
+      if (body.endDate instanceof Date) {
+        body.endDate = DateToApiFormat(body.endDate)
+      }
+      await $fetch<TransactionResponse>(`/api/transactions/${payload.id}`, {
+        method: 'PATCH',
+        body: {
+          ...body,
+        },
+      })
+      await listTransactions(false)
+    }
+    catch {
+      return Promise.reject('Fehler beim Aktualisieren der Transaktion')
+    }
+  }
+
   const setTransactions = (data: ListTransactionResponse | null, append: boolean) => {
     if (data) {
       if (append) {
@@ -130,6 +155,7 @@ export default function useTransactions() {
     listTransactions,
     createTransaction,
     updateTransaction,
+    patchTransaction,
     deleteTransaction,
     setTransactions,
   }

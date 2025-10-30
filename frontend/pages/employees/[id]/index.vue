@@ -132,7 +132,7 @@
         v-for="salary in salaries.data"
         :key="salary.id"
         :salary="salary"
-        :is-active="employee?.salaryID == salary.id"
+        :is-active="employee?.salaryID == salary.id && !salary.isDisabled"
         @on-edit="onUpdateSalary"
         @on-clone="onCloneSalary"
         @on-deleted="onSalaryDeleted"
@@ -219,7 +219,7 @@ const employeeDeleteErrorMessage = ref('')
 const salaryErrorMessage = ref('')
 
 const salariesWithoutTermination = computed(() => {
-  return salaries.value.data.filter(s => !s.isTermination)
+  return salaries.value.data.filter(s => !s.isTermination && !s.isDisabled)
 })
 
 if (

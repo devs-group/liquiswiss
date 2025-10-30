@@ -14,6 +14,7 @@ type Salary struct {
 	ToDate              *types.AsDate `db:"to_date" json:"toDate"`
 	WithSeparateCosts   bool          `db:"with_separate_costs" json:"withSeparateCosts"`
 	IsTermination       bool          `db:"is_termination" json:"isTermination"`
+	IsDisabled          bool          `db:"is_disabled" json:"isDisabled"`
 
 	// Hidden values
 	DBDate types.AsDate `db:"db_date" json:"-"`
@@ -45,4 +46,5 @@ type UpdateSalary struct {
 	FromDate            *string `json:"fromDate" validate:"omitempty"`
 	ToDate              *string `json:"toDate" validate:"omitempty,fromDateGTEToDate"`
 	WithSeparateCosts   *bool   `json:"withSeparateCosts" validate:"omitempty"`
+	IsDisabled          *bool   `json:"isDisabled" validate:"omitempty"`
 }

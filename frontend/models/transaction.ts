@@ -11,6 +11,7 @@ export interface TransactionResponse {
   vat: VatResponse | null
   vatAmount: number
   vatIncluded: boolean
+  isDisabled: boolean
   cycle: TransactionCycleTypeToStringDefinition | null
   type: TransactionTypeToStringDefinition
   startDate: string
@@ -45,3 +46,5 @@ export interface TransactionFormData {
   currency: number
   employee: number
 }
+
+export type TransactionPatchData = { id: number, isDisabled?: boolean } & Partial<Omit<TransactionFormData, 'id'>>

@@ -7,6 +7,7 @@ SELECT
        0
     ) AS vat_amount,
     r.vat_included,
+    r.is_disabled,
     r.cycle,
     r.type,
     r.start_date,

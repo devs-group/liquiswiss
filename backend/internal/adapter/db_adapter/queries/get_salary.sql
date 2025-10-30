@@ -13,6 +13,7 @@ SELECT
     s.to_date,
     s.with_separate_costs,
     s.is_termination,
+    s.is_disabled,
     CURDATE() AS db_date
 FROM salaries s
 JOIN employees e ON e.id = s.employee_id

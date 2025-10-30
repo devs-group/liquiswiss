@@ -71,6 +71,7 @@ export interface SalaryResponse {
   nextExecutionDate: string | null
   employeeDeductions: number
   employerCosts: number
+  isDisabled: boolean
 }
 
 // Form
@@ -122,6 +123,7 @@ export interface SalaryPATCHFormData {
   vacationDaysPerYear?: number
   fromDate?: Date
   withSeparateCosts?: boolean
+  isDisabled?: boolean
 }
 
 // List Response

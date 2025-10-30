@@ -202,6 +202,13 @@ func (a *APIService) DeleteSalary(userID int64, salaryID int64) error {
 }
 
 func (a *APIService) applySalaryCalculations(userID int64, salary *models.Salary) (*models.Salary, error) {
+	if salary.IsDisabled {
+		salary.EmployeeDeductions = 0
+		salary.EmployerCosts = 0
+		salary.NextExecutionDate = nil
+		return salary, nil
+	}
+
 	if salary.IsTermination {
 		salary.Amount = 0
 		salary.HoursPerMonth = 0

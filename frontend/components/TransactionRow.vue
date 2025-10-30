@@ -1,9 +1,18 @@
 <template>
-  <div class="grid grid-cols-transactions items-center w-full *:bg-zinc-100 *:dark:bg-zinc-800 *:border *:border-r-0 *:border-b-0 *:last:border-b *:border-gray-600 *:p-1 *:text-sm *:truncate">
-    <div class="flex items-center gap-2 justify-end">
+  <div
+    :class="[
+      'grid grid-cols-transactions items-center w-full *:bg-zinc-100 *:dark:bg-zinc-800 *:border *:border-r-0 *:border-b-0 *:last:border-b *:border-gray-600 *:p-1 *:text-sm *:truncate',
+      transaction.isDisabled ? 'opacity-60 italic' : '',
+    ]"
+  >
+    <div class="flex items-center gap-2 justify-end min-w-[160px]">
       <p class="truncate">
         {{ transaction.name }}
       </p>
+      <span
+        v-if="transaction.isDisabled"
+        class="text-xs uppercase tracking-wide text-orange-500"
+      >Deaktiviert</span>
       <span
         class="pi pi-copy cursor-pointer text-help"
         @click="$emit('onClone', transaction)"
@@ -11,6 +20,14 @@
       <span
         class="pi pi-pencil cursor-pointer text-primary"
         @click="$emit('onEdit', transaction)"
+      />
+    </div>
+    <div class="flex items-center justify-center">
+      <ToggleSwitch
+        class="scale-[0.65] origin-center"
+        :model-value="!localIsDisabled"
+        :disabled="isUpdating"
+        @update:model-value="onToggleDisabled"
       />
     </div>
     <p>{{ startDate }}</p>
@@ -47,6 +64,7 @@
 <script setup lang="ts">
 import type { TransactionResponse } from '~/models/transaction'
 import { TransactionType } from '~/config/enums'
+import { Config } from '~/config/config'
 
 const props = defineProps({
   transaction: {
@@ -59,6 +77,46 @@ defineEmits<{
   onEdit: [transaction: TransactionResponse]
   onClone: [transaction: TransactionResponse]
 }>()
+
+const toast = useToast()
+const { patchTransaction } = useTransactions()
+const localIsDisabled = ref(props.transaction.isDisabled)
+const isUpdating = ref(false)
+
+watch(() => props.transaction.isDisabled, (value) => {
+  localIsDisabled.value = value
+})
+
+const onToggleDisabled = (isActive: boolean) => {
+  const previous = localIsDisabled.value
+  const nextDisabled = !isActive
+  localIsDisabled.value = nextDisabled
+  isUpdating.value = true
+  patchTransaction({
+    id: props.transaction.id,
+    isDisabled: nextDisabled,
+  })
+    .then(() => {
+      toast.add({
+        summary: 'Erfolg',
+        detail: nextDisabled ? 'Transaktion deaktiviert' : 'Transaktion aktiviert',
+        severity: 'info',
+        life: Config.TOAST_LIFE_TIME_SHORT,
+      })
+    })
+    .catch(() => {
+      localIsDisabled.value = previous
+      toast.add({
+        summary: 'Fehler',
+        detail: 'Status konnte nicht geändert werden',
+        severity: 'error',
+        life: Config.TOAST_LIFE_TIME_SHORT,
+      })
+    })
+    .finally(() => {
+      isUpdating.value = false
+    })
+}
 
 const isRevenue = computed(() => props.transaction.amount >= 0)
 const startDate = computed(() => DateStringToFormattedDate(props.transaction.startDate))

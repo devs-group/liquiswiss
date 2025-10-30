@@ -49,7 +49,8 @@ WITH ranked_salary AS (
         ) AS rn
     FROM salaries AS s
     LEFT JOIN salary_costs sc ON sc.salary_id = s.id
-    WHERE to_date IS NULL OR to_date >= CURDATE()
+    WHERE (to_date IS NULL OR to_date >= CURDATE())
+      AND s.is_disabled = 0
     GROUP BY
         s.id,
         s.employee_id,
