@@ -57,9 +57,19 @@ func (a *APIService) CreateSalaryCost(payload models.CreateSalaryCost, userID in
 		return nil, fmt.Errorf("cannot attach costs to a termination salary")
 	}
 
+	if err := a.validateSalaryCostBase(payload, userID, salaryID, nil); err != nil {
+		logger.Logger.Error(err)
+		return nil, err
+	}
+
 	salaryCostID, err := a.dbService.CreateSalaryCost(payload, userID, salaryID)
 	if err != nil {
 		logger.Logger.Error(err)
+		return nil, err
+	}
+	if err := a.dbService.SetSalaryCostBaseLinks(salaryCostID, payload.BaseSalaryCostIDs); err != nil {
+		logger.Logger.Error(err)
+		_ = a.dbService.DeleteSalaryCost(userID, salaryCostID)
 		return nil, err
 	}
 	err = a.dbService.CalculateSalaryCostDetails(userID, salaryCostID)
@@ -87,13 +97,23 @@ func (a *APIService) CreateSalaryCost(payload models.CreateSalaryCost, userID in
 }
 
 func (a *APIService) UpdateSalaryCost(payload models.CreateSalaryCost, userID int64, salaryCostID int64) (*models.SalaryCost, error) {
-	_, err := a.GetSalaryCost(userID, salaryCostID, true)
+	existingSalaryCost, err := a.GetSalaryCost(userID, salaryCostID, true)
 	if err != nil {
 		logger.Logger.Error(err)
 		return nil, err
 	}
+
+	if err := a.validateSalaryCostBase(payload, userID, existingSalaryCost.SalaryID, &salaryCostID); err != nil {
+		logger.Logger.Error(err)
+		return nil, err
+	}
+
 	err = a.dbService.UpdateSalaryCost(payload, userID, salaryCostID)
 	if err != nil {
+		logger.Logger.Error(err)
+		return nil, err
+	}
+	if err := a.dbService.SetSalaryCostBaseLinks(salaryCostID, payload.BaseSalaryCostIDs); err != nil {
 		logger.Logger.Error(err)
 		return nil, err
 	}
@@ -186,6 +206,84 @@ func (a *APIService) CopySalaryCosts(payload models.CopySalaryCosts, userID int6
 		logger.Logger.Error(err)
 		return err
 	}
+	return nil
+}
+
+func (a *APIService) validateSalaryCostBase(payload models.CreateSalaryCost, userID, salaryID int64, currentCostID *int64) error {
+	if len(payload.BaseSalaryCostIDs) == 0 {
+		return nil
+	}
+
+	if payload.AmountType != "percentage" {
+		return fmt.Errorf("basislohnkosten können nur für prozentuale Lohnkosten gesetzt werden")
+	}
+
+	unique := make(map[int64]struct{}, len(payload.BaseSalaryCostIDs))
+	visited := map[int64]struct{}{}
+	if currentCostID != nil {
+		visited[*currentCostID] = struct{}{}
+	}
+
+	for _, baseID := range payload.BaseSalaryCostIDs {
+		if _, exists := unique[baseID]; exists {
+			continue
+		}
+		unique[baseID] = struct{}{}
+
+		if currentCostID != nil && baseID == *currentCostID {
+			return fmt.Errorf("lohnkosten können nicht auf sich selbst basieren")
+		}
+
+		baseCost, err := a.dbService.GetSalaryCost(userID, baseID)
+		if err != nil {
+			return err
+		}
+
+		if baseCost.SalaryID != salaryID {
+			return fmt.Errorf("basislohnkosten müssen zum gleichen Lohn gehören")
+		}
+
+		if err := a.ensureNoCircularSalaryCostBase(userID, baseCost, visited); err != nil {
+			return err
+		}
+	}
+
+	return nil
+}
+
+func (a *APIService) ensureNoCircularSalaryCostBase(userID int64, cost *models.SalaryCost, visited map[int64]struct{}) error {
+	if cost == nil {
+		return nil
+	}
+
+	if _, seen := visited[cost.ID]; seen {
+		return fmt.Errorf("zirkuläre abhängigkeit zwischen lohnkosten erkannt")
+	}
+	visited[cost.ID] = struct{}{}
+
+	defer delete(visited, cost.ID)
+
+	if len(cost.BaseSalaryCostIDs) == 0 {
+		return nil
+	}
+
+	unique := make(map[int64]struct{}, len(cost.BaseSalaryCostIDs))
+	for _, baseID := range cost.BaseSalaryCostIDs {
+		if _, exists := unique[baseID]; exists {
+			continue
+		}
+		unique[baseID] = struct{}{}
+
+		nextCost, err := a.dbService.GetSalaryCost(userID, baseID)
+		if err != nil {
+			return err
+		}
+
+		if err := a.ensureNoCircularSalaryCostBase(userID, nextCost, visited); err != nil {
+			return err
+		}
+	}
+
 	return nil
 }
 

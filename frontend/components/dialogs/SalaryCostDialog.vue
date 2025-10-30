@@ -191,6 +191,43 @@
       <small class="text-liqui-red">{{ errors["amount"] }}</small>
     </div>
 
+    <div
+      v-if="showBaseCostSelect"
+      class="flex flex-col gap-2 col-span-full md:col-span-1"
+    >
+      <div class="flex items-center gap-2">
+        <label
+          class="text-sm font-bold"
+          for="base-salary-cost-ids"
+        >Berechnungsgrundlage</label>
+        <i
+          v-tooltip.top="'Optional: Auswahl bestehender Lohnkosten als Basis für den Prozentwert, leer lassen um auf dem Lohn zu basieren'"
+          class="pi pi-info-circle"
+        />
+      </div>
+      <MultiSelect
+        v-bind="baseSalaryCostIDsProps"
+        id="base-salary-cost-ids"
+        v-model="baseSalaryCostIDs"
+        empty-message="Keine Lohnkosten verfügbar"
+        :options="baseCostSelectOptions"
+        option-label="name"
+        option-value="value"
+        placeholder="Bitte wählen"
+        display="chip"
+        :loading="isLoadingBaseCosts"
+        :disabled="isLoadingBaseCosts || isLoading"
+        :class="{ 'p-invalid': errors['baseSalaryCostIDs']?.length }"
+      />
+      <div class="flex justify-between gap-2">
+        <small class="text-liqui-red">{{ errors['baseSalaryCostIDs'] }}</small>
+        <small
+          v-if="baseCostsErrorMessage.length"
+          class="text-liqui-red"
+        >{{ baseCostsErrorMessage }}</small>
+      </div>
+    </div>
+
     <div class="flex flex-col gap-2 col-span-full md:col-span-1">
       <div class="flex items-center gap-2">
         <label
@@ -273,7 +310,7 @@ import { useForm } from 'vee-validate'
 import * as yup from 'yup'
 import type { ISalaryCostFormDialog } from '~/interfaces/dialog-interfaces'
 import { Config } from '~/config/config'
-import type { SalaryCostFormData, SalaryCostLabelResponse } from '~/models/employee'
+import type { SalaryCostFormData, SalaryCostLabelResponse, SalaryCostResponse } from '~/models/employee'
 import { CycleType, EmployeeCostDistributionType, EmployeeCostType } from '~/config/enums'
 import {
   CostCycleTypeToOptions,
@@ -287,7 +324,7 @@ import { selectAllOnFocus } from '~/utils/element-helper'
 
 const dialogRef = inject<ISalaryCostFormDialog>('dialogRef')!
 
-const { createSalaryCost, updateSalaryCost } = useSalaryCosts()
+const { createSalaryCost, updateSalaryCost, listSalaryCosts } = useSalaryCosts()
 const { salaryCostsLabels, listSalaryCostsLabels, deleteSalaryCostLabel } = useSalaryCostLabels()
 const toast = useToast()
 const dialog = useDialog()
@@ -302,6 +339,9 @@ const isLoadingCostLabels = ref(true)
 const errorMessage = ref('')
 const employeesCostLabelsErrorMessage = ref('')
 const requiresRefresh = ref(false)
+const isLoadingBaseCosts = ref(false)
+const baseCostsErrorMessage = ref('')
+const baseCostOptions = ref<SalaryCostResponse[]>([])
 
 listSalaryCostsLabels(false)
   .catch(() => {
@@ -336,6 +376,24 @@ const { defineField, errors, handleSubmit, meta, setFieldValue } = useForm<Salar
         }
         return true
       }),
+    baseSalaryCostIDs: yup.array()
+      .of(yup.number().typeError('Ungültiger Wert').min(1, 'Ungültiger Wert'))
+      .ensure()
+      .test('noDuplicates', 'Doppelte Auswahl nicht erlaubt', (value) => {
+        if (!value) {
+          return true
+        }
+        return new Set(value).size === value.length
+      })
+      .test('notSelf', 'Lohnkosten können nicht auf sich selbst basieren', (value) => {
+        if (!value || value.length === 0) {
+          return true
+        }
+        if (!salaryCost?.id || isClone) {
+          return true
+        }
+        return !value.includes(salaryCost.id)
+      }),
   }),
   initialValues: {
     id: isClone ? undefined : salaryCost?.id ?? undefined,
@@ -350,6 +408,7 @@ const { defineField, errors, handleSubmit, meta, setFieldValue } = useForm<Salar
       : 0,
     distributionType: salaryCost?.distributionType ?? EmployeeCostDistributionType.Employee,
     targetDate: salaryCost?.targetDate ? DateToUTCDate(salaryCost.targetDate) : undefined,
+    baseSalaryCostIDs: salaryCost?.baseSalaryCostIDs ?? [],
   },
 })
 
@@ -360,6 +419,50 @@ const [amountType, amountTypeProps] = defineField('amountType')
 const [amount, amountProps] = defineField('amount')
 const [distributionType, distributionTypeProps] = defineField('distributionType')
 const [targetDate, targetDateProps] = defineField('targetDate')
+const [baseSalaryCostIDs, baseSalaryCostIDsProps] = defineField('baseSalaryCostIDs')
+
+watch(amountType, (value) => {
+  if (value !== EmployeeCostType.Percentage) {
+    setFieldValue('baseSalaryCostIDs', [])
+  }
+})
+
+const showBaseCostSelect = computed(() => amountType.value === EmployeeCostType.Percentage)
+
+const availableBaseCostOptions = computed(() => {
+  return baseCostOptions.value.filter((cost) => {
+    if (!salaryCost?.id || isClone) {
+      return true
+    }
+    return cost.id !== salaryCost.id
+  })
+})
+
+const baseCostDistributionLabel = (cost: SalaryCostResponse) =>
+  cost.distributionType === EmployeeCostDistributionType.Employer ? 'Arbeitgeber' : 'Arbeitnehmer'
+
+const baseCostSelectOptions = computed(() => {
+  return availableBaseCostOptions.value.map(cost => ({
+    value: cost.id,
+    name: `${SalaryCostUtils.title(cost)} (${baseCostDistributionLabel(cost)})`,
+  }))
+})
+
+onMounted(() => {
+  if (salary?.id) {
+    isLoadingBaseCosts.value = true
+    listSalaryCosts(salary.id)
+      .then((response) => {
+        baseCostOptions.value = response.data
+      })
+      .catch(() => {
+        baseCostsErrorMessage.value = 'Lohnkosten konnten nicht geladen werden'
+      })
+      .finally(() => {
+        isLoadingBaseCosts.value = false
+      })
+  }
+})
 
 const onSubmit = handleSubmit((values) => {
   isLoading.value = true

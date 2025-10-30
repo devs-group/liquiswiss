@@ -106,7 +106,10 @@ func (d *DatabaseAdapter) CalculateSalaryCostDetails(userID int64, salaryCostID 
 			validMonths = append(validMonths, month)
 		}
 
-		amountPerMonth := d.CalculateCostAmount(*cost, *salary)
+		amountPerMonth, err := d.CalculateCostAmount(userID, *cost, *salary, map[int64]struct{}{})
+		if err != nil {
+			return err
+		}
 		totalAmount := amountPerMonth * uint64(len(validMonths))
 		if totalAmount > 0 {
 			monthStr := nextCostExecution.Format("2006-01")

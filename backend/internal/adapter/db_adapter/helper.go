@@ -1,6 +1,7 @@
 package db_adapter
 
 import (
+	"fmt"
 	"liquiswiss/pkg/models"
 	"liquiswiss/pkg/types"
 	"liquiswiss/pkg/utils"
@@ -132,14 +133,51 @@ func (d *DatabaseAdapter) CalculateCostExecutionDate(
 	return &as
 }
 
-func (d *DatabaseAdapter) CalculateCostAmount(cost models.SalaryCost, salary models.Salary) uint64 {
-	if cost.AmountType == "fixed" {
-		return cost.Amount
+func (d *DatabaseAdapter) CalculateCostAmount(userID int64, cost models.SalaryCost, salary models.Salary, visited map[int64]struct{}) (uint64, error) {
+	if visited == nil {
+		visited = make(map[int64]struct{})
 	}
-	if cost.AmountType == "percentage" {
-		return (salary.Amount * cost.Amount) / 100_000
+	if _, alreadySeen := visited[cost.ID]; alreadySeen && cost.ID != 0 {
+		return 0, fmt.Errorf("circular base salary cost reference detected")
 	}
-	return 0
+	if cost.ID != 0 {
+		visited[cost.ID] = struct{}{}
+		defer delete(visited, cost.ID)
+	}
+
+	switch cost.AmountType {
+	case "fixed":
+		return cost.Amount, nil
+	case "percentage":
+		var baseAmount uint64
+		if len(cost.BaseSalaryCostIDs) > 0 {
+			seen := make(map[int64]struct{}, len(cost.BaseSalaryCostIDs))
+			for _, baseID := range cost.BaseSalaryCostIDs {
+				if _, exists := seen[baseID]; exists {
+					continue
+				}
+				seen[baseID] = struct{}{}
+
+				baseCost, err := d.GetSalaryCost(userID, baseID)
+				if err != nil {
+					return 0, err
+				}
+				if baseCost.SalaryID != cost.SalaryID {
+					return 0, fmt.Errorf("base salary cost does not belong to the same salary")
+				}
+				amount, err := d.CalculateCostAmount(userID, *baseCost, salary, visited)
+				if err != nil {
+					return 0, err
+				}
+				baseAmount += amount
+			}
+		} else {
+			baseAmount = salary.Amount
+		}
+		return (baseAmount * cost.Amount) / 100_000, nil
+	default:
+		return 0, nil
+	}
 }
 
 func addCycle(t time.Time, cycle string, offset int64) time.Time {

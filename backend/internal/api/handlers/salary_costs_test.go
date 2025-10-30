@@ -596,6 +596,155 @@ func TestMonthlySalaryAtTheEndOfMonthWithoutToDate(t *testing.T) {
 	}
 }
 
+func TestPercentageSalaryCostBasedOnOtherCost(t *testing.T) {
+	conn := SetupTestEnvironment(t)
+	defer conn.Close()
+
+	dbAdapter := db_adapter.NewDatabaseAdapter(conn)
+	sendgridService := sendgrid_adapter.NewSendgridAdapter("")
+	apiService := api_service.NewAPIService(dbAdapter, sendgridService)
+
+	currency, err := CreateCurrency(apiService, "CHF", "Swiss Franc", "de-CH")
+	assert.NoError(t, err)
+
+	user, _, err := CreateUserWithOrganisation(
+		apiService, dbAdapter, "base-cost-user@liqui.ch", "test", "Base Cost Org",
+	)
+	assert.NoError(t, err)
+
+	employee, err := CreateEmployee(apiService, user.ID, "Alice Base")
+	assert.NoError(t, err)
+
+	salary, err := apiService.CreateSalary(models.CreateSalary{
+		HoursPerMonth: 160,
+		Amount:        8000 * 100,
+		Cycle:         utils.CycleMonthly,
+		CurrencyID: func() int64 {
+			if currency.ID != nil {
+				return *currency.ID
+			}
+			return 0
+		}(),
+		VacationDaysPerYear: 25,
+		FromDate:            "2025-01-01",
+		WithSeparateCosts:   true,
+	}, user.ID, employee.ID)
+	assert.NoError(t, err)
+
+	baseCost, err := apiService.CreateSalaryCost(models.CreateSalaryCost{
+		Cycle:            utils.CycleMonthly,
+		AmountType:       "fixed",
+		Amount:           2000_00,
+		DistributionType: "employee",
+		RelativeOffset:   1,
+	}, user.ID, salary.ID)
+	assert.NoError(t, err)
+
+	secondBaseCost, err := apiService.CreateSalaryCost(models.CreateSalaryCost{
+		Cycle:            utils.CycleMonthly,
+		AmountType:       "fixed",
+		Amount:           1000_00,
+		DistributionType: "employee",
+		RelativeOffset:   1,
+	}, user.ID, salary.ID)
+	assert.NoError(t, err)
+
+	baseID := baseCost.ID
+	percentageCost, err := apiService.CreateSalaryCost(models.CreateSalaryCost{
+		Cycle:             utils.CycleMonthly,
+		AmountType:        "percentage",
+		Amount:            10_000,
+		DistributionType:  "employee",
+		RelativeOffset:    1,
+		BaseSalaryCostIDs: []int64{baseID},
+	}, user.ID, salary.ID)
+	assert.NoError(t, err)
+	assert.Equal(t, uint64(200_00), percentageCost.CalculatedAmount)
+	assert.Equal(t, uint64(200_00), percentageCost.CalculatedNextCost)
+
+	multiBaseIDs := []int64{baseID, secondBaseCost.ID}
+	percentageCostMulti, err := apiService.CreateSalaryCost(models.CreateSalaryCost{
+		Cycle:             utils.CycleMonthly,
+		AmountType:        "percentage",
+		Amount:            10_000,
+		DistributionType:  "employee",
+		RelativeOffset:    1,
+		BaseSalaryCostIDs: multiBaseIDs,
+	}, user.ID, salary.ID)
+	assert.NoError(t, err)
+	assert.ElementsMatch(t, multiBaseIDs, percentageCostMulti.BaseSalaryCostIDs)
+	assert.Equal(t, uint64(300_00), percentageCostMulti.CalculatedAmount)
+	assert.Equal(t, uint64(300_00), percentageCostMulti.CalculatedNextCost)
+
+	err = apiService.DeleteSalaryCost(user.ID, percentageCost.ID)
+	assert.NoError(t, err)
+	err = apiService.DeleteSalaryCost(user.ID, percentageCostMulti.ID)
+	assert.NoError(t, err)
+	err = apiService.DeleteSalaryCost(user.ID, secondBaseCost.ID)
+	assert.NoError(t, err)
+	err = apiService.DeleteSalaryCost(user.ID, baseCost.ID)
+	assert.NoError(t, err)
+}
+
+func TestSalaryCostBaseRequiresPercentageAmountType(t *testing.T) {
+	conn := SetupTestEnvironment(t)
+	defer conn.Close()
+
+	dbAdapter := db_adapter.NewDatabaseAdapter(conn)
+	sendgridService := sendgrid_adapter.NewSendgridAdapter("")
+	apiService := api_service.NewAPIService(dbAdapter, sendgridService)
+
+	currency, err := CreateCurrency(apiService, "CHF", "Swiss Franc", "de-CH")
+	assert.NoError(t, err)
+
+	user, _, err := CreateUserWithOrganisation(
+		apiService, dbAdapter, "base-cost-invalid@liqui.ch", "test", "Base Cost Invalid Org",
+	)
+	assert.NoError(t, err)
+
+	employee, err := CreateEmployee(apiService, user.ID, "Bob Invalid")
+	assert.NoError(t, err)
+
+	salary, err := apiService.CreateSalary(models.CreateSalary{
+		HoursPerMonth: 160,
+		Amount:        8000 * 100,
+		Cycle:         utils.CycleMonthly,
+		CurrencyID: func() int64 {
+			if currency.ID != nil {
+				return *currency.ID
+			}
+			return 0
+		}(),
+		VacationDaysPerYear: 25,
+		FromDate:            "2025-01-01",
+		WithSeparateCosts:   true,
+	}, user.ID, employee.ID)
+	assert.NoError(t, err)
+
+	baseCost, err := apiService.CreateSalaryCost(models.CreateSalaryCost{
+		Cycle:            utils.CycleMonthly,
+		AmountType:       "fixed",
+		Amount:           1500_00,
+		DistributionType: "employee",
+		RelativeOffset:   1,
+	}, user.ID, salary.ID)
+	assert.NoError(t, err)
+
+	baseID := baseCost.ID
+	_, err = apiService.CreateSalaryCost(models.CreateSalaryCost{
+		Cycle:             utils.CycleMonthly,
+		AmountType:        "fixed",
+		Amount:            500_00,
+		DistributionType:  "employee",
+		RelativeOffset:    1,
+		BaseSalaryCostIDs: []int64{baseID},
+	}, user.ID, salary.ID)
+	assert.Error(t, err)
+
+	err = apiService.DeleteSalaryCost(user.ID, baseCost.ID)
+	assert.NoError(t, err)
+}
+
 func TestMonthlySalaryAtTheEndOfMonthWithToDate(t *testing.T) {
 	conn := SetupTestEnvironment(t)
 	defer conn.Close()

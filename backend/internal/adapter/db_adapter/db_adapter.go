@@ -64,6 +64,8 @@ type IDatabaseAdapter interface {
 	DeleteSalaryCostsBySalaryID(salaryID int64) error
 	UpdateSalaryCost(payload models.CreateSalaryCost, userID int64, salaryCostID int64) error
 	DeleteSalaryCost(userID int64, salaryCostID int64) error
+	SetSalaryCostBaseLinks(costID int64, baseIDs []int64) error
+	ListSalaryCostBaseIDs(costID int64) ([]int64, error)
 
 	ListSalaryCostDetails(salaryCostID int64) ([]models.SalaryCostDetail, error)
 	CalculateSalaryCostDetails(userID int64, salaryCostID int64) error

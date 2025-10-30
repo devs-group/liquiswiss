@@ -48,6 +48,7 @@ export interface SalaryCostResponse {
   relativeOffset: number
   targetDate: string | null
   salaryID: number
+  baseSalaryCostIDs: number[]
   calculatedAmount: number
   calculatedPreviousExecutionDate: Date
   calculatedNextExecutionDate: Date
@@ -92,6 +93,7 @@ export interface SalaryCostFormData {
   relativeOffset: number
   distributionType: EmployeeCostDistributionTypeToStringDefinition
   targetDate?: Date
+  baseSalaryCostIDs?: number[]
 }
 
 export interface SalaryCostCopyFormData {

@@ -905,6 +905,21 @@ func (mr *MockIDatabaseAdapterMockRecorder) ListSalaries(userID, employeeID, pag
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ListSalaries", reflect.TypeOf((*MockIDatabaseAdapter)(nil).ListSalaries), userID, employeeID, page, limit)
 }
 
+// ListSalaryCostBaseIDs mocks base method.
+func (m *MockIDatabaseAdapter) ListSalaryCostBaseIDs(costID int64) ([]int64, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "ListSalaryCostBaseIDs", costID)
+	ret0, _ := ret[0].([]int64)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// ListSalaryCostBaseIDs indicates an expected call of ListSalaryCostBaseIDs.
+func (mr *MockIDatabaseAdapterMockRecorder) ListSalaryCostBaseIDs(costID any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ListSalaryCostBaseIDs", reflect.TypeOf((*MockIDatabaseAdapter)(nil).ListSalaryCostBaseIDs), costID)
+}
+
 // ListSalaryCostDetails mocks base method.
 func (m *MockIDatabaseAdapter) ListSalaryCostDetails(salaryCostID int64) ([]models.SalaryCostDetail, error) {
 	m.ctrl.T.Helper()
@@ -1009,6 +1024,20 @@ func (m *MockIDatabaseAdapter) ResetPassword(password, email string) error {
 func (mr *MockIDatabaseAdapterMockRecorder) ResetPassword(password, email any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ResetPassword", reflect.TypeOf((*MockIDatabaseAdapter)(nil).ResetPassword), password, email)
+}
+
+// SetSalaryCostBaseLinks mocks base method.
+func (m *MockIDatabaseAdapter) SetSalaryCostBaseLinks(costID int64, baseIDs []int64) error {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "SetSalaryCostBaseLinks", costID, baseIDs)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// SetSalaryCostBaseLinks indicates an expected call of SetSalaryCostBaseLinks.
+func (mr *MockIDatabaseAdapterMockRecorder) SetSalaryCostBaseLinks(costID, baseIDs any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "SetSalaryCostBaseLinks", reflect.TypeOf((*MockIDatabaseAdapter)(nil).SetSalaryCostBaseLinks), costID, baseIDs)
 }
 
 // SetUserCurrentOrganisation mocks base method.
