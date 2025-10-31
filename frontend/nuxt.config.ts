@@ -1,6 +1,6 @@
 // https://nuxt.com/docs/api/configuration/nuxt-config
 
-import LiquiswissTheme from './config/theme'
+import LiquiswissTheme from './app/config/theme'
 
 export default defineNuxtConfig({
   modules: ['@primevue/nuxt-module', '@nuxtjs/tailwindcss', '@nuxtjs/color-mode', '@nuxt/eslint'],

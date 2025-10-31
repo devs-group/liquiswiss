@@ -1,6 +1,6 @@
 import type { ChartData, ChartOptions } from 'chart.js'
 import resolveConfig from 'tailwindcss/resolveConfig'
-import tailwindConfig from '~/tailwind.config'
+import tailwindConfig from '~~/tailwind.config'
 
 export default function useCharts() {
   const colorMode = useColorMode()
