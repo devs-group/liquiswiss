@@ -1015,6 +1015,20 @@ func (mr *MockIAPIServiceMockRecorder) UpdateEmployee(payload, userID, employeeI
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "UpdateEmployee", reflect.TypeOf((*MockIAPIService)(nil).UpdateEmployee), payload, userID, employeeID)
 }
 
+// UpdateForecastExclusions mocks base method.
+func (m *MockIAPIService) UpdateForecastExclusions(payload models.UpdateForecastExclusions, userID int64) error {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "UpdateForecastExclusions", payload, userID)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// UpdateForecastExclusions indicates an expected call of UpdateForecastExclusions.
+func (mr *MockIAPIServiceMockRecorder) UpdateForecastExclusions(payload, userID any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "UpdateForecastExclusions", reflect.TypeOf((*MockIAPIService)(nil).UpdateForecastExclusions), payload, userID)
+}
+
 // UpdateOrganisation mocks base method.
 func (m *MockIAPIService) UpdateOrganisation(payload models.UpdateOrganisation, userID, organisationID int64) (*models.Organisation, error) {
 	m.ctrl.T.Helper()

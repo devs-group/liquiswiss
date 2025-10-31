@@ -141,6 +141,41 @@ func CreateForecastExclusion(apiService api_service.IAPIService, c *gin.Context)
 	c.Status(http.StatusCreated)
 }
 
+func UpdateForecastExclusions(apiService api_service.IAPIService, c *gin.Context) {
+	userID := c.GetInt64("userID")
+	if userID == 0 {
+		c.Status(http.StatusUnauthorized)
+		return
+	}
+	var payload models.UpdateForecastExclusions
+	if err := c.BindJSON(&payload); err != nil {
+		c.Status(http.StatusBadRequest)
+		return
+	}
+	validator := utils.GetValidator()
+	if err := validator.Struct(payload); err != nil {
+		c.Status(http.StatusBadRequest)
+		return
+	}
+	if len(payload.Updates) == 0 {
+		c.Status(http.StatusOK)
+		return
+	}
+
+	if err := apiService.UpdateForecastExclusions(payload, userID); err != nil {
+		switch err {
+		case sql.ErrNoRows:
+			c.Status(http.StatusNotFound)
+			return
+		default:
+			c.Status(http.StatusInternalServerError)
+			return
+		}
+	}
+
+	c.Status(http.StatusOK)
+}
+
 func DeleteForecastExclusion(apiService api_service.IAPIService, c *gin.Context) {
 	// Pre
 	userID := c.GetInt64("userID")

@@ -35,3 +35,7 @@ DROP COLUMN is_disabled;
 Run "go test ./..." with privilege, if not possible ask for privilege
 
 Generate with "go generate ./..." if not possible ask for privilege
+
+Add test in backend whenever we have a new feature or change something in the backend
+
+Do not necessarily refactor unrelated code if it's not required

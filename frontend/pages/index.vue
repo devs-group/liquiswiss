@@ -151,7 +151,6 @@
                 forecast-type="revenue"
                 :forecast-details="forecastDetails"
                 :currency-code="getOrganisationCurrencyCode"
-                @on-recalculate-forecasts="onCalculateForecast"
               />
             </template>
 
@@ -187,7 +186,6 @@
                 forecast-type="expense"
                 :forecast-details="forecastDetails"
                 :currency-code="getOrganisationCurrencyCode"
-                @on-recalculate-forecasts="onCalculateForecast"
               />
             </template>
 
@@ -246,6 +244,34 @@
 
       <FullProgressSpinner :show="isLoading" />
     </div>
+
+    <div
+      v-if="hasPendingExclusionChanges"
+      class="fixed inset-x-0 bottom-4 z-50 flex justify-center px-4"
+    >
+      <div class="flex w-full max-w-sm flex-col items-center gap-2 rounded-2xl border border-zinc-300 bg-white/95 px-4 py-3 shadow-lg backdrop-blur-sm dark:border-zinc-700 dark:bg-zinc-900/95">
+        <p class="text-sm font-medium text-center">
+          Geänderte Prognosen speichern?
+        </p>
+        <div class="flex items-center gap-4">
+          <Button
+            :disabled="isSavingExclusions"
+            severity="secondary"
+            icon="pi pi-times"
+            rounded
+            aria-label="Änderungen verwerfen"
+            @click="onCancelForecastExclusionChanges"
+          />
+          <Button
+            :loading="isSavingExclusions"
+            icon="pi pi-check"
+            rounded
+            aria-label="Änderungen speichern"
+            @click="onSaveForecastExclusionChanges"
+          />
+        </div>
+      </div>
+    </div>
   </div>
 </template>
 
@@ -254,6 +280,7 @@ import Chart from 'primevue/chart'
 import useCharts from '~/composables/useCharts'
 import type { ForecastDetailRevenueExpenseResponse } from '~/models/forecast'
 import FullProgressSpinner from '~/components/FullProgressSpinner.vue'
+import { Config } from '~/config/config'
 
 useHead({
   title: 'Prognose',
@@ -263,10 +290,22 @@ const utcFormatter = new Intl.DateTimeFormat(Constants.BASE_LOCALE_CODE, { month
 const localFormatter = new Intl.DateTimeFormat(Constants.BASE_LOCALE_CODE, { month: 'long', year: 'numeric' })
 
 const { getOrganisationCurrencyCode, getOrganisationCurrencyLocaleCode } = useAuth()
-const { useFetchListForecast, listForecasts, useFetchListForecastDetails, listForecastDetails, forecasts, forecastDetails, calculateForecast } = useForecasts()
+const {
+  useFetchListForecast,
+  listForecasts,
+  useFetchListForecastDetails,
+  listForecastDetails,
+  forecasts,
+  forecastDetails,
+  calculateForecast,
+  forecastExclusionChanges,
+  applyForecastExclusionChanges,
+  clearForecastExclusionChanges,
+} = useForecasts()
 const { useFetchListBankAccounts, totalBankSaldoInCHF } = useBankAccounts()
 const { forecastPerformance, forecastMonths, forecastShowRevenueDetails, forecastShowExpenseDetails } = useSettings()
 const { setChartData, getChartOptions } = useCharts()
+const toast = useToast()
 
 const bankAccountsErrorMessage = ref('')
 const forecastErrorMessage = ref('')
@@ -295,11 +334,13 @@ if (forecastShowRevenueDetails.value || forecastShowExpenseDetails.value) {
 }
 
 const isLoading = ref(false)
+const isSavingExclusions = ref(false)
 const chartData = computed(() => setChartData(
   months.value,
   saldos.value.map(s => AmountToFloat(s.amount)),
 ))
 const chartOptions = computed(() => getChartOptions())
+const hasPendingExclusionChanges = computed(() => Object.keys(forecastExclusionChanges.value).length > 0)
 
 const localMonth = computed(() => localFormatter.format(new Date()))
 const months = computed(() => {
@@ -316,27 +357,35 @@ const hasNoDataInCurrentMonth = computed(() => {
   return !months.value.includes(localMonth.value)
 })
 
-const onCalculateForecast = () => {
+const onCalculateForecast = async () => {
   isLoading.value = true
-  calculateForecast()
-    .then(async () => {
-      await listForecasts(forecastMonthsComputed.value)
-        .then(async () => {
-          if (forecastShowRevenueDetails.value || forecastShowExpenseDetails.value) {
-            await listForecastDetails(forecastMonthsComputed.value)
-              .catch((reason) => {
-                forecastDetailsErrorMessage.value = reason
-              })
-          }
-        })
-        .catch((reason) => {
-          forecastErrorMessage.value = reason
-        })
-    })
-    .catch((reason) => {
+  forecastCalculateErrorMessage.value = ''
+  forecastErrorMessage.value = ''
+  forecastDetailsErrorMessage.value = ''
+  try {
+    await calculateForecast()
+    await listForecasts(forecastMonthsComputed.value)
+    if (forecastShowRevenueDetails.value || forecastShowExpenseDetails.value) {
+      await listForecastDetails(forecastMonthsComputed.value)
+    }
+  }
+  catch (reason) {
+    if (typeof reason === 'string' && reason.includes('Prognose Details')) {
+      forecastDetailsErrorMessage.value = reason
+    }
+    else if (typeof reason === 'string' && reason.includes('Berechnen')) {
       forecastCalculateErrorMessage.value = reason
-    })
-    .finally(() => isLoading.value = false)
+    }
+    else if (typeof reason === 'string' && reason.includes('Prognose')) {
+      forecastErrorMessage.value = reason
+    }
+    else {
+      forecastCalculateErrorMessage.value = 'Fehler beim Aktualisieren der Prognose'
+    }
+  }
+  finally {
+    isLoading.value = false
+  }
 }
 
 const onToggleRevenueDetails = () => {
@@ -379,6 +428,48 @@ watch(forecastMonthsComputed, (value) => {
     })
     .finally(() => isLoading.value = false)
 })
+
+const onSaveForecastExclusionChanges = async () => {
+  if (!hasPendingExclusionChanges.value) {
+    return
+  }
+  isSavingExclusions.value = true
+  try {
+    await applyForecastExclusionChanges()
+    await onCalculateForecast().catch(() => {})
+    clearForecastExclusionChanges()
+    toast.add({
+      summary: 'Gespeichert',
+      detail: 'Änderungen an der Prognose wurden übernommen',
+      severity: 'success',
+      life: Config.TOAST_LIFE_TIME_MEDIUM,
+    })
+  }
+  catch (reason) {
+    toast.add({
+      summary: 'Fehler',
+      detail: reason instanceof Error ? reason.message : typeof reason === 'string' ? reason : 'Änderungen konnten nicht gespeichert werden',
+      severity: 'error',
+      life: Config.TOAST_LIFE_TIME_MEDIUM,
+    })
+  }
+  finally {
+    isSavingExclusions.value = false
+  }
+}
+
+const onCancelForecastExclusionChanges = () => {
+  if (!hasPendingExclusionChanges.value) {
+    return
+  }
+  clearForecastExclusionChanges()
+  toast.add({
+    summary: 'Verworfen',
+    detail: 'Änderungen wurden verworfen',
+    severity: 'info',
+    life: Config.TOAST_LIFE_TIME_SHORT,
+  })
+}
 
 const revenueCategories = computed(() => {
   const categories: ForecastDetailRevenueExpenseResponse[] = []

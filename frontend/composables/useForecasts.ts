@@ -1,8 +1,87 @@
 import type { ForecastDetailResponse, ForecastResponse } from '~/models/forecast'
 
+type ForecastExclusionChange = {
+  key: string
+  month: string
+  relatedID: number
+  relatedTable: string
+  originalIsExcluded: boolean
+  isExcluded: boolean
+}
+
 export default function useForecasts() {
   const forecasts = useState<ForecastResponse[]>('forecasts', () => [])
   const forecastDetails = useState<ForecastDetailResponse[]>('forecastDetails', () => [])
+  const forecastExclusionChanges = useState<Record<string, ForecastExclusionChange>>('forecastExclusionChanges', () => ({}))
+
+  const createDraftKey = (month: string, relatedID: number, relatedTable: string) => {
+    return `${month}:${relatedTable}:${relatedID}`
+  }
+
+  const toggleForecastExclusionChange = (payload: { month: string, relatedID: number, relatedTable: string, originalIsExcluded: boolean }) => {
+    const key = createDraftKey(payload.month, payload.relatedID, payload.relatedTable)
+    const existing = forecastExclusionChanges.value[key]
+    if (!existing) {
+      forecastExclusionChanges.value = {
+        ...forecastExclusionChanges.value,
+        [key]: {
+          key,
+          month: payload.month,
+          relatedID: payload.relatedID,
+          relatedTable: payload.relatedTable,
+          originalIsExcluded: payload.originalIsExcluded,
+          isExcluded: !payload.originalIsExcluded,
+        },
+      }
+      return
+    }
+
+    const nextState = !existing.isExcluded
+    if (nextState === existing.originalIsExcluded) {
+      const { [key]: _, ...rest } = forecastExclusionChanges.value
+      forecastExclusionChanges.value = rest
+      return
+    }
+
+    forecastExclusionChanges.value = {
+      ...forecastExclusionChanges.value,
+      [key]: {
+        ...existing,
+        isExcluded: nextState,
+      },
+    }
+  }
+
+  const getForecastExclusionChange = (month: string, relatedID: number, relatedTable: string) => {
+    return forecastExclusionChanges.value[createDraftKey(month, relatedID, relatedTable)]
+  }
+
+  const clearForecastExclusionChanges = () => {
+    forecastExclusionChanges.value = {}
+  }
+
+  const applyForecastExclusionChanges = async () => {
+    const changes = Object.values(forecastExclusionChanges.value)
+    if (!changes.length) {
+      return
+    }
+    try {
+      await $fetch('/api/forecasts/exclude', {
+        method: 'PUT',
+        body: {
+          updates: changes.map(change => ({
+            month: change.month,
+            relatedID: change.relatedID,
+            relatedTable: change.relatedTable,
+            isExcluded: change.isExcluded,
+          })),
+        },
+      })
+    }
+    catch {
+      throw new Error('Fehler beim Speichern der Prognose-Einstellungen')
+    }
+  }
 
   const useFetchListForecast = async (months: number) => {
     const { data, error } = await useFetch<ForecastResponse[]>('/api/forecasts', {
@@ -134,6 +213,7 @@ export default function useForecasts() {
   return {
     forecasts,
     forecastDetails,
+    forecastExclusionChanges,
     useFetchListForecast,
     listForecasts,
     useFetchListForecastDetails,
@@ -142,5 +222,9 @@ export default function useForecasts() {
     calculateForecast,
     excludeForecast,
     includeForecast,
+    toggleForecastExclusionChange,
+    getForecastExclusionChange,
+    clearForecastExclusionChanges,
+    applyForecastExclusionChanges,
   }
 }

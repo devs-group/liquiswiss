@@ -1,14 +1,17 @@
 package api_service_test
 
 import (
+	"errors"
 	"testing"
 	"time"
 
 	"github.com/stretchr/testify/require"
 	"go.uber.org/mock/gomock"
+	"go.uber.org/zap"
 
 	"liquiswiss/internal/mocks"
 	"liquiswiss/internal/service/api_service"
+	"liquiswiss/pkg/logger"
 	"liquiswiss/pkg/models"
 	"liquiswiss/pkg/types"
 	"liquiswiss/pkg/utils"
@@ -310,4 +313,86 @@ func TestCalculateForecast_SkipsDisabledSalariesOnly(t *testing.T) {
 	require.Len(t, results, 1)
 	require.Equal(t, capturedForecast.Month, results[0].Data.Month)
 	require.EqualValues(t, capturedForecast.Expense, results[0].Data.Expense)
+}
+
+func TestUpdateForecastExclusions_Success(t *testing.T) {
+	logger.Logger = zap.NewNop().Sugar()
+
+	ctrl := gomock.NewController(t)
+	defer ctrl.Finish()
+
+	mockDB := mocks.NewMockIDatabaseAdapter(ctrl)
+	service := api_service.NewAPIService(mockDB, nil)
+
+	userID := int64(42)
+	payload := models.UpdateForecastExclusions{
+		Updates: []models.ForecastExclusionUpdate{
+			{
+				Month:        "2024-01",
+				RelatedID:    1,
+				RelatedTable: utils.TransactionsTableName,
+				IsExcluded:   true,
+			},
+			{
+				Month:        "2024-02",
+				RelatedID:    2,
+				RelatedTable: utils.TransactionsTableName,
+				IsExcluded:   false,
+			},
+		},
+	}
+
+	gomock.InOrder(
+		mockDB.EXPECT().
+			CreateForecastExclusion(models.CreateForecastExclusion{
+				Month:        "2024-01",
+				RelatedID:    1,
+				RelatedTable: utils.TransactionsTableName,
+			}, userID).
+			Return(int64(10), nil),
+		mockDB.EXPECT().
+			DeleteForecastExclusion(models.CreateForecastExclusion{
+				Month:        "2024-02",
+				RelatedID:    2,
+				RelatedTable: utils.TransactionsTableName,
+			}, userID).
+			Return(int64(1), nil),
+	)
+
+	err := service.UpdateForecastExclusions(payload, userID)
+	require.NoError(t, err)
+}
+
+func TestUpdateForecastExclusions_PropagatesError(t *testing.T) {
+	logger.Logger = zap.NewNop().Sugar()
+
+	ctrl := gomock.NewController(t)
+	defer ctrl.Finish()
+
+	mockDB := mocks.NewMockIDatabaseAdapter(ctrl)
+	service := api_service.NewAPIService(mockDB, nil)
+
+	userID := int64(7)
+	payload := models.UpdateForecastExclusions{
+		Updates: []models.ForecastExclusionUpdate{
+			{
+				Month:        "2024-03",
+				RelatedID:    3,
+				RelatedTable: utils.TransactionsTableName,
+				IsExcluded:   true,
+			},
+		},
+	}
+
+	expectedErr := errors.New("create err")
+	mockDB.EXPECT().
+		CreateForecastExclusion(models.CreateForecastExclusion{
+			Month:        "2024-03",
+			RelatedID:    3,
+			RelatedTable: utils.TransactionsTableName,
+		}, userID).
+		Return(int64(0), expectedErr)
+
+	err := service.UpdateForecastExclusions(payload, userID)
+	require.ErrorIs(t, err, expectedErr)
 }

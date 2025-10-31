@@ -30,7 +30,6 @@
         :forecast-detail="data"
         :currency-code="currencyCode"
         :forecast-type="forecastType"
-        @on-recalculate-forecasts="onRecalculateForecasts"
       />
     </div>
   </div>
@@ -44,7 +43,6 @@
       :forecast-details="forecastDetails"
       :currency-code="currencyCode"
       :depth="depth+1"
-      @on-recalculate-forecasts="onRecalculateForecasts"
     />
   </template>
 </template>
@@ -77,8 +75,6 @@ const props = defineProps({
   },
 })
 
-const emits = defineEmits(['onRecalculateForecasts'])
-
 const onToggleChildren = (categoryName: string) => {
   if (hasChildren.value) {
     if (forecastShowChildDetails.value.includes(categoryName)) {
@@ -88,10 +84,6 @@ const onToggleChildren = (categoryName: string) => {
       forecastShowChildDetails.value.push(categoryName)
     }
   }
-}
-
-const onRecalculateForecasts = () => {
-  emits('onRecalculateForecasts')
 }
 
 const hasChildren = computed(() => {

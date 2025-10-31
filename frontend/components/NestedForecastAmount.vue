@@ -4,12 +4,13 @@
       class="truncate"
       :class="[getColumnTextSize]"
     >
-      {{ amountFormatted(getCategoryAmount) }} {{ currencyCode }}
+      {{ amountFormatted(displayedCategoryAmount) }} {{ currencyCode }}
     </p>
     <i
-      v-if="relatedID && (getCategoryAmount || isExcluded)"
+      v-if="relatedID"
       class="pi !text-2xs cursor-pointer hover:scale-125 transition-transform"
       :class="[getExclusionIcon]"
+      :title="getExclusionTooltip"
       @click="onExcludeForecast()"
     />
   </div>
@@ -17,13 +18,9 @@
 
 <script lang="ts" setup>
 import type { ForecastDetailResponse, ForecastDetailRevenueExpenseResponse } from '~/models/forecast'
-import { Config } from '~/config/config'
 
 const { getOrganisationCurrencyLocaleCode } = useAuth()
-const { excludeForecast, includeForecast } = useForecasts()
-const toast = useToast()
-
-const emits = defineEmits(['onRecalculateForecasts'])
+const { toggleForecastExclusionChange, getForecastExclusionChange } = useForecasts()
 
 const props = defineProps({
   category: {
@@ -50,50 +47,12 @@ const props = defineProps({
 
 const onExcludeForecast = () => {
   if (relatedID.value && relatedTable.value) {
-    if (!isExcluded.value) {
-      excludeForecast(props.forecastDetail.month, relatedID.value as number, relatedTable.value as string)
-        .then(() => {
-          toast.add({
-            summary: 'Erfolg',
-            detail: `Prognose wird für Monat "${props.forecastDetail.month}" ausgeschlossen"`,
-            severity: 'success',
-            life: Config.TOAST_LIFE_TIME_MEDIUM,
-          })
-        })
-        .catch(() => {
-          toast.add({
-            summary: 'Fehler',
-            detail: `Ausschliessen der Prognose für Monat "${props.forecastDetail.month}" fehlgeschlagen`,
-            severity: 'error',
-            life: Config.TOAST_LIFE_TIME_MEDIUM,
-          })
-        })
-        .finally(() => {
-          emits('onRecalculateForecasts')
-        })
-    }
-    else {
-      includeForecast(props.forecastDetail.month, relatedID.value as number, relatedTable.value as string)
-        .then(() => {
-          toast.add({
-            summary: 'Erfolg',
-            detail: `Prognose wird für Monat "${props.forecastDetail.month}" berücksichtigt`,
-            severity: 'success',
-            life: Config.TOAST_LIFE_TIME_MEDIUM,
-          })
-        })
-        .catch(() => {
-          toast.add({
-            summary: 'Fehler',
-            detail: `Berücksichtigen der Prognose für Monat "${props.forecastDetail.month}" fehlgeschlagen`,
-            severity: 'error',
-            life: Config.TOAST_LIFE_TIME_MEDIUM,
-          })
-        })
-        .finally(() => {
-          emits('onRecalculateForecasts')
-        })
-    }
+    toggleForecastExclusionChange({
+      month: props.forecastDetail.month,
+      relatedID: Number(relatedID.value),
+      relatedTable: relatedTable.value as string,
+      originalIsExcluded: Boolean(originalIsExcluded.value),
+    })
   }
 }
 
@@ -128,7 +87,7 @@ const getCategoryRelatedValue = (
   return findValueRecursively(data, categoryName)
 }
 
-const isExcluded = computed(() => {
+const originalIsExcluded = computed(() => {
   return getCategoryRelatedValue(props.forecastDetail, props.category.name, props.forecastType, 'isExcluded')
 })
 const relatedID = computed(() => {
@@ -137,11 +96,26 @@ const relatedID = computed(() => {
 const relatedTable = computed(() => {
   return getCategoryRelatedValue(props.forecastDetail, props.category.name, props.forecastType, 'relatedTable')
 })
+const draftChange = computed(() => {
+  if (!relatedID.value || !relatedTable.value) {
+    return undefined
+  }
+  return getForecastExclusionChange(props.forecastDetail.month, Number(relatedID.value), relatedTable.value as string)
+})
+const effectiveIsExcluded = computed(() => {
+  if (draftChange.value) {
+    return draftChange.value.isExcluded
+  }
+  return Boolean(originalIsExcluded.value)
+})
 const getExclusionIcon = computed(() => {
-  return isExcluded.value ? 'pi-history text-liqui-blue' : 'pi-check-square text-liqui-green'
+  return effectiveIsExcluded.value ? 'pi-history text-liqui-blue' : 'pi-check-square text-liqui-green'
+})
+const getExclusionTooltip = computed(() => {
+  return effectiveIsExcluded.value ? 'Zur Prognose hinzufügen' : 'Von der Prognose ausschliessen'
 })
 
-const getCategoryAmount = computed((): number => {
+const categoryAmount = computed((): number => {
   const data: ForecastDetailRevenueExpenseResponse[] = props.forecastDetail[props.forecastType]
 
   const findAmountRecursively = (
@@ -171,6 +145,10 @@ const getCategoryAmount = computed((): number => {
   }
 
   return AmountToFloat(findAmountRecursively(data, props.category.name))
+})
+
+const displayedCategoryAmount = computed(() => {
+  return effectiveIsExcluded.value ? 0 : categoryAmount.value
 })
 
 const amountFormatted = (amount: number) => {

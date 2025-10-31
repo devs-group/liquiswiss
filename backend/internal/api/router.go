@@ -212,6 +212,9 @@ func (api *API) setupRouter() {
 			protected.POST("/forecasts/exclude", func(ctx *gin.Context) {
 				handlers.CreateForecastExclusion(api.APIService, ctx)
 			})
+			protected.PUT("/forecasts/exclude", func(ctx *gin.Context) {
+				handlers.UpdateForecastExclusions(api.APIService, ctx)
+			})
 			protected.DELETE("/forecasts/exclude", func(ctx *gin.Context) {
 				handlers.DeleteForecastExclusion(api.APIService, ctx)
 			})

@@ -76,6 +76,30 @@ func (a *APIService) DeleteForecastExclusion(payload models.CreateForecastExclus
 	return affected, nil
 }
 
+func (a *APIService) UpdateForecastExclusions(payload models.UpdateForecastExclusions, userID int64) error {
+	for _, update := range payload.Updates {
+		request := models.CreateForecastExclusion{
+			Month:        update.Month,
+			RelatedID:    update.RelatedID,
+			RelatedTable: update.RelatedTable,
+		}
+
+		var err error
+		if update.IsExcluded {
+			_, err = a.dbService.CreateForecastExclusion(request, userID)
+		} else {
+			_, err = a.dbService.DeleteForecastExclusion(request, userID)
+		}
+
+		if err != nil {
+			logger.Logger.Error(err)
+			return err
+		}
+	}
+
+	return nil
+}
+
 func (a *APIService) CalculateForecast(userID int64) ([]models.Forecast, error) {
 	page := int64(1)
 	limit := int64(100000)

@@ -70,3 +70,14 @@ type CreateForecastExclusion struct {
 	RelatedTable string `json:"relatedTable" validate:"required"`
 	Month        string `json:"month" validate:"required,max=7"`
 }
+
+type ForecastExclusionUpdate struct {
+	RelatedID    int64  `json:"relatedID" validate:"required"`
+	RelatedTable string `json:"relatedTable" validate:"required"`
+	Month        string `json:"month" validate:"required,max=7"`
+	IsExcluded   bool   `json:"isExcluded"`
+}
+
+type UpdateForecastExclusions struct {
+	Updates []ForecastExclusionUpdate `json:"updates" validate:"required,dive"`
+}
