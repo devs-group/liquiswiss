@@ -24,7 +24,7 @@ jobs:
     runs-on: ubuntu-latest
     #    if: github.ref != 'refs/heads/main'
     container:
-      image: node:20.11.0
+      image: node:22.19.0
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
@@ -55,7 +55,7 @@ jobs:
           MARIADB_ROOT_PASSWORD: "test"
     #    if: github.ref != 'refs/heads/main'
     container:
-      image: golang:1.23.3-alpine
+      image: golang:1.25.3-alpine
     env:
       TESTING_ENVIRONMENT: "github"
     steps:

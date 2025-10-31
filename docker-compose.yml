@@ -15,7 +15,7 @@ services:
 #      - /app/node_modules
 #
 #  backend:
-#    image: golang:1.23.3-alpine
+#    image: golang:1.25.3-alpine
 #    restart: always
 #    depends_on:
 #      - database

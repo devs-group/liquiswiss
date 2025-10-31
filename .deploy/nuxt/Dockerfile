@@ -1,4 +1,4 @@
-FROM node:20.11.0 as dev
+FROM node:22.19.0 as dev
 
 WORKDIR /app
 COPY ./frontend /app
@@ -10,7 +10,7 @@ FROM dev as prod
 
 RUN npm run build
 
-FROM node:20.11-alpine3.18 AS deploy
+FROM node:22.19-alpine3.22 AS deploy
 
 WORKDIR /app
 
