@@ -67,7 +67,7 @@ useHead({
 const confirmBreakpoints = { '639px': '90vw' } as ConfirmDialogBreakpoints
 
 const serverDateFormatted = computed(() => {
-  return serverDate.value ? DateStringToFormattedDate(serverDate.value) : ''
+  return serverDate.value ? DateStringToFormattedDate(serverDate.value, false) : ''
 })
 
 if (isAuthenticated.value) {

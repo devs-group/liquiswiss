@@ -84,10 +84,7 @@
           <p class="text-xs">
             Zuletzt berechnet am
             <span>
-              <ClientOnly>
-                {{ latestUpdate }}
-                <template #fallback>...</template>
-              </ClientOnly>
+              {{ latestUpdate }}
             </span>
           </p>
         </div>
