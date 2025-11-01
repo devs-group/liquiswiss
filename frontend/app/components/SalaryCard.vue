@@ -117,8 +117,8 @@
             @click="onShowCostOverview"
           />
         </div>
-        <p class="flex items-center gap-2">
-          <span>Status:</span>
+        <div class="flex items-center gap-2">
+          <p>Status:</p>
           <ToggleSwitch
             id="salary-card-active"
             class="scale-[0.65] origin-left"
@@ -126,7 +126,7 @@
             :disabled="isUpdatingDisabled"
             @update:model-value="onToggleDisabled"
           />
-        </p>
+        </div>
       </div>
       <div
         v-else

@@ -26,7 +26,7 @@
     </div>
 
     <div
-      class="relative grid grid-cols-1 sm:grid-cols-2 gap-2 col-span-full p-2 bg-zinc-200 dark:bg-zinc-700 rounded-xl"
+      class="relative grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-2 col-span-full p-2 bg-zinc-200 dark:bg-zinc-700 rounded-xl"
     >
       <template v-if="costs.length > 0">
         <SalaryCostCard

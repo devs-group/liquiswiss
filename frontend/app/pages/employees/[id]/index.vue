@@ -126,7 +126,7 @@
 
     <div
       v-if="salaries?.data.length"
-      class="relative grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 2xl:grid-cols-4 gap-4"
+      class="relative grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 2xl:grid-cols-4 gap-4"
     >
       <SalaryCard
         v-for="salary in salaries.data"
