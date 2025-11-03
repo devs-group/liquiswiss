@@ -19,9 +19,36 @@ env:
   BACKEND_IMAGE_ZIP_FILE: backend-image.tar.gz
 
 jobs:
+  changes:
+    name: Detect Changes
+    runs-on: ubuntu-latest
+    outputs:
+      frontend: ${{ steps.filter.outputs.frontend }}
+      backend: ${{ steps.filter.outputs.backend }}
+      workflow: ${{ steps.filter.outputs.workflow }}
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Check changed paths
+        id: filter
+        uses: dorny/paths-filter@v3
+        with:
+          filters: |
+            frontend:
+              - 'frontend/**'
+            backend:
+              - 'backend/**'
+            workflow:
+              - '.github/workflows/ci.yml'
+
   lint-nuxt:
     name: Lint Nuxt
     runs-on: ubuntu-latest
+    needs: [ changes ]
+    if: ${{ needs.changes.outputs.frontend == 'true' || needs.changes.outputs.workflow == 'true' }}
     #    if: github.ref != 'refs/heads/main'
     container:
       image: node:22.19.0
@@ -40,6 +67,8 @@ jobs:
   test-backend:
     name: Test Backend
     runs-on: ubuntu-latest
+    needs: [ changes ]
+    if: ${{ needs.changes.outputs.backend == 'true' || needs.changes.outputs.workflow == 'true' }}
     services:
       database-testing:
         image: mariadb:10.6.16
@@ -73,8 +102,8 @@ jobs:
   build-nuxt:
     name: Build Nuxt
     runs-on: ubuntu-latest
-    needs: [ lint-nuxt, test-backend ]
-    if: github.ref == 'refs/heads/main'
+    needs: [ changes, lint-nuxt ]
+    if: ${{ github.ref == 'refs/heads/main' && (needs.changes.outputs.frontend == 'true' || needs.changes.outputs.workflow == 'true') && needs.lint-nuxt.result == 'success' }}
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
@@ -97,8 +126,8 @@ jobs:
   build-backend:
     name: Build Backend
     runs-on: ubuntu-latest
-    needs: [ lint-nuxt, test-backend ]
-    if: github.ref == 'refs/heads/main'
+    needs: [ changes, test-backend ]
+    if: ${{ github.ref == 'refs/heads/main' && (needs.changes.outputs.backend == 'true' || needs.changes.outputs.workflow == 'true') && needs.test-backend.result == 'success' }}
     env:
       IMAGE: ghcr.io/${{ github.repository }}/backend:latest
     steps:
@@ -123,39 +152,46 @@ jobs:
   push-images:
     name: Push Images
     runs-on: ubuntu-latest
-    needs: [ build-nuxt, build-backend ]
-    if: github.ref == 'refs/heads/main'
+    needs: [ changes, build-nuxt, build-backend ]
+    if: ${{ always() && github.ref == 'refs/heads/main' && (needs.build-nuxt.result == 'success' || needs.build-backend.result == 'success') }}
     steps:
       - name: Download Nuxt Image Artifact
         uses: actions/download-artifact@v4
+        if: ${{ needs.build-nuxt.result == 'success' }}
         with:
           name: ${{ env.NUXT_IMAGE_ARTIFACT }}
 
       - name: Download Backend Image Artifact
         uses: actions/download-artifact@v4
+        if: ${{ needs.build-backend.result == 'success' }}
         with:
           name: ${{ env.BACKEND_IMAGE_ARTIFACT }}
 
       - name: Load Nuxt Image
+        if: ${{ needs.build-nuxt.result == 'success' }}
         run: gunzip < ${{ env.NUXT_IMAGE_ZIP_FILE }} | docker load
 
       - name: Load Backend Image
+        if: ${{ needs.build-backend.result == 'success' }}
         run: gunzip < ${{ env.BACKEND_IMAGE_ZIP_FILE }} | docker load
 
       - name: Log in to Docker registry
+        if: ${{ needs.build-nuxt.result == 'success' || needs.build-backend.result == 'success' }}
         run: echo "${{ secrets.GITHUB_TOKEN }}" | docker login ghcr.io -u ${{ github.actor }} --password-stdin
 
       - name: Push Nuxt Image
+        if: ${{ needs.build-nuxt.result == 'success' }}
         run: docker push ${{ env.NUXT_IMAGE }}
 
       - name: Push Backend Image
+        if: ${{ needs.build-backend.result == 'success' }}
         run: docker push ${{ env.BACKEND_IMAGE }}
 
   deploy:
     name: Deploy to Production
     runs-on: ubuntu-latest
     needs: [ push-images ]
-    if: github.ref == 'refs/heads/main'
+    if: ${{ needs.push-images.result == 'success' && github.ref == 'refs/heads/main' }}
     env:
       DEPLOY_URL: ${{ secrets.DEPLOY_URL }}
       DEPLOY_TOKEN: ${{ secrets.DEPLOY_TOKEN }}
