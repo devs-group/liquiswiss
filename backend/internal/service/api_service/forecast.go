@@ -372,10 +372,7 @@ func (a *APIService) CalculateForecast(userID int64) ([]models.Forecast, error) 
 
 			fiatRate := models.GetFiatRateFromCurrency(fiatRates, baseCurrency, *salary.Currency.Code)
 			// Must be minus here
-			netAmount := salary.Amount
-			if salary.WithSeparateCosts {
-				netAmount = salary.Amount - salary.EmployeeDeductions
-			}
+			netAmount := salary.Amount - salary.EmployeeDeductions
 			amount := -models.CalculateAmountWithFiatRate(int64(netAmount), fiatRate)
 
 			salaryExclusions, err := a.ListForecastExclusions(userID, salary.ID, utils.SalariesTableName)
@@ -474,13 +471,10 @@ func (a *APIService) CalculateForecast(userID int64) ([]models.Forecast, error) 
 				}
 			}
 
-			// Calculate the separate costs if wanted
-			var salaryCosts []models.SalaryCost
-			if salary.WithSeparateCosts {
-				salaryCosts, _, err = a.ListSalaryCosts(userID, salary.ID, page, limit, false)
-				if err != nil {
-					return nil, err
-				}
+			// Always calculate the separate costs; salaries without definitions return an empty list.
+			salaryCosts, _, err := a.ListSalaryCosts(userID, salary.ID, 1, 1000, false)
+			if err != nil {
+				return nil, err
 			}
 
 			for _, salaryCost := range salaryCosts {

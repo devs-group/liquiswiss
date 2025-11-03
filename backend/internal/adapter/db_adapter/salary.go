@@ -76,7 +76,6 @@ func (d *DatabaseAdapter) GetSalary(userID int64, salaryID int64) (*models.Salar
 		&salary.VacationDaysPerYear,
 		&salary.FromDate,
 		&toDate,
-		&salary.WithSeparateCosts,
 		&salary.IsTermination,
 		&salary.IsDisabled,
 		&salary.DBDate,
@@ -131,7 +130,6 @@ func (d *DatabaseAdapter) CreateSalary(payload models.CreateSalary, userID int64
 		payload.HoursPerMonth = 0
 		payload.Amount = 0
 		payload.VacationDaysPerYear = 0
-		payload.WithSeparateCosts = false
 		payload.ToDate = nil
 	}
 
@@ -146,11 +144,6 @@ func (d *DatabaseAdapter) CreateSalary(payload models.CreateSalary, userID int64
 		toDate = sql.NullTime{Valid: false}
 	}
 
-	// Activate separate costs by default
-	if !payload.IsTermination {
-		payload.WithSeparateCosts = true
-	}
-
 	res, err := stmt.Exec(
 		employeeID,
 		payload.HoursPerMonth,
@@ -160,7 +153,6 @@ func (d *DatabaseAdapter) CreateSalary(payload models.CreateSalary, userID int64
 		payload.VacationDaysPerYear,
 		fromDate,
 		toDate,
-		payload.WithSeparateCosts,
 		payload.IsTermination,
 		employeeID,
 		userID,
@@ -311,10 +303,6 @@ func (d *DatabaseAdapter) UpdateSalary(payload models.UpdateSalary, employeeID i
 			return 0, 0, err
 		}
 		args = append(args, entryDate)
-	}
-	if payload.WithSeparateCosts != nil {
-		queryBuild = append(queryBuild, "with_separate_costs = ?")
-		args = append(args, *payload.WithSeparateCosts)
 	}
 	if payload.IsDisabled != nil {
 		queryBuild = append(queryBuild, "is_disabled = ?")

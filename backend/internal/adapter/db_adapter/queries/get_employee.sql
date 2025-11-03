@@ -2,7 +2,7 @@ SELECT
     e.id,
     e.name,
     rs.hours_per_month,
-    IF(rs.with_separate_costs, rs.amount + rs.employer_costs, rs.amount) AS salary,
+    rs.amount + rs.employer_costs AS salary,
     rs.cycle,
     c.id,
     c.locale_code,
@@ -12,7 +12,6 @@ SELECT
     rs.from_date,
     rs.to_date,
     COALESCE(rs.is_in_future, false) AS is_in_future,
-    COALESCE(rs.with_separate_costs, false) AS with_separate_costs,
     COALESCE(rs.is_termination, false) AS is_terminated,
     MAX(CASE WHEN s.is_termination = 1 THEN 1 ELSE 0 END) AS will_be_terminated,
     rs.id AS salary_id

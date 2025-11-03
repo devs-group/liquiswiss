@@ -53,9 +53,8 @@ func TestSalaryExecutionDates(t *testing.T) {
 				CurrencyID:          *currency.ID,
 				VacationDaysPerYear: 25,
 				// This begins in the past and due to monthly cycle and no ToDate this is due in 2025-01
-				FromDate:          "2024-03-26",
-				ToDate:            nil,
-				WithSeparateCosts: false,
+				FromDate: "2024-03-26",
+				ToDate:   nil,
 			},
 		},
 		{
@@ -70,8 +69,7 @@ func TestSalaryExecutionDates(t *testing.T) {
 				VacationDaysPerYear: 25,
 				FromDate:            "2024-03-26",
 				// This ends the salary before the January salary, so December must be the last
-				ToDate:            utils.StringAsPointer("2025-01-25"),
-				WithSeparateCosts: false,
+				ToDate: utils.StringAsPointer("2025-01-25"),
 			},
 		},
 		{
@@ -87,7 +85,6 @@ func TestSalaryExecutionDates(t *testing.T) {
 				VacationDaysPerYear: 25,
 				FromDate:            "2025-01-31",
 				ToDate:              nil,
-				WithSeparateCosts:   false,
 			},
 		},
 		{
@@ -103,7 +100,6 @@ func TestSalaryExecutionDates(t *testing.T) {
 				VacationDaysPerYear: 25,
 				FromDate:            "2025-01-31",
 				ToDate:              nil,
-				WithSeparateCosts:   false,
 			},
 		},
 		{
@@ -118,7 +114,6 @@ func TestSalaryExecutionDates(t *testing.T) {
 				VacationDaysPerYear: 25,
 				FromDate:            "2025-01-26",
 				ToDate:              nil,
-				WithSeparateCosts:   false,
 			},
 		},
 		{
@@ -134,7 +129,6 @@ func TestSalaryExecutionDates(t *testing.T) {
 				VacationDaysPerYear: 25,
 				FromDate:            "2025-01-26",
 				ToDate:              nil,
-				WithSeparateCosts:   false,
 			},
 		},
 		{
@@ -150,7 +144,6 @@ func TestSalaryExecutionDates(t *testing.T) {
 				VacationDaysPerYear: 25,
 				FromDate:            "2025-01-26",
 				ToDate:              nil,
-				WithSeparateCosts:   false,
 			},
 		},
 		{
@@ -166,7 +159,6 @@ func TestSalaryExecutionDates(t *testing.T) {
 				VacationDaysPerYear: 25,
 				FromDate:            "2025-01-26",
 				ToDate:              nil,
-				WithSeparateCosts:   false,
 			},
 		},
 		{
@@ -182,7 +174,6 @@ func TestSalaryExecutionDates(t *testing.T) {
 				VacationDaysPerYear: 25,
 				FromDate:            "2025-01-26",
 				ToDate:              nil,
-				WithSeparateCosts:   false,
 			},
 		},
 		{
@@ -198,7 +189,6 @@ func TestSalaryExecutionDates(t *testing.T) {
 				VacationDaysPerYear: 25,
 				FromDate:            "2024-01-31",
 				ToDate:              utils.StringAsPointer("2024-11-30"),
-				WithSeparateCosts:   false,
 			},
 		},
 	}
@@ -261,7 +251,6 @@ func TestTerminationSalaryResetsFinancialData(t *testing.T) {
 		VacationDaysPerYear: 25,
 		FromDate:            "2025-11-01",
 		ToDate:              utils.StringAsPointer("2026-01-31"),
-		WithSeparateCosts:   true,
 		IsTermination:       false,
 	}, user.ID, employee.ID)
 	assert.NoError(t, err)
@@ -274,7 +263,6 @@ func TestTerminationSalaryResetsFinancialData(t *testing.T) {
 		VacationDaysPerYear: 20,
 		FromDate:            "2026-02-01",
 		ToDate:              utils.StringAsPointer("2026-02-28"),
-		WithSeparateCosts:   true,
 		IsTermination:       true,
 	}, user.ID, employee.ID)
 	assert.NoError(t, err)
@@ -282,7 +270,6 @@ func TestTerminationSalaryResetsFinancialData(t *testing.T) {
 	assert.Equal(t, uint16(0), terminationSalary.HoursPerMonth)
 	assert.Equal(t, uint16(0), terminationSalary.VacationDaysPerYear)
 	assert.Equal(t, uint64(0), terminationSalary.Amount)
-	assert.False(t, terminationSalary.WithSeparateCosts)
 	assert.True(t, terminationSalary.IsTermination)
 	assert.Nil(t, terminationSalary.ToDate)
 	assert.Nil(t, terminationSalary.NextExecutionDate)
@@ -328,7 +315,6 @@ func TestSalaryHasSeparateCostsDefined(t *testing.T) {
 		VacationDaysPerYear: 25,
 		FromDate:            "2025-01-01",
 		ToDate:              nil,
-		WithSeparateCosts:   true,
 		IsTermination:       false,
 	}, user.ID, employee.ID)
 	assert.NoError(t, err)
@@ -348,4 +334,54 @@ func TestSalaryHasSeparateCostsDefined(t *testing.T) {
 	updatedSalary, err := apiService.GetSalary(user.ID, salary.ID)
 	assert.NoError(t, err)
 	assert.True(t, updatedSalary.HasSeparateCostsDefined)
+}
+
+func TestListEmployeesIncludesEmployerCosts(t *testing.T) {
+	conn := SetupTestEnvironment(t)
+	defer conn.Close()
+
+	dbAdapter := db_adapter.NewDatabaseAdapter(conn)
+	sendgridService := sendgrid_adapter.NewSendgridAdapter("")
+	apiService := api_service.NewAPIService(dbAdapter, sendgridService)
+
+	currency, err := CreateCurrency(apiService, "CHF", "Swiss Franc", "de-CH")
+	assert.NoError(t, err)
+
+	user, _, err := CreateUserWithOrganisation(
+		apiService, dbAdapter, "employer@costs.ch", "test", "Employer Costs Org",
+	)
+	assert.NoError(t, err)
+
+	employee, err := CreateEmployee(apiService, user.ID, "Employer Cost Employee")
+	assert.NoError(t, err)
+
+	salary, err := apiService.CreateSalary(models.CreateSalary{
+		HoursPerMonth:       160,
+		Amount:              6000_00,
+		Cycle:               "monthly",
+		CurrencyID:          *currency.ID,
+		VacationDaysPerYear: 25,
+		FromDate:            "2025-03-01",
+		ToDate:              nil,
+		IsTermination:       false,
+	}, user.ID, employee.ID)
+	assert.NoError(t, err)
+
+	employerCostAmount := uint64(350_00)
+	_, err = apiService.CreateSalaryCost(models.CreateSalaryCost{
+		Cycle:            "monthly",
+		AmountType:       "fixed",
+		Amount:           employerCostAmount,
+		DistributionType: "employer",
+		RelativeOffset:   1,
+		TargetDate:       nil,
+		LabelID:          nil,
+	}, user.ID, salary.ID)
+	assert.NoError(t, err)
+
+	employees, _, err := apiService.ListEmployees(user.ID, 1, 10, "name", "ASC")
+	assert.NoError(t, err)
+	assert.Len(t, employees, 1)
+	assert.NotNil(t, employees[0].SalaryAmount)
+	assert.Equal(t, salary.Amount+employerCostAmount, *employees[0].SalaryAmount)
 }

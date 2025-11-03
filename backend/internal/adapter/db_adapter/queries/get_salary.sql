@@ -11,7 +11,6 @@ SELECT
     s.vacation_days_per_year,
     s.from_date,
     s.to_date,
-    s.with_separate_costs,
     s.is_termination,
     s.is_disabled,
     CURDATE() AS db_date

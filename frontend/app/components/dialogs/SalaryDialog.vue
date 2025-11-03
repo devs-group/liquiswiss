@@ -153,15 +153,6 @@
       >
         Lohnkosten können separat, direkt nach dem Erstellen hinzugefügt werden
       </Message>
-
-      <Message
-        v-if="!isCreate && salary?.withSeparateCosts"
-        severity="info"
-        size="small"
-        class="col-span-full"
-      >
-        Hinweis: Für diesen Lohn werden Lohnkosten separat geführt
-      </Message>
     </template>
     <template v-else>
       <div class="flex flex-col gap-2 col-span-full md:col-span-1">

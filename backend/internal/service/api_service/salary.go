@@ -222,7 +222,6 @@ func (a *APIService) applySalaryCalculations(userID int64, salary *models.Salary
 		salary.VacationDaysPerYear = 0
 		salary.EmployeeDeductions = 0
 		salary.EmployerCosts = 0
-		salary.WithSeparateCosts = false
 		salary.HasSeparateCostsDefined = false
 		salary.NextExecutionDate = nil
 		return salary, nil

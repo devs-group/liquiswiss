@@ -49,7 +49,6 @@
         class="flex flex-wrap col-span-full justify-end gap-2"
       >
         <Button
-          v-if="withSeparateCosts"
           icon="pi pi-users"
           severity="help"
           label="Von Mitarbeiter kopieren"
@@ -109,8 +108,6 @@ const costsErrorMessage = ref('')
 const costs = ref<SalaryCostResponse[]>([])
 const search = ref('')
 const filterType = ref<EmployeeCostOverviewTypeFilterToStringDefinition>(EmployeeCostOverviewType.All)
-const withSeparateCosts = computed(() => salary.value?.withSeparateCosts ?? false)
-
 const filteredSalaryCosts = computed(() => {
   return costs.value
     .filter(c => !c.label || c.label?.name.toLowerCase().includes(search.value.toLowerCase()))

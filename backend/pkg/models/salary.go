@@ -12,7 +12,6 @@ type Salary struct {
 	VacationDaysPerYear     uint16        `db:"vacation_days_per_year" json:"vacationDaysPerYear"`
 	FromDate                types.AsDate  `db:"from_date" json:"fromDate"`
 	ToDate                  *types.AsDate `db:"to_date" json:"toDate"`
-	WithSeparateCosts       bool          `db:"with_separate_costs" json:"withSeparateCosts"`
 	HasSeparateCostsDefined bool          `db:"-" json:"hasSeparateCostsDefined"`
 	IsTermination           bool          `db:"is_termination" json:"isTermination"`
 	IsDisabled              bool          `db:"is_disabled" json:"isDisabled"`
@@ -34,7 +33,6 @@ type CreateSalary struct {
 	VacationDaysPerYear uint16  `json:"vacationDaysPerYear" validate:"gte=0"`
 	FromDate            string  `json:"fromDate" validate:"required"`
 	ToDate              *string `json:"toDate" validate:"omitempty,fromDateGTEToDate"`
-	WithSeparateCosts   bool    `json:"withSeparateCosts"`
 	IsTermination       bool    `json:"isTermination"`
 }
 
@@ -46,6 +44,5 @@ type UpdateSalary struct {
 	VacationDaysPerYear *uint16 `json:"vacationDaysPerYear" validate:"omitempty,gte=0"`
 	FromDate            *string `json:"fromDate" validate:"omitempty"`
 	ToDate              *string `json:"toDate" validate:"omitempty,fromDateGTEToDate"`
-	WithSeparateCosts   *bool   `json:"withSeparateCosts" validate:"omitempty"`
 	IsDisabled          *bool   `json:"isDisabled" validate:"omitempty"`
 }

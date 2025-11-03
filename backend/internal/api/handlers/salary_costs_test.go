@@ -45,7 +45,6 @@ func TestMonthlySalaryAtTheEndOfMonthWithoutToDate(t *testing.T) {
 		FromDate:            "2025-01-31",
 		ToDate:              nil,
 		// We want to test separate costs
-		WithSeparateCosts: true,
 	}, user.ID, employee.ID)
 	assert.NoError(t, err)
 
@@ -627,7 +626,6 @@ func TestPercentageSalaryCostBasedOnOtherCost(t *testing.T) {
 		}(),
 		VacationDaysPerYear: 25,
 		FromDate:            "2025-01-01",
-		WithSeparateCosts:   true,
 	}, user.ID, employee.ID)
 	assert.NoError(t, err)
 
@@ -717,7 +715,6 @@ func TestSalaryCostBaseRequiresPercentageAmountType(t *testing.T) {
 		}(),
 		VacationDaysPerYear: 25,
 		FromDate:            "2025-01-01",
-		WithSeparateCosts:   true,
 	}, user.ID, employee.ID)
 	assert.NoError(t, err)
 
@@ -779,7 +776,6 @@ func TestMonthlySalaryAtTheEndOfMonthWithToDate(t *testing.T) {
 		FromDate:            "2025-01-31",
 		ToDate:              utils.StringAsPointer("2025-07-31"),
 		// We want to test separate costs
-		WithSeparateCosts: true,
 	}, user.ID, employee.ID)
 	assert.NoError(t, err)
 
@@ -1129,7 +1125,6 @@ func TestMultipleSalaryAtTheEndOfMonthCases(t *testing.T) {
 		VacationDaysPerYear: 29,
 		FromDate:            "2025-01-31",
 		ToDate:              nil,
-		WithSeparateCosts:   true,
 	}, user.ID, employee.ID)
 	assert.NoError(t, err)
 
@@ -1141,7 +1136,6 @@ func TestMultipleSalaryAtTheEndOfMonthCases(t *testing.T) {
 		VacationDaysPerYear: 29,
 		FromDate:            "2025-09-30",
 		ToDate:              nil,
-		WithSeparateCosts:   true,
 	}, user.ID, employee.ID)
 	assert.NoError(t, err)
 
@@ -1324,7 +1318,6 @@ func TestLongOffsetScenariosAtTheEndOfMonth(t *testing.T) {
 		FromDate:            "2025-01-31",
 		ToDate:              nil,
 		// We want to test separate costs
-		WithSeparateCosts: true,
 	}, user.ID, employee.ID)
 	assert.NoError(t, err)
 
@@ -1463,7 +1456,6 @@ func TestSalaryCostWithPastPaymentsRelativeOffset(t *testing.T) {
 		VacationDaysPerYear: 25,
 		FromDate:            "2025-01-26",
 		ToDate:              nil,
-		WithSeparateCosts:   true,
 	}, user.ID, employee.ID)
 	assert.NoError(t, err)
 
@@ -1553,7 +1545,6 @@ func TestSalaryCostWithPastPaymentsAndTargetDate(t *testing.T) {
 		VacationDaysPerYear: 25,
 		FromDate:            "2025-01-26",
 		ToDate:              nil,
-		WithSeparateCosts:   true,
 	}, user.ID, employee.ID)
 	assert.NoError(t, err)
 
@@ -1634,7 +1625,6 @@ func TestSalaryCostTargetDateLeapYearMonthly(t *testing.T) {
 		VacationDaysPerYear: 25,
 		FromDate:            "2024-01-31",
 		ToDate:              nil,
-		WithSeparateCosts:   true,
 	}, user.ID, employee.ID)
 	assert.NoError(t, err)
 
@@ -1724,7 +1714,6 @@ func TestSalaryCostTargetDateLeapYearAnnualOffset(t *testing.T) {
 		VacationDaysPerYear: 25,
 		FromDate:            "2024-01-31",
 		ToDate:              nil,
-		WithSeparateCosts:   true,
 	}, user.ID, employee.ID)
 	assert.NoError(t, err)
 
@@ -1815,7 +1804,6 @@ func TestSalaryCostPersistsAfterSalaryTransition(t *testing.T) {
 		VacationDaysPerYear: 25,
 		FromDate:            "2025-01-26",
 		ToDate:              utils.StringAsPointer("2025-06-26"),
-		WithSeparateCosts:   true,
 	}, user.ID, employee.ID)
 	assert.NoError(t, err)
 
@@ -1852,7 +1840,6 @@ func TestSalaryCostPersistsAfterSalaryTransition(t *testing.T) {
 		VacationDaysPerYear: 25,
 		FromDate:            "2025-06-27",
 		ToDate:              nil,
-		WithSeparateCosts:   true,
 	}, user.ID, employee.ID)
 	assert.NoError(t, err)
 	assert.NotNil(t, salary2)
@@ -1925,7 +1912,6 @@ func TestCopySalaryCostsAcrossEmployees(t *testing.T) {
 		VacationDaysPerYear: 25,
 		FromDate:            "2025-01-01",
 		ToDate:              nil,
-		WithSeparateCosts:   true,
 	}, user.ID, sourceEmployee.ID)
 	assert.NoError(t, err)
 
@@ -1937,7 +1923,6 @@ func TestCopySalaryCostsAcrossEmployees(t *testing.T) {
 		VacationDaysPerYear: 25,
 		FromDate:            "2025-03-01",
 		ToDate:              nil,
-		WithSeparateCosts:   true,
 	}, user.ID, targetEmployee.ID)
 	assert.NoError(t, err)
 
@@ -2013,7 +1998,6 @@ func TestMonthlySalaryInBetweenMonthWithoutToDate(t *testing.T) {
 		FromDate:            "2025-01-26",
 		ToDate:              nil,
 		// We want to test separate costs
-		WithSeparateCosts: true,
 	}, user.ID, employee.ID)
 	assert.NoError(t, err)
 
@@ -2598,7 +2582,6 @@ func TestMonthlySalaryInBetweenMonthWithToDate(t *testing.T) {
 		FromDate:            "2025-01-26",
 		ToDate:              utils.StringAsPointer("2025-07-26"),
 		// We want to test separate costs
-		WithSeparateCosts: true,
 	}, user.ID, employee.ID)
 	assert.NoError(t, err)
 
@@ -2948,7 +2931,6 @@ func TestMultipleSalaryInBetweenMonthCases(t *testing.T) {
 		VacationDaysPerYear: 29,
 		FromDate:            "2025-01-26",
 		ToDate:              nil,
-		WithSeparateCosts:   true,
 	}, user.ID, employee.ID)
 	assert.NoError(t, err)
 
@@ -2960,7 +2942,6 @@ func TestMultipleSalaryInBetweenMonthCases(t *testing.T) {
 		VacationDaysPerYear: 29,
 		FromDate:            "2025-09-26",
 		ToDate:              nil,
-		WithSeparateCosts:   true,
 	}, user.ID, employee.ID)
 	assert.NoError(t, err)
 
@@ -3143,7 +3124,6 @@ func TestLongOffsetScenariosInBetweenMonth(t *testing.T) {
 		FromDate:            "2025-01-26",
 		ToDate:              nil,
 		// We want to test separate costs
-		WithSeparateCosts: true,
 	}, user.ID, employee.ID)
 	assert.NoError(t, err)
 

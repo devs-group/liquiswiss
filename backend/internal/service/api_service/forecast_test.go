@@ -237,7 +237,6 @@ func TestCalculateForecast_SkipsDisabledSalariesOnly(t *testing.T) {
 		VacationDaysPerYear: 25,
 		FromDate:            activeFromDate,
 		ToDate:              &activeToDate,
-		WithSeparateCosts:   false,
 		IsTermination:       false,
 		IsDisabled:          false,
 		EmployeeDeductions:  0,
@@ -254,14 +253,14 @@ func TestCalculateForecast_SkipsDisabledSalariesOnly(t *testing.T) {
 		VacationDaysPerYear: 25,
 		FromDate:            activeFromDate,
 		ToDate:              &activeToDate,
-		WithSeparateCosts:   false,
 		IsTermination:       false,
 		IsDisabled:          true,
 	}
 
 	mockDB.EXPECT().
 		ListSalaryCosts(userID, activeSalary.ID, int64(1), int64(1000)).
-		Return([]models.SalaryCost{}, int64(0), nil)
+		Return([]models.SalaryCost{}, int64(0), nil).
+		Times(2)
 
 	mockDB.EXPECT().
 		ListSalaryCosts(userID, disabledSalary.ID, int64(1), int64(1000)).
