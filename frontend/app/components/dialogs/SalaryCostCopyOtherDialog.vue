@@ -139,7 +139,7 @@ const isLoadingSalaryCosts = ref(false)
 const salaryCostsErrorMessage = ref('')
 const isCopying = ref(false)
 
-const employeeOptions = computed(() => employees.value.filter(emp => emp.id !== salary.value.employeeID))
+const employeeOptions = computed(() => employees.value)
 
 const sourceSalaryOptions = computed(() => sourceSalaries.value)
 const canCopy = computed(() => selectedSalaryCosts.value.length > 0 && !!selectedSourceSalaryID.value)
@@ -155,7 +155,7 @@ const fetchEmployees = async () => {
         limit: 200,
       },
     })
-    employees.value = data.data?.filter(emp => emp.id !== salary.value.employeeID) ?? []
+    employees.value = data.data ?? []
   }
   catch {
     employeesErrorMessage.value = 'Es gab einen Fehler beim Laden der Mitarbeiter'
@@ -195,7 +195,8 @@ const loadSourceSalaries = async (employeeID: number) => {
   selectAll.value = true
   isLoadingSourceSalaries.value = true
   try {
-    sourceSalaries.value = await fetchSalaries(employeeID)
+    const salaries = await fetchSalaries(employeeID)
+    sourceSalaries.value = salaries.filter(s => s.id !== salary.value.id)
   }
   catch {
     sourceSalaries.value = []

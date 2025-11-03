@@ -52,8 +52,8 @@
           v-if="withSeparateCosts"
           icon="pi pi-users"
           severity="help"
-          label="Von anderem Mitarbeiter kopieren"
-          @click="onCopyFromOtherEmployee"
+          label="Von Mitarbeiter kopieren"
+          @click="onCopyFromEmployee"
         />
         <Button
           icon="pi pi-plus"
@@ -162,7 +162,7 @@ const onCreateCost = () => {
   })
 }
 
-const onCopyFromOtherEmployee = () => {
+const onCopyFromEmployee = () => {
   dialog.open(SalaryCostCopyOtherDialog, {
     props: {
       header: 'Lohnkosten kopieren',
