@@ -53,7 +53,23 @@
         <p v-else>
           Inaktiv
         </p>
-        <p>Zu Kosten von <strong>{{ distributionType }}</strong></p>
+        <div class="flex flex-col gap-1">
+          <p>Zu Kosten von</p>
+          <div class="flex flex-wrap items-center gap-1">
+            <span
+              class="flex-1 truncate rounded-md px-2 py-1 text-[10px] sm:text-xs font-semibold text-center"
+              :class="employerBadgeClasses"
+            >
+              {{ employerLabel }}
+            </span>
+            <span
+              class="flex-1 truncate rounded-md px-2 py-1 text-[10px] sm:text-xs font-semibold text-center"
+              :class="employeeBadgeClasses"
+            >
+              {{ employeeLabel }}
+            </span>
+          </div>
+        </div>
         <hr>
         <p class="text-xs">
           {{ getNextSalaryPaymentHint }}
@@ -67,7 +83,9 @@
 import type { PropType } from 'vue'
 import type { SalaryCostResponse, SalaryResponse } from '~/models/employee'
 import { SalaryCostUtils } from '~/utils/models/salary-cost-utils'
-import { DateStringToFormattedWordDate } from '~/utils/format-helper'
+import { DateStringToFormattedDate, DateStringToFormattedWordDate } from '~/utils/format-helper'
+import { EmployeeCostDistributionType } from '~/config/enums'
+import { EmployeeCostDistributionTypeToOptions } from '~/utils/enum-helper'
 
 const props = defineProps({
   salaryCost: {
@@ -104,8 +122,23 @@ const nextCostFormatted = computed(
 const amountType = computed(
   () => SalaryCostUtils.amountType(props.salaryCost),
 )
-const distributionType = computed(
-  () => SalaryCostUtils.distributionType(props.salaryCost),
+const isEmployerDistribution = computed(
+  () => props.salaryCost.distributionType === EmployeeCostDistributionType.Employer,
+)
+const distributionOptions = EmployeeCostDistributionTypeToOptions()
+const employerLabel
+  = distributionOptions.find(option => option.value === EmployeeCostDistributionType.Employer)?.name
+    ?? 'Arbeitgeber (AG)'
+const employeeLabel
+  = distributionOptions.find(option => option.value === EmployeeCostDistributionType.Employee)?.name
+    ?? 'Arbeitnehmer (AN)'
+const activeDistributionClasses = 'bg-liqui-green text-green-900 dark:text-green-100'
+const inactiveDistributionClasses = 'bg-zinc-200 text-zinc-600 dark:bg-zinc-700 dark:text-zinc-300'
+const employerBadgeClasses = computed(() =>
+  isEmployerDistribution.value ? activeDistributionClasses : inactiveDistributionClasses,
+)
+const employeeBadgeClasses = computed(() =>
+  isEmployerDistribution.value ? inactiveDistributionClasses : activeDistributionClasses,
 )
 const costCycle = computed(
   () => SalaryCostUtils.costCycle(props.salaryCost),
