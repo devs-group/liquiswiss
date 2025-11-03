@@ -1,6 +1,10 @@
 import { AuthRouteNames, RouteNames } from '~/config/routes'
 
 export default defineNuxtRouteMiddleware(async (to) => {
+  if (to.path?.startsWith('/api/')) {
+    return
+  }
+
   const { useFetchGetProfile, isAuthenticated, hasFetchedInitially } = useAuth()
 
   if (!isAuthenticated.value && !hasFetchedInitially.value) {
