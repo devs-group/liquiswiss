@@ -106,7 +106,7 @@
           class="flex items-center gap-2"
         >
           <Button
-            v-if="hasCosts"
+            v-if="hasSeparateCostsDefined"
             v-tooltip.top="'Lohnkosten in anderen Lohn kopieren'"
             icon="pi pi-copy"
             severity="help"
@@ -279,8 +279,8 @@ const toDateFormatted = computed(
 const cycle = computed(
   () => SalaryUtils.cycle(props.salary),
 )
-const hasCosts = computed(
-  () => SalaryUtils.hasCosts(props.salary),
+const hasSeparateCostsDefined = computed(
+  () => SalaryUtils.hasSeparateCostsDefined(props.salary),
 )
 
 const onShowCostOverview = () => {

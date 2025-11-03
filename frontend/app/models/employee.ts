@@ -67,6 +67,7 @@ export interface SalaryResponse {
   fromDate: string
   toDate: string | null
   withSeparateCosts: boolean
+  hasSeparateCostsDefined: boolean
   isTermination: boolean
   nextExecutionDate: string | null
   employeeDeductions: number

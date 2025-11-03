@@ -3,18 +3,19 @@ package models
 import "liquiswiss/pkg/types"
 
 type Salary struct {
-	ID                  int64         `db:"id" json:"id"`
-	EmployeeID          int64         `db:"employee_id" json:"employeeID"`
-	HoursPerMonth       uint16        `db:"hours_per_month" json:"hoursPerMonth"`
-	Amount              uint64        `db:"amount" json:"amount"`
-	Cycle               string        `db:"cycle" json:"cycle"`
-	Currency            Currency      `db:"currency_id" json:"currency"`
-	VacationDaysPerYear uint16        `db:"vacation_days_per_year" json:"vacationDaysPerYear"`
-	FromDate            types.AsDate  `db:"from_date" json:"fromDate"`
-	ToDate              *types.AsDate `db:"to_date" json:"toDate"`
-	WithSeparateCosts   bool          `db:"with_separate_costs" json:"withSeparateCosts"`
-	IsTermination       bool          `db:"is_termination" json:"isTermination"`
-	IsDisabled          bool          `db:"is_disabled" json:"isDisabled"`
+	ID                      int64         `db:"id" json:"id"`
+	EmployeeID              int64         `db:"employee_id" json:"employeeID"`
+	HoursPerMonth           uint16        `db:"hours_per_month" json:"hoursPerMonth"`
+	Amount                  uint64        `db:"amount" json:"amount"`
+	Cycle                   string        `db:"cycle" json:"cycle"`
+	Currency                Currency      `db:"currency_id" json:"currency"`
+	VacationDaysPerYear     uint16        `db:"vacation_days_per_year" json:"vacationDaysPerYear"`
+	FromDate                types.AsDate  `db:"from_date" json:"fromDate"`
+	ToDate                  *types.AsDate `db:"to_date" json:"toDate"`
+	WithSeparateCosts       bool          `db:"with_separate_costs" json:"withSeparateCosts"`
+	HasSeparateCostsDefined bool          `db:"-" json:"hasSeparateCostsDefined"`
+	IsTermination           bool          `db:"is_termination" json:"isTermination"`
+	IsDisabled              bool          `db:"is_disabled" json:"isDisabled"`
 
 	// Hidden values
 	DBDate types.AsDate `db:"db_date" json:"-"`

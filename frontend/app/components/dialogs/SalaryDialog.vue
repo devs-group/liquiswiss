@@ -137,7 +137,7 @@
       </div>
 
       <Message
-        v-if="isClone && SalaryUtils.hasCosts(salary!)"
+        v-if="isClone && SalaryUtils.hasSeparateCostsDefined(salary!)"
         severity="warn"
         size="small"
         class="col-span-full"

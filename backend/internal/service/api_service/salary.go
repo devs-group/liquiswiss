@@ -202,6 +202,13 @@ func (a *APIService) DeleteSalary(userID int64, salaryID int64) error {
 }
 
 func (a *APIService) applySalaryCalculations(userID int64, salary *models.Salary) (*models.Salary, error) {
+	// Determine whether separate salary costs exist.
+	salaryCosts, _, err := a.ListSalaryCosts(userID, salary.ID, 1, 1000, true)
+	if err != nil {
+		return nil, err
+	}
+	salary.HasSeparateCostsDefined = len(salaryCosts) > 0
+
 	if salary.IsDisabled {
 		salary.EmployeeDeductions = 0
 		salary.EmployerCosts = 0
@@ -216,15 +223,11 @@ func (a *APIService) applySalaryCalculations(userID int64, salary *models.Salary
 		salary.EmployeeDeductions = 0
 		salary.EmployerCosts = 0
 		salary.WithSeparateCosts = false
+		salary.HasSeparateCostsDefined = false
 		salary.NextExecutionDate = nil
 		return salary, nil
 	}
 
-	// TODO: Think about how to handle the LIMIT here better
-	salaryCosts, _, err := a.ListSalaryCosts(userID, salary.ID, 1, 1000, true)
-	if err != nil {
-		return nil, err
-	}
 	employeeDeductions := a.CalculateSalaryAdjustments(
 		salary.Cycle,
 		"employee",

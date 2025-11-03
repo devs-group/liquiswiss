@@ -17,6 +17,6 @@ export const SalaryUtils = {
     salary.toDate ? DateStringToFormattedDate(salary.toDate) : '',
   cycle: (salary: SalaryResponse) =>
     SalaryCycleTypeToOptions().find(ct => ct.value === salary.cycle)?.name ?? '',
-  hasCosts: (salary: SalaryResponse) =>
-    (salary.employeeDeductions + salary.employerCosts) > 0,
+  hasSeparateCostsDefined: (salary: SalaryResponse) =>
+    salary.hasSeparateCostsDefined,
 }

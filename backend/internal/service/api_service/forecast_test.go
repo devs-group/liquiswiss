@@ -264,6 +264,10 @@ func TestCalculateForecast_SkipsDisabledSalariesOnly(t *testing.T) {
 		Return([]models.SalaryCost{}, int64(0), nil)
 
 	mockDB.EXPECT().
+		ListSalaryCosts(userID, disabledSalary.ID, int64(1), int64(1000)).
+		Return([]models.SalaryCost{}, int64(0), nil)
+
+	mockDB.EXPECT().
 		ListSalaries(userID, employee.ID, int64(1), int64(100000)).
 		Return([]models.Salary{activeSalary, disabledSalary}, int64(2), nil)
 

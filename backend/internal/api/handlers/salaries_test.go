@@ -300,3 +300,52 @@ func TestTerminationSalaryResetsFinancialData(t *testing.T) {
 	}, user.ID, terminationSalary.ID)
 	assert.Error(t, err)
 }
+
+func TestSalaryHasSeparateCostsDefined(t *testing.T) {
+	conn := SetupTestEnvironment(t)
+	defer conn.Close()
+
+	dbAdapter := db_adapter.NewDatabaseAdapter(conn)
+	sendgridService := sendgrid_adapter.NewSendgridAdapter("")
+	apiService := api_service.NewAPIService(dbAdapter, sendgridService)
+
+	currency, err := CreateCurrency(apiService, "CHF", "Swiss Franc", "de-CH")
+	assert.NoError(t, err)
+
+	user, _, err := CreateUserWithOrganisation(
+		apiService, dbAdapter, "john@doe.com", "test", "Test Organisation",
+	)
+	assert.NoError(t, err)
+
+	employee, err := CreateEmployee(apiService, user.ID, "Tom Riddle")
+	assert.NoError(t, err)
+
+	salary, err := apiService.CreateSalary(models.CreateSalary{
+		HoursPerMonth:       160,
+		Amount:              5000_00,
+		Cycle:               "monthly",
+		CurrencyID:          *currency.ID,
+		VacationDaysPerYear: 25,
+		FromDate:            "2025-01-01",
+		ToDate:              nil,
+		WithSeparateCosts:   true,
+		IsTermination:       false,
+	}, user.ID, employee.ID)
+	assert.NoError(t, err)
+	assert.False(t, salary.HasSeparateCostsDefined)
+
+	_, err = apiService.CreateSalaryCost(models.CreateSalaryCost{
+		Cycle:            "monthly",
+		AmountType:       "fixed",
+		Amount:           150_00,
+		DistributionType: "employee",
+		RelativeOffset:   1,
+		TargetDate:       nil,
+		LabelID:          nil,
+	}, user.ID, salary.ID)
+	assert.NoError(t, err)
+
+	updatedSalary, err := apiService.GetSalary(user.ID, salary.ID)
+	assert.NoError(t, err)
+	assert.True(t, updatedSalary.HasSeparateCostsDefined)
+}
