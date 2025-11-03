@@ -17,6 +17,7 @@ func InitValidator() {
 	validate.RegisterAlias("allowedCycles", `oneof='monthly' 'quarterly' 'biannually' 'yearly'`)
 	validate.RegisterAlias("allowedCostCycles", `oneof='once' 'monthly' 'quarterly' 'biannually' 'yearly'`)
 	validate.RegisterAlias("allowedCostAmountTypes", `oneof='fixed' 'percentage'`)
+	validate.RegisterAlias("allowedCostDistributionTypes", `oneof='employee' 'employer' 'both'`)
 }
 
 func GetValidator() *validator.Validate {

@@ -97,7 +97,10 @@ export const EmployeeCostTypeToOptions = () => {
   ]
 }
 
-export type EmployeeCostDistributionTypeToStringDefinition = EmployeeCostDistributionType.Employee | EmployeeCostDistributionType.Employer
+export type EmployeeCostDistributionTypeToStringDefinition =
+  | EmployeeCostDistributionType.Employee
+  | EmployeeCostDistributionType.Employer
+  | EmployeeCostDistributionType.Both
 
 export const EmployeeCostDistributionTypeToOptions = () => {
   return [
@@ -108,6 +111,10 @@ export const EmployeeCostDistributionTypeToOptions = () => {
     {
       name: 'Arbeitgeber (AG)',
       value: EmployeeCostDistributionType.Employer,
+    },
+    {
+      name: 'Arbeitgeber & Arbeitnehmer (AG & AN)',
+      value: EmployeeCostDistributionType.Both,
     },
   ]
 }

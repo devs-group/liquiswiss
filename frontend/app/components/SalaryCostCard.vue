@@ -57,13 +57,13 @@
           <p>Zu Kosten von</p>
           <div class="flex flex-wrap items-center gap-1">
             <span
-              class="flex-1 truncate rounded-md px-2 py-1 text-[10px] sm:text-xs font-semibold text-center"
+              class="flex-1 select-none truncate rounded-md px-2 py-1 text-[10px] sm:text-xs font-semibold text-center"
               :class="employerBadgeClasses"
             >
               {{ employerLabel }}
             </span>
             <span
-              class="flex-1 truncate rounded-md px-2 py-1 text-[10px] sm:text-xs font-semibold text-center"
+              class="flex-1 select-none truncate rounded-md px-2 py-1 text-[10px] sm:text-xs font-semibold text-center"
               :class="employeeBadgeClasses"
             >
               {{ employeeLabel }}
@@ -122,9 +122,6 @@ const nextCostFormatted = computed(
 const amountType = computed(
   () => SalaryCostUtils.amountType(props.salaryCost),
 )
-const isEmployerDistribution = computed(
-  () => props.salaryCost.distributionType === EmployeeCostDistributionType.Employer,
-)
 const distributionOptions = EmployeeCostDistributionTypeToOptions()
 const employerLabel
   = distributionOptions.find(option => option.value === EmployeeCostDistributionType.Employer)?.name
@@ -133,13 +130,25 @@ const employeeLabel
   = distributionOptions.find(option => option.value === EmployeeCostDistributionType.Employee)?.name
     ?? 'Arbeitnehmer (AN)'
 const activeDistributionClasses = 'bg-liqui-green text-green-900 dark:text-green-100'
-const inactiveDistributionClasses = 'bg-zinc-200 text-zinc-600 dark:bg-zinc-700 dark:text-zinc-300'
-const employerBadgeClasses = computed(() =>
-  isEmployerDistribution.value ? activeDistributionClasses : inactiveDistributionClasses,
-)
-const employeeBadgeClasses = computed(() =>
-  isEmployerDistribution.value ? inactiveDistributionClasses : activeDistributionClasses,
-)
+const inactiveDistributionClasses = 'bg-zinc-200 text-zinc-600 dark:bg-zinc-700 dark:text-zinc-300 opacity-50'
+const distributionTypeValue = computed(() => props.salaryCost.distributionType)
+const isBothDistribution = computed(() => distributionTypeValue.value === EmployeeCostDistributionType.Both)
+const employerBadgeClasses = computed(() => {
+  if (isBothDistribution.value) {
+    return activeDistributionClasses
+  }
+  return distributionTypeValue.value === EmployeeCostDistributionType.Employer
+    ? activeDistributionClasses
+    : inactiveDistributionClasses
+})
+const employeeBadgeClasses = computed(() => {
+  if (isBothDistribution.value) {
+    return activeDistributionClasses
+  }
+  return distributionTypeValue.value === EmployeeCostDistributionType.Employee
+    ? activeDistributionClasses
+    : inactiveDistributionClasses
+})
 const costCycle = computed(
   () => SalaryCostUtils.costCycle(props.salaryCost),
 )

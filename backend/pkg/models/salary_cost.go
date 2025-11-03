@@ -8,7 +8,7 @@ type SalaryCost struct {
 	Cycle             string           `db:"cycle" json:"cycle"`
 	AmountType        string           `db:"amount_type" json:"amountType"`
 	Amount            uint64           `db:"amount" json:"amount"`
-	DistributionType  string           `db:"distribution_type" json:"distributionType"`
+	DistributionType  string           `db:"distribution_type" json:"distributionType" validate:"allowedCostDistributionTypes"`
 	RelativeOffset    int64            `db:"relative_offset" json:"relativeOffset"`
 	TargetDate        *types.AsDate    `db:"target_date" json:"targetDate"`
 	BaseSalaryCostIDs []int64          `db:"-" json:"baseSalaryCostIDs"`
@@ -33,7 +33,7 @@ type CreateSalaryCost struct {
 	Cycle             string  `db:"cycle" json:"cycle" validate:"allowedCostCycles"`
 	AmountType        string  `db:"amount_type" json:"amountType" validate:"allowedCostAmountTypes"`
 	Amount            uint64  `db:"amount" json:"amount" validate:"gte=0"`
-	DistributionType  string  `db:"distribution_type" json:"distributionType"`
+	DistributionType  string  `db:"distribution_type" json:"distributionType" validate:"allowedCostDistributionTypes"`
 	RelativeOffset    int64   `db:"relative_offset" json:"relativeOffset" validate:"gt=0"`
 	TargetDate        *string `db:"target_date" json:"targetDate"`
 	LabelID           *int64  `db:"label_id" json:"labelID"`

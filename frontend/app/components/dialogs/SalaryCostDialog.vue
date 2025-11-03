@@ -251,6 +251,14 @@
         :class="{ 'p-invalid': errors['distributionType']?.length }"
       />
       <small class="text-liqui-red">{{ errors["distributionType"] }}</small>
+      <Message
+        v-if="isBothDistribution"
+        severity="info"
+        size="small"
+        :closable="false"
+      >
+        Diese Lohnkosten werden doppelt berücksichtigt.
+      </Message>
     </div>
 
     <div class="flex flex-col gap-2 col-span-full md:col-span-1">
@@ -429,6 +437,8 @@ watch(amountType, (value) => {
 
 const showBaseCostSelect = computed(() => amountType.value === EmployeeCostType.Percentage)
 
+const isBothDistribution = computed(() => distributionType.value === EmployeeCostDistributionType.Both)
+
 const availableBaseCostOptions = computed(() => {
   return baseCostOptions.value.filter((cost) => {
     if (!salaryCost?.id || isClone) {
@@ -438,8 +448,18 @@ const availableBaseCostOptions = computed(() => {
   })
 })
 
-const baseCostDistributionLabel = (cost: SalaryCostResponse) =>
-  cost.distributionType === EmployeeCostDistributionType.Employer ? 'Arbeitgeber' : 'Arbeitnehmer'
+const baseCostDistributionLabel = (cost: SalaryCostResponse) => {
+  switch (cost.distributionType) {
+    case EmployeeCostDistributionType.Employer:
+      return 'AG'
+    case EmployeeCostDistributionType.Employee:
+      return 'AN'
+    case EmployeeCostDistributionType.Both:
+      return 'AG & AN'
+    default:
+      return ''
+  }
+}
 
 const baseCostSelectOptions = computed(() => {
   return availableBaseCostOptions.value.map(cost => ({

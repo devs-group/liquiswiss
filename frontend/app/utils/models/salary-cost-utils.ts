@@ -17,10 +17,16 @@ export const SalaryCostUtils = {
       : AmountToFloat(salaryCost.amount, 3),
 
   calculatedAmountFormatted: (salaryCost: SalaryCostResponse, currency: CurrencyResponse) =>
-    NumberToFormattedCurrency(AmountToFloat(salaryCost.calculatedAmount), currency.localeCode),
+    NumberToFormattedCurrency(
+      AmountToFloat(salaryCost.calculatedAmount * getDistributionMultiplier(salaryCost)),
+      currency.localeCode,
+    ),
 
   nextCostFormatted: (salaryCost: SalaryCostResponse, currency: CurrencyResponse) =>
-    NumberToFormattedCurrency(AmountToFloat(salaryCost.calculatedNextCost), currency.localeCode),
+    NumberToFormattedCurrency(
+      AmountToFloat(salaryCost.calculatedNextCost * getDistributionMultiplier(salaryCost)),
+      currency.localeCode,
+    ),
 
   amountType: (salaryCost: SalaryCostResponse) =>
     EmployeeCostTypeToOptions().find(ct => ct.value === salaryCost.amountType)?.name ?? '',
@@ -38,3 +44,6 @@ export const SalaryCostUtils = {
     ? `am selben Tag`
     : `alle ${salaryCost.relativeOffset} ${SalaryCostUtils.costCycle(salaryCost)}`,
 }
+
+const getDistributionMultiplier = (salaryCost: SalaryCostResponse) =>
+  salaryCost.distributionType === 'both' ? 2 : 1

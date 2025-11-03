@@ -485,7 +485,8 @@ func (a *APIService) CalculateForecast(userID int64) ([]models.Forecast, error) 
 
 				if salaryCost.CalculatedNextExecutionDate != nil {
 					costFromDate := time.Time(*salaryCost.CalculatedNextExecutionDate)
-					nextCost := -models.CalculateAmountWithFiatRate(int64(salaryCost.CalculatedNextCost), fiatRate)
+					distributionMultiplier := getSalaryCostDistributionMultiplier(&salaryCost)
+					nextCost := -models.CalculateAmountWithFiatRate(int64(salaryCost.CalculatedNextCost)*distributionMultiplier, fiatRate)
 
 					labelName := "<Kein Label>"
 					if salaryCost.Label != nil {
@@ -525,7 +526,7 @@ func (a *APIService) CalculateForecast(userID int64) ([]models.Forecast, error) 
 							if matchingDetail == nil {
 								break
 							}
-							nextCost := -models.CalculateAmountWithFiatRate(int64(matchingDetail.Amount), fiatRate)
+							nextCost := -models.CalculateAmountWithFiatRate(int64(matchingDetail.Amount)*distributionMultiplier, fiatRate)
 							monthKey := getYearMonth(current)
 							if forecastMap[monthKey] == nil {
 								initForecastMapKey(forecastMap, monthKey)
@@ -682,6 +683,13 @@ func initForecastMapKey(forecastMap map[string]map[string]int64, monthKey string
 	forecastMap[monthKey] = make(map[string]int64)
 	forecastMap[monthKey]["revenue"] = 0
 	forecastMap[monthKey]["expense"] = 0
+}
+
+func getSalaryCostDistributionMultiplier(cost *models.SalaryCost) int64 {
+	if cost != nil && cost.DistributionType == distributionBoth {
+		return 2
+	}
+	return 1
 }
 
 func addForecastDetail(detailMap map[string]*models.ForecastDetails, monthKey string, amount int64, isRevenue, isExcluded bool, relatedID int64, relatedTable string, categories ...string) {

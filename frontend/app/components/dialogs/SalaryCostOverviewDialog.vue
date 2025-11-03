@@ -114,9 +114,15 @@ const filteredSalaryCosts = computed(() => {
     .filter((c) => {
       switch (filterType.value) {
         case EmployeeCostOverviewType.Employee:
-          return c.distributionType == EmployeeCostDistributionType.Employee
+          return [
+            EmployeeCostDistributionType.Employee,
+            EmployeeCostDistributionType.Both,
+          ].includes(c.distributionType)
         case EmployeeCostOverviewType.Employer:
-          return c.distributionType == EmployeeCostDistributionType.Employer
+          return [
+            EmployeeCostDistributionType.Employer,
+            EmployeeCostDistributionType.Both,
+          ].includes(c.distributionType)
       }
       return c
     })

@@ -318,6 +318,179 @@ func TestCalculateForecast_SkipsDisabledSalariesOnly(t *testing.T) {
 	require.EqualValues(t, capturedForecast.Expense, results[0].Data.Expense)
 }
 
+func TestCalculateForecast_CountsBothSalaryCostsTwice(t *testing.T) {
+	logger.Logger = zap.NewNop().Sugar()
+	utils.InitValidator()
+
+	fixedToday := time.Date(2024, time.January, 1, 0, 0, 0, 0, time.UTC)
+	originalClock := utils.DefaultClock
+	utils.DefaultClock = &stubClock{fixed: fixedToday}
+	defer func() {
+		utils.DefaultClock = originalClock
+	}()
+
+	ctrl := gomock.NewController(t)
+	defer ctrl.Finish()
+
+	mockDB := mocks.NewMockIDatabaseAdapter(ctrl)
+	service := api_service.NewAPIService(mockDB, nil)
+
+	userID := int64(303)
+	baseCode := "CHF"
+	localeCode := "de-CH"
+
+	orgCurrency := models.Currency{
+		Code:       &baseCode,
+		LocaleCode: &localeCode,
+	}
+	user := models.User{
+		ID:                    userID,
+		Name:                  "Test User",
+		Email:                 "test@example.com",
+		CurrentOrganisationID: 808,
+		Currency:              orgCurrency,
+	}
+	organisation := models.Organisation{
+		ID:       user.CurrentOrganisationID,
+		Name:     "Org",
+		Currency: orgCurrency,
+	}
+
+	mockDB.EXPECT().
+		GetProfile(userID).
+		Return(&user, nil)
+	mockDB.EXPECT().
+		GetOrganisation(userID, user.CurrentOrganisationID).
+		Return(&organisation, nil)
+
+	mockDB.EXPECT().
+		ListTransactions(userID, int64(1), int64(100000), "name", "ASC").
+		Return([]models.Transaction{}, int64(0), nil)
+
+	mockDB.EXPECT().
+		ListFiatRates(baseCode).
+		Return([]models.FiatRate{}, nil)
+
+	employee := models.Employee{
+		ID:   55,
+		Name: "Employee Both",
+	}
+
+	mockDB.EXPECT().
+		ListEmployees(userID, int64(1), int64(100000), "name", "ASC").
+		Return([]models.Employee{employee}, int64(1), nil)
+
+	activeFrom := time.Date(2024, time.February, 1, 0, 0, 0, 0, time.UTC)
+	activeFromDate := types.AsDate(activeFrom)
+	activeToDate := types.AsDate(activeFrom)
+
+	grossAmount := uint64(10_000_00)
+	bothShare := uint64(510_00)
+
+	activeSalary := models.Salary{
+		ID:                  700,
+		EmployeeID:          employee.ID,
+		Amount:              grossAmount,
+		Cycle:               utils.CycleMonthly,
+		Currency:            orgCurrency,
+		FromDate:            activeFromDate,
+		ToDate:              &activeToDate,
+		IsTermination:       false,
+		IsDisabled:          false,
+		EmployeeDeductions:  bothShare,
+		EmployerCosts:       bothShare,
+		VacationDaysPerYear: 25,
+	}
+
+	mockDB.EXPECT().
+		ListSalaries(userID, employee.ID, int64(1), int64(100000)).
+		Return([]models.Salary{activeSalary}, int64(1), nil)
+
+	costFromDate := activeFrom
+	costFromDateAsDate := types.AsDate(costFromDate)
+	salaryCost := models.SalaryCost{
+		ID:                          900,
+		Cycle:                       utils.CycleMonthly,
+		AmountType:                  "percentage",
+		DistributionType:            "both",
+		RelativeOffset:              1,
+		SalaryID:                    activeSalary.ID,
+		CalculatedNextExecutionDate: &costFromDateAsDate,
+		CalculatedNextCost:          bothShare,
+		DBDate:                      costFromDateAsDate,
+		CalculatedCostDetails: []models.SalaryCostDetail{
+			{
+				Month:  activeFrom.Format("2006-01"),
+				Amount: bothShare,
+			},
+		},
+	}
+
+	mockDB.EXPECT().
+		ListForecastExclusions(userID, activeSalary.ID, utils.SalariesTableName).
+		Return(map[string]bool{}, nil)
+
+	mockDB.EXPECT().
+		ListSalaryCosts(userID, activeSalary.ID, int64(1), int64(1000)).
+		Return([]models.SalaryCost{salaryCost}, int64(1), nil).
+		AnyTimes()
+
+	mockDB.EXPECT().
+		ListSalaryCostDetails(salaryCost.ID).
+		Return([]models.SalaryCostDetail{
+			{
+				Month:  activeFrom.Format("2006-01"),
+				Amount: bothShare,
+				CostID: salaryCost.ID,
+			},
+		}, nil).
+		AnyTimes()
+
+	mockDB.EXPECT().
+		ListForecastExclusions(userID, salaryCost.ID, utils.SalaryCostsTableName).
+		Return(map[string]bool{}, nil)
+
+	mockDB.EXPECT().
+		ClearForecasts(userID).
+		Return(int64(0), nil)
+
+	var capturedForecast models.CreateForecast
+	mockDB.EXPECT().
+		UpsertForecast(gomock.Any(), userID).
+		DoAndReturn(func(payload models.CreateForecast, _ int64) (int64, error) {
+			capturedForecast = payload
+			return 1, nil
+		})
+
+	mockDB.EXPECT().
+		UpsertForecastDetail(gomock.Any(), userID, int64(1)).
+		Return(int64(0), nil)
+
+	mockDB.EXPECT().
+		ListForecasts(userID, int64(utils.GetTotalMonthsForMaxForecastYears())).
+		DoAndReturn(func(_ int64, _ int64) ([]models.Forecast, error) {
+			return []models.Forecast{
+				{
+					Data: models.ForecastData{
+						Month:    capturedForecast.Month,
+						Revenue:  capturedForecast.Revenue,
+						Expense:  capturedForecast.Expense,
+						Cashflow: capturedForecast.Cashflow,
+					},
+				},
+			}, nil
+		})
+
+	results, err := service.CalculateForecast(userID)
+	require.NoError(t, err)
+
+	expectedExpense := -int64(grossAmount) - int64(bothShare*2)
+	require.Equal(t, activeFrom.Format("2006-01"), capturedForecast.Month)
+	require.EqualValues(t, expectedExpense, capturedForecast.Expense)
+	require.Len(t, results, 1)
+	require.EqualValues(t, expectedExpense, results[0].Data.Expense)
+}
+
 func TestUpdateForecastExclusions_Success(t *testing.T) {
 	logger.Logger = zap.NewNop().Sugar()
 

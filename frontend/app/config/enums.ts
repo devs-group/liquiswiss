@@ -19,6 +19,7 @@ export enum EmployeeCostType {
 export enum EmployeeCostDistributionType {
   Employee = 'employee',
   Employer = 'employer',
+  Both = 'both',
 }
 
 export enum EmployeeCostOverviewType {
