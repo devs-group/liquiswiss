@@ -190,11 +190,11 @@ func (d *DatabaseAdapter) UpdateTransaction(payload models.UpdateTransaction, us
 		queryBuild = append(queryBuild, "amount = ?")
 		args = append(args, *payload.Amount)
 	}
-	// Cycle is also always considered
-	queryBuild = append(queryBuild, "cycle = ?")
 	if payload.Cycle != nil {
+		queryBuild = append(queryBuild, "cycle = ?")
 		args = append(args, *payload.Cycle)
-	} else {
+	} else if payload.IsDisabled == nil {
+		queryBuild = append(queryBuild, "cycle = ?")
 		args = append(args, nil)
 	}
 	if payload.Type != nil {
@@ -224,16 +224,18 @@ func (d *DatabaseAdapter) UpdateTransaction(payload models.UpdateTransaction, us
 		queryBuild = append(queryBuild, "currency_id = ?")
 		args = append(args, *payload.Currency)
 	}
-	queryBuild = append(queryBuild, "employee_id = ?")
 	if payload.Employee != nil {
+		queryBuild = append(queryBuild, "employee_id = ?")
 		args = append(args, *payload.Employee)
-	} else {
+	} else if payload.IsDisabled == nil {
+		queryBuild = append(queryBuild, "employee_id = ?")
 		args = append(args, nil)
 	}
-	queryBuild = append(queryBuild, "vat_id = ?")
 	if payload.Vat != nil {
+		queryBuild = append(queryBuild, "vat_id = ?")
 		args = append(args, *payload.Vat)
-	} else {
+	} else if payload.IsDisabled == nil {
+		queryBuild = append(queryBuild, "vat_id = ?")
 		args = append(args, nil)
 	}
 	if payload.VatIncluded != nil {

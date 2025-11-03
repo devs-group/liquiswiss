@@ -51,13 +51,42 @@ func TestUpdateTransaction_RemoveEndDate(t *testing.T) {
 	require.Nil(t, stored.EndDate)
 }
 
-func TestUpdateTransaction_DisableKeepsEndDate(t *testing.T) {
+func TestUpdateTransaction_DisableKeepsExistingFields(t *testing.T) {
 	conn, apiService, dbAdapter, user, category, currency := setupTransactionDependencies(t)
 	defer conn.Close()
 
 	initialEndDate := "2025-09-01"
-	transaction := createTransaction(t, apiService, user.ID, category.ID, *currency.ID, &initialEndDate)
+	cycle := utils.CycleMonthly
+	employee, err := CreateEmployee(apiService, user.ID, "Transaction Owner")
+	require.NoError(t, err)
+	employeeID := employee.ID
+
+	vat, err := apiService.CreateVat(models.CreateVat{Value: 770}, user.ID)
+	require.NoError(t, err)
+	vatID := vat.ID
+
+	transaction := createTransaction(
+		t,
+		apiService,
+		user.ID,
+		category.ID,
+		*currency.ID,
+		&initialEndDate,
+		func(payload *models.CreateTransaction) {
+			payload.Type = "repeating"
+			payload.Cycle = &cycle
+			payload.Employee = &employeeID
+			payload.Vat = &vatID
+			payload.VatIncluded = true
+		},
+	)
 	assertDateEquals(t, transaction.EndDate, initialEndDate)
+	require.NotNil(t, transaction.Cycle)
+	require.Equal(t, cycle, *transaction.Cycle)
+	require.NotNil(t, transaction.Employee)
+	require.Equal(t, employeeID, transaction.Employee.ID)
+	require.NotNil(t, transaction.Vat)
+	require.Equal(t, vatID, transaction.Vat.ID)
 
 	isDisabled := true
 	updated, err := apiService.UpdateTransaction(models.UpdateTransaction{
@@ -66,11 +95,25 @@ func TestUpdateTransaction_DisableKeepsEndDate(t *testing.T) {
 	require.NoError(t, err)
 	require.True(t, updated.IsDisabled)
 	assertDateEquals(t, updated.EndDate, initialEndDate)
+	require.NotNil(t, updated.Cycle)
+	require.Equal(t, cycle, *updated.Cycle)
+	require.NotNil(t, updated.Employee)
+	require.Equal(t, employeeID, updated.Employee.ID)
+	require.NotNil(t, updated.Vat)
+	require.Equal(t, vatID, updated.Vat.ID)
+	require.True(t, updated.VatIncluded)
 
 	stored, err := dbAdapter.GetTransaction(user.ID, transaction.ID)
 	require.NoError(t, err)
 	require.True(t, stored.IsDisabled)
 	assertDateEquals(t, stored.EndDate, initialEndDate)
+	require.NotNil(t, stored.Cycle)
+	require.Equal(t, cycle, *stored.Cycle)
+	require.NotNil(t, stored.Employee)
+	require.Equal(t, employeeID, stored.Employee.ID)
+	require.NotNil(t, stored.Vat)
+	require.Equal(t, vatID, stored.Vat.ID)
+	require.True(t, stored.VatIncluded)
 }
 
 func setupTransactionDependencies(t *testing.T) (*sql.DB, api_service.IAPIService, db_adapter.IDatabaseAdapter, *models.User, *models.Category, *models.Currency) {
@@ -96,10 +139,18 @@ func setupTransactionDependencies(t *testing.T) (*sql.DB, api_service.IAPIServic
 	return conn, apiService, dbAdapter, user, category, currency
 }
 
-func createTransaction(t *testing.T, apiService api_service.IAPIService, userID int64, categoryID int64, currencyID int64, endDate *string) *models.Transaction {
+func createTransaction(
+	t *testing.T,
+	apiService api_service.IAPIService,
+	userID int64,
+	categoryID int64,
+	currencyID int64,
+	endDate *string,
+	options ...func(*models.CreateTransaction),
+) *models.Transaction {
 	t.Helper()
 
-	transaction, err := apiService.CreateTransaction(models.CreateTransaction{
+	payload := models.CreateTransaction{
 		Name:        "Retainer",
 		Amount:      120_00,
 		Type:        "single",
@@ -108,7 +159,13 @@ func createTransaction(t *testing.T, apiService api_service.IAPIService, userID 
 		Category:    categoryID,
 		Currency:    currencyID,
 		VatIncluded: false,
-	}, userID)
+	}
+
+	for _, option := range options {
+		option(&payload)
+	}
+
+	transaction, err := apiService.CreateTransaction(payload, userID)
 	require.NoError(t, err)
 
 	return transaction
