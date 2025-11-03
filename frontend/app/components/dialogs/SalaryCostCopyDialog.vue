@@ -40,6 +40,7 @@
         :loading="isLoadingSalaries"
         :options="filteredSalaries"
         placeholder="Bitte wählen"
+        empty-message="Keine weiteren Löhne gefunden"
         :option-label="(data) => SalaryUtils.title(data)"
         option-value="id"
       />

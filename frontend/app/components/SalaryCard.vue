@@ -8,6 +8,7 @@
         <div class="flex gap-2 items-center justify-end">
           <Button
             v-if="!isTermination"
+            v-tooltip.top="'Lohnkosten kopieren'"
             severity="help"
             icon="pi pi-copy"
             outlined
@@ -17,7 +18,6 @@
           <Button
             v-if="!isTermination"
             icon="pi pi-pencil"
-            outlined
             rounded
             @click="$emit('onEdit', salary)"
           />
@@ -110,6 +110,7 @@
             v-tooltip.top="'Lohnkosten in anderen Lohn kopieren'"
             icon="pi pi-copy"
             severity="help"
+            outlined
             @click="onCopyAllCosts"
           />
           <Button
