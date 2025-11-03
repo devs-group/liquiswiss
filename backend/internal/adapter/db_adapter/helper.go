@@ -169,11 +169,7 @@ func (d *DatabaseAdapter) CalculateCostAmount(userID int64, cost models.SalaryCo
 				if err != nil {
 					return 0, err
 				}
-				multiplier := uint64(1)
-				if baseCost.DistributionType == "both" {
-					multiplier = 2
-				}
-				baseAmount += amount * multiplier
+			baseAmount += amount * models.SalaryCostDistributionMultiplier(baseCost.DistributionType)
 			}
 		} else {
 			baseAmount = salary.Amount

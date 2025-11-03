@@ -29,6 +29,19 @@ type SalaryCost struct {
 	CalculatedCostDetails           []SalaryCostDetail `db:"-" json:"calculatedCostDetails"`
 }
 
+const (
+	SalaryCostDistributionEmployee = "employee"
+	SalaryCostDistributionEmployer = "employer"
+	SalaryCostDistributionBoth     = "both"
+)
+
+func SalaryCostDistributionMultiplier(distributionType string) uint64 {
+	if distributionType == SalaryCostDistributionBoth {
+		return 2
+	}
+	return 1
+}
+
 type CreateSalaryCost struct {
 	Cycle             string  `db:"cycle" json:"cycle" validate:"allowedCostCycles"`
 	AmountType        string  `db:"amount_type" json:"amountType" validate:"allowedCostAmountTypes"`

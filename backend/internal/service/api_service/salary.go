@@ -229,13 +229,13 @@ func (a *APIService) applySalaryCalculations(userID int64, salary *models.Salary
 
 	employeeDeductions := a.CalculateSalaryAdjustments(
 		salary.Cycle,
-		"employee",
+		models.SalaryCostDistributionEmployee,
 		salaryCosts,
 	)
 	salary.EmployeeDeductions = employeeDeductions
 	employerCosts := a.CalculateSalaryAdjustments(
 		salary.Cycle,
-		"employer",
+		models.SalaryCostDistributionEmployer,
 		salaryCosts,
 	)
 	salary.EmployerCosts = employerCosts

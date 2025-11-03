@@ -7,8 +7,6 @@ import (
 	"time"
 )
 
-const distributionBoth = "both"
-
 func (a *APIService) CalculateSalaryExecutionDate(fromDatePtr types.AsDate, toDatePtr *types.AsDate, cycle *string, currDatePtr types.AsDate, relativeOffset int64, isNext bool) *time.Time {
 	fromDate := time.Time(fromDatePtr)
 	currDate := time.Time(currDatePtr)
@@ -64,7 +62,7 @@ func (a *APIService) CalculateSalaryAdjustments(
 	var total uint64 = 0
 
 	for _, cost := range costs {
-		if cost.DistributionType != distributionType && cost.DistributionType != distributionBoth {
+		if cost.DistributionType != distributionType && cost.DistributionType != models.SalaryCostDistributionBoth {
 			continue
 		}
 
