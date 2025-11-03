@@ -19,20 +19,47 @@ export const DateStringToFormattedDateTime = (date: string | Date, asUtc: boolea
 
 export const DateToUTCDate = (date: string | Date) => {
   const dateToFormat = date instanceof Date ? date : new Date(date)
-  return new Date(dateToFormat.toLocaleDateString('en-US', { timeZone: 'UTC' }))
+  return new Date(Date.UTC(
+    dateToFormat.getUTCFullYear(),
+    dateToFormat.getUTCMonth(),
+    dateToFormat.getUTCDate(),
+  ))
 }
 
 export const DateToEuropeZurichDate = (date: string | Date) => {
   const dateToFormat = date instanceof Date ? date : new Date(date)
-  return new Date(dateToFormat.toLocaleDateString('en-US', { timeZone: 'Europe/Zurich' }))
+  const formatter = new Intl.DateTimeFormat('en-GB', {
+    timeZone: 'Europe/Zurich',
+    year: 'numeric',
+    month: 'numeric',
+    day: 'numeric',
+    hour: 'numeric',
+    minute: 'numeric',
+    second: 'numeric',
+    hourCycle: 'h23',
+  })
+  const parts = formatter.formatToParts(dateToFormat)
+  const getPart = (type: string, fallback: number) => {
+    const part = parts.find(p => p.type === type)
+    return part ? parseInt(part.value, 10) : fallback
+  }
+
+  const year = getPart('year', dateToFormat.getUTCFullYear())
+  const month = getPart('month', dateToFormat.getUTCMonth() + 1) - 1
+  const day = getPart('day', dateToFormat.getUTCDate())
+  const hour = getPart('hour', dateToFormat.getUTCHours())
+  const minute = getPart('minute', dateToFormat.getUTCMinutes())
+  const second = getPart('second', dateToFormat.getUTCSeconds())
+
+  return new Date(Date.UTC(year, month, day, hour, minute, second))
 }
 
 export const DateToApiFormat = (date: string | Date) => {
   const dateToFormat = date instanceof Date ? date : new Date(date)
 
-  const year = dateToFormat.getFullYear()
-  const month = (dateToFormat.getMonth() + 1).toString().padStart(2, '0')
-  const day = dateToFormat.getDate().toString().padStart(2, '0')
+  const year = dateToFormat.getUTCFullYear()
+  const month = (dateToFormat.getUTCMonth() + 1).toString().padStart(2, '0')
+  const day = dateToFormat.getUTCDate().toString().padStart(2, '0')
 
   return `${year}-${month}-${day}`
 }

@@ -267,6 +267,7 @@ import { SalaryUtils } from '~/utils/models/salary-utils'
 import { SalaryCycleTypeToOptions } from '~/utils/enum-helper'
 import { selectAllOnFocus } from '~/utils/element-helper'
 import { DateToApiFormat, DateToUTCDate } from '~/utils/format-helper'
+import { DateFirstDayOfNextMonth } from '~/utils/date-helper'
 
 const dialogRef = inject<ISalaryFormDialog>('dialogRef')!
 
@@ -314,7 +315,7 @@ const getEarliestRecommendedTerminationDate = computed(() => {
   if (s.length > 0) {
     const latestSalary = s[0]
     if (latestSalary.nextExecutionDate) {
-      return DateAddDays(DateToUTCDate(latestSalary.nextExecutionDate), 1)
+      return DateFirstDayOfNextMonth(DateToUTCDate(latestSalary.nextExecutionDate))
     }
   }
   return undefined

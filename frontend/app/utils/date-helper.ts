@@ -12,3 +12,12 @@ export const DateAddDays = (date: Date, days: number): Date => {
   result.setDate(result.getDate() + days)
   return result
 }
+
+export const DateFirstDayOfNextMonth = (date: Date): Date => {
+  const source = new Date(date)
+  const year = source.getFullYear()
+  const month = source.getMonth() + 1
+  const nextYear = year + Math.floor(month / 12)
+  const nextMonthIndex = month % 12
+  return new Date(Date.UTC(nextYear, nextMonthIndex, 1))
+}
