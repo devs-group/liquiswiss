@@ -310,10 +310,17 @@ else if (isClone.value || isCreate.value) {
 
 const selectedCurrencyCode = computed(() => currencies.value.find(c => c.id == currencyID.value)?.code)
 const selectedLocalCode = computed(() => currencies.value.find(c => c.id == currencyID.value)?.localeCode)
+const activeSalaries = computed(() => salaries.value.data.filter(s => !s.isTermination))
+const currentEditableSalaryId = computed(() => {
+  if (isClone.value || isTermination.value) {
+    return null
+  }
+  return salary.value?.id ?? null
+})
+
 const getEarliestRecommendedTerminationDate = computed(() => {
-  const s = salaries.value.data.filter(s => !s.isTermination)
-  if (s.length > 0) {
-    const latestSalary = s[0]
+  if (activeSalaries.value.length > 0) {
+    const latestSalary = activeSalaries.value[0]
     if (latestSalary.nextExecutionDate) {
       return DateFirstDayOfNextMonth(DateToUTCDate(latestSalary.nextExecutionDate))
     }
@@ -321,14 +328,14 @@ const getEarliestRecommendedTerminationDate = computed(() => {
   return undefined
 })
 const getDisabledDates = computed(() => {
-  const s = salaries.value.data.filter(s => !s.isTermination)
-  return s.map(sl => DateToUTCDate(sl.fromDate))
+  return activeSalaries.value
+    .filter(sl => currentEditableSalaryId.value === null || sl.id !== currentEditableSalaryId.value)
+    .map(sl => DateToUTCDate(sl.fromDate))
 })
 
 const disabledFromDateKeys = computed(() => {
   return new Set(
-    salaries.value.data
-      .filter(s => !s.isTermination)
+    activeSalaries.value
       .map(sl => DateToApiFormat(DateToUTCDate(sl.fromDate))),
   )
 })
