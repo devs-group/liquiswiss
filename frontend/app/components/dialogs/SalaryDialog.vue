@@ -138,11 +138,11 @@
 
       <Message
         v-if="isClone && SalaryUtils.hasSeparateCostsDefined(salary!)"
-        severity="warn"
+        severity="info"
         size="small"
         class="col-span-full"
       >
-        Achtung: Lohnkosten werden aktuell nicht geklont, diese können nachträglich separat übertragen werden
+        Die Lohnkosten werden ebenfalls kopiert
       </Message>
       <Message
         v-else-if="isCreate"
@@ -255,6 +255,7 @@
 </template>
 
 <script setup lang="ts">
+import { nextTick } from 'vue'
 import { useForm } from 'vee-validate'
 import * as yup from 'yup'
 import type { ISalaryFormDialog } from '~/interfaces/dialog-interfaces'
@@ -269,6 +270,7 @@ const dialogRef = inject<ISalaryFormDialog>('dialogRef')!
 
 const { getOrganisationCurrencyID } = useAuth()
 const { createSalary, updateSalary, deleteSalary, listSalaries, salaries } = useSalaries()
+const { copySalaryCost } = useSalaryCosts()
 const { currencies, getCurrencyLabel } = useGlobalData()
 const confirm = useConfirm()
 const toast = useToast()
@@ -347,76 +349,100 @@ const onParseAmount = (event: Event) => {
   }
 }
 
-const onSubmit = handleSubmit((values) => {
+const cloneSalaryCostsIfNeeded = async (newSalaryID: number) => {
+  if (!isClone.value || !salary.value?.id || !salary.value.hasSeparateCostsDefined) {
+    return
+  }
+  try {
+    await copySalaryCost(newSalaryID, {
+      ids: [],
+      sourceSalaryID: salary.value.id,
+    })
+    await listSalaries(employeeID)
+  }
+  catch {
+    toast.add({
+      summary: 'Hinweis',
+      detail: 'Lohnkosten konnten nicht übernommen werden',
+      severity: 'warn',
+      life: Config.TOAST_LIFE_TIME_SHORT,
+    })
+  }
+}
+
+const onSubmit = handleSubmit(async (values) => {
   isLoading.value = true
   errorMessage.value = ''
   values.fromDate.setMinutes(values.fromDate.getMinutes() - values.fromDate.getTimezoneOffset())
 
   if (isCreate.value) {
-    createSalary(employeeID, values)
-      .then(() => {
-        dialogRef.value.close(true)
-        toast.add({
-          summary: 'Erfolg',
-          detail: `Lohn wurde angelegt`,
-          severity: 'success',
-          life: Config.TOAST_LIFE_TIME,
-        })
+    try {
+      const createdSalary = await createSalary(employeeID, values)
+      await cloneSalaryCostsIfNeeded(createdSalary.id)
+      dialogRef.value.close(true)
+      toast.add({
+        summary: 'Erfolg',
+        detail: `Lohn wurde angelegt`,
+        severity: 'success',
+        life: Config.TOAST_LIFE_TIME,
       })
-      .catch(() => {
-        errorMessage.value = `Lohn konnte nicht angelegt werden`
-        nextTick(() => {
-          scrollToParentBottom('salary-form')
-        })
+    }
+    catch {
+      errorMessage.value = `Lohn konnte nicht angelegt werden`
+      nextTick(() => {
+        scrollToParentBottom('salary-form')
       })
-      .finally(() => {
-        isLoading.value = false
-      })
+    }
+    finally {
+      isLoading.value = false
+    }
+    return
   }
-  else if (isTermination.value) {
-    createSalary(employeeID, {
-      ...values,
-      isTermination: true,
+
+  if (isTermination.value) {
+    try {
+      await createSalary(employeeID, {
+        ...values,
+        isTermination: true,
+      })
+      dialogRef.value.close(true)
+      toast.add({
+        summary: 'Erfolg',
+        detail: `Austritt wurde angelegt`,
+        severity: 'success',
+        life: Config.TOAST_LIFE_TIME,
+      })
+    }
+    catch {
+      errorMessage.value = `Austritt konnte nicht angelegt werden`
+      nextTick(() => {
+        scrollToParentBottom('salary-form')
+      })
+    }
+    finally {
+      isLoading.value = false
+    }
+    return
+  }
+
+  try {
+    await updateSalary(employeeID, values)
+    dialogRef.value.close(true)
+    toast.add({
+      summary: 'Erfolg',
+      detail: `Lohn wurde bearbeitet`,
+      severity: 'success',
+      life: Config.TOAST_LIFE_TIME,
     })
-      .then(() => {
-        dialogRef.value.close(true)
-        toast.add({
-          summary: 'Erfolg',
-          detail: `Austritt wurde angelegt`,
-          severity: 'success',
-          life: Config.TOAST_LIFE_TIME,
-        })
-      })
-      .catch(() => {
-        errorMessage.value = `Austritt konnte nicht angelegt werden`
-        nextTick(() => {
-          scrollToParentBottom('salary-form')
-        })
-      })
-      .finally(() => {
-        isLoading.value = false
-      })
   }
-  else {
-    updateSalary(employeeID, values)
-      .then(() => {
-        dialogRef.value.close(true)
-        toast.add({
-          summary: 'Erfolg',
-          detail: `Lohn wurde bearbeitet`,
-          severity: 'success',
-          life: Config.TOAST_LIFE_TIME,
-        })
-      })
-      .catch(() => {
-        errorMessage.value = `Lohn konnte nicht bearbeitet werden`
-        nextTick(() => {
-          scrollToParentBottom('salary-form')
-        })
-      })
-      .finally(() => {
-        isLoading.value = false
-      })
+  catch {
+    errorMessage.value = `Lohn konnte nicht bearbeitet werden`
+    nextTick(() => {
+      scrollToParentBottom('salary-form')
+    })
+  }
+  finally {
+    isLoading.value = false
   }
 })
 
