@@ -107,6 +107,7 @@
         <DatePicker
           v-model="fromDate"
           v-bind="fromDateProps"
+          :disabled-dates="getDisabledDates"
           date-format="dd.mm.yy"
           show-icon
           show-button-bar
@@ -255,7 +256,7 @@
 </template>
 
 <script setup lang="ts">
-import { nextTick } from 'vue'
+import { nextTick, computed } from 'vue'
 import { useForm } from 'vee-validate'
 import * as yup from 'yup'
 import type { ISalaryFormDialog } from '~/interfaces/dialog-interfaces'
@@ -265,6 +266,7 @@ import { CycleType } from '~/config/enums'
 import { SalaryUtils } from '~/utils/models/salary-utils'
 import { SalaryCycleTypeToOptions } from '~/utils/enum-helper'
 import { selectAllOnFocus } from '~/utils/element-helper'
+import { DateToApiFormat, DateToUTCDate } from '~/utils/format-helper'
 
 const dialogRef = inject<ISalaryFormDialog>('dialogRef')!
 
@@ -296,6 +298,14 @@ if (isTermination.value) {
       isLoading.value = false
     })
 }
+else if (isClone.value || isCreate.value) {
+  try {
+    await listSalaries(employeeID)
+  }
+  catch {
+    // swallowing error here - user can still attempt manual input
+  }
+}
 
 const selectedCurrencyCode = computed(() => currencies.value.find(c => c.id == currencyID.value)?.code)
 const selectedLocalCode = computed(() => currencies.value.find(c => c.id == currencyID.value)?.localeCode)
@@ -314,6 +324,43 @@ const getDisabledDates = computed(() => {
   return s.map(sl => DateToUTCDate(sl.fromDate))
 })
 
+const disabledFromDateKeys = computed(() => {
+  return new Set(
+    salaries.value.data
+      .filter(s => !s.isTermination)
+      .map(sl => DateToApiFormat(DateToUTCDate(sl.fromDate))),
+  )
+})
+
+const cloneDefaultFromDate = computed(() => {
+  if (!isClone.value || !salary.value?.fromDate) {
+    return salary.value?.fromDate ? DateToUTCDate(salary.value.fromDate) : null
+  }
+  const sourceDay = DateToUTCDate(salary.value.fromDate).getDate()
+  const used = new Set(disabledFromDateKeys.value)
+  const today = new Date()
+  today.setHours(0, 0, 0, 0)
+  let year = today.getFullYear()
+  let monthIndex = today.getMonth() + 1
+
+  for (let i = 0; i < 120; i += 1) {
+    if (monthIndex > 11) {
+      monthIndex = 0
+      year += 1
+    }
+    const daysInMonth = new Date(year, monthIndex + 1, 0).getDate()
+    const targetDay = Math.min(sourceDay, daysInMonth)
+    const candidate = new Date(year, monthIndex, targetDay)
+    candidate.setHours(0, 0, 0, 0)
+    const candidateKey = DateToApiFormat(candidate)
+    if (!used.has(candidateKey)) {
+      return candidate
+    }
+    monthIndex += 1
+  }
+  return today
+})
+
 const { defineField, errors, handleSubmit, meta } = useForm({
   validationSchema: yup.object({
     hoursPerMonth: yup.number().typeError('Bitte Zahl eingeben').min(0, 'Muss mindestens 0 sein').max(480, 'Kann maximal 480 sein'),
@@ -329,7 +376,9 @@ const { defineField, errors, handleSubmit, meta } = useForm({
     amount: isNumber(salary.value?.amount) ? AmountToFloat(salary.value!.amount) : 0,
     currencyID: salary.value?.currency.id ?? getOrganisationCurrencyID.value,
     vacationDaysPerYear: salary.value?.vacationDaysPerYear ?? 0,
-    fromDate: salary.value?.fromDate ? DateToUTCDate(salary.value.fromDate) : isTermination.value ? getEarliestRecommendedTerminationDate.value : null,
+    fromDate: isClone.value
+      ? cloneDefaultFromDate.value
+      : salary.value?.fromDate ? DateToUTCDate(salary.value.fromDate) : isTermination.value ? getEarliestRecommendedTerminationDate.value : null,
     cycle: salary.value?.cycle ?? CycleType.Monthly,
   } as SalaryPUTFormData,
 })
