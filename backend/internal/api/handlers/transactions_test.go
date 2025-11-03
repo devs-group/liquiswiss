@@ -100,8 +100,8 @@ func TestUpdateTransaction_DisableKeepsExistingFields(t *testing.T) {
 	require.NotNil(t, updated.Employee)
 	require.Equal(t, employeeID, updated.Employee.ID)
 	require.NotNil(t, updated.Vat)
-	require.Equal(t, vatID, updated.Vat.ID)
 	require.True(t, updated.VatIncluded)
+	require.Equal(t, vatID, updated.Vat.ID)
 
 	stored, err := dbAdapter.GetTransaction(user.ID, transaction.ID)
 	require.NoError(t, err)
