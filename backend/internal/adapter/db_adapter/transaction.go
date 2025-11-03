@@ -205,15 +205,15 @@ func (d *DatabaseAdapter) UpdateTransaction(payload models.UpdateTransaction, us
 		queryBuild = append(queryBuild, "start_date = ?")
 		args = append(args, *payload.StartDate)
 	}
-	// Always consider EndDate in case it is set back to null
-	queryBuild = append(queryBuild, "end_date = ?")
 	if payload.EndDate != nil {
+		queryBuild = append(queryBuild, "end_date = ?")
 		endDate, err := time.Parse(utils.InternalDateFormat, *payload.EndDate)
 		if err != nil {
 			return err
 		}
 		args = append(args, endDate)
-	} else {
+	} else if payload.IsDisabled == nil {
+		queryBuild = append(queryBuild, "end_date = ?")
 		args = append(args, nil)
 	}
 	if payload.Category != nil {
