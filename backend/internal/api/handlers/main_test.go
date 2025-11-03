@@ -3,17 +3,20 @@ package handlers_test
 import (
 	"database/sql"
 	"fmt"
+	"os"
+	"strings"
+	"testing"
+
 	"github.com/gin-gonic/gin"
 	"github.com/joho/godotenv"
 	"github.com/pressly/goose/v3"
+
 	"liquiswiss/internal/adapter/db_adapter"
 	"liquiswiss/internal/db"
 	"liquiswiss/internal/service/api_service"
 	"liquiswiss/pkg/logger"
 	"liquiswiss/pkg/models"
 	"liquiswiss/pkg/utils"
-	"os"
-	"testing"
 )
 
 func TestMain(m *testing.M) {
@@ -142,10 +145,20 @@ func migrateDatabase(t *testing.T, conn *sql.DB) {
 	for _, dir := range migrationDirs {
 		// Apply migrations
 		if err := goose.DownTo(conn, dir, 0, goose.WithNoVersioning()); err != nil {
-			t.Fatalf("Failed to roll back migrations: %v", err)
+			if !isMissingTableError(err) {
+				t.Fatalf("Failed to roll back migrations: %v", err)
+			}
 		}
 		if err := goose.Up(conn, dir, goose.WithNoVersioning()); err != nil {
 			t.Fatalf("Failed to apply migrations: %v", err)
 		}
 	}
+}
+
+func isMissingTableError(err error) bool {
+	if err == nil {
+		return false
+	}
+	msg := err.Error()
+	return strings.Contains(msg, "doesn't exist") || strings.Contains(msg, "Unknown table")
 }
