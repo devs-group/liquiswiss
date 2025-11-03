@@ -116,7 +116,7 @@ minimal inserted data in [10000_apply_minimal_fixtures.sql](backend/internal/db/
 2. You can run all tests with `go test ./...` locally
 3. Locally the [.env.local.testing](backend/.env.local.testing) is used
 4. For the Github Action the [.env.github.testing](backend/.env.github.testing) is used
-    - Check out the [ci.yml](.github/workflows/ci.yml) and check for the service used in the **test-backend** job
+    - Check out the [ci.yml](.github/workflows/ci.yml) and check for the service used in the **test_backend** job
     - The environment variable `TESTING_ENVIRONMENT` determines which .env file to use
 
 # Production
