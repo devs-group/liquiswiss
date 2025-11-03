@@ -684,6 +684,69 @@ func TestPercentageSalaryCostBasedOnOtherCost(t *testing.T) {
 	assert.NoError(t, err)
 }
 
+func TestPercentageSalaryCostBasedOnBothDistribution(t *testing.T) {
+	conn := SetupTestEnvironment(t)
+	defer conn.Close()
+
+	dbAdapter := db_adapter.NewDatabaseAdapter(conn)
+	sendgridService := sendgrid_adapter.NewSendgridAdapter("")
+	apiService := api_service.NewAPIService(dbAdapter, sendgridService)
+
+	currency, err := CreateCurrency(apiService, "CHF", "Swiss Franc", "de-CH")
+	assert.NoError(t, err)
+
+	user, _, err := CreateUserWithOrganisation(
+		apiService, dbAdapter, "base-cost-both@liqui.ch", "test", "Base Cost Both Org",
+	)
+	assert.NoError(t, err)
+
+	employee, err := CreateEmployee(apiService, user.ID, "Jordan Both")
+	assert.NoError(t, err)
+
+	salary, err := apiService.CreateSalary(models.CreateSalary{
+		HoursPerMonth: 160,
+		Amount:        10000 * 100,
+		Cycle:         utils.CycleMonthly,
+		CurrencyID: func() int64 {
+			if currency.ID != nil {
+				return *currency.ID
+			}
+			return 0
+		}(),
+		VacationDaysPerYear: 25,
+		FromDate:            "2025-03-01",
+	}, user.ID, employee.ID)
+	assert.NoError(t, err)
+
+	baseCost, err := apiService.CreateSalaryCost(models.CreateSalaryCost{
+		Cycle:            utils.CycleMonthly,
+		AmountType:       "percentage",
+		Amount:           5_100,
+		DistributionType: "both",
+		RelativeOffset:   1,
+	}, user.ID, salary.ID)
+	assert.NoError(t, err)
+	assert.EqualValues(t, 51_000, baseCost.CalculatedAmount)
+
+	dependentCost, err := apiService.CreateSalaryCost(models.CreateSalaryCost{
+		Cycle:             utils.CycleMonthly,
+		AmountType:        "percentage",
+		Amount:            10_000,
+		DistributionType:  "employee",
+		RelativeOffset:    1,
+		BaseSalaryCostIDs: []int64{baseCost.ID},
+	}, user.ID, salary.ID)
+	assert.NoError(t, err)
+	assert.EqualValues(t, []int64{baseCost.ID}, dependentCost.BaseSalaryCostIDs)
+	assert.EqualValues(t, 10_200, dependentCost.CalculatedAmount)
+	assert.EqualValues(t, 10_200, dependentCost.CalculatedNextCost)
+
+	err = apiService.DeleteSalaryCost(user.ID, dependentCost.ID)
+	assert.NoError(t, err)
+	err = apiService.DeleteSalaryCost(user.ID, baseCost.ID)
+	assert.NoError(t, err)
+}
+
 func TestSalaryCostBaseRequiresPercentageAmountType(t *testing.T) {
 	conn := SetupTestEnvironment(t)
 	defer conn.Close()
