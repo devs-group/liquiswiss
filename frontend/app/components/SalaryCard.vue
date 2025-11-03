@@ -59,16 +59,10 @@
         </Message>
         <p>{{ salary.hoursPerMonth }} Arbeitsstunden / Monat</p>
         <div class="flex flex-col">
-          <p v-if="withSeparateCosts">
+          <p>
             {{ totalSalaryCostFormatted }} {{ salary.currency.code }} Gesamtkosten
           </p>
-          <p v-else>
-            {{ grossSalaryFormatted }} {{ salary.currency.code }} / {{ cycle }}
-          </p>
-          <div
-            v-if="withSeparateCosts"
-            class="flex flex-col text-xs"
-          >
+          <div class="flex flex-col text-xs">
             <p>Brutto: {{ grossSalaryFormatted }} {{ salary.currency.code }} / {{ cycle }}</p>
             <p>Netto: {{ netSalaryFormatted }} {{ salary.currency.code }} / {{ cycle }}</p>
           </div>
@@ -87,34 +81,12 @@
           Dauerhaft
         </p>
 
-        <div class="flex items-center gap-2">
-          <label
-            class="text-sm font-bold"
-            for="with-separate-costs"
-          >Lohnkosten separat erfassen</label>
-          <div class="flex items-center">
-            <ToggleSwitch
-              id="with-separate-costs"
-              :model-value="withSeparateCosts"
-              :disabled="isDisabled"
-              @update:model-value="onToggleSeparateCosts"
-            />
-          </div>
-        </div>
-        <div
-          v-if="withSeparateCosts && !isDisabled"
-          class="flex items-center gap-2"
-        >
+        <div class="flex items-center justify-end">
           <Button
-            v-if="hasSeparateCostsDefined"
-            v-tooltip.top="'Lohnkosten in anderen Lohn kopieren'"
-            icon="pi pi-copy"
-            severity="help"
-            outlined
-            @click="onCopyAllCosts"
-          />
-          <Button
+            size="small"
+            label="Lohnkosten"
             icon="pi pi-pencil"
+            :disabled="isDisabled"
             @click="onShowCostOverview"
           />
         </div>
@@ -156,7 +128,6 @@ import type { SalaryResponse } from '~/models/employee'
 import { Config } from '~/config/config'
 import { ModalConfig } from '~/config/dialog-props'
 import SalaryCostOverviewDialog from '~/components/dialogs/SalaryCostOverviewDialog.vue'
-import SalaryCostCopyDialog from '~/components/dialogs/SalaryCostCopyDialog.vue'
 import { SalaryUtils } from '~/utils/models/salary-utils'
 
 const toast = useToast()
@@ -184,48 +155,13 @@ const emits = defineEmits<{
   onDeleted: []
 }>()
 
-const withSeparateCosts = ref(props.salary.withSeparateCosts)
 const isTermination = ref(props.salary.isTermination)
 const isDisabled = ref(props.salary.isDisabled)
 const isUpdatingDisabled = ref(false)
 
-watch(() => props.salary.withSeparateCosts, (value) => {
-  withSeparateCosts.value = value
-})
-
 watch(() => props.salary.isDisabled, (value) => {
   isDisabled.value = value
 })
-
-const onToggleSeparateCosts = (value: boolean) => {
-  if (isDisabled.value) {
-    return
-  }
-  const previous = withSeparateCosts.value
-  withSeparateCosts.value = value
-  updateSalary(props.salary.employeeID, {
-    id: props.salary.id,
-    cycle: props.salary.cycle,
-    withSeparateCosts: value,
-  })
-    .then(() => {
-      toast.add({
-        summary: 'Erfolg',
-        detail: `Änderung gespeichert`,
-        severity: 'info',
-        life: Config.TOAST_LIFE_TIME_SHORT,
-      })
-    })
-    .catch(() => {
-      withSeparateCosts.value = previous
-      toast.add({
-        summary: 'Fehler',
-        detail: `Änderung konnte nicht gespeichert werden`,
-        severity: 'error',
-        life: Config.TOAST_LIFE_TIME_SHORT,
-      })
-    })
-}
 
 const onToggleDisabled = (isActive: boolean) => {
   const previous = isDisabled.value
@@ -280,29 +216,10 @@ const toDateFormatted = computed(
 const cycle = computed(
   () => SalaryUtils.cycle(props.salary),
 )
-const hasSeparateCostsDefined = computed(
-  () => SalaryUtils.hasSeparateCostsDefined(props.salary),
-)
-
 const onShowCostOverview = () => {
   dialog.open(SalaryCostOverviewDialog, {
     props: {
       header: `Lohnkostenübersicht`,
-      ...ModalConfig,
-    },
-    data: {
-      salary: props.salary,
-    },
-    onClose: () => {
-      listSalaries(props.salary.employeeID)
-    },
-  })
-}
-
-const onCopyAllCosts = () => {
-  dialog.open(SalaryCostCopyDialog, {
-    props: {
-      header: `Lohnkosten kopieren`,
       ...ModalConfig,
     },
     data: {

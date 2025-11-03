@@ -213,7 +213,7 @@
         :options="baseCostSelectOptions"
         option-label="name"
         option-value="value"
-        placeholder="Bitte wählen"
+        placeholder="Basiert auf Lohn"
         display="chip"
         :loading="isLoadingBaseCosts"
         :disabled="isLoadingBaseCosts || isLoading"

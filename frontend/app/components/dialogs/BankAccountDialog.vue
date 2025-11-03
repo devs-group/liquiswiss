@@ -89,7 +89,7 @@
       {{ errorMessage }}
     </Message>
 
-    <div class="flex justify-end gap-2 col-span-full">
+    <div class="flex items-center justify-end gap-2 col-span-full">
       <Button
         :disabled="!meta.valid || isLoading"
         :loading="isLoading"
@@ -108,7 +108,8 @@
         v-if="!isCreate"
         :disabled="isLoading"
         severity="danger"
-        size="small"
+        outlined
+        rounded
         icon="pi pi-trash"
         @click="onDeleteBankAccount"
       />

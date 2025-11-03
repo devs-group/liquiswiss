@@ -224,7 +224,7 @@
       {{ errorMessage }}
     </Message>
 
-    <div class="flex justify-end gap-2 col-span-full">
+    <div class="flex items-center justify-end gap-2 col-span-full">
       <Button
         :disabled="!meta.valid || isLoading"
         :loading="isLoading"
@@ -239,24 +239,21 @@
         severity="contrast"
         @click="dialogRef.close()"
       />
-      <div
+      <Button
         v-if="!isCreate && !isTermination"
-        class="flex justify-end col-span-full"
-      >
-        <Button
-          :disabled="isLoading"
-          severity="danger"
-          size="small"
-          icon="pi pi-trash"
-          @click="onDeleteSalary"
-        />
-      </div>
+        :disabled="isLoading"
+        severity="danger"
+        outlined
+        rounded
+        icon="pi pi-trash"
+        @click="onDeleteSalary"
+      />
     </div>
   </form>
 </template>
 
 <script setup lang="ts">
-import { nextTick, computed } from 'vue'
+import { computed, nextTick } from 'vue'
 import { useForm } from 'vee-validate'
 import * as yup from 'yup'
 import type { ISalaryFormDialog } from '~/interfaces/dialog-interfaces'
