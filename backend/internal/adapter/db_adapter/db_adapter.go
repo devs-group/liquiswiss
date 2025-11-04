@@ -28,6 +28,7 @@ type IDatabaseAdapter interface {
 	ResetPassword(password string, email string) error
 	CheckUserExistence(id int64) (bool, error)
 	SetUserCurrentOrganisation(userID int64, organisationID int64) error
+	SetUserCurrentScenario(userID int64, scenarioID int64) error
 	CreateResetPassword(email, code string, delay time.Duration) (bool, error)
 	ValidateResetPassword(email, code string, validity time.Duration) (int64, error)
 	DeleteResetPassword(email string) error
@@ -118,6 +119,16 @@ type IDatabaseAdapter interface {
 	CountUniqueCurrenciesInFiatRates() (int64, error)
 	GetFiatRate(base, target string) (*models.FiatRate, error)
 	UpsertFiatRate(payload models.CreateFiatRate) error
+
+	ListScenarios(userID int64) ([]models.ScenarioListItem, error)
+	GetScenario(userID int64, scenarioID int64) (*models.Scenario, error)
+	GetDefaultScenario(userID int64) (*models.Scenario, error)
+	CreateScenario(payload models.CreateScenario, userID int64) (int64, error)
+	UpdateScenario(payload models.UpdateScenario, userID int64, scenarioID int64) error
+	IsScenarioInUse(scenarioID int64) (bool, error)
+	GetUsersUsingScenario(scenarioID int64) ([]int64, error)
+	DeleteScenario(userID int64, scenarioID int64) error
+	CopyScenarioData(sourceScenarioID int64, targetScenarioID int64, userID int64) error
 }
 
 type DatabaseAdapter struct {

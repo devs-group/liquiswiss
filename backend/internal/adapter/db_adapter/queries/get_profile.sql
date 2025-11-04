@@ -3,6 +3,7 @@ SELECT
     u.name,
     u.email,
     u.current_organisation_id,
+    u.current_scenario_id,
     c.id AS currency_id,
     c.code AS currency_code,
     c.description AS currency_description,

@@ -3,6 +3,7 @@ import type { EmployeeResponse, SalaryCostLabelResponse, SalaryCostResponse, Sal
 import type { BankAccountResponse } from '~/models/bank-account'
 import type { VatResponse } from '~/models/vat'
 import type { OrganisationResponse } from '~/models/organisation'
+import type { ScenarioResponse } from '~/models/scenario'
 
 export interface IEmployeeFormDialog {
   close: () => object
@@ -106,6 +107,16 @@ export interface ISalaryCostLabelFormDialog {
     close: (salaryCostID?: number) => number | undefined
     data: {
       employeeCostLabelToEdit?: SalaryCostLabelResponse
+    }
+  }
+}
+
+export interface IScenarioFormDialog {
+  close: () => object
+  value: {
+    close: () => void
+    data: {
+      scenario?: ScenarioResponse
     }
   }
 }

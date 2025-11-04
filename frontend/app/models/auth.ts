@@ -6,6 +6,7 @@ export interface User {
   name: string
   email: string
   currentOrganisationID: number
+  currentScenarioID: number | null
   currency: CurrencyResponse
 }
 
@@ -64,7 +65,12 @@ export interface UserUpdateOrganisationFormData {
   organisationId: number
 }
 
+export interface UserUpdateScenarioFormData {
+  scenarioId: number
+}
+
 export interface AppSettingsFormData {
   skipOrgSwitchQuestion: boolean
+  skipScenarioSwitchQuestion: boolean
   darkMode: DarkModeType
 }

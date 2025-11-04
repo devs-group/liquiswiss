@@ -86,6 +86,9 @@ func (api *API) setupRouter() {
 			protected.GET("/profile/organisation", func(ctx *gin.Context) {
 				handlers.GetUserCurrentOrganisation(api.APIService, ctx)
 			})
+			protected.PATCH("/profile/scenario", func(ctx *gin.Context) {
+				handlers.SetUserCurrentScenario(api.APIService, ctx)
+			})
 			protected.GET("/access-token", func(ctx *gin.Context) {
 				handlers.GetAccessToken(ctx)
 			})
@@ -287,6 +290,26 @@ func (api *API) setupRouter() {
 			})
 			protected.GET("/fiat-rates/:base/:target", func(ctx *gin.Context) {
 				handlers.GetFiatRate(api.APIService, ctx)
+			})
+
+			// Scenarios
+			protected.GET("/scenarios", func(ctx *gin.Context) {
+				handlers.ListScenarios(api.APIService, ctx)
+			})
+			protected.GET("/scenarios/default", func(ctx *gin.Context) {
+				handlers.GetDefaultScenario(api.APIService, ctx)
+			})
+			protected.GET("/scenarios/:scenarioID", func(ctx *gin.Context) {
+				handlers.GetScenario(api.APIService, ctx)
+			})
+			protected.POST("/scenarios", func(ctx *gin.Context) {
+				handlers.CreateScenario(api.APIService, ctx)
+			})
+			protected.PATCH("/scenarios/:scenarioID", func(ctx *gin.Context) {
+				handlers.UpdateScenario(api.APIService, ctx)
+			})
+			protected.DELETE("/scenarios/:scenarioID", func(ctx *gin.Context) {
+				handlers.DeleteScenario(api.APIService, ctx)
 			})
 		}
 	}

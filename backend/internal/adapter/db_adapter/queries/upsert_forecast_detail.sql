@@ -1,5 +1,5 @@
-INSERT INTO forecast_details (month, revenue, expense, forecast_id, organisation_id)
-VALUES (?, ?, ?, ?, (SELECT current_organisation_id FROM users u WHERE u.id = ?))
+INSERT INTO forecast_details (month, revenue, expense, forecast_id, organisation_id, scenario_id)
+VALUES (?, ?, ?, ?, (SELECT current_organisation_id FROM users u WHERE u.id = ?), (SELECT current_scenario_id FROM users u WHERE u.id = ?))
 ON DUPLICATE KEY UPDATE
     revenue = VALUES(revenue),
     expense = VALUES(expense);

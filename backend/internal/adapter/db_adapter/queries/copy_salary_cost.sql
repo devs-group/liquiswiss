@@ -6,7 +6,9 @@ INSERT INTO salary_costs (
     relative_offset,
     target_date,
     label_id,
-    salary_id
+    salary_id,
+    uuid,
+    scenario_id
 )
 SELECT
     hc.cycle,
@@ -16,7 +18,9 @@ SELECT
     hc.relative_offset,
     hc.target_date,
     hc.label_id,
-    ?
+    ?,
+    UUID(),
+    h.scenario_id
 FROM salary_costs as hc
 JOIN salaries AS h ON h.id = hc.salary_id
 JOIN employees AS e ON e.id = h.employee_id

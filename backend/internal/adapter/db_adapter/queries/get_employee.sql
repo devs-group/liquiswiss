@@ -21,4 +21,5 @@ LEFT JOIN currencies c ON rs.currency_id = c.id
 LEFT JOIN salaries s ON s.employee_id = e.id AND s.from_date > CURDATE() AND s.is_termination = 1
 WHERE e.id = ?
   AND e.organisation_id = get_current_user_organisation_id(?)
+  AND e.scenario_id = (SELECT current_scenario_id FROM users WHERE id = ?)
 LIMIT 1;

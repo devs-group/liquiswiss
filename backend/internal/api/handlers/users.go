@@ -122,6 +122,36 @@ func SetUserCurrentOrganisation(apiService api_service.IAPIService, c *gin.Conte
 	c.Status(http.StatusOK)
 }
 
+func SetUserCurrentScenario(apiService api_service.IAPIService, c *gin.Context) {
+	// Pre
+	userID := c.GetInt64("userID")
+	if userID == 0 {
+		c.Status(http.StatusUnauthorized)
+		return
+	}
+	var payload models.UpdateUserCurrentScenario
+	if err := c.Bind(&payload); err != nil {
+		c.Status(http.StatusBadRequest)
+		return
+	}
+	validator := utils.GetValidator()
+	if err := validator.Struct(payload); err != nil {
+		// Return validation errors
+		c.Status(http.StatusBadRequest)
+		return
+	}
+
+	// Action
+	err := apiService.SetUserCurrentScenario(payload, userID)
+	if err != nil {
+		c.Status(http.StatusInternalServerError)
+		return
+	}
+
+	// Post
+	c.Status(http.StatusOK)
+}
+
 func GetUserCurrentOrganisation(apiService api_service.IAPIService, c *gin.Context) {
 	// Pre
 	userID := c.GetInt64("userID")

@@ -34,3 +34,4 @@ FROM
 WHERE
     r.id = ?
     AND r.organisation_id = get_current_user_organisation_id(?)
+    AND r.scenario_id = (SELECT current_scenario_id FROM users WHERE id = ?)

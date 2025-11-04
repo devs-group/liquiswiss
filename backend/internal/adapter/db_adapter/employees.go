@@ -29,7 +29,7 @@ func (d *DatabaseAdapter) ListEmployees(userID int64, page int64, limit int64, s
 
 	queryString := fmt.Sprintf(string(query), sortBy, sortBy, sortOrder)
 
-	rows, err := d.db.Query(queryString, userID, (page)*limit, 0)
+	rows, err := d.db.Query(queryString, userID, userID, (page)*limit, 0)
 	if err != nil {
 		return nil, 0, err
 	}
@@ -45,6 +45,7 @@ func (d *DatabaseAdapter) ListEmployees(userID int64, page int64, limit int64, s
 		err := rows.Scan(
 			&employee.ID,
 			&employee.Name,
+			&employee.UUID,
 			&employee.HoursPerMonth,
 			&employee.SalaryAmount,
 			&employee.Cycle,
@@ -59,6 +60,7 @@ func (d *DatabaseAdapter) ListEmployees(userID int64, page int64, limit int64, s
 			&employee.IsTerminated,
 			&employee.WillBeTerminated,
 			&employee.SalaryID,
+			&employee.ScenarioID,
 			&totalCount,
 		)
 		if err != nil {
@@ -92,7 +94,7 @@ func (d *DatabaseAdapter) GetEmployee(userID int64, employeeID int64) (*models.E
 		return nil, err
 	}
 
-	err = d.db.QueryRow(string(query), employeeID, userID).Scan(
+	err = d.db.QueryRow(string(query), employeeID, userID, userID).Scan(
 		&employee.ID,
 		&employee.Name,
 		&employee.HoursPerMonth,
@@ -139,7 +141,7 @@ func (d *DatabaseAdapter) CreateEmployee(payload models.CreateEmployee, userID i
 	defer stmt.Close()
 
 	res, err := stmt.Exec(
-		payload.Name, userID,
+		payload.Name, userID, userID,
 	)
 	if err != nil {
 		return 0, err
@@ -218,7 +220,7 @@ func (d *DatabaseAdapter) CountEmployees(userID int64, page int64, limit int64) 
 		return 0, err
 	}
 
-	rows, err := d.db.Query(string(query), userID, limit, (page-1)*limit)
+	rows, err := d.db.Query(string(query), userID, userID, limit, (page-1)*limit)
 	if err != nil {
 		return 0, err
 	}

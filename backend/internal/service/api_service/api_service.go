@@ -23,6 +23,7 @@ type IAPIService interface {
 	UpdateProfile(payload models.UpdateUser, userID int64) (*models.User, error)
 	UpdatePassword(payload models.UpdateUserPassword, userID int64) error
 	SetUserCurrentOrganisation(payload models.UpdateUserCurrentOrganisation, userID int64) error
+	SetUserCurrentScenario(payload models.UpdateUserCurrentScenario, userID int64) error
 	GetCurrentOrganisation(userID int64) (*models.Organisation, error)
 
 	ListTransactions(userID int64, page int64, limit int64, sortBy string, sortOrder string) ([]models.Transaction, int64, error)
@@ -102,6 +103,13 @@ type IAPIService interface {
 	GetFiatRate(base, target string) (*models.FiatRate, error)
 	UpsertFiatRate(payload models.CreateFiatRate) error
 	CountUniqueCurrenciesInFiatRates() (int64, error)
+
+	ListScenarios(userID int64) ([]models.ScenarioListItem, error)
+	GetScenario(userID int64, scenarioID int64) (*models.Scenario, error)
+	GetDefaultScenario(userID int64) (*models.Scenario, error)
+	CreateScenario(payload models.CreateScenario, userID int64) (*models.Scenario, error)
+	UpdateScenario(payload models.UpdateScenario, userID int64, scenarioID int64) (*models.Scenario, error)
+	DeleteScenario(userID int64, scenarioID int64) error
 }
 
 type APIService struct {

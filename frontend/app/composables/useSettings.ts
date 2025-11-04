@@ -58,6 +58,9 @@ export default function useSettings() {
   const skipOrganisationSwitchQuestion = useState<boolean>('skipOrganisationSwitchQuestion', () => false)
   const skipOrganisationSwitchQuestionCookie = CreateSettingsCookie('skip-organisation-switch-question')
 
+  const skipScenarioSwitchQuestion = useState<boolean>('skipScenarioSwitchQuestion', () => true)
+  const skipScenarioSwitchQuestionCookie = CreateSettingsCookie('skip-scenario-switch-question')
+
   if (forecastShowRevenueDetailsCookie.value !== undefined) {
     const val = forecastShowRevenueDetailsCookie.value
     if (val == 'true') {
@@ -258,6 +261,21 @@ export default function useSettings() {
     skipOrganisationSwitchQuestion.value = false
   }
 
+  if (skipScenarioSwitchQuestionCookie.value !== undefined) {
+    const val = skipScenarioSwitchQuestionCookie.value
+    if (val !== null) {
+      if (typeof val === 'boolean') {
+        skipScenarioSwitchQuestion.value = val
+      }
+      else {
+        skipScenarioSwitchQuestion.value = val === 'true'
+      }
+    }
+  }
+  else {
+    skipScenarioSwitchQuestion.value = true
+  }
+
   const toggleTransactionDisplayType = () => {
     switch (transactionDisplay.value) {
       case 'grid':
@@ -362,6 +380,12 @@ export default function useSettings() {
     }
   })
 
+  watch(skipScenarioSwitchQuestion, (value) => {
+    if (value !== null) {
+      skipScenarioSwitchQuestionCookie.value = value.toString()
+    }
+  })
+
   return {
     forecastShowRevenueDetails,
     forecastShowExpenseDetails,
@@ -386,5 +410,6 @@ export default function useSettings() {
     costOverviewGrouping,
     settingsTab,
     skipOrganisationSwitchQuestion,
+    skipScenarioSwitchQuestion,
   }
 }

@@ -60,6 +60,29 @@ func (a *APIService) SetUserCurrentOrganisation(payload models.UpdateUserCurrent
 		logger.Logger.Error(err)
 		return err
 	}
+
+	// Also set the current scenario to the default scenario of the organisation
+	defaultScenario, err := a.dbService.GetDefaultScenario(userID)
+	if err != nil {
+		logger.Logger.Error(err)
+		return err
+	}
+
+	err = a.dbService.SetUserCurrentScenario(userID, defaultScenario.ID)
+	if err != nil {
+		logger.Logger.Error(err)
+		return err
+	}
+
+	return nil
+}
+
+func (a *APIService) SetUserCurrentScenario(payload models.UpdateUserCurrentScenario, userID int64) error {
+	err := a.dbService.SetUserCurrentScenario(userID, payload.ScenarioID)
+	if err != nil {
+		logger.Logger.Error(err)
+		return err
+	}
 	return nil
 }
 

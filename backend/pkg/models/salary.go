@@ -4,6 +4,8 @@ import "liquiswiss/pkg/types"
 
 type Salary struct {
 	ID                      int64         `db:"id" json:"id"`
+	UUID                    string        `db:"uuid" json:"uuid"`
+	ScenarioID              int64         `db:"scenario_id" json:"scenarioId"`
 	EmployeeID              int64         `db:"employee_id" json:"employeeID"`
 	HoursPerMonth           uint16        `db:"hours_per_month" json:"hoursPerMonth"`
 	Amount                  uint64        `db:"amount" json:"amount"`

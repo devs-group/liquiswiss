@@ -5,6 +5,7 @@ export const RouteNames = {
   TRANSACTIONS: 'transactions',
   FORECASTS: 'forecasts',
   BANK_ACCOUNTS: 'bank-accounts',
+  SCENARIOS: 'scenarios',
   SETTINGS: 'settings',
   SETTINGS_PROFILE: 'settings-profile',
   SETTINGS_ORGANISATIONS: 'settings-organisations',

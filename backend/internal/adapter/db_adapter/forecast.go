@@ -16,7 +16,7 @@ func (d *DatabaseAdapter) ListForecasts(userID int64, limit int64) ([]models.For
 		return nil, err
 	}
 
-	rows, err := d.db.Query(string(query), limit, userID)
+	rows, err := d.db.Query(string(query), limit, userID, userID)
 	if err != nil {
 		return nil, err
 	}
@@ -47,7 +47,7 @@ func (d *DatabaseAdapter) ListForecastDetails(userID int64, limit int64) ([]mode
 		return nil, err
 	}
 
-	rows, err := d.db.Query(string(query), limit, userID)
+	rows, err := d.db.Query(string(query), limit, userID, userID)
 	if err != nil {
 		return nil, err
 	}
@@ -87,7 +87,7 @@ func (d *DatabaseAdapter) UpsertForecast(payload models.CreateForecast, userID i
 	defer stmt.Close()
 
 	res, err := stmt.Exec(
-		payload.Month, payload.Revenue, payload.Expense, payload.Cashflow, userID,
+		payload.Month, payload.Revenue, payload.Expense, payload.Cashflow, userID, userID,
 	)
 	if err != nil {
 		return 0, err
@@ -125,7 +125,7 @@ func (d *DatabaseAdapter) UpsertForecastDetail(payload models.CreateForecastDeta
 	}
 
 	res, err := stmt.Exec(
-		payload.Month, revenueJson, expenseJson, forecastID, userID,
+		payload.Month, revenueJson, expenseJson, forecastID, userID, userID,
 	)
 	if err != nil {
 		return 0, err
@@ -274,7 +274,7 @@ func (d *DatabaseAdapter) ClearForecasts(userID int64) (int64, error) {
 	}
 	defer stmt.Close()
 
-	res, err := stmt.Exec(userID)
+	res, err := stmt.Exec(userID, userID)
 	if err != nil {
 		return 0, err
 	}

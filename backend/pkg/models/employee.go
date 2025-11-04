@@ -6,6 +6,8 @@ import (
 
 type Employee struct {
 	ID                  int64         `db:"id" json:"id"`
+	UUID                string        `db:"uuid" json:"uuid"`
+	ScenarioID          int64         `db:"scenario_id" json:"scenarioId"`
 	Name                string        `db:"name" json:"name"`
 	HoursPerMonth       *uint16       `db:"-" json:"hoursPerMonth"`
 	SalaryAmount        *uint64       `db:"-" json:"salaryAmount"`

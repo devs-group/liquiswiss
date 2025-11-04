@@ -4,5 +4,6 @@ FROM
     employees AS e
 WHERE
     e.organisation_id = get_current_user_organisation_id(?)
+    AND e.scenario_id = (SELECT current_scenario_id FROM users WHERE id = ?)
 LIMIT ?
 OFFSET ?

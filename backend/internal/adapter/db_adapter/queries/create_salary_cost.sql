@@ -7,9 +7,11 @@ INSERT INTO salary_costs
      relative_offset,
      target_date,
      label_id,
-     salary_id
+     salary_id,
+     uuid,
+     scenario_id
     )
-SELECT ?, ?, ?, ?, ?, ?, ?, ?
+SELECT ?, ?, ?, ?, ?, ?, ?, ?, UUID(), h.scenario_id
 FROM salaries AS h
 JOIN employees AS e ON e.id = h.employee_id
 WHERE h.id = ?

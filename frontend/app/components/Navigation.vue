@@ -17,6 +17,17 @@
           @click.stop
           @change="onChangeOrganisation"
         />
+        <Select
+          v-if="user"
+          v-model="selectedScenarioID"
+          :options="scenarios"
+          option-label="name"
+          option-value="id"
+          class="w-56 max-w-56"
+          empty-message="Keine Szenarien gefunden"
+          @click.stop
+          @change="onChangeScenario"
+        />
       </div>
     </template>
 
@@ -61,20 +72,23 @@ import { RouteNames } from '~/config/routes'
 import useAuth from '~/composables/useAuth'
 import { Config } from '~/config/config'
 
-const { logout, user, updateCurrentOrganisation } = useAuth()
+const { logout, user, updateCurrentOrganisation, updateCurrentScenario, useFetchGetProfile } = useAuth()
 const { organisations } = useOrganisations()
+const { scenarios, activeScenario, setActiveScenario, getScenario } = useScenarios()
 const { showGlobalLoadingSpinner } = useGlobalData()
-const { skipOrganisationSwitchQuestion } = useSettings()
+const { skipOrganisationSwitchQuestion, skipScenarioSwitchQuestion } = useSettings()
 const confirm = useConfirm()
 const toast = useToast()
 
 const selectedOrganisationID = ref<number | null>(user.value?.currentOrganisationID ?? null)
+const selectedScenarioID = ref<number | null>(user.value?.currentScenarioID ?? null)
 
 const items = ref<MenuItem[]>([
   { label: 'Prognose', icon: 'pi pi-chart-line', routeName: RouteNames.HOME },
   { label: 'Mitarbeitende', icon: 'pi pi-users', routeName: RouteNames.EMPLOYEES },
   { label: 'Transaktionen', icon: 'pi pi-money-bill', routeName: RouteNames.TRANSACTIONS },
   { label: 'Bankkonten', icon: 'pi pi-building', routeName: RouteNames.BANK_ACCOUNTS },
+  { label: 'Szenarien', icon: 'pi pi-sitemap', routeName: RouteNames.SCENARIOS },
   { label: 'Einstellungen', icon: 'pi pi-cog', routeName: RouteNames.SETTINGS },
   { label: 'Abmelden', icon: 'pi pi-sign-out', command: async () => {
     confirm.require({
@@ -135,4 +149,55 @@ const updateOrganisation = (newSelectedOrganisationID: number) => {
       })
     })
 }
+
+const onChangeScenario = (event: SelectChangeEvent) => {
+  const currentSelectedScenarioID = activeScenario.value?.id ?? null
+  const newSelectedScenarioID = selectedScenarioID.value
+
+  if (newSelectedScenarioID === currentSelectedScenarioID || newSelectedScenarioID == null) {
+    return
+  }
+
+  const newScenario = scenarios.value.find(s => s.id === event.value)
+
+  if (skipScenarioSwitchQuestion.value) {
+    updateScenario(newSelectedScenarioID)
+  }
+  else {
+    confirm.require({
+      header: 'Szenario wechseln',
+      message: `Möchten Sie zum Szenario "${newScenario!.name}" wechseln?`,
+      icon: 'pi pi-question-circle',
+      rejectLabel: 'Nein',
+      acceptLabel: 'Ja',
+      accept: () => updateScenario(newSelectedScenarioID),
+      reject: () => {
+        selectedScenarioID.value = currentSelectedScenarioID
+      },
+    })
+  }
+}
+
+const updateScenario = (newSelectedScenarioID: number) => {
+  showGlobalLoadingSpinner.value = true
+  updateCurrentScenario({ scenarioId: newSelectedScenarioID })
+    .then(() => {
+      reloadNuxtApp({ force: true })
+    })
+    .catch(() => {
+      showGlobalLoadingSpinner.value = false
+      toast.add({
+        summary: 'Fehler',
+        detail: `Das Szenario konnte nicht geändert werden. Dies ist ein Systemfehler`,
+        severity: 'error',
+        life: Config.TOAST_LIFE_TIME,
+      })
+    })
+}
+
+watch(activeScenario, (newScenario) => {
+  if (newScenario) {
+    selectedScenarioID.value = newScenario.id
+  }
+})
 </script>

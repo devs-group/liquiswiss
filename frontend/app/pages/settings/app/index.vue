@@ -29,6 +29,21 @@
       </div>
 
       <div class="flex flex-col justify-center h-full col-span-full md:col-span-1 bg-zinc-100 dark:bg-zinc-800 p-2">
+        <div class="flex items-center gap-2 ">
+          <Checkbox
+            v-model="skipScenarioSwitchQuestion"
+            binary
+            input-id="skip-scenario-switch-question"
+            name="skip-scenario-switch-question"
+          />
+          <label
+            class="cursor-pointer"
+            for="skip-scenario-switch-question"
+          >Nicht nachfragen beim Wechseln des Szenarios</label>
+        </div>
+      </div>
+
+      <div class="flex flex-col justify-center h-full col-span-full md:col-span-1 bg-zinc-100 dark:bg-zinc-800 p-2">
         <div class="flex items-center gap-2 col-span-full md:col-span-1">
           <label for="dark-mode">Farbmodus:</label>
           <ClientOnly>
@@ -56,13 +71,13 @@ useHead({
 const toast = useToast()
 
 const colorMode = useColorMode()
-const { skipOrganisationSwitchQuestion, settingsTab } = useSettings()
+const { skipOrganisationSwitchQuestion, skipScenarioSwitchQuestion, settingsTab } = useSettings()
 
 onMounted(() => {
   settingsTab.value = RouteNames.SETTINGS_APP
 })
 
-watch([skipOrganisationSwitchQuestion], (value, oldValue) => {
+watch([skipOrganisationSwitchQuestion, skipScenarioSwitchQuestion], (value, oldValue) => {
   if (value !== oldValue) {
     toast.add({
       summary: 'Erfolg',

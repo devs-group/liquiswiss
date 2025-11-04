@@ -20,6 +20,7 @@ func (d *DatabaseAdapter) GetProfile(userID int64) (*models.User, error) {
 		&user.Name,
 		&user.Email,
 		&user.CurrentOrganisationID,
+		&user.CurrentScenarioID,
 		&user.Currency.ID,
 		&user.Currency.Code,
 		&user.Currency.Description,
@@ -194,6 +195,25 @@ func (d *DatabaseAdapter) SetUserCurrentOrganisation(userID int64, organisationI
 	}
 
 	res, err := d.db.Exec(string(query), organisationID, userID, organisationID)
+	if err != nil {
+		return err
+	}
+
+	_, err = res.RowsAffected()
+	if err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (d *DatabaseAdapter) SetUserCurrentScenario(userID int64, scenarioID int64) error {
+	query, err := sqlQueries.ReadFile("queries/set_user_current_scenario.sql")
+	if err != nil {
+		return err
+	}
+
+	res, err := d.db.Exec(string(query), scenarioID, userID, scenarioID)
 	if err != nil {
 		return err
 	}
