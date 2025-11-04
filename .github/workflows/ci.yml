@@ -103,7 +103,9 @@ jobs:
     name: Build Nuxt
     runs-on: ubuntu-latest
     needs: [ changes, lint_nuxt ]
-    if: ${{ github.ref == 'refs/heads/main' && (needs.changes.outputs.frontend == 'true' || needs.changes.outputs.workflow == 'true') && needs.lint_nuxt.result == 'success' }}
+    if: ${{ github.ref == 'refs/heads/main'
+      && (needs.changes.outputs.frontend == 'true' || needs.changes.outputs.workflow == 'true')
+      && needs.lint_nuxt.result == 'success' }}
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
@@ -127,7 +129,9 @@ jobs:
     name: Build Backend
     runs-on: ubuntu-latest
     needs: [ changes, test_backend ]
-    if: ${{ github.ref == 'refs/heads/main' && (needs.changes.outputs.backend == 'true' || needs.changes.outputs.workflow == 'true') && needs.test_backend.result == 'success' }}
+    if: ${{ github.ref == 'refs/heads/main'
+      && (needs.changes.outputs.backend == 'true' || needs.changes.outputs.workflow == 'true')
+      && needs.test_backend.result == 'success' }}
     env:
       IMAGE: ghcr.io/${{ github.repository }}/backend:latest
     steps:
@@ -152,8 +156,13 @@ jobs:
   push_images:
     name: Push Images
     runs-on: ubuntu-latest
-    needs: [ changes, build_nuxt, build_backend ]
-    if: ${{ github.ref == 'refs/heads/main' && (needs.build_nuxt.result == 'success' || needs.build_backend.result == 'success') && needs.build_nuxt.result != 'failure' && needs.build_backend.result != 'failure' }}
+    needs: [ changes, build_nuxt, build_backend, lint_nuxt, test_backend ]
+    if: ${{ github.ref == 'refs/heads/main'
+      && (needs.build_nuxt.result == 'success' || needs.build_backend.result == 'success')
+      && needs.build_nuxt.result != 'failure'
+      && needs.build_backend.result != 'failure'
+      && needs.lint_nuxt.result != 'failure'
+      && needs.test_backend.result != 'failure' }}
     steps:
       - name: Download Nuxt Image Artifact
         uses: actions/download-artifact@v4
@@ -191,7 +200,9 @@ jobs:
     name: Deploy to Production
     runs-on: ubuntu-latest
     needs: [ push_images ]
-    if: ${{ always() && github.ref == 'refs/heads/main' && needs.push_images.result == 'success' }}
+    if: ${{ always()
+      && github.ref == 'refs/heads/main'
+      && needs.push_images.result == 'success' }}
     env:
       DEPLOY_URL: ${{ secrets.DEPLOY_URL }}
       DEPLOY_TOKEN: ${{ secrets.DEPLOY_TOKEN }}
