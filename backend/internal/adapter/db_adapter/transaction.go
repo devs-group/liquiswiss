@@ -160,7 +160,7 @@ func (d *DatabaseAdapter) CreateTransaction(payload models.CreateTransaction, us
 
 	res, err := stmt.Exec(
 		payload.Name, payload.Amount, payload.Cycle, payload.Type, payload.StartDate, payload.EndDate,
-		payload.Category, payload.Currency, payload.Employee, userID, payload.Vat, payload.VatIncluded,
+		payload.Category, payload.Currency, payload.Employee, userID, userID, payload.Vat, payload.VatIncluded,
 	)
 	if err != nil {
 		return 0, err

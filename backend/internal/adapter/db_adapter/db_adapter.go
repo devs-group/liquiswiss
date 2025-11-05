@@ -28,6 +28,7 @@ type IDatabaseAdapter interface {
 	ResetPassword(password string, email string) error
 	CheckUserExistence(id int64) (bool, error)
 	SetUserCurrentOrganisation(userID int64, organisationID int64) error
+	SetUserCurrentScenario(userID int64, scenarioID int64) error
 	CreateResetPassword(email, code string, delay time.Duration) (bool, error)
 	ValidateResetPassword(email, code string, validity time.Duration) (int64, error)
 	DeleteResetPassword(email string) error
@@ -103,6 +104,14 @@ type IDatabaseAdapter interface {
 	GetCategory(userID int64, categoryID int64) (*models.Category, error)
 	CreateCategory(payload models.CreateCategory, userID *int64) (int64, error)
 	UpdateCategory(payload models.UpdateCategory, userID int64, categoryID int64) error
+
+	ListScenarios(userID, page, limit int64) ([]models.Scenario, int64, error)
+	GetScenario(userID, scenarioID int64) (*models.Scenario, error)
+	CreateScenario(payload models.CreateScenario, userID int64) (int64, error)
+	CreateScenarioForOrganisation(payload models.CreateScenario, organisationID int64) (int64, error)
+	UpdateScenario(payload models.UpdateScenario, userID, scenarioID int64) error
+	DeleteScenario(userID, scenarioID int64) error
+	GetDefaultScenarioID(organisationID int64) (int64, error)
 
 	ListCurrencies(userID int64) ([]models.Currency, error)
 	GetCurrency(currencyID int64) (*models.Currency, error)

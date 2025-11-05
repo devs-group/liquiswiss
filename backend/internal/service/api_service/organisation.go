@@ -46,6 +46,14 @@ func (a *APIService) CreateOrganisation(payload models.CreateOrganisation, userI
 		logger.Logger.Error(err)
 		return nil, err
 	}
+	_, err = a.dbService.CreateScenarioForOrganisation(models.CreateScenario{
+		Name:      "Default",
+		IsDefault: true,
+	}, organisationID)
+	if err != nil {
+		logger.Logger.Error(err)
+		return nil, err
+	}
 	organisation, err := a.dbService.GetOrganisation(userID, organisationID)
 	if err != nil {
 		logger.Logger.Error(err)

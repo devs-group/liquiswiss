@@ -206,6 +206,25 @@ func (d *DatabaseAdapter) SetUserCurrentOrganisation(userID int64, organisationI
 	return nil
 }
 
+func (d *DatabaseAdapter) SetUserCurrentScenario(userID int64, scenarioID int64) error {
+	query, err := sqlQueries.ReadFile("queries/set_user_current_scenario.sql")
+	if err != nil {
+		return err
+	}
+
+	res, err := d.db.Exec(string(query), scenarioID, userID, scenarioID)
+	if err != nil {
+		return err
+	}
+
+	_, err = res.RowsAffected()
+	if err != nil {
+		return err
+	}
+
+	return nil
+}
+
 func (d *DatabaseAdapter) CreateResetPassword(email, code string, delay time.Duration) (bool, error) {
 	query, err := sqlQueries.ReadFile("queries/create_reset_password.sql")
 	if err != nil {

@@ -340,6 +340,36 @@ func (mr *MockIDatabaseAdapterMockRecorder) CreateSalaryCostLabel(payload, userI
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CreateSalaryCostLabel", reflect.TypeOf((*MockIDatabaseAdapter)(nil).CreateSalaryCostLabel), payload, userID)
 }
 
+// CreateScenario mocks base method.
+func (m *MockIDatabaseAdapter) CreateScenario(payload models.CreateScenario, userID int64) (int64, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "CreateScenario", payload, userID)
+	ret0, _ := ret[0].(int64)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// CreateScenario indicates an expected call of CreateScenario.
+func (mr *MockIDatabaseAdapterMockRecorder) CreateScenario(payload, userID any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CreateScenario", reflect.TypeOf((*MockIDatabaseAdapter)(nil).CreateScenario), payload, userID)
+}
+
+// CreateScenarioForOrganisation mocks base method.
+func (m *MockIDatabaseAdapter) CreateScenarioForOrganisation(payload models.CreateScenario, organisationID int64) (int64, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "CreateScenarioForOrganisation", payload, organisationID)
+	ret0, _ := ret[0].(int64)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// CreateScenarioForOrganisation indicates an expected call of CreateScenarioForOrganisation.
+func (mr *MockIDatabaseAdapterMockRecorder) CreateScenarioForOrganisation(payload, organisationID any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CreateScenarioForOrganisation", reflect.TypeOf((*MockIDatabaseAdapter)(nil).CreateScenarioForOrganisation), payload, organisationID)
+}
+
 // CreateTransaction mocks base method.
 func (m *MockIDatabaseAdapter) CreateTransaction(payload models.CreateTransaction, userID int64) (int64, error) {
 	m.ctrl.T.Helper()
@@ -528,6 +558,20 @@ func (mr *MockIDatabaseAdapterMockRecorder) DeleteSalaryCostsBySalaryID(salaryID
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "DeleteSalaryCostsBySalaryID", reflect.TypeOf((*MockIDatabaseAdapter)(nil).DeleteSalaryCostsBySalaryID), salaryID)
 }
 
+// DeleteScenario mocks base method.
+func (m *MockIDatabaseAdapter) DeleteScenario(userID, scenarioID int64) error {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "DeleteScenario", userID, scenarioID)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// DeleteScenario indicates an expected call of DeleteScenario.
+func (mr *MockIDatabaseAdapterMockRecorder) DeleteScenario(userID, scenarioID any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "DeleteScenario", reflect.TypeOf((*MockIDatabaseAdapter)(nil).DeleteScenario), userID, scenarioID)
+}
+
 // DeleteTransaction mocks base method.
 func (m *MockIDatabaseAdapter) DeleteTransaction(userID, transactionID int64) error {
 	m.ctrl.T.Helper()
@@ -599,6 +643,21 @@ func (m *MockIDatabaseAdapter) GetCurrency(currencyID int64) (*models.Currency, 
 func (mr *MockIDatabaseAdapterMockRecorder) GetCurrency(currencyID any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetCurrency", reflect.TypeOf((*MockIDatabaseAdapter)(nil).GetCurrency), currencyID)
+}
+
+// GetDefaultScenarioID mocks base method.
+func (m *MockIDatabaseAdapter) GetDefaultScenarioID(organisationID int64) (int64, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "GetDefaultScenarioID", organisationID)
+	ret0, _ := ret[0].(int64)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// GetDefaultScenarioID indicates an expected call of GetDefaultScenarioID.
+func (mr *MockIDatabaseAdapterMockRecorder) GetDefaultScenarioID(organisationID any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetDefaultScenarioID", reflect.TypeOf((*MockIDatabaseAdapter)(nil).GetDefaultScenarioID), organisationID)
 }
 
 // GetEmployee mocks base method.
@@ -704,6 +763,21 @@ func (m *MockIDatabaseAdapter) GetSalaryCostLabel(userID, salaryCostLabelID int6
 func (mr *MockIDatabaseAdapterMockRecorder) GetSalaryCostLabel(userID, salaryCostLabelID any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetSalaryCostLabel", reflect.TypeOf((*MockIDatabaseAdapter)(nil).GetSalaryCostLabel), userID, salaryCostLabelID)
+}
+
+// GetScenario mocks base method.
+func (m *MockIDatabaseAdapter) GetScenario(userID, scenarioID int64) (*models.Scenario, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "GetScenario", userID, scenarioID)
+	ret0, _ := ret[0].(*models.Scenario)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// GetScenario indicates an expected call of GetScenario.
+func (mr *MockIDatabaseAdapterMockRecorder) GetScenario(userID, scenarioID any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetScenario", reflect.TypeOf((*MockIDatabaseAdapter)(nil).GetScenario), userID, scenarioID)
 }
 
 // GetTransaction mocks base method.
@@ -967,6 +1041,22 @@ func (mr *MockIDatabaseAdapterMockRecorder) ListSalaryCosts(userID, salaryID, pa
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ListSalaryCosts", reflect.TypeOf((*MockIDatabaseAdapter)(nil).ListSalaryCosts), userID, salaryID, page, limit)
 }
 
+// ListScenarios mocks base method.
+func (m *MockIDatabaseAdapter) ListScenarios(userID, page, limit int64) ([]models.Scenario, int64, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "ListScenarios", userID, page, limit)
+	ret0, _ := ret[0].([]models.Scenario)
+	ret1, _ := ret[1].(int64)
+	ret2, _ := ret[2].(error)
+	return ret0, ret1, ret2
+}
+
+// ListScenarios indicates an expected call of ListScenarios.
+func (mr *MockIDatabaseAdapterMockRecorder) ListScenarios(userID, page, limit any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ListScenarios", reflect.TypeOf((*MockIDatabaseAdapter)(nil).ListScenarios), userID, page, limit)
+}
+
 // ListTransactions mocks base method.
 func (m *MockIDatabaseAdapter) ListTransactions(userID, page, limit int64, sortBy, sortOrder string) ([]models.Transaction, int64, error) {
 	m.ctrl.T.Helper()
@@ -1052,6 +1142,20 @@ func (m *MockIDatabaseAdapter) SetUserCurrentOrganisation(userID, organisationID
 func (mr *MockIDatabaseAdapterMockRecorder) SetUserCurrentOrganisation(userID, organisationID any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "SetUserCurrentOrganisation", reflect.TypeOf((*MockIDatabaseAdapter)(nil).SetUserCurrentOrganisation), userID, organisationID)
+}
+
+// SetUserCurrentScenario mocks base method.
+func (m *MockIDatabaseAdapter) SetUserCurrentScenario(userID, scenarioID int64) error {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "SetUserCurrentScenario", userID, scenarioID)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// SetUserCurrentScenario indicates an expected call of SetUserCurrentScenario.
+func (mr *MockIDatabaseAdapterMockRecorder) SetUserCurrentScenario(userID, scenarioID any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "SetUserCurrentScenario", reflect.TypeOf((*MockIDatabaseAdapter)(nil).SetUserCurrentScenario), userID, scenarioID)
 }
 
 // StoreRefreshTokenID mocks base method.
@@ -1208,6 +1312,20 @@ func (m *MockIDatabaseAdapter) UpdateSalaryCostLabel(payload models.CreateSalary
 func (mr *MockIDatabaseAdapterMockRecorder) UpdateSalaryCostLabel(payload, userID, salaryCostLabelID any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "UpdateSalaryCostLabel", reflect.TypeOf((*MockIDatabaseAdapter)(nil).UpdateSalaryCostLabel), payload, userID, salaryCostLabelID)
+}
+
+// UpdateScenario mocks base method.
+func (m *MockIDatabaseAdapter) UpdateScenario(payload models.UpdateScenario, userID, scenarioID int64) error {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "UpdateScenario", payload, userID, scenarioID)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// UpdateScenario indicates an expected call of UpdateScenario.
+func (mr *MockIDatabaseAdapterMockRecorder) UpdateScenario(payload, userID, scenarioID any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "UpdateScenario", reflect.TypeOf((*MockIDatabaseAdapter)(nil).UpdateScenario), payload, userID, scenarioID)
 }
 
 // UpdateTransaction mocks base method.
