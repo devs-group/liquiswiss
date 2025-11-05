@@ -104,6 +104,12 @@ type IDatabaseAdapter interface {
 	CreateCategory(payload models.CreateCategory, userID *int64) (int64, error)
 	UpdateCategory(payload models.UpdateCategory, userID int64, categoryID int64) error
 
+	ListScenarios(userID, page, limit int64) ([]models.Scenario, int64, error)
+	GetScenario(userID, scenarioID int64) (*models.Scenario, error)
+	CreateScenario(payload models.CreateScenario, userID int64) (int64, error)
+	UpdateScenario(payload models.UpdateScenario, userID, scenarioID int64) error
+	DeleteScenario(userID, scenarioID int64) error
+
 	ListCurrencies(userID int64) ([]models.Currency, error)
 	GetCurrency(currencyID int64) (*models.Currency, error)
 	CreateCurrency(payload models.CreateCurrency) (int64, error)

@@ -1,7 +1,7 @@
 -- +goose Up
 -- +goose StatementBegin
 ALTER TABLE IF EXISTS organisations
-ADD COLUMN main_currency_id BIGINT UNSIGNED AFTER name,
+ADD COLUMN IF NOT EXISTS main_currency_id BIGINT UNSIGNED AFTER name,
 ADD CONSTRAINT FK_Organisation_Currency FOREIGN KEY (main_currency_id) REFERENCES currencies (id) ON DELETE RESTRICT ON UPDATE CASCADE;
 -- +goose StatementEnd
 

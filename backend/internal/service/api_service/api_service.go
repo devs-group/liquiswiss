@@ -92,6 +92,12 @@ type IAPIService interface {
 	CreateCategory(payload models.CreateCategory, userID *int64) (*models.Category, error)
 	UpdateCategory(payload models.UpdateCategory, userID int64, categoryID int64) (*models.Category, error)
 
+	ListScenarios(userID, page, limit int64) ([]models.Scenario, int64, error)
+	GetScenario(userID, scenarioID int64) (*models.Scenario, error)
+	CreateScenario(payload models.CreateScenario, userID int64) (*models.Scenario, error)
+	UpdateScenario(payload models.UpdateScenario, userID, scenarioID int64) (*models.Scenario, error)
+	DeleteScenario(userID, scenarioID int64) error
+
 	ListCurrencies(userID int64) ([]models.Currency, error)
 	GetCurrency(currencyID int64) (*models.Currency, error)
 	CreateCurrency(payload models.CreateCurrency) (*models.Currency, error)

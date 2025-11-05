@@ -267,6 +267,23 @@ func (api *API) setupRouter() {
 				handlers.UpdateCategory(api.APIService, ctx)
 			})
 
+			// Scenarios
+			protected.GET("/scenarios", func(ctx *gin.Context) {
+				handlers.ListScenarios(api.APIService, ctx)
+			})
+			protected.GET("/scenarios/:scenarioID", func(ctx *gin.Context) {
+				handlers.GetScenario(api.APIService, ctx)
+			})
+			protected.POST("/scenarios", func(ctx *gin.Context) {
+				handlers.CreateScenario(api.APIService, ctx)
+			})
+			protected.PATCH("/scenarios/:scenarioID", func(ctx *gin.Context) {
+				handlers.UpdateScenario(api.APIService, ctx)
+			})
+			protected.DELETE("/scenarios/:scenarioID", func(ctx *gin.Context) {
+				handlers.DeleteScenario(api.APIService, ctx)
+			})
+
 			// Currencies
 			protected.GET("/currencies", func(ctx *gin.Context) {
 				handlers.ListCurrencies(api.APIService, ctx)
