@@ -87,6 +87,11 @@ type IAPIService interface {
 	UpdateVat(payload models.UpdateVat, userID int64, vatID int64) (*models.Vat, error)
 	DeleteVat(userID int64, vatID int64) error
 
+	GetVatSetting(userID int64) (*models.VatSetting, error)
+	CreateVatSetting(payload models.CreateVatSetting, userID int64) (*models.VatSetting, error)
+	UpdateVatSetting(payload models.UpdateVatSetting, userID int64) (*models.VatSetting, error)
+	DeleteVatSetting(userID int64) error
+
 	ListCategories(userID, page, limit int64) ([]models.Category, int64, error)
 	GetCategory(userID int64, categoryID int64) (*models.Category, error)
 	CreateCategory(payload models.CreateCategory, userID *int64) (*models.Category, error)

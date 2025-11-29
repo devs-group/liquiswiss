@@ -253,6 +253,20 @@ func (api *API) setupRouter() {
 				handlers.DeleteVat(api.APIService, ctx)
 			})
 
+			// VAT Settings
+			protected.GET("/vat-settings", func(ctx *gin.Context) {
+				handlers.GetVatSetting(api.APIService, ctx)
+			})
+			protected.POST("/vat-settings", func(ctx *gin.Context) {
+				handlers.CreateVatSetting(api.APIService, ctx)
+			})
+			protected.PATCH("/vat-settings", func(ctx *gin.Context) {
+				handlers.UpdateVatSetting(api.APIService, ctx)
+			})
+			protected.DELETE("/vat-settings", func(ctx *gin.Context) {
+				handlers.DeleteVatSetting(api.APIService, ctx)
+			})
+
 			// Categories
 			protected.GET("/categories", func(ctx *gin.Context) {
 				handlers.ListCategories(api.APIService, ctx)

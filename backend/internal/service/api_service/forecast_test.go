@@ -118,6 +118,10 @@ func TestCalculateForecast_SkipsDisabledTransactions(t *testing.T) {
 		Return([]models.Employee{}, int64(0), nil)
 
 	mockDB.EXPECT().
+		GetVatSetting(userID).
+		Return(nil, nil)
+
+	mockDB.EXPECT().
 		ClearForecasts(userID).
 		Return(int64(0), nil)
 
@@ -273,6 +277,10 @@ func TestCalculateForecast_SkipsDisabledSalariesOnly(t *testing.T) {
 	mockDB.EXPECT().
 		ListForecastExclusions(userID, activeSalary.ID, utils.SalariesTableName).
 		Return(map[string]bool{}, nil)
+
+	mockDB.EXPECT().
+		GetVatSetting(userID).
+		Return(nil, nil)
 
 	mockDB.EXPECT().
 		ClearForecasts(userID).
@@ -451,6 +459,10 @@ func TestCalculateForecast_CountsBothSalaryCostsTwice(t *testing.T) {
 		Return(map[string]bool{}, nil)
 
 	mockDB.EXPECT().
+		GetVatSetting(userID).
+		Return(nil, nil)
+
+	mockDB.EXPECT().
 		ClearForecasts(userID).
 		Return(int64(0), nil)
 
@@ -571,4 +583,310 @@ func TestUpdateForecastExclusions_PropagatesError(t *testing.T) {
 
 	err := service.UpdateForecastExclusions(payload, userID)
 	require.ErrorIs(t, err, expectedErr)
+}
+
+func TestCalculateForecast_VATSettlement_BiannuallyInterval(t *testing.T) {
+	logger.Logger = zap.NewNop().Sugar()
+	utils.InitValidator()
+
+	// Today is 29.11.2025
+	// VAT billing date (Rechnungszeitpunkt): 27.02.2026
+	// VAT transaction date (Transaktionszeitpunkt): 28.02.2026
+	// Interval: biannually (6 months)
+	// Expected settlements:
+	// - 28.02.2026: collects VAT until Jan 2026 (months BEFORE billing date 27.02.2026)
+	// - 28.08.2026: collects VAT from Feb-Jul 2026 (next 6 months)
+	fixedToday := time.Date(2025, time.November, 29, 0, 0, 0, 0, time.UTC)
+	originalClock := utils.DefaultClock
+	utils.DefaultClock = &stubClock{fixed: fixedToday}
+	defer func() {
+		utils.DefaultClock = originalClock
+	}()
+
+	ctrl := gomock.NewController(t)
+	defer ctrl.Finish()
+
+	mockDB := mocks.NewMockIDatabaseAdapter(ctrl)
+	service := api_service.NewAPIService(mockDB, nil)
+
+	userID := int64(999)
+	baseCode := "CHF"
+	localeCode := "de-CH"
+
+	orgCurrency := models.Currency{
+		Code:       &baseCode,
+		LocaleCode: &localeCode,
+	}
+	user := models.User{
+		ID:                    userID,
+		Name:                  "VAT Test User",
+		Email:                 "vattest@example.com",
+		CurrentOrganisationID: 111,
+		Currency:              orgCurrency,
+	}
+	organisation := models.Organisation{
+		ID:       user.CurrentOrganisationID,
+		Name:     "VAT Test Org",
+		Currency: orgCurrency,
+	}
+
+	mockDB.EXPECT().
+		GetProfile(userID).
+		Return(&user, nil)
+	mockDB.EXPECT().
+		GetOrganisation(userID, user.CurrentOrganisationID).
+		Return(&organisation, nil)
+
+	// VAT Settings:
+	// - billing_date = 27.02.2026 (Rechnungszeitpunkt - determines collection period)
+	// - transaction_date = 28.02.2026 (Transaktionszeitpunkt - when payment appears in forecast)
+	// - interval = biannually (6 months)
+	// First period: collects until Jan 2026, appears on 28.02.2026
+	// Second period: collects Feb-Jul 2026, appears on 28.08.2026
+	vatBillingDate := time.Date(2026, time.February, 27, 0, 0, 0, 0, time.UTC)
+	vatTransactionDate := time.Date(2026, time.February, 28, 0, 0, 0, 0, time.UTC)
+	vatSetting := &models.VatSetting{
+		ID:              1,
+		OrganisationID:  user.CurrentOrganisationID,
+		Enabled:         true,
+		BillingDate:     vatBillingDate,
+		TransactionDate: vatTransactionDate,
+		Interval:        "biannually",
+	}
+
+	mockDB.EXPECT().
+		GetVatSetting(userID).
+		Return(vatSetting, nil)
+
+	// Create transactions with VAT from December 2025 to July 2026
+	// Each transaction has a 7.7% VAT (770 basis points)
+	vatValue := int64(770) // 7.7%
+	vat := models.Vat{
+		ID:    1,
+		Value: vatValue,
+	}
+
+	transactions := []models.Transaction{
+		// December 2025: 1000.00 CHF revenue + 77.00 VAT
+		{
+			ID:          1,
+			Name:        "Dec Revenue",
+			Amount:      1000_00,
+			VatAmount:   77_00,
+			Vat:         &vat,
+			VatIncluded: false,
+			Type:        "single",
+			StartDate:   types.AsDate(time.Date(2025, time.December, 15, 0, 0, 0, 0, time.UTC)),
+			Category:    models.Category{Name: "Sales"},
+			Currency:    orgCurrency,
+			IsDisabled:  false,
+		},
+		// January 2026: 2000.00 CHF revenue + 154.00 VAT
+		{
+			ID:          2,
+			Name:        "Jan Revenue",
+			Amount:      2000_00,
+			VatAmount:   154_00,
+			Vat:         &vat,
+			VatIncluded: false,
+			Type:        "single",
+			StartDate:   types.AsDate(time.Date(2026, time.January, 20, 0, 0, 0, 0, time.UTC)),
+			Category:    models.Category{Name: "Sales"},
+			Currency:    orgCurrency,
+			IsDisabled:  false,
+		},
+		// February 2026: 1500.00 CHF revenue + 115.50 VAT
+		{
+			ID:          3,
+			Name:        "Feb Revenue",
+			Amount:      1500_00,
+			VatAmount:   115_50,
+			Vat:         &vat,
+			VatIncluded: false,
+			Type:        "single",
+			StartDate:   types.AsDate(time.Date(2026, time.February, 10, 0, 0, 0, 0, time.UTC)),
+			Category:    models.Category{Name: "Sales"},
+			Currency:    orgCurrency,
+			IsDisabled:  false,
+		},
+		// March 2026: 3000.00 CHF revenue + 231.00 VAT
+		{
+			ID:          4,
+			Name:        "Mar Revenue",
+			Amount:      3000_00,
+			VatAmount:   231_00,
+			Vat:         &vat,
+			VatIncluded: false,
+			Type:        "single",
+			StartDate:   types.AsDate(time.Date(2026, time.March, 5, 0, 0, 0, 0, time.UTC)),
+			Category:    models.Category{Name: "Sales"},
+			Currency:    orgCurrency,
+			IsDisabled:  false,
+		},
+		// April 2026: 2500.00 CHF revenue + 192.50 VAT
+		{
+			ID:          5,
+			Name:        "Apr Revenue",
+			Amount:      2500_00,
+			VatAmount:   192_50,
+			Vat:         &vat,
+			VatIncluded: false,
+			Type:        "single",
+			StartDate:   types.AsDate(time.Date(2026, time.April, 12, 0, 0, 0, 0, time.UTC)),
+			Category:    models.Category{Name: "Sales"},
+			Currency:    orgCurrency,
+			IsDisabled:  false,
+		},
+		// May 2026: 1800.00 CHF revenue + 138.60 VAT
+		{
+			ID:          6,
+			Name:        "May Revenue",
+			Amount:      1800_00,
+			VatAmount:   138_60,
+			Vat:         &vat,
+			VatIncluded: false,
+			Type:        "single",
+			StartDate:   types.AsDate(time.Date(2026, time.May, 25, 0, 0, 0, 0, time.UTC)),
+			Category:    models.Category{Name: "Sales"},
+			Currency:    orgCurrency,
+			IsDisabled:  false,
+		},
+		// June 2026: 2200.00 CHF revenue + 169.40 VAT
+		{
+			ID:          7,
+			Name:        "Jun Revenue",
+			Amount:      2200_00,
+			VatAmount:   169_40,
+			Vat:         &vat,
+			VatIncluded: false,
+			Type:        "single",
+			StartDate:   types.AsDate(time.Date(2026, time.June, 8, 0, 0, 0, 0, time.UTC)),
+			Category:    models.Category{Name: "Sales"},
+			Currency:    orgCurrency,
+			IsDisabled:  false,
+		},
+		// July 2026: 2800.00 CHF revenue + 215.60 VAT
+		{
+			ID:          8,
+			Name:        "Jul Revenue",
+			Amount:      2800_00,
+			VatAmount:   215_60,
+			Vat:         &vat,
+			VatIncluded: false,
+			Type:        "single",
+			StartDate:   types.AsDate(time.Date(2026, time.July, 15, 0, 0, 0, 0, time.UTC)),
+			Category:    models.Category{Name: "Sales"},
+			Currency:    orgCurrency,
+			IsDisabled:  false,
+		},
+	}
+
+	mockDB.EXPECT().
+		ListTransactions(userID, int64(1), int64(100000), "name", "ASC").
+		Return(transactions, int64(len(transactions)), nil)
+
+	mockDB.EXPECT().
+		ListFiatRates(baseCode).
+		Return([]models.FiatRate{}, nil)
+
+	// Mock forecast exclusions for each transaction (none excluded)
+	// Called twice per transaction: once for revenue, once for VAT collection
+	for _, tx := range transactions {
+		mockDB.EXPECT().
+			ListForecastExclusions(userID, tx.ID, utils.TransactionsTableName).
+			Return(map[string]bool{}, nil).
+			Times(2)
+	}
+
+	mockDB.EXPECT().
+		ListEmployees(userID, int64(1), int64(100000), "name", "ASC").
+		Return([]models.Employee{}, int64(0), nil)
+
+	mockDB.EXPECT().
+		ClearForecasts(userID).
+		Return(int64(0), nil)
+
+	// Capture all upserted forecasts
+	capturedForecasts := make(map[string]models.CreateForecast)
+	mockDB.EXPECT().
+		UpsertForecast(gomock.Any(), userID).
+		DoAndReturn(func(payload models.CreateForecast, _ int64) (int64, error) {
+			capturedForecasts[payload.Month] = payload
+			return int64(len(capturedForecasts)), nil
+		}).
+		AnyTimes()
+
+	mockDB.EXPECT().
+		UpsertForecastDetail(gomock.Any(), userID, gomock.Any()).
+		Return(int64(0), nil).
+		AnyTimes()
+
+	mockDB.EXPECT().
+		ListForecasts(userID, int64(utils.GetTotalMonthsForMaxForecastYears())).
+		DoAndReturn(func(_ int64, _ int64) ([]models.Forecast, error) {
+			forecasts := make([]models.Forecast, 0, len(capturedForecasts))
+			for _, cf := range capturedForecasts {
+				forecasts = append(forecasts, models.Forecast{
+					Data: models.ForecastData{
+						Month:    cf.Month,
+						Revenue:  cf.Revenue,
+						Expense:  cf.Expense,
+						Cashflow: cf.Cashflow,
+					},
+				})
+			}
+			return forecasts, nil
+		})
+
+	results, err := service.CalculateForecast(userID)
+	require.NoError(t, err)
+	require.NotEmpty(t, results)
+
+	// Verify VAT settlement for 28.02.2026 (transaction date)
+	// Billing date 27.02.2026 means we collect VAT UNTIL Jan 2026 (not including Feb)
+	// Transaction date 28.02.2026 is when the expense appears in forecast
+	feb2026 := "2026-02"
+	require.Contains(t, capturedForecasts, feb2026, "Expected VAT settlement in Feb 2026")
+
+	// Expected VAT for first settlement (until Jan 2026):
+	// Dec: 77.00 + Jan: 154.00 = 231.00 CHF (Feb NOT included as it's >= billing date)
+	expectedFirstVAT := int64(77_00 + 154_00)
+	feb2026Forecast := capturedForecasts[feb2026]
+
+	// The VAT should be a negative expense (money we owe)
+	// Feb forecast should have:
+	// - Revenue: Feb transaction amount + Feb VAT (1500.00 + 115.50)
+	// - Expense: VAT settlement payment (collected VAT from Dec, Jan only)
+	expectedFebRevenue := int64(1500_00 + 115_50) // Feb revenue + its VAT
+	expectedVATExpense := -expectedFirstVAT       // VAT to pay as expense
+
+	require.EqualValues(t, expectedFebRevenue, feb2026Forecast.Revenue,
+		"Feb 2026 revenue should be Feb transaction + its VAT (expected: %d, got: %d)",
+		expectedFebRevenue, feb2026Forecast.Revenue)
+
+	// The expense should include the VAT settlement
+	require.LessOrEqual(t, feb2026Forecast.Expense, expectedVATExpense,
+		"Feb 2026 expense should include VAT settlement (expected at most: %d, got: %d)",
+		expectedVATExpense, feb2026Forecast.Expense)
+
+	// Verify VAT settlement for 28.08.2026 (transaction date)
+	// Billing date 27.08.2026 means we collect VAT from Feb - Jul 2026 (6 months)
+	aug2026 := "2026-08"
+	require.Contains(t, capturedForecasts, aug2026, "Expected VAT settlement in Aug 2026")
+
+	// Expected VAT for second settlement (Feb - Jul 2026):
+	// Feb: 115.50 + Mar: 231.00 + Apr: 192.50 + May: 138.60 + Jun: 169.40 + Jul: 215.60 = 1062.60 CHF
+	expectedSecondVAT := int64(115_50 + 231_00 + 192_50 + 138_60 + 169_40 + 215_60)
+	aug2026Forecast := capturedForecasts[aug2026]
+
+	// Aug should have VAT expense
+	require.LessOrEqual(t, aug2026Forecast.Expense, -expectedSecondVAT,
+		"Aug 2026 should have VAT settlement as expense (expected: %d, got: %d)",
+		-expectedSecondVAT, aug2026Forecast.Expense)
+
+	// Verify that the VAT settlements are in the future (after today)
+	require.True(t, vatTransactionDate.After(fixedToday),
+		"First VAT transaction date should be in the future")
+	require.True(t, time.Date(2026, time.August, 28, 0, 0, 0, 0, time.UTC).After(fixedToday),
+		"Second VAT transaction date should be in the future")
 }

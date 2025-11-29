@@ -324,6 +324,21 @@ func (mr *MockIAPIServiceMockRecorder) CreateVat(payload, userID any) *gomock.Ca
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CreateVat", reflect.TypeOf((*MockIAPIService)(nil).CreateVat), payload, userID)
 }
 
+// CreateVatSetting mocks base method.
+func (m *MockIAPIService) CreateVatSetting(payload models.CreateVatSetting, userID int64) (*models.VatSetting, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "CreateVatSetting", payload, userID)
+	ret0, _ := ret[0].(*models.VatSetting)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// CreateVatSetting indicates an expected call of CreateVatSetting.
+func (mr *MockIAPIServiceMockRecorder) CreateVatSetting(payload, userID any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CreateVatSetting", reflect.TypeOf((*MockIAPIService)(nil).CreateVatSetting), payload, userID)
+}
+
 // DeleteBankAccount mocks base method.
 func (m *MockIAPIService) DeleteBankAccount(userID, bankAccountID int64) error {
 	m.ctrl.T.Helper()
@@ -449,6 +464,20 @@ func (m *MockIAPIService) DeleteVat(userID, vatID int64) error {
 func (mr *MockIAPIServiceMockRecorder) DeleteVat(userID, vatID any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "DeleteVat", reflect.TypeOf((*MockIAPIService)(nil).DeleteVat), userID, vatID)
+}
+
+// DeleteVatSetting mocks base method.
+func (m *MockIAPIService) DeleteVatSetting(userID int64) error {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "DeleteVatSetting", userID)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// DeleteVatSetting indicates an expected call of DeleteVatSetting.
+func (mr *MockIAPIServiceMockRecorder) DeleteVatSetting(userID any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "DeleteVatSetting", reflect.TypeOf((*MockIAPIService)(nil).DeleteVatSetting), userID)
 }
 
 // FinishRegistration mocks base method.
@@ -677,6 +706,21 @@ func (m *MockIAPIService) GetVat(userID, vatID int64) (*models.Vat, error) {
 func (mr *MockIAPIServiceMockRecorder) GetVat(userID, vatID any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetVat", reflect.TypeOf((*MockIAPIService)(nil).GetVat), userID, vatID)
+}
+
+// GetVatSetting mocks base method.
+func (m *MockIAPIService) GetVatSetting(userID int64) (*models.VatSetting, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "GetVatSetting", userID)
+	ret0, _ := ret[0].(*models.VatSetting)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// GetVatSetting indicates an expected call of GetVatSetting.
+func (mr *MockIAPIServiceMockRecorder) GetVatSetting(userID any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetVatSetting", reflect.TypeOf((*MockIAPIService)(nil).GetVatSetting), userID)
 }
 
 // ListBankAccounts mocks base method.
@@ -1146,6 +1190,21 @@ func (m *MockIAPIService) UpdateVat(payload models.UpdateVat, userID, vatID int6
 func (mr *MockIAPIServiceMockRecorder) UpdateVat(payload, userID, vatID any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "UpdateVat", reflect.TypeOf((*MockIAPIService)(nil).UpdateVat), payload, userID, vatID)
+}
+
+// UpdateVatSetting mocks base method.
+func (m *MockIAPIService) UpdateVatSetting(payload models.UpdateVatSetting, userID int64) (*models.VatSetting, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "UpdateVatSetting", payload, userID)
+	ret0, _ := ret[0].(*models.VatSetting)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// UpdateVatSetting indicates an expected call of UpdateVatSetting.
+func (mr *MockIAPIServiceMockRecorder) UpdateVatSetting(payload, userID any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "UpdateVatSetting", reflect.TypeOf((*MockIAPIService)(nil).UpdateVatSetting), payload, userID)
 }
 
 // UpsertFiatRate mocks base method.

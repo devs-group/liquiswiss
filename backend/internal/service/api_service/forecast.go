@@ -629,6 +629,177 @@ func (a *APIService) CalculateForecast(userID int64) ([]models.Forecast, error) 
 		}
 	}
 
+	// VAT Settlement Calculation
+	vatSetting, err := a.GetVatSetting(userID)
+	if err != nil {
+		logger.Logger.Error(err)
+		// Don't fail the forecast if VAT settings can't be retrieved
+		vatSetting = nil
+	}
+
+	if vatSetting != nil && vatSetting.Enabled {
+		// Collect VAT amounts from positive transactions per month
+		vatCollectionMap := make(map[string]int64) // month -> total VAT amount
+
+		for _, transaction := range transactions {
+			if transaction.IsDisabled {
+				continue
+			}
+
+			// Only collect VAT from positive (revenue) transactions
+			fiatRate := models.GetFiatRateFromCurrency(fiatRates, baseCurrency, *transaction.Currency.Code)
+			amount := models.CalculateAmountWithFiatRate(transaction.Amount, fiatRate)
+
+			if amount <= 0 || transaction.Vat == nil || transaction.VatAmount == 0 {
+				continue
+			}
+
+			vatAmount := models.CalculateAmountWithFiatRate(transaction.VatAmount, fiatRate)
+
+			exclusions, err := a.ListForecastExclusions(userID, transaction.ID, utils.TransactionsTableName)
+			if err != nil {
+				continue
+			}
+
+			if transaction.Type == "single" {
+				startDate := time.Time(transaction.StartDate)
+				if startDate.Before(today) {
+					continue
+				}
+				monthKey := getYearMonth(startDate)
+
+				if !exclusions[monthKey] {
+					vatCollectionMap[monthKey] += vatAmount
+				}
+			} else {
+				startDate := time.Time(transaction.StartDate)
+				endDate := lastDayOfMaxEndDate
+				if transaction.EndDate != nil {
+					endDate = time.Time(*transaction.EndDate)
+				}
+
+				switch *transaction.Cycle {
+				case utils.CycleMonthly:
+					for current := startDate; !current.After(endDate); current = utils.GetNextDate(startDate, current, 1) {
+						if current.Before(today) {
+							continue
+						}
+						monthKey := getYearMonth(current)
+						if !exclusions[monthKey] {
+							vatCollectionMap[monthKey] += vatAmount
+						}
+					}
+				case utils.CycleQuarterly:
+					for current := startDate; !current.After(endDate); current = utils.GetNextDate(startDate, current, 3) {
+						if current.Before(today) {
+							continue
+						}
+						monthKey := getYearMonth(current)
+						if !exclusions[monthKey] {
+							vatCollectionMap[monthKey] += vatAmount
+						}
+					}
+				case utils.CycleBiannually:
+					for current := startDate; !current.After(endDate); current = utils.GetNextDate(startDate, current, 6) {
+						if current.Before(today) {
+							continue
+						}
+						monthKey := getYearMonth(current)
+						if !exclusions[monthKey] {
+							vatCollectionMap[monthKey] += vatAmount
+						}
+					}
+				case utils.CycleYearly:
+					for current := startDate; !current.After(endDate); current = utils.GetNextDate(startDate, current, 12) {
+						if current.Before(today) {
+							continue
+						}
+						monthKey := getYearMonth(current)
+						if !exclusions[monthKey] {
+							vatCollectionMap[monthKey] += vatAmount
+						}
+					}
+				}
+			}
+		}
+
+		// Calculate VAT settlement periods based on interval
+		var intervalMonths int
+		switch vatSetting.Interval {
+		case "monthly":
+			intervalMonths = 1
+		case "quarterly":
+			intervalMonths = 3
+		case "biannually":
+			intervalMonths = 6
+		case "yearly":
+			intervalMonths = 12
+		default:
+			intervalMonths = 3 // default to quarterly
+		}
+
+		// Group VAT amounts by settlement period and add to forecast
+		settlementPeriods := make(map[string]int64) // settlement month -> total VAT
+
+		for monthKey, vatAmount := range vatCollectionMap {
+			// Parse the month key (format: "2024-01")
+			monthTime, err := time.Parse("2006-01", monthKey)
+			if err != nil {
+				continue
+			}
+
+			// Calculate which settlement period this month belongs to
+			// Use billing_date (Rechnungszeitpunkt) for period calculation
+			// Use transaction_date (Transaktionszeitpunkt) for forecast entry
+			// For biannually with billing_date 27.02.2026, transaction_date 28.02.2026:
+			// - First settlement: appears on 28.02.2026 (collects VAT until Jan 2026)
+			// - Second settlement: appears on 28.08.2026 (collects Feb - Jul 2026)
+
+			billingDate := vatSetting.BillingDate
+			transactionDate := vatSetting.TransactionDate
+			monthsSinceBilling := (monthTime.Year()-billingDate.Year())*12 + int(monthTime.Month()-billingDate.Month())
+
+			// Determine which settlement period this month belongs to
+			// Months BEFORE billing_date month belong to first settlement
+			// Months FROM billing_date onwards are grouped by interval
+			var settlementTransactionDate time.Time
+			if monthsSinceBilling < 0 {
+				// This month is before the billing date, goes into first settlement
+				settlementTransactionDate = transactionDate
+			} else {
+				// This month is on or after the billing date
+				// Calculate which future settlement period it belongs to
+				periodIndex := monthsSinceBilling / intervalMonths
+				// Add the same day offset between billing and transaction dates
+				dayOffset := transactionDate.Day() - billingDate.Day()
+				settlementBilling := billingDate.AddDate(0, (periodIndex+1)*intervalMonths, 0)
+				settlementTransactionDate = settlementBilling.AddDate(0, 0, dayOffset)
+			}
+
+			// Only add settlement if it's in the future
+			if settlementTransactionDate.After(today) {
+				settlementKey := getYearMonth(settlementTransactionDate)
+				settlementPeriods[settlementKey] += vatAmount
+			}
+		}
+
+		// Add VAT settlements as expenses
+		for settlementKey, totalVat := range settlementPeriods {
+			if forecastMap[settlementKey] == nil {
+				initForecastMapKey(forecastMap, settlementKey)
+			}
+
+			// Add as negative expense
+			forecastMap[settlementKey]["expense"] += -totalVat
+
+			// Add to forecast details
+			addForecastDetail(
+				forecastDetailMap, settlementKey, -totalVat, false, false,
+				0, "vat_settlement", "Mwst.", "Mwst.",
+			)
+		}
+	}
+
 	_, err = a.dbService.ClearForecasts(userID)
 	if err != nil {
 		return nil, err
