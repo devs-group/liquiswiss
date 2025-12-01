@@ -485,7 +485,7 @@ func (a *APIService) CalculateForecast(userID int64) ([]models.Forecast, error) 
 
 				if salaryCost.CalculatedNextExecutionDate != nil {
 					costFromDate := time.Time(*salaryCost.CalculatedNextExecutionDate)
-						distributionMultiplier := int64(models.SalaryCostDistributionMultiplier(salaryCost.DistributionType))
+					distributionMultiplier := int64(models.SalaryCostDistributionMultiplier(salaryCost.DistributionType))
 					nextCost := -models.CalculateAmountWithFiatRate(int64(salaryCost.CalculatedNextCost)*distributionMultiplier, fiatRate)
 
 					labelName := "<Kein Label>"
@@ -526,7 +526,7 @@ func (a *APIService) CalculateForecast(userID int64) ([]models.Forecast, error) 
 							if matchingDetail == nil {
 								break
 							}
-						distributionMultiplier := int64(models.SalaryCostDistributionMultiplier(salaryCost.DistributionType))
+							distributionMultiplier := int64(models.SalaryCostDistributionMultiplier(salaryCost.DistributionType))
 							nextCost := -models.CalculateAmountWithFiatRate(int64(matchingDetail.Amount)*distributionMultiplier, fiatRate)
 							monthKey := getYearMonth(current)
 							if forecastMap[monthKey] == nil {
@@ -626,6 +626,139 @@ func (a *APIService) CalculateForecast(userID int64) ([]models.Forecast, error) 
 					}
 				}
 			}
+		}
+	}
+
+	// VAT Settlement Calculation
+	vatSetting, err := a.GetVatSetting(userID)
+	if err != nil {
+		logger.Logger.Error(err)
+		// Don't fail the forecast if VAT settings can't be retrieved
+		vatSetting = nil
+	}
+
+	if vatSetting != nil && vatSetting.Enabled {
+		// Collect VAT amounts from positive transactions per month
+		vatCollectionMap := make(map[string]int64) // month -> total VAT amount
+
+		for _, transaction := range transactions {
+			if transaction.IsDisabled {
+				continue
+			}
+
+			// Only collect VAT from positive (revenue) transactions
+			fiatRate := models.GetFiatRateFromCurrency(fiatRates, baseCurrency, *transaction.Currency.Code)
+			amount := models.CalculateAmountWithFiatRate(transaction.Amount, fiatRate)
+
+			if amount <= 0 || transaction.Vat == nil || transaction.VatAmount == 0 {
+				continue
+			}
+
+			vatAmount := models.CalculateAmountWithFiatRate(transaction.VatAmount, fiatRate)
+
+			if transaction.Type == "single" {
+				startDate := time.Time(transaction.StartDate)
+				// For VAT collection, we INCLUDE past transactions
+				// because we need to collect historical VAT for future settlement
+				monthKey := getYearMonth(startDate)
+
+				vatCollectionMap[monthKey] += vatAmount
+			} else {
+				startDate := time.Time(transaction.StartDate)
+				endDate := lastDayOfMaxEndDate
+				if transaction.EndDate != nil {
+					endDate = time.Time(*transaction.EndDate)
+				}
+
+				switch *transaction.Cycle {
+				case utils.CycleMonthly:
+					for current := startDate; !current.After(endDate); current = utils.GetNextDate(startDate, current, 1) {
+						// For VAT collection, we INCLUDE past transactions
+						monthKey := getYearMonth(current)
+						vatCollectionMap[monthKey] += vatAmount
+					}
+				case utils.CycleQuarterly:
+					for current := startDate; !current.After(endDate); current = utils.GetNextDate(startDate, current, 3) {
+						// For VAT collection, we INCLUDE past transactions
+						monthKey := getYearMonth(current)
+						vatCollectionMap[monthKey] += vatAmount
+					}
+				case utils.CycleBiannually:
+					for current := startDate; !current.After(endDate); current = utils.GetNextDate(startDate, current, 6) {
+						// For VAT collection, we INCLUDE past transactions
+						monthKey := getYearMonth(current)
+						vatCollectionMap[monthKey] += vatAmount
+					}
+				case utils.CycleYearly:
+					for current := startDate; !current.After(endDate); current = utils.GetNextDate(startDate, current, 12) {
+						// For VAT collection, we INCLUDE past transactions
+						monthKey := getYearMonth(current)
+						vatCollectionMap[monthKey] += vatAmount
+					}
+				}
+			}
+		}
+
+		// Calculate VAT settlement periods based on interval
+		var intervalMonths int
+		switch vatSetting.Interval {
+		case "monthly":
+			intervalMonths = 1
+		case "quarterly":
+			intervalMonths = 3
+		case "biannually":
+			intervalMonths = 6
+		case "yearly":
+			intervalMonths = 12
+		default:
+			intervalMonths = 3 // default to quarterly
+		}
+
+		// Group VAT amounts by settlement period and add to forecast
+		settlementPeriods := make(map[string]int64) // settlement month -> total VAT
+
+		billingDate := vatSetting.BillingDate
+		transactionMonthOffset := vatSetting.TransactionMonthOffset
+
+		// Period start is the first day of the billing month minus the interval (billing marks end of period)
+		firstPeriodStart := time.Date(billingDate.Year(), billingDate.Month(), 1, 0, 0, 0, 0, billingDate.Location()).AddDate(0, -intervalMonths, 0)
+
+		for monthKey, vatAmount := range vatCollectionMap {
+			monthTime, err := time.Parse("2006-01", monthKey)
+			if err != nil {
+				continue
+			}
+
+			monthsSinceFirstPeriodStart := (monthTime.Year()-firstPeriodStart.Year())*12 + int(monthTime.Month()-firstPeriodStart.Month())
+			if monthsSinceFirstPeriodStart < 0 {
+				continue
+			}
+
+			periodIndex := monthsSinceFirstPeriodStart / intervalMonths
+			// Calculate the billing date for this period, then add the month offset for the transaction
+			periodBillingDate := billingDate.AddDate(0, periodIndex*intervalMonths, 0)
+			settlementTransactionDate := periodBillingDate.AddDate(0, transactionMonthOffset, 0)
+
+			if settlementTransactionDate.After(today) {
+				settlementKey := getYearMonth(settlementTransactionDate)
+				settlementPeriods[settlementKey] += vatAmount
+			}
+		}
+
+		// Add VAT settlements as expenses
+		for settlementKey, totalVat := range settlementPeriods {
+			if forecastMap[settlementKey] == nil {
+				initForecastMapKey(forecastMap, settlementKey)
+			}
+
+			// Add as negative expense
+			forecastMap[settlementKey]["expense"] += -totalVat
+
+			// Add to forecast details
+			addForecastDetail(
+				forecastDetailMap, settlementKey, -totalVat, false, false,
+				0, "vat_settlement", "Mwst.", "Mwst.",
+			)
 		}
 	}
 

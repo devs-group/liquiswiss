@@ -118,6 +118,10 @@ func TestCalculateForecast_SkipsDisabledTransactions(t *testing.T) {
 		Return([]models.Employee{}, int64(0), nil)
 
 	mockDB.EXPECT().
+		GetVatSetting(userID).
+		Return(nil, nil)
+
+	mockDB.EXPECT().
 		ClearForecasts(userID).
 		Return(int64(0), nil)
 
@@ -273,6 +277,10 @@ func TestCalculateForecast_SkipsDisabledSalariesOnly(t *testing.T) {
 	mockDB.EXPECT().
 		ListForecastExclusions(userID, activeSalary.ID, utils.SalariesTableName).
 		Return(map[string]bool{}, nil)
+
+	mockDB.EXPECT().
+		GetVatSetting(userID).
+		Return(nil, nil)
 
 	mockDB.EXPECT().
 		ClearForecasts(userID).
@@ -449,6 +457,10 @@ func TestCalculateForecast_CountsBothSalaryCostsTwice(t *testing.T) {
 	mockDB.EXPECT().
 		ListForecastExclusions(userID, salaryCost.ID, utils.SalaryCostsTableName).
 		Return(map[string]bool{}, nil)
+
+	mockDB.EXPECT().
+		GetVatSetting(userID).
+		Return(nil, nil)
 
 	mockDB.EXPECT().
 		ClearForecasts(userID).
