@@ -119,6 +119,7 @@
             <label
               class="cursor-pointer font-bold"
               for="vat-enabled"
+              @click.prevent="vatEnabled = !vatEnabled"
             >MwSt.-Abrechnung aktivieren</label>
           </div>
         </div>
@@ -237,6 +238,7 @@ import * as yup from 'yup'
 import type { OrganisationFormData, OrganisationResponse } from '~/models/organisation'
 import type { VatSettingFormData } from '~/models/vat-setting'
 import { Config } from '~/config/config'
+import { DateToApiFormat } from '~/utils/format-helper'
 
 const route = useRoute()
 const { getOrganisationCurrencyID } = useAuth()
@@ -362,19 +364,14 @@ const onVatSubmit = handleVatSubmit((values) => {
   vatSubmitMessage.value = ''
   vatSubmitErrorMessage.value = ''
 
-  // Format the dates as YYYY-MM-DD
-  const formattedBillingDate = values.vatBillingDate instanceof Date
-    ? values.vatBillingDate.toISOString().split('T')[0]
-    : values.vatBillingDate
-
-  const formattedTransactionDate = values.vatTransactionDate instanceof Date
-    ? values.vatTransactionDate.toISOString().split('T')[0]
-    : values.vatTransactionDate
+  // Adjust dates to UTC to avoid timezone issues (same as transaction dates)
+  values.vatBillingDate.setMinutes(values.vatBillingDate.getMinutes() - values.vatBillingDate.getTimezoneOffset())
+  values.vatTransactionDate.setMinutes(values.vatTransactionDate.getMinutes() - values.vatTransactionDate.getTimezoneOffset())
 
   const payload: VatSettingFormData = {
     enabled: values.vatEnabled,
-    billingDate: formattedBillingDate,
-    transactionDate: formattedTransactionDate,
+    billingDate: DateToApiFormat(values.vatBillingDate),
+    transactionDate: DateToApiFormat(values.vatTransactionDate),
     interval: values.vatInterval as 'monthly' | 'quarterly' | 'biannually' | 'yearly',
   }
 

@@ -3,18 +3,19 @@
     class="w-full flex items-center col-span-full"
   >
     <div
+      v-tooltip="isAutoCategory ? 'MwSt. ist eine automatisch berechnete Ausgabe basierend auf den MwSt.-Einstellungen.' : undefined"
       class="group flex gap-1 border-b border-l border-zinc-600 dark:border-zinc-400 p-1 min-w-28"
-      :class="[getColumnColor, { 'cursor-pointer': hasChildren }]"
+      :class="[getColumnColor, { 'cursor-pointer': hasChildren && !isAutoCategory, 'cursor-default': isAutoCategory }]"
       @click="onToggleChildren(category.name)"
     >
       <p
         class="w-full truncate"
         :class="[getColumnTextAlignment, getColumnTextSize]"
       >
-        {{ category.name }}
+        {{ isAutoCategory.value ? `${category.name} (auto)` : category.name }}
       </p>
       <i
-        v-if="hasChildren"
+        v-if="hasChildren && !isAutoCategory.value"
         class="pi opacity-0 group-hover:opacity-100 transition-opacity"
         :class="{ 'pi-sort-down': forecastShowChildDetails.includes(category.name), 'pi-sort-up': !forecastShowChildDetails.includes(category.name) }"
       />
@@ -43,6 +44,7 @@
       :forecast-details="forecastDetails"
       :currency-code="currencyCode"
       :depth="depth+1"
+      :visited="[...visited, category.name]"
     />
   </template>
 </template>
@@ -73,6 +75,10 @@ const props = defineProps({
     type: Number,
     default: 0,
   },
+  visited: {
+    type: Array as PropType<string[]>,
+    default: () => [],
+  },
 })
 
 const onToggleChildren = (categoryName: string) => {
@@ -87,7 +93,7 @@ const onToggleChildren = (categoryName: string) => {
 }
 
 const hasChildren = computed(() => {
-  return props.category.children && props.category.children.length > 0
+  return !isAutoCategory.value && props.category.children && props.category.children.length > 0
 })
 
 const childCategories = computed(() => {
@@ -97,7 +103,7 @@ const childCategories = computed(() => {
     .filter(f => f)
     .flat()
     .forEach((e) => {
-      if (e && !categories.includes(e.name)) {
+      if (e && e.name !== props.category.name && !props.visited.includes(e.name) && !categories.includes(e.name)) {
         categories.push(e.name)
       }
     })
@@ -105,8 +111,10 @@ const childCategories = computed(() => {
 })
 
 const getColumnColor = computed(() => {
+  if (isAutoCategory.value) {
+    return 'bg-amber-50 dark:bg-amber-900/40'
+  }
   switch (props.depth) {
-    // Case not supported, just in case someone adds it they will immediately notice it in the frontend
     case 2:
       return 'bg-white dark:bg-black'
     case 1:
@@ -135,4 +143,6 @@ const getColumnTextSize = computed(() => {
       return 'text-2xs'
   }
 })
+
+const isAutoCategory = computed(() => props.category.name === 'Mwst.')
 </script>
