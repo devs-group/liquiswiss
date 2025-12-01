@@ -1,5 +1,7 @@
 package main
 
+// LiquiSwiss backend application entry point
+
 import (
 	"embed"
 	"github.com/joho/godotenv"
