@@ -182,6 +182,122 @@ func TestCalculateForecast_VATSettlement_DBIntegration(t *testing.T) {
 	}
 }
 
+func TestCalculateForecast_VATSettlement_MonthEndDates(t *testing.T) {
+	conn := SetupTestEnvironment(t)
+	defer conn.Close()
+
+	// Fix "today" so transactions are in the future
+	fixedToday := time.Date(2025, time.December, 1, 0, 0, 0, 0, time.UTC)
+	originalClock := utils.DefaultClock
+	utils.DefaultClock = &stubClock{fixed: fixedToday}
+	defer func() {
+		utils.DefaultClock = originalClock
+	}()
+
+	dbAdapter := db_adapter.NewDatabaseAdapter(conn)
+	sendgridService := sendgrid_adapter.NewSendgridAdapter("")
+	apiService := api_service.NewAPIService(dbAdapter, sendgridService)
+
+	currencyCHF, err := CreateCurrency(apiService, "CHF", "Swiss Franc", "de-CH")
+	require.NoError(t, err)
+
+	user, organisation, err := CreateUserWithOrganisation(
+		apiService, dbAdapter, "vat.monthend@example.com", "test", "VAT MonthEnd Org",
+	)
+	require.NoError(t, err)
+	require.Equal(t, *currencyCHF.Code, *organisation.Currency.Code)
+
+	category, err := apiService.CreateCategory(models.CreateCategory{Name: "Sales"}, &user.ID)
+	require.NoError(t, err)
+
+	vat, err := apiService.CreateVat(models.CreateVat{Value: 810}, user.ID)
+	require.NoError(t, err)
+
+	// Test scenarios with different billing dates at month-end
+	scenarios := []struct {
+		name        string
+		billingDate string
+		offset      int
+		expectMonth string // Expected settlement month
+	}{
+		{
+			name:        "Jan 31 + 1 month",
+			billingDate: "2026-01-31",
+			offset:      1,
+			expectMonth: "2026-02", // Should be Feb, not March!
+		},
+		{
+			name:        "Jan 30 + 1 month",
+			billingDate: "2026-01-30",
+			offset:      1,
+			expectMonth: "2026-02", // Should be Feb, not March!
+		},
+		{
+			name:        "Jan 29 + 1 month",
+			billingDate: "2026-01-29",
+			offset:      1,
+			expectMonth: "2026-02", // Should be Feb, not March!
+		},
+		{
+			name:        "Mar 31 + 1 month",
+			billingDate: "2026-03-31",
+			offset:      1,
+			expectMonth: "2026-04", // Should be April (30 days)
+		},
+	}
+
+	for _, sc := range scenarios {
+		t.Run(sc.name, func(t *testing.T) {
+			// Create VAT setting with specific billing date and offset
+			vatSetting, err := apiService.CreateVatSetting(models.CreateVatSetting{
+				Enabled:                true,
+				BillingDate:            sc.billingDate,
+				TransactionMonthOffset: sc.offset,
+				Interval:               "monthly",
+			}, user.ID)
+			require.NoError(t, err)
+			require.NotNil(t, vatSetting)
+
+			// Create a simple transaction with VAT
+			// Start in December 2025 to ensure VAT is collected in the period before billing
+			monthly := utils.CycleMonthly
+			vatID := vat.ID
+			createTransaction(t, apiService, user.ID, category.ID, *currencyCHF.ID, nil,
+				func(payload *models.CreateTransaction) {
+					payload.Name = "Test Transaction"
+					payload.Amount = 1000000 // 10,000 CHF
+					payload.StartDate = "2025-12-01"
+					payload.Vat = &vatID
+					payload.VatIncluded = false
+					payload.Cycle = &monthly
+					payload.Type = "repeating"
+				},
+			)
+
+			// Calculate forecast
+			results, err := apiService.CalculateForecast(user.ID)
+			require.NoError(t, err)
+			require.NotEmpty(t, results)
+
+			// Find VAT settlement
+			resultMap := make(map[string]models.ForecastData)
+			for _, r := range results {
+				resultMap[r.Data.Month] = r.Data
+			}
+
+			// Verify settlement is in the expected month
+			// The key assertion: with our fix, a billing date of Jan 31 + 1 month offset
+			// should produce a settlement in February (not March, which would indicate overflow)
+			require.Contains(t, resultMap, sc.expectMonth, "Settlement should be in "+sc.expectMonth)
+			require.Less(t, resultMap[sc.expectMonth].Expense, int64(0), "Settlement should be negative (expense)")
+
+			// Clean up for next test
+			err = apiService.DeleteVatSetting(user.ID)
+			require.NoError(t, err)
+		})
+	}
+}
+
 // func TestCalculateForecast_VATSettlement_PastDatesIgnored(t *testing.T) {
 // 	conn := SetupTestEnvironment(t)
 // 	defer conn.Close()

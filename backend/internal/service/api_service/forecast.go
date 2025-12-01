@@ -8,6 +8,35 @@ import (
 	"time"
 )
 
+// addMonthsStable adds months to a date while keeping the day within the target month's valid range.
+// For example: Jan 31 + 1 month = Feb 28/29 (last day of Feb), not March 3.
+func addMonthsStable(date time.Time, months int) time.Time {
+	targetYear := date.Year()
+	targetMonth := date.Month() + time.Month(months)
+
+	// Normalize year and month
+	for targetMonth > 12 {
+		targetYear++
+		targetMonth -= 12
+	}
+	for targetMonth < 1 {
+		targetYear--
+		targetMonth += 12
+	}
+
+	// Get the last day of the target month
+	firstOfNextMonth := time.Date(targetYear, targetMonth+1, 1, date.Hour(), date.Minute(), date.Second(), date.Nanosecond(), date.Location())
+	lastDayOfTargetMonth := firstOfNextMonth.AddDate(0, 0, -1).Day()
+
+	// Use the original day or the last day of the target month, whichever is smaller
+	targetDay := date.Day()
+	if targetDay > lastDayOfTargetMonth {
+		targetDay = lastDayOfTargetMonth
+	}
+
+	return time.Date(targetYear, targetMonth, targetDay, date.Hour(), date.Minute(), date.Second(), date.Nanosecond(), date.Location())
+}
+
 func (a *APIService) ListForecasts(userID int64, limit int64) ([]models.Forecast, error) {
 	forecasts, err := a.dbService.ListForecasts(userID, limit)
 	if err != nil {
@@ -736,8 +765,8 @@ func (a *APIService) CalculateForecast(userID int64) ([]models.Forecast, error) 
 
 			periodIndex := monthsSinceFirstPeriodStart / intervalMonths
 			// Calculate the billing date for this period, then add the month offset for the transaction
-			periodBillingDate := billingDate.AddDate(0, periodIndex*intervalMonths, 0)
-			settlementTransactionDate := periodBillingDate.AddDate(0, transactionMonthOffset, 0)
+			periodBillingDate := addMonthsStable(billingDate, periodIndex*intervalMonths)
+			settlementTransactionDate := addMonthsStable(periodBillingDate, transactionMonthOffset)
 
 			if settlementTransactionDate.After(today) {
 				settlementKey := getYearMonth(settlementTransactionDate)
