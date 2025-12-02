@@ -31,6 +31,7 @@
         :forecast-detail="data"
         :currency-code="currencyCode"
         :forecast-type="forecastType"
+        :performance-factor="performanceFactor"
       />
     </div>
   </div>
@@ -43,6 +44,7 @@
       :forecast-type="forecastType"
       :forecast-details="forecastDetails"
       :currency-code="currencyCode"
+      :performance-factor="performanceFactor"
       :depth="depth+1"
       :visited="[...visited, category.name]"
     />
@@ -70,6 +72,10 @@ const props = defineProps({
   forecastType: {
     type: String as PropType<'revenue' | 'expense'>,
     required: true,
+  },
+  performanceFactor: {
+    type: Number,
+    default: 1,
   },
   depth: {
     type: Number,

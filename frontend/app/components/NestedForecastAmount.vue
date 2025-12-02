@@ -39,6 +39,10 @@ const props = defineProps({
     type: String as PropType<'revenue' | 'expense'>,
     required: true,
   },
+  performanceFactor: {
+    type: Number,
+    default: 1,
+  },
   depth: {
     type: Number,
     default: 0,
@@ -147,8 +151,24 @@ const categoryAmount = computed((): number => {
   return AmountToFloat(findAmountRecursively(data, props.category.name))
 })
 
+const isVATCategory = computed(() => {
+  return props.category.name === 'Mwst.'
+})
+
+const shouldApplyPerformanceFactor = computed(() => {
+  // Apply performance factor to:
+  // 1. All revenue items
+  // 2. VAT (Mwst.) in expenses
+  return props.forecastType === 'revenue' || isVATCategory.value
+})
+
 const displayedCategoryAmount = computed(() => {
-  return effectiveIsExcluded.value ? 0 : categoryAmount.value
+  if (effectiveIsExcluded.value) {
+    return 0
+  }
+
+  const baseAmount = categoryAmount.value
+  return shouldApplyPerformanceFactor.value ? baseAmount * props.performanceFactor : baseAmount
 })
 
 const amountFormatted = (amount: number) => {

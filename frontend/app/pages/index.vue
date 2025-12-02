@@ -148,6 +148,7 @@
                 forecast-type="revenue"
                 :forecast-details="forecastDetails"
                 :currency-code="getOrganisationCurrencyCode"
+                :performance-factor="forecastPerformance / 100"
               />
             </template>
 
@@ -183,6 +184,7 @@
                 forecast-type="expense"
                 :forecast-details="forecastDetails"
                 :currency-code="getOrganisationCurrencyCode"
+                :performance-factor="forecastPerformance / 100"
               />
             </template>
 
@@ -323,12 +325,11 @@ await useFetchListBankAccounts()
     bankAccountsErrorMessage.value = reason
   })
 
-if (forecastShowRevenueDetails.value || forecastShowExpenseDetails.value) {
-  await useFetchListForecastDetails(forecastMonthsComputed.value)
-    .catch((reason) => {
-      forecastDetailsErrorMessage.value = reason
-    })
-}
+// Always fetch forecast details to enable VAT scaling with performance slider
+await useFetchListForecastDetails(forecastMonthsComputed.value)
+  .catch((reason) => {
+    forecastDetailsErrorMessage.value = reason
+  })
 
 const isLoading = ref(false)
 const isSavingExclusions = ref(false)
@@ -362,9 +363,8 @@ const onCalculateForecast = async () => {
   try {
     await calculateForecast()
     await listForecasts(forecastMonthsComputed.value)
-    if (forecastShowRevenueDetails.value || forecastShowExpenseDetails.value) {
-      await listForecastDetails(forecastMonthsComputed.value)
-    }
+    // Always fetch forecast details to enable VAT scaling with performance slider
+    await listForecastDetails(forecastMonthsComputed.value)
   }
   catch (reason) {
     if (typeof reason === 'string' && reason.includes('Prognose Details')) {
@@ -387,38 +387,23 @@ const onCalculateForecast = async () => {
 
 const onToggleRevenueDetails = () => {
   forecastShowRevenueDetails.value = !forecastShowRevenueDetails.value
-  if (forecastShowRevenueDetails.value) {
-    isLoading.value = true
-    listForecastDetails(forecastMonths.value)
-      .catch((reason) => {
-        forecastDetailsErrorMessage.value = reason
-      })
-      .finally(() => isLoading.value = false)
-  }
+  // ForecastDetails are already loaded, no need to fetch again
 }
 
-const onToggleExpenseDetails = async () => {
+const onToggleExpenseDetails = () => {
   forecastShowExpenseDetails.value = !forecastShowExpenseDetails.value
-  if (forecastShowExpenseDetails.value) {
-    isLoading.value = true
-    await listForecastDetails(forecastMonthsComputed.value)
-      .catch((reason) => {
-        forecastDetailsErrorMessage.value = reason
-      })
-      .finally(() => isLoading.value = false)
-  }
+  // ForecastDetails are already loaded, no need to fetch again
 }
 
 watch(forecastMonthsComputed, (value) => {
   isLoading.value = true
   listForecasts(value)
     .then(async () => {
-      if (forecastShowRevenueDetails.value || forecastShowExpenseDetails.value) {
-        await listForecastDetails(value)
-          .catch((reason) => {
-            forecastDetailsErrorMessage.value = reason
-          })
-      }
+      // Always fetch forecast details to enable VAT scaling with performance slider
+      await listForecastDetails(value)
+        .catch((reason) => {
+          forecastDetailsErrorMessage.value = reason
+        })
     })
     .catch((reason) => {
       forecastErrorMessage.value = reason
@@ -501,10 +486,52 @@ const revenues = computed(() => forecasts.value.map((f) => {
     formatted: NumberToFormattedCurrency(AmountToFloat(revenue), getOrganisationCurrencyLocaleCode.value),
   }
 }))
-const expenses = computed(() => forecasts.value.map(f => ({
-  amount: f.data.expense,
-  formatted: NumberToFormattedCurrency(AmountToFloat(f.data.expense), getOrganisationCurrencyLocaleCode.value),
-})))
+// Helper function to find VAT amount recursively in expense tree
+const findVATAmount = (expenses: ForecastDetailRevenueExpenseResponse[]): number => {
+  for (const expense of expenses) {
+    if (expense.name === 'Mwst.') {
+      const childrenAmount = expense.children
+        ? expense.children.reduce((sum: number, child: ForecastDetailRevenueExpenseResponse) => sum + findVATAmount([child]), 0)
+        : 0
+      return (expense.amount || 0) + childrenAmount
+    }
+    if (expense.children && expense.children.length > 0) {
+      const childVAT = findVATAmount(expense.children)
+      if (childVAT !== 0) {
+        return childVAT
+      }
+    }
+  }
+  return 0
+}
+
+const expenses = computed(() => {
+  return forecasts.value.map((f) => {
+    let scaledExpense = f.data.expense
+
+    // Only scale VAT if forecastDetails are loaded
+    if (forecastDetails.value.length > 0) {
+      // Get VAT amount for this month from forecastDetails
+      const forecastDetail = forecastDetails.value.find(fd => fd.month === f.data.month)
+      let vatAmount = 0
+
+      if (forecastDetail && forecastDetail.expense) {
+        vatAmount = findVATAmount(forecastDetail.expense)
+      }
+
+      // Calculate scaled expense: non-VAT expenses + scaled VAT
+      const totalExpense = f.data.expense
+      const nonVATExpense = totalExpense - vatAmount
+      const scaledVAT = vatAmount * (forecastPerformance.value / 100)
+      scaledExpense = nonVATExpense + scaledVAT
+    }
+
+    return {
+      amount: scaledExpense,
+      formatted: NumberToFormattedCurrency(AmountToFloat(scaledExpense), getOrganisationCurrencyLocaleCode.value),
+    }
+  })
+})
 const cashflows = computed(() => {
   return revenues.value.map((r, index) => {
     const e = expenses.value[index]
