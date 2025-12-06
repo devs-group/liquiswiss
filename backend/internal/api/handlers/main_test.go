@@ -74,6 +74,20 @@ func CreateUserWithOrganisation(apiService api_service.IAPIService, dbService db
 		return nil, nil, err
 	}
 
+	// Create a default scenario for the organisation
+	scenario, err := apiService.CreateScenario(models.CreateScenario{
+		Name: "Standardszenario",
+	}, userID)
+	if err != nil {
+		return nil, nil, err
+	}
+
+	// Assign the user to the scenario
+	err = dbService.AssignUserToScenario(userID, organisation.ID, scenario.ID)
+	if err != nil {
+		return nil, nil, err
+	}
+
 	userName := "John Doe"
 	user, err := apiService.UpdateProfile(models.UpdateUser{
 		Name: &userName,

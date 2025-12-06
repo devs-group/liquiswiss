@@ -54,6 +54,7 @@ import { Config } from '~/config/config'
 const { isAuthenticated, getAccessToken, getOrganisationCurrencyCode } = useAuth()
 const { useFetchListCurrencies, useFetchListCategories, useFetchListFiatRates, useFetchGetServerTime, serverDate, showGlobalLoadingSpinner } = useGlobalData()
 const { useFetchListOrganisations } = useOrganisations()
+const { useFetchListScenarios } = useScenarios()
 const toast = useToast()
 const { hook } = useNuxtApp()
 const hasInitialLoadError = ref(false)
@@ -80,6 +81,15 @@ if (isAuthenticated.value) {
       toast.add({
         summary: 'Fehler',
         detail: `Wir konnten Ihre Organisationen nicht laden. Dies scheint ein Systemfehler zu sein`,
+        severity: 'error',
+        life: Config.TOAST_LIFE_TIME,
+      })
+    })
+  await useFetchListScenarios()
+    .catch(() => {
+      toast.add({
+        summary: 'Fehler',
+        detail: `Wir konnten Ihre Szenarien nicht laden. Dies scheint ein Systemfehler zu sein`,
         severity: 'error',
         life: Config.TOAST_LIFE_TIME,
       })

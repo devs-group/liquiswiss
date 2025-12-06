@@ -1,12 +1,13 @@
 package api
 
 import (
-	"github.com/gin-gonic/gin"
 	"liquiswiss/internal/adapter/db_adapter"
 	"liquiswiss/internal/adapter/sendgrid_adapter"
 	"liquiswiss/internal/api/handlers"
 	"liquiswiss/internal/middleware"
 	"liquiswiss/internal/service/api_service"
+
+	"github.com/gin-gonic/gin"
 )
 
 type API struct {
@@ -85,6 +86,12 @@ func (api *API) setupRouter() {
 			})
 			protected.GET("/profile/organisation", func(ctx *gin.Context) {
 				handlers.GetUserCurrentOrganisation(api.APIService, ctx)
+			})
+			protected.PATCH("/profile/scenario", func(ctx *gin.Context) {
+				handlers.SetUserCurrentScenario(api.APIService, ctx)
+			})
+			protected.GET("/profile/scenario", func(ctx *gin.Context) {
+				handlers.GetUserCurrentScenario(api.APIService, ctx)
 			})
 			protected.GET("/access-token", func(ctx *gin.Context) {
 				handlers.GetAccessToken(ctx)
@@ -234,6 +241,23 @@ func (api *API) setupRouter() {
 			})
 			protected.DELETE("/bank-accounts/:bankAccountID", func(ctx *gin.Context) {
 				handlers.DeleteBankAccount(api.APIService, ctx)
+			})
+
+			// Bank Accounts
+			protected.GET("/scenarios", func(ctx *gin.Context) {
+				handlers.ListScenarios(api.APIService, ctx)
+			})
+			protected.GET("/scenarios/:scenarioID", func(ctx *gin.Context) {
+				handlers.GetScenario(api.APIService, ctx)
+			})
+			protected.POST("/scenarios", func(ctx *gin.Context) {
+				handlers.CreateScenario(api.APIService, ctx)
+			})
+			protected.PATCH("/scenarios/:scenarioID", func(ctx *gin.Context) {
+				handlers.UpdateScenario(api.APIService, ctx)
+			})
+			protected.DELETE("/scenarios/:scenarioID", func(ctx *gin.Context) {
+				handlers.DeleteScenario(api.APIService, ctx)
 			})
 
 			// Vats

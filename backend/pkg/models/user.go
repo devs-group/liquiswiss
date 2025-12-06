@@ -5,6 +5,7 @@ type User struct {
 	Name                  string   `db:"name" json:"name" validate:"max=100"`
 	Email                 string   `db:"email" json:"email" validate:"required,email"`
 	CurrentOrganisationID int64    `db:"current_organisation_id" json:"currentOrganisationID" validate:"required"`
+	CurrentScenarioID     int64    `db:"current_scenario_id" json:"currentScenarioID" validate:"required"`
 	Currency              Currency `json:"currency"`
 }
 
@@ -19,4 +20,8 @@ type UpdateUserPassword struct {
 
 type UpdateUserCurrentOrganisation struct {
 	OrganisationID int64 `json:"organisationId" validate:"required,gt=0"`
+}
+
+type UpdateUserCurrentScenario struct {
+	ScenarioID int64 `json:"scenarioId" validate:"required,gt=0"`
 }

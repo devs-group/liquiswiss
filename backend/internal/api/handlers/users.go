@@ -2,11 +2,12 @@ package handlers
 
 import (
 	"database/sql"
-	"github.com/gin-gonic/gin"
 	"liquiswiss/internal/service/api_service"
 	"liquiswiss/pkg/models"
 	"liquiswiss/pkg/utils"
 	"net/http"
+
+	"github.com/gin-gonic/gin"
 )
 
 func GetProfile(apiService api_service.IAPIService, c *gin.Context) {
@@ -139,6 +140,55 @@ func GetUserCurrentOrganisation(apiService api_service.IAPIService, c *gin.Conte
 
 	// Post
 	c.JSON(http.StatusOK, organisation)
+}
+
+func SetUserCurrentScenario(apiService api_service.IAPIService, c *gin.Context) {
+	// Pre
+	userID := c.GetInt64("userID")
+	if userID == 0 {
+		c.Status(http.StatusUnauthorized)
+		return
+	}
+	var payload models.UpdateUserCurrentScenario
+	if err := c.Bind(&payload); err != nil {
+		c.Status(http.StatusBadRequest)
+		return
+	}
+	validator := utils.GetValidator()
+	if err := validator.Struct(payload); err != nil {
+		// Return validation errors
+		c.Status(http.StatusBadRequest)
+		return
+	}
+
+	// Action
+	err := apiService.SetUserCurrentScenario(payload, userID)
+	if err != nil {
+		c.Status(http.StatusInternalServerError)
+		return
+	}
+
+	// Post
+	c.Status(http.StatusOK)
+}
+
+func GetUserCurrentScenario(apiService api_service.IAPIService, c *gin.Context) {
+	// Pre
+	userID := c.GetInt64("userID")
+	if userID == 0 {
+		c.Status(http.StatusUnauthorized)
+		return
+	}
+
+	// Action
+	scenario, err := apiService.GetCurrentScenario(userID)
+	if err != nil {
+		c.Status(http.StatusBadRequest)
+		return
+	}
+
+	// Post
+	c.JSON(http.StatusOK, scenario)
 }
 
 func GetAccessToken(c *gin.Context) {

@@ -1,12 +1,13 @@
 package api_service
 
 import (
-	"golang.org/x/crypto/bcrypt"
 	"liquiswiss/pkg/auth"
 	"liquiswiss/pkg/logger"
 	"liquiswiss/pkg/models"
 	"liquiswiss/pkg/utils"
 	"time"
+
+	"golang.org/x/crypto/bcrypt"
 )
 
 func (a *APIService) Login(payload models.Login, deviceName string, existingRefreshToken string) (*models.User, *string, *time.Time, *string, *time.Time, error) {
@@ -190,6 +191,22 @@ func (a *APIService) FinishRegistration(payload models.FinishRegistration, devic
 
 	// Set the new default organisation as the current one
 	err = a.dbService.SetUserCurrentOrganisation(userId, organisationID)
+	if err != nil {
+		logger.Logger.Error(err)
+		return nil, nil, nil, nil, nil, err
+	}
+
+	// Create a default scenario for the new organisation
+	scenarioID, err := a.dbService.CreateScenario(models.CreateScenario{
+		Name: "Standardszenario",
+	}, userId, true)
+	if err != nil {
+		logger.Logger.Error(err)
+		return nil, nil, nil, nil, nil, err
+	}
+
+	// Assign the user to the default scenario
+	err = a.dbService.AssignUserToScenario(userId, organisationID, scenarioID)
 	if err != nil {
 		logger.Logger.Error(err)
 		return nil, nil, nil, nil, nil, err

@@ -24,6 +24,8 @@ type IAPIService interface {
 	UpdatePassword(payload models.UpdateUserPassword, userID int64) error
 	SetUserCurrentOrganisation(payload models.UpdateUserCurrentOrganisation, userID int64) error
 	GetCurrentOrganisation(userID int64) (*models.Organisation, error)
+	SetUserCurrentScenario(payload models.UpdateUserCurrentScenario, userID int64) error
+	GetCurrentScenario(userID int64) (*models.Scenario, error)
 
 	ListTransactions(userID int64, page int64, limit int64, sortBy string, sortOrder string) ([]models.Transaction, int64, error)
 	GetTransaction(userID int64, transactionID int64) (*models.Transaction, error)
@@ -80,6 +82,12 @@ type IAPIService interface {
 	CreateBankAccount(payload models.CreateBankAccount, userID int64) (*models.BankAccount, error)
 	UpdateBankAccount(payload models.UpdateBankAccount, userID int64, bankAccountID int64) (*models.BankAccount, error)
 	DeleteBankAccount(userID int64, bankAccountID int64) error
+
+	ListScenarios(userID int64) ([]models.Scenario, error)
+	GetScenario(userID int64, bankAccountID int64) (*models.Scenario, error)
+	CreateScenario(payload models.CreateScenario, userID int64) (*models.Scenario, error)
+	UpdateScenario(payload models.UpdateScenario, userID int64, bankAccountID int64) (*models.Scenario, error)
+	DeleteScenario(userID int64, bankAccountID int64) error
 
 	ListVats(userID int64) ([]models.Vat, error)
 	GetVat(userID int64, vatID int64) (*models.Vat, error)

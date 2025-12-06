@@ -4,9 +4,13 @@ import (
 	"bytes"
 	"encoding/json"
 	"errors"
+	"liquiswiss/internal/adapter/db_adapter"
+	"liquiswiss/internal/adapter/sendgrid_adapter"
 	"liquiswiss/internal/api"
 	"liquiswiss/internal/mocks"
 	"liquiswiss/internal/service/api_service"
+	"liquiswiss/pkg/models"
+	"liquiswiss/pkg/utils"
 	"net/http"
 	"net/http/httptest"
 	"testing"
@@ -145,4 +149,66 @@ func TestRegistrationEmailFails(t *testing.T) {
 	myAPI.Router.ServeHTTP(w, req)
 
 	assert.Equal(t, http.StatusInternalServerError, w.Code)
+}
+
+func TestFinishRegistrationCreatesOrganisationAndScenario(t *testing.T) {
+	conn := SetupTestEnvironment(t)
+	defer conn.Close()
+
+	dbAdapter := db_adapter.NewDatabaseAdapter(conn)
+	sendgridService := sendgrid_adapter.NewSendgridAdapter("")
+	apiService := api_service.NewAPIService(dbAdapter, sendgridService)
+
+	// Create a registration
+	registrationID, err := dbAdapter.CreateRegistration("newuser@example.com", "test-code-123")
+	assert.NoError(t, err)
+	assert.NotEqual(t, int64(0), registrationID)
+
+	// Finish registration
+	user, accessToken, accessExpirationTime, refreshToken, refreshExpirationTime, err := apiService.FinishRegistration(
+		models.FinishRegistration{
+			Email:    "newuser@example.com",
+			Code:     "test-code-123",
+			Password: "securepassword123",
+		},
+		"Test Device",
+		utils.RegistrationCodeValidity,
+	)
+
+	// Assertions
+	assert.NoError(t, err)
+	assert.NotNil(t, user)
+	assert.NotNil(t, accessToken)
+	assert.NotNil(t, accessExpirationTime)
+	assert.NotNil(t, refreshToken)
+	assert.NotNil(t, refreshExpirationTime)
+
+	// Verify user was created
+	assert.NotEqual(t, int64(0), user.ID)
+	assert.Equal(t, "newuser@example.com", user.Email)
+
+	// Verify user has an organisation assigned
+	assert.NotNil(t, user.CurrentOrganisationID)
+	assert.NotEqual(t, int64(0), user.CurrentOrganisationID)
+
+	// Verify the organisation exists and has the correct name
+	organisations, totalCount, err := dbAdapter.ListOrganisations(user.ID, 1, 10)
+	assert.NoError(t, err)
+	assert.Equal(t, int64(1), totalCount)
+	assert.Equal(t, 1, len(organisations))
+	assert.Equal(t, "Meine Organisation", organisations[0].Name)
+	assert.Equal(t, user.CurrentOrganisationID, organisations[0].ID)
+	assert.True(t, organisations[0].IsDefault)
+
+	// Verify user has a scenario assigned
+	assert.NotNil(t, user.CurrentScenarioID)
+	assert.NotEqual(t, int64(0), user.CurrentScenarioID)
+
+	// Verify the scenario exists and has the correct name
+	scenarios, err := apiService.ListScenarios(user.ID)
+	assert.NoError(t, err)
+	assert.Equal(t, 1, len(scenarios))
+	assert.Equal(t, "Standardszenario", scenarios[0].Name)
+	assert.Equal(t, user.CurrentScenarioID, scenarios[0].ID)
+	assert.True(t, scenarios[0].IsDefault)
 }

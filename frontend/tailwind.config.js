@@ -18,6 +18,7 @@ export default {
         'employees': 'minmax(14rem, 1fr), 14rem, minmax(12rem, 1fr), 12rem, 12rem, 12rem',
         'salary-costs-copy': '3rem, minmax(10rem, 1fr), 10rem, 14rem, 12rem',
         'bank-accounts': '18rem, minmax(14rem, 1fr)',
+        'scenarios': '18rem, minmax(14rem, 1fr)',
       },
       maxWidth: {
         screen: '100vw',

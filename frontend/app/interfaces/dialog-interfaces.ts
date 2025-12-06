@@ -3,6 +3,7 @@ import type { EmployeeResponse, SalaryCostLabelResponse, SalaryCostResponse, Sal
 import type { BankAccountResponse } from '~/models/bank-account'
 import type { VatResponse } from '~/models/vat'
 import type { OrganisationResponse } from '~/models/organisation'
+import type { ScenarioResponse } from '~/models/scenario'
 
 export interface IEmployeeFormDialog {
   close: () => object
@@ -57,6 +58,7 @@ export interface ITransactionFormDialog {
     }
   }
 }
+
 export interface IBankAccountFormDialog {
   close: () => object
   value: {
@@ -64,6 +66,17 @@ export interface IBankAccountFormDialog {
     data: {
       isClone: boolean
       bankAccount?: BankAccountResponse
+    }
+  }
+}
+
+export interface IScenarioFormDialog {
+  close: () => object
+  value: {
+    close: () => void
+    data: {
+      isClone: boolean
+      scenario?: ScenarioResponse
     }
   }
 }

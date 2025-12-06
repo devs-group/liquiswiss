@@ -28,6 +28,7 @@ type IDatabaseAdapter interface {
 	ResetPassword(password string, email string) error
 	CheckUserExistence(id int64) (bool, error)
 	SetUserCurrentOrganisation(userID int64, organisationID int64) error
+	SetUserCurrentScenario(userID int64, scenarioID int64) error
 	CreateResetPassword(email, code string, delay time.Duration) (bool, error)
 	ValidateResetPassword(email, code string, validity time.Duration) (int64, error)
 	DeleteResetPassword(email string) error
@@ -92,6 +93,13 @@ type IDatabaseAdapter interface {
 	CreateBankAccount(payload models.CreateBankAccount, userID int64) (int64, error)
 	UpdateBankAccount(payload models.UpdateBankAccount, userID int64, bankAccountID int64) error
 	DeleteBankAccount(userID int64, bankAccountID int64) error
+
+	ListScenarios(userID int64) ([]models.Scenario, error)
+	GetScenario(userID int64, bankAccountID int64) (*models.Scenario, error)
+	CreateScenario(payload models.CreateScenario, userID int64, isDefault bool) (int64, error)
+	UpdateScenario(payload models.UpdateScenario, userID int64, bankAccountID int64) error
+	DeleteScenario(userID int64, bankAccountID int64) error
+	AssignUserToScenario(userID int64, organisationID int64, scenarioID int64) error
 
 	ListVats(userID int64) ([]models.Vat, error)
 	GetVat(userID int64, vatID int64) (*models.Vat, error)

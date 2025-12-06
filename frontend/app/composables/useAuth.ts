@@ -10,6 +10,7 @@ import type {
   UserPasswordFormData,
   UserProfileFormData,
   UserUpdateOrganisationFormData,
+  UserUpdateScenarioFormData,
 } from '~/models/auth'
 import { Constants } from '~/utils/constants'
 
@@ -157,6 +158,18 @@ export default function useAuth() {
     }
   }
 
+  const updateCurrentScenario = async (payload: UserUpdateScenarioFormData) => {
+    try {
+      await $fetch<User>(`/api/profile/scenario`, {
+        method: 'PATCH',
+        body: payload,
+      })
+    }
+    catch {
+      return Promise.reject('Fehler beim Aktualisieren des Szenarios')
+    }
+  }
+
   const isAuthenticated = computed(() => !!user.value)
 
   const getOrganisationCurrencyID = computed(() => {
@@ -191,5 +204,6 @@ export default function useAuth() {
     updateProfile,
     updatePassword,
     updateCurrentOrganisation,
+    updateCurrentScenario,
   }
 }

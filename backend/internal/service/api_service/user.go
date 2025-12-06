@@ -1,10 +1,11 @@
 package api_service
 
 import (
-	"golang.org/x/crypto/bcrypt"
 	"liquiswiss/pkg/logger"
 	"liquiswiss/pkg/models"
 	"liquiswiss/pkg/utils"
+
+	"golang.org/x/crypto/bcrypt"
 )
 
 func (a *APIService) GetProfile(userID int64) (*models.User, error) {
@@ -82,4 +83,34 @@ func (a *APIService) GetCurrentOrganisation(userID int64) (*models.Organisation,
 		return nil, err
 	}
 	return organisation, nil
+}
+
+func (a *APIService) SetUserCurrentScenario(payload models.UpdateUserCurrentScenario, userID int64) error {
+	err := a.dbService.SetUserCurrentScenario(userID, payload.ScenarioID)
+	if err != nil {
+		logger.Logger.Error(err)
+		return err
+	}
+	return nil
+}
+
+func (a *APIService) GetCurrentScenario(userID int64) (*models.Scenario, error) {
+	user, err := a.dbService.GetProfile(userID)
+	if err != nil {
+		return nil, err
+	}
+	validator := utils.GetValidator()
+	if err := validator.Struct(user); err != nil {
+		logger.Logger.Error(err)
+		return nil, err
+	}
+	scenario, err := a.dbService.GetScenario(userID, user.CurrentScenarioID)
+	if err != nil {
+		return nil, err
+	}
+	if err := validator.Struct(scenario); err != nil {
+		logger.Logger.Error(err)
+		return nil, err
+	}
+	return scenario, nil
 }

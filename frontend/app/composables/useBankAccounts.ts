@@ -9,7 +9,7 @@ export default function useBankAccounts() {
     const { data, error } = await useFetch<BankAccountResponse[]>('/api/bank-accounts', {
       method: 'GET',
     })
-    if (error.value) {
+    if (error.value || !data.value) {
       return Promise.reject('Bankkonten konnten nicht geladen werden')
     }
     setBankAccounts(data.value, false)

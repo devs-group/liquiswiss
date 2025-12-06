@@ -14,9 +14,26 @@
           option-value="id"
           class="w-56 max-w-56"
           empty-message="Keine Organisationen gefunden"
+          size="small"
           @click.stop
           @change="onChangeOrganisation"
         />
+        <Select
+          v-if="user"
+          v-model="selectedScenarioID"
+          :options="flattenedScenarios"
+          option-label="name"
+          option-value="id"
+          class="w-56 max-w-56"
+          empty-message="Keine Szenarien gefunden"
+          size="small"
+          @click.stop
+          @change="onChangeScenario"
+        >
+          <template #option="slotProps">
+            <span>{{ slotProps.option.displayName }}</span>
+          </template>
+        </Select>
       </div>
     </template>
 
@@ -60,21 +77,25 @@ import type { SelectChangeEvent } from 'primevue'
 import { RouteNames } from '~/config/routes'
 import useAuth from '~/composables/useAuth'
 import { Config } from '~/config/config'
+import type { ScenarioTreeNode } from '~/models/scenario'
 
-const { logout, user, updateCurrentOrganisation } = useAuth()
+const { logout, user, updateCurrentOrganisation, updateCurrentScenario } = useAuth()
 const { organisations } = useOrganisations()
+const { scenarioTreeNodes } = useScenarios()
 const { showGlobalLoadingSpinner } = useGlobalData()
 const { skipOrganisationSwitchQuestion } = useSettings()
 const confirm = useConfirm()
 const toast = useToast()
 
 const selectedOrganisationID = ref<number | null>(user.value?.currentOrganisationID ?? null)
+const selectedScenarioID = ref<number | null>(user.value?.currentScenarioID ?? null)
 
 const items = ref<MenuItem[]>([
   { label: 'Prognose', icon: 'pi pi-chart-line', routeName: RouteNames.HOME },
   { label: 'Mitarbeitende', icon: 'pi pi-users', routeName: RouteNames.EMPLOYEES },
   { label: 'Transaktionen', icon: 'pi pi-money-bill', routeName: RouteNames.TRANSACTIONS },
   { label: 'Bankkonten', icon: 'pi pi-building', routeName: RouteNames.BANK_ACCOUNTS },
+  { label: 'Szenarien', icon: 'pi pi-calculator', routeName: RouteNames.SCENARIOS },
   { label: 'Einstellungen', icon: 'pi pi-cog', routeName: RouteNames.SETTINGS },
   { label: 'Abmelden', icon: 'pi pi-sign-out', command: async () => {
     confirm.require({
@@ -119,6 +140,16 @@ const onChangeOrganisation = (event: SelectChangeEvent) => {
   }
 }
 
+const onChangeScenario = () => {
+  const currentSelectedScenarioID = user.value?.currentScenarioID ?? null
+  const newSelectedScenarioID = selectedScenarioID.value
+  if (newSelectedScenarioID === currentSelectedScenarioID || newSelectedScenarioID == null) {
+    // Selection hasn't changed
+    return
+  }
+  updateScenario(newSelectedScenarioID)
+}
+
 const updateOrganisation = (newSelectedOrganisationID: number) => {
   showGlobalLoadingSpinner.value = true
   updateCurrentOrganisation({ organisationId: newSelectedOrganisationID })
@@ -135,4 +166,48 @@ const updateOrganisation = (newSelectedOrganisationID: number) => {
       })
     })
 }
+
+const updateScenario = (newSelectedScenarioID: number) => {
+  showGlobalLoadingSpinner.value = true
+  updateCurrentScenario({ scenarioId: newSelectedScenarioID })
+    .then(() => {
+      reloadNuxtApp({ force: true })
+    })
+    .catch(() => {
+      showGlobalLoadingSpinner.value = false
+      toast.add({
+        summary: 'Fehler',
+        detail: `Das Szenario konnte nicht geändert werden. Dies ist ein Systemfehler`,
+        severity: 'error',
+        life: Config.TOAST_LIFE_TIME,
+      })
+    })
+}
+
+const flattenedScenarios = computed(() => {
+  const result: Array<{ id: number, name: string, displayName: string, level: number }> = []
+
+  const flattenTree = (nodes: ScenarioTreeNode[]) => {
+    for (const node of nodes) {
+      // Add indentation and arrow for child scenarios
+      let prefix = ''
+      if (node.data.level > 0) {
+        const indent = '\u00A0\u00A0\u00A0'.repeat(node.data.level - 1)
+        prefix = `${indent}↳ `
+      }
+      result.push({
+        id: node.data.id,
+        name: node.data.name, // Original name for selected value
+        displayName: `${prefix}${node.data.name}`, // Indented name with arrow for dropdown
+        level: node.data.level,
+      })
+      if (node.children && node.children.length > 0) {
+        flattenTree(node.children)
+      }
+    }
+  }
+
+  flattenTree(scenarioTreeNodes.value)
+  return result
+})
 </script>

@@ -6,6 +6,7 @@ export interface User {
   name: string
   email: string
   currentOrganisationID: number
+  currentScenarioID: number
   currency: CurrencyResponse
 }
 
@@ -62,6 +63,9 @@ export interface UserPasswordFormData {
 
 export interface UserUpdateOrganisationFormData {
   organisationId: number
+}
+export interface UserUpdateScenarioFormData {
+  scenarioId: number
 }
 
 export interface AppSettingsFormData {
