@@ -176,37 +176,9 @@ func (a *APIService) FinishRegistration(payload models.FinishRegistration, devic
 	}
 
 	// Every new user gets an organisation assigned automatically
-	organisationID, err := a.dbService.CreateOrganisation("Meine Organisation")
-	if err != nil {
-		logger.Logger.Error(err)
-		return nil, nil, nil, nil, nil, err
-	}
-
-	// We explicity set it as the default organisation which can only be deleted along with the users account
-	err = a.dbService.AssignUserToOrganisation(userId, organisationID, "owner", true)
-	if err != nil {
-		logger.Logger.Error(err)
-		return nil, nil, nil, nil, nil, err
-	}
-
-	// Set the new default organisation as the current one
-	err = a.dbService.SetUserCurrentOrganisation(userId, organisationID)
-	if err != nil {
-		logger.Logger.Error(err)
-		return nil, nil, nil, nil, nil, err
-	}
-
-	// Create a default scenario for the new organisation
-	scenarioID, err := a.dbService.CreateScenario(models.CreateScenario{
-		Name: "Standardszenario",
+	_, err = a.CreateOrganisation(models.CreateOrganisation{
+		Name: "Meine Organisation",
 	}, userId, true)
-	if err != nil {
-		logger.Logger.Error(err)
-		return nil, nil, nil, nil, nil, err
-	}
-
-	// Assign the user to the default scenario
-	err = a.dbService.AssignUserToScenario(userId, organisationID, scenarioID)
 	if err != nil {
 		logger.Logger.Error(err)
 		return nil, nil, nil, nil, nil, err

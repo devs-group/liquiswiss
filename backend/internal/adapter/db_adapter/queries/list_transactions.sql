@@ -9,6 +9,7 @@ FROM
     LEFT JOIN employees emp ON r.employee_id = emp.id
 WHERE
     r.organisation_id = get_current_user_organisation_id(?)
+    AND r.scenario_id = get_current_user_scenario_id(?)
 ORDER BY
     {{.sortBy}} IS NULL,
     {{.sortBy}} {{.sortOrder}},

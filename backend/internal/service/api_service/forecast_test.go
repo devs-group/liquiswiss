@@ -59,6 +59,7 @@ func TestCalculateForecast_SkipsDisabledTransactions(t *testing.T) {
 		Name:                  "Test User",
 		Email:                 "test@example.com",
 		CurrentOrganisationID: 500,
+		CurrentScenarioID:     1,
 		Currency:              orgCurrency,
 	}
 	organisation := models.Organisation{
@@ -194,6 +195,7 @@ func TestCalculateForecast_SkipsDisabledSalariesOnly(t *testing.T) {
 		Name:                  "Test User",
 		Email:                 "test@example.com",
 		CurrentOrganisationID: 600,
+		CurrentScenarioID:     1,
 		Currency:              orgCurrency,
 	}
 	organisation := models.Organisation{
@@ -356,6 +358,7 @@ func TestCalculateForecast_CountsBothSalaryCostsTwice(t *testing.T) {
 		Name:                  "Test User",
 		Email:                 "test@example.com",
 		CurrentOrganisationID: 808,
+		CurrentScenarioID:     1,
 		Currency:              orgCurrency,
 	}
 	organisation := models.Organisation{

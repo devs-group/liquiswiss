@@ -41,6 +41,22 @@ func (a *APIService) CreateScenario(payload models.CreateScenario, userID int64)
 		logger.Logger.Error(err)
 		return nil, err
 	}
+	organisation, err := a.GetCurrentOrganisation(userID)
+	if err != nil {
+		return nil, err
+	}
+	// Assign the user to the default scenario
+	err = a.dbService.AssignUserToScenario(userID, organisation.ID, scenarioID)
+	if err != nil {
+		logger.Logger.Error(err)
+		return nil, err
+	}
+	// Set the default scenario as the current one for this organization
+	err = a.dbService.SetUserCurrentScenario(userID, scenarioID)
+	if err != nil {
+		logger.Logger.Error(err)
+		return nil, err
+	}
 	scenario, err := a.dbService.GetScenario(userID, scenarioID)
 	if err != nil {
 		logger.Logger.Error(err)

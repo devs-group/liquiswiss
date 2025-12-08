@@ -40,7 +40,7 @@ func (d *DatabaseAdapter) ListTransactions(userID int64, page int64, limit int64
 		return nil, 0, err
 	}
 
-	rows, err := d.db.Query(query.String(), userID, (page)*limit, 0)
+	rows, err := d.db.Query(query.String(), userID, userID, (page)*limit, 0)
 	if err != nil {
 		return nil, 0, err
 	}
@@ -85,7 +85,7 @@ func (d *DatabaseAdapter) GetTransaction(userID int64, transactionID int64) (*mo
 		return nil, err
 	}
 
-	err = d.db.QueryRow(string(query), transactionID, userID).Scan(
+	err = d.db.QueryRow(string(query), transactionID, userID, userID).Scan(
 		&transaction.ID,
 		&transaction.Name,
 		&transaction.Amount,
@@ -160,7 +160,7 @@ func (d *DatabaseAdapter) CreateTransaction(payload models.CreateTransaction, us
 
 	res, err := stmt.Exec(
 		payload.Name, payload.Amount, payload.Cycle, payload.Type, payload.StartDate, payload.EndDate,
-		payload.Category, payload.Currency, payload.Employee, userID, payload.Vat, payload.VatIncluded,
+		payload.Category, payload.Currency, payload.Employee, userID, userID, payload.Vat, payload.VatIncluded,
 	)
 	if err != nil {
 		return 0, err

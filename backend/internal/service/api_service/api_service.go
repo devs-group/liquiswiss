@@ -35,7 +35,7 @@ type IAPIService interface {
 
 	ListOrganisations(userID int64, page int64, limit int64) ([]models.Organisation, int64, error)
 	GetOrganisation(userID int64, organisationID int64) (*models.Organisation, error)
-	CreateOrganisation(payload models.CreateOrganisation, userID int64) (*models.Organisation, error)
+	CreateOrganisation(payload models.CreateOrganisation, userID int64, isDefault bool) (*models.Organisation, error)
 	UpdateOrganisation(payload models.UpdateOrganisation, userID int64, organisationID int64) (*models.Organisation, error)
 
 	ListEmployees(userID int64, page int64, limit int64, sortBy string, sortOrder string) ([]models.Employee, int64, error)

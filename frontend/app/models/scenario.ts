@@ -6,9 +6,12 @@ export interface ScenarioResponse {
   parentScenarioID?: number
 }
 
+export type ScenarioType = 'based_on' | 'independent'
+
 export interface ScenarioFormData {
   id: number
   name: string
+  scenarioType?: ScenarioType
   parentScenarioID?: number
 }
 

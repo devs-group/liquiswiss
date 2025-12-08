@@ -93,7 +93,7 @@ func CreateOrganisation(apiService api_service.IAPIService, c *gin.Context) {
 	}
 
 	// Action
-	organisation, err := apiService.CreateOrganisation(payload, userID)
+	organisation, err := apiService.CreateOrganisation(payload, userID, false)
 	if err != nil {
 		c.Status(http.StatusInternalServerError)
 		return

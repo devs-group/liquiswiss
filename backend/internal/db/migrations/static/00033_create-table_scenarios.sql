@@ -15,6 +15,18 @@ CREATE TABLE IF NOT EXISTS scenarios (
 );
 -- +goose StatementEnd
 
+-- +goose StatementBegin
+INSERT INTO scenarios (name, is_default, organisation_id)
+SELECT 'Standardszenario', true, o.id
+FROM organisations o
+WHERE NOT EXISTS (
+    SELECT 1
+    FROM scenarios s
+    WHERE s.organisation_id = o.id
+    AND s.is_default = false
+);
+-- +goose StatementEnd
+
 -- +goose Down
 -- +goose StatementBegin
 DROP TABLE IF EXISTS scenarios;

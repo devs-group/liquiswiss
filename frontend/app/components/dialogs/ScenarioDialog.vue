@@ -4,7 +4,7 @@
     class="grid grid-cols-2 gap-2"
     @submit.prevent
   >
-    <div class="flex flex-col gap-2 col-span-full">
+    <div class="flex flex-col gap-2 col-span-full sm:col-span-1">
       <label
         class="text-sm font-bold"
         for="name"
@@ -19,11 +19,48 @@
       <small class="text-liqui-red">{{ errors["name"] || '&nbsp;' }}</small>
     </div>
 
-    <div class="flex flex-col gap-2 col-span-full">
+    <div class="flex flex-col gap-2 col-span-full sm:col-span-1">
       <label
         class="text-sm font-bold"
         for="name"
-      >Elternszenario</label>
+      >Szenariotyp *</label>
+      <SelectButton
+        v-bind="scenarioTypeProps"
+        v-model="scenarioType"
+        option-label="label"
+        option-value="type"
+        :options="options"
+        :disabled="!isCreate"
+      />
+      <small class="text-liqui-red">{{ errors["scenarioType"] || '&nbsp;' }}</small>
+    </div>
+
+    <div class="flex flex-col gap-2 col-span-full sm:col-span-1">
+      <label
+        class="text-sm font-bold"
+        for="name"
+      >Hilfe</label>
+      <Message
+        severity="warn"
+        size="small"
+      >
+        <template v-if="scenarioType === 'based_on'">
+          Ein <strong>"basierend auf"</strong> Szenario basiert auf einem Elternszenario.
+          Die Daten dieses Szenarios benutzen solange den Wert des Elternszenarios,
+          bis diese überschrieben werden.
+        </template>
+        <template v-else-if="scenarioType === 'independent'">
+          Ein <strong>"unabhängiges"</strong> Szenario basiert nicht auf einem Elternszenario.
+          Es können jedoch Daten von einem anderen Szenario <strong>kopiert</strong> werden.
+        </template>
+      </Message>
+    </div>
+
+    <div class="flex flex-col gap-2 col-span-full sm:col-span-1">
+      <label
+        class="text-sm font-bold"
+        for="name"
+      >{{ scenarioType == 'based_on' ? 'Elternszenario wählen *' : 'Kopieren von Szenario (Optional)' }}</label>
       <Select
         v-bind="parentScenarioIDProps"
         id="name"
@@ -39,6 +76,7 @@
         placeholder="Bitte wählen"
         :class="{ 'p-invalid': errors['parentScenarioID']?.length }"
         type="text"
+        :disabled="!isCreate && scenarioType !== 'based_on'"
       />
       <small class="text-liqui-red">{{ errors["parentScenarioID"] || '&nbsp;' }}</small>
     </div>
@@ -87,13 +125,21 @@ import { useForm } from 'vee-validate'
 import * as yup from 'yup'
 import { Config } from '~/config/config'
 import type { IScenarioFormDialog } from '~/interfaces/dialog-interfaces'
-import type { ScenarioFormData } from '~/models/scenario'
+import type { ScenarioFormData, ScenarioType } from '~/models/scenario'
 
 const dialogRef = inject<IScenarioFormDialog>('dialogRef')!
 
 const { scenarios, createScenario, updateScenario, deleteScenario } = useScenarios()
 const confirm = useConfirm()
 const toast = useToast()
+
+const options = ref([{
+  label: 'Basierend auf',
+  type: 'based_on',
+}, {
+  label: 'Unabhängig',
+  type: 'independent',
+}])
 
 // Data
 const isLoading = ref(false)
@@ -125,16 +171,25 @@ const filteredScenarios = computed(() => {
 const { defineField, errors, handleSubmit, meta } = useForm({
   validationSchema: yup.object({
     name: yup.string().trim().required('Name wird benötigt'),
-    parentScenarioID: yup.number().nullable().typeError('Ungültiges Elternszenario'),
+    scenarioType: yup.string<ScenarioType>().required('Szenariotyp wird benötigt'),
+    parentScenarioID: yup.number().nullable().typeError('Ungültiges Elternszenario')
+      .test('required-for-based-on', 'Elternszenario wird benötigt', (value) => {
+        if (scenarioType.value === 'based_on') {
+          return value != null
+        }
+        return true
+      }),
   }),
   initialValues: {
     id: isClone ? undefined : scenario?.id ?? undefined,
     name: scenario?.name ?? '',
+    scenarioType: scenario?.parentScenarioID ? 'based_on' : 'independent',
     parentScenarioID: scenario?.parentScenarioID ?? undefined,
   } as ScenarioFormData,
 })
 
 const [name, nameProps] = defineField('name')
+const [scenarioType, scenarioTypeProps] = defineField('scenarioType')
 const [parentScenarioID, parentScenarioIDProps] = defineField('parentScenarioID')
 
 const onSubmit = handleSubmit((values) => {
@@ -142,7 +197,10 @@ const onSubmit = handleSubmit((values) => {
   errorMessage.value = ''
 
   if (isCreate) {
-    createScenario(values)
+    createScenario({
+      ...values,
+      scenarioType: scenarioType.value,
+    })
       .then(() => {
         dialogRef.value.close()
         toast.add({
@@ -163,7 +221,10 @@ const onSubmit = handleSubmit((values) => {
       })
   }
   else {
-    updateScenario(values)
+    updateScenario({
+      ...values,
+      scenarioType: undefined,
+    })
       .then(() => {
         dialogRef.value.close()
         toast.add({

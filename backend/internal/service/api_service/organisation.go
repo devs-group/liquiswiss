@@ -35,17 +35,42 @@ func (a *APIService) GetOrganisation(userID int64, organisationID int64) (*model
 	return organisation, nil
 }
 
-func (a *APIService) CreateOrganisation(payload models.CreateOrganisation, userID int64) (*models.Organisation, error) {
+func (a *APIService) CreateOrganisation(payload models.CreateOrganisation, userID int64, isDefault bool) (*models.Organisation, error) {
 	organisationID, err := a.dbService.CreateOrganisation(payload.Name)
 	if err != nil {
 		logger.Logger.Error(err)
 		return nil, err
 	}
-	err = a.dbService.AssignUserToOrganisation(userID, organisationID, "owner", false)
+	err = a.dbService.AssignUserToOrganisation(userID, organisationID, "owner", isDefault)
 	if err != nil {
 		logger.Logger.Error(err)
 		return nil, err
 	}
+
+	// Switch to the new organisation so that CreateScenario uses the correct organisation_id
+	err = a.dbService.SetUserCurrentOrganisation(userID, organisationID)
+	if err != nil {
+		logger.Logger.Error(err)
+		return nil, err
+	}
+
+	// Create a default scenario for the new organisation
+	scenarioID, err := a.dbService.CreateScenario(models.CreateScenario{
+		Name: "Standardszenario",
+	}, userID, true)
+	if err != nil {
+		logger.Logger.Error(err)
+		return nil, err
+	}
+	err = a.dbService.AssignUserToScenario(userID, organisationID, scenarioID)
+	if err != nil {
+		return nil, err
+	}
+	err = a.dbService.SetUserCurrentScenario(userID, scenarioID)
+	if err != nil {
+		return nil, err
+	}
+
 	organisation, err := a.dbService.GetOrganisation(userID, organisationID)
 	if err != nil {
 		logger.Logger.Error(err)

@@ -194,7 +194,7 @@ func (d *DatabaseAdapter) SetUserCurrentOrganisation(userID int64, organisationI
 		return err
 	}
 
-	res, err := d.db.Exec(string(query), organisationID, userID, organisationID)
+	res, err := d.db.Exec(string(query), organisationID, userID, organisationID, userID, organisationID)
 	if err != nil {
 		return err
 	}
@@ -208,12 +208,49 @@ func (d *DatabaseAdapter) SetUserCurrentOrganisation(userID int64, organisationI
 }
 
 func (d *DatabaseAdapter) SetUserCurrentScenario(userID int64, scenarioID int64) error {
-	query, err := sqlQueries.ReadFile("queries/set_user_current_scenario.sql")
+	// Begin transaction
+	tx, err := d.db.Begin()
+	if err != nil {
+		return err
+	}
+	defer tx.Rollback()
+
+	// First, unset the current flag for all scenarios in this org
+	_, err = tx.Exec(`
+		UPDATE users_2_scenarios
+		SET is_current = FALSE
+		WHERE user_id = ?
+		  AND organisation_id = get_current_user_organisation_id(?)
+	`, userID, userID)
 	if err != nil {
 		return err
 	}
 
-	res, err := d.db.Exec(string(query), scenarioID, userID, userID, scenarioID, userID)
+	// Then set the new current scenario flag
+	_, err = tx.Exec(`
+		UPDATE users_2_scenarios
+		SET is_current = TRUE
+		WHERE user_id = ?
+		  AND organisation_id = get_current_user_organisation_id(?)
+		  AND scenario_id = ?
+	`, userID, userID, scenarioID)
+	if err != nil {
+		return err
+	}
+
+	// Finally, update the user's current_scenario_id
+	res, err := tx.Exec(`
+		UPDATE users
+		SET current_scenario_id = ?
+		WHERE id = ?
+		  AND current_organisation_id = get_current_user_organisation_id(?)
+		  AND EXISTS (
+		    SELECT 1
+		    FROM scenarios sc
+		    WHERE sc.id = ?
+		      AND sc.organisation_id = get_current_user_organisation_id(?)
+		  )
+	`, scenarioID, userID, userID, scenarioID, userID)
 	if err != nil {
 		return err
 	}
@@ -226,7 +263,8 @@ func (d *DatabaseAdapter) SetUserCurrentScenario(userID int64, scenarioID int64)
 		return errors.New("szenario konnte nicht gesetzt werden")
 	}
 
-	return nil
+	// Commit transaction
+	return tx.Commit()
 }
 
 func (d *DatabaseAdapter) CreateResetPassword(email, code string, delay time.Duration) (bool, error) {
