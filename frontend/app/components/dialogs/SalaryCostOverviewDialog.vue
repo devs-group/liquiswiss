@@ -13,10 +13,7 @@
     </Message>
 
     <div class="flex items-center gap-2">
-      <InputText
-        v-model="search"
-        placeholder="Suchen"
-      />
+      <SearchInput v-model="search" />
       <Select
         v-model="filterType"
         :options="EmployeeCostOverviewTypeToOptions()"

@@ -14,6 +14,8 @@ git config core.hooksPath .githooks
 
 This enables pre-commit hooks that run `npm run lint:fix` and `go test -count=1 ./...` before each commit.
 
+**Important**: At the start of each session, verify git hooks are configured by running the command above. The pre-commit hook runs `npm run lint:fix` and `go test` automatically on commit, so there's no need to run these separately right before committing.
+
 ## Quick Commands
 
 ### Frontend (`frontend/`)
@@ -21,9 +23,10 @@ This enables pre-commit hooks that run `npm run lint:fix` and `go test -count=1 
 nvm use              # Use correct Node version (required first)
 npm install          # Install dependencies
 npm run dev          # Dev server at http://localhost:3000
-npm run lint:fix     # Lint and fix
 npm run build        # Production build
 ```
+
+Note: `npm run lint:fix` runs automatically via pre-commit hook.
 
 ### Backend (`backend/`)
 ```bash

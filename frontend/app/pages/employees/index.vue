@@ -2,10 +2,10 @@
   <div class="flex flex-col gap-4 relative">
     <div class="flex flex-col sm:flex-row gap-2 justify-between items-center">
       <div class="flex items-center gap-2 w-full sm:w-auto">
-        <InputText
+        <SearchInput
           :model-value="searchEmployees"
-          placeholder="Suchen"
           @update:model-value="onSearch"
+          @clear="onClearSearch"
         />
         <Button
           :icon="getDisplayIcon"
@@ -132,6 +132,22 @@ const onSearch = (value: string) => {
         isLoading.value = false
       })
   }, 300)
+}
+
+const onClearSearch = () => {
+  if (searchEmployees.value === '') return
+  searchEmployees.value = ''
+  pageEmployees.value = 1
+  isLoading.value = true
+  listEmployees(false)
+    .catch((err) => {
+      if (err !== 'aborted') {
+        employeesErrorMessage.value = err
+      }
+    })
+    .finally(() => {
+      isLoading.value = false
+    })
 }
 
 // Init
