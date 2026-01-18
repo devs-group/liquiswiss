@@ -7,6 +7,7 @@ import type { TransactionCycleTypeToStringDefinition } from '~/utils/enum-helper
 export interface TransactionResponse {
   id: number
   name: string
+  link: string | null
   amount: number
   vat: VatResponse | null
   vatAmount: number
@@ -35,6 +36,7 @@ export interface ListTransactionResponse {
 export interface TransactionFormData {
   id: number
   name: string
+  link?: string
   amount: number
   vat?: number
   vatIncluded: boolean

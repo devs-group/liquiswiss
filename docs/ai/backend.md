@@ -26,6 +26,15 @@
 
 ## Testing
 
+**Always run tests after backend changes:**
+```bash
+go test -count=1 ./...
+```
+
+The `-count=1` flag disables test caching to ensure tests always run.
+
+**After making changes, always check if new tests are required** - especially for new endpoints, business logic, or edge cases.
+
 Mocks are generated via `go generate ./...` using mockgen. Tests require a running MariaDB instance (`docker compose up`).
 
 Test environment is configured via:

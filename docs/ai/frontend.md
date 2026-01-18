@@ -6,6 +6,7 @@
 - PrimeVue components
 - Tailwind CSS
 - VeeValidate + Yup for forms
+- Node version managed via `.nvmrc` - always run `nvm use` before npm commands
 
 ## Key Files to Understand
 

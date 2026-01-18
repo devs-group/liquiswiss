@@ -1,6 +1,7 @@
 INSERT INTO transactions
     (
      name,
+     link,
      amount,
      cycle,
      type,
@@ -13,4 +14,4 @@ INSERT INTO transactions
      vat_id,
      vat_included
     )
-VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, get_current_user_organisation_id(?), ?, ?)
+VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, get_current_user_organisation_id(?), ?, ?)

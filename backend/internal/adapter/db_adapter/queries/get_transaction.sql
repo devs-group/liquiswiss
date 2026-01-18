@@ -1,6 +1,7 @@
 SELECT
     r.id,
     r.name,
+    r.link,
     r.amount,
     IF(v.id,
        calculate_vat_amount(r.vat_included, r.amount, v.value),

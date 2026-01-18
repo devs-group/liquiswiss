@@ -2,7 +2,20 @@
   <Card :class="{ 'opacity-60': localIsDisabled }">
     <template #title>
       <div class="flex items-center justify-between">
-        <p class="truncate text-base">
+        <a
+          v-if="transaction.link"
+          :href="normalizedLink"
+          target="_blank"
+          rel="noopener noreferrer"
+          class="truncate text-base text-primary hover:underline"
+        >
+          {{ transaction.name }}
+          <i class="pi pi-external-link text-xs ml-1" />
+        </a>
+        <p
+          v-else
+          class="truncate text-base"
+        >
           {{ transaction.name }}
         </p>
         <div class="flex items-center gap-2 justify-end">
@@ -136,6 +149,7 @@ const onToggleDisabled = (isActive: boolean) => {
 }
 
 const isRevenue = computed(() => props.transaction.amount >= 0)
+const normalizedLink = computed(() => props.transaction.link ? NormalizeUrl(props.transaction.link) : '')
 const startDate = computed(() => DateStringToFormattedDate(props.transaction.startDate))
 const endDate = computed(() => props.transaction.endDate ? DateStringToFormattedDate(props.transaction.endDate) : '')
 const nextExecutionDate = computed(() => props.transaction.nextExecutionDate ? DateStringToFormattedDate(props.transaction.nextExecutionDate) : '')

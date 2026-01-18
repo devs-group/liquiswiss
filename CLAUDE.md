@@ -10,6 +10,7 @@ LiquiSwiss is a liquidity planning application with a Go backend and Nuxt 4 fron
 
 ### Frontend (`frontend/`)
 ```bash
+nvm use              # Use correct Node version (required first)
 npm install          # Install dependencies
 npm run dev          # Dev server at http://localhost:3000
 npm run lint:fix     # Lint and fix
@@ -19,10 +20,12 @@ npm run build        # Production build
 ### Backend (`backend/`)
 ```bash
 go mod tidy          # Install dependencies
-air                  # Dev server with hot reload (requires Air)
-go test ./...        # Run all tests (requires docker compose up)
-go test ./internal/service/api_service -run TestName  # Run specific test
+go run .             # Run dev server
+go test -count=1 ./...  # Run all tests (requires docker compose up)
+go test -count=1 ./internal/service/api_service -run TestName  # Run specific test
 ```
+
+**Important**: Always run `go test -count=1 ./...` after backend changes and check if new tests are required.
 
 ### Database
 ```bash
@@ -41,6 +44,18 @@ Detailed documentation is in [docs/ai/](docs/ai/):
 - [Database & Migrations](docs/ai/database.md) - Two-tier migration system
 - [Business Logic](docs/ai/business-logic.md) - Salary costs, forecasts, VAT calculations
 - [Authentication](docs/ai/authentication.md) - JWT dual-token flow
+
+## Git Commits
+
+- Always a single line, no multi-line messages
+- No "Co-Authored-By" or similar footers
+- Start with capital letter
+- Write as if completing: "(This commit will) ..."
+
+**Examples:**
+- `Add link field to transactions to enter url`
+- `Fix calculation of VAT for quarterly transactions`
+- `Update employee form validation`
 
 ## Configuration
 

@@ -7,6 +7,7 @@ import (
 type Transaction struct {
 	ID          int64                `db:"id" json:"id"`
 	Name        string               `db:"name" json:"name"`
+	Link        *string              `db:"link" json:"link"`
 	Amount      int64                `db:"amount" json:"amount"`
 	VatAmount   int64                `db:"vat_amount" json:"vatAmount"`
 	VatIncluded bool                 `db:"vat_included" json:"vatIncluded"`
@@ -34,6 +35,7 @@ type TransactionEmployee struct {
 
 type CreateTransaction struct {
 	Name        string  `json:"name" validate:"required,max=255"`
+	Link        *string `json:"link" validate:"omitempty,max=2048"`
 	Amount      int64   `json:"amount" validate:"required"`
 	Cycle       *string `json:"cycle" validate:"omitempty,allowedCycles"`
 	Type        string  `json:"type" validate:"required,oneof='single' 'repeating',cycleRequiredIfRepeating"`
@@ -48,6 +50,7 @@ type CreateTransaction struct {
 
 type UpdateTransaction struct {
 	Name        *string `json:"name" validate:"omitempty,max=255"`
+	Link        *string `json:"link" validate:"omitempty,max=2048"`
 	Amount      *int64  `json:"amount" validate:"omitempty"`
 	Cycle       *string `json:"cycle" validate:"omitempty,allowedCycles"`
 	Type        *string `json:"type" validate:"omitempty,oneof='single' 'repeating',cycleRequiredIfRepeating"`

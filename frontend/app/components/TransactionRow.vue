@@ -6,7 +6,20 @@
     ]"
   >
     <div class="flex items-center gap-2 justify-end min-w-[160px]">
-      <p class="truncate">
+      <a
+        v-if="transaction.link"
+        :href="normalizedLink"
+        target="_blank"
+        rel="noopener noreferrer"
+        class="truncate text-primary hover:underline"
+      >
+        {{ transaction.name }}
+        <i class="pi pi-external-link text-xs" />
+      </a>
+      <p
+        v-else
+        class="truncate"
+      >
         {{ transaction.name }}
       </p>
       <span
@@ -119,6 +132,7 @@ const onToggleDisabled = (isActive: boolean) => {
 }
 
 const isRevenue = computed(() => props.transaction.amount >= 0)
+const normalizedLink = computed(() => props.transaction.link ? NormalizeUrl(props.transaction.link) : '')
 const startDate = computed(() => DateStringToFormattedDate(props.transaction.startDate))
 const endDate = computed(() => props.transaction.endDate ? DateStringToFormattedDate(props.transaction.endDate) : '')
 const nextExecutionDate = computed(() => props.transaction.nextExecutionDate ? DateStringToFormattedDate(props.transaction.nextExecutionDate) : '')

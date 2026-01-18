@@ -4,7 +4,7 @@
     class="grid grid-cols-2 gap-2"
     @submit.prevent
   >
-    <div class="flex flex-col gap-2 col-span-full">
+    <div class="flex flex-col gap-2 col-span-full md:col-span-1">
       <label
         class="text-sm font-bold"
         for="name"
@@ -17,6 +17,28 @@
         type="text"
       />
       <small class="text-liqui-red">{{ errors["name"] || '&nbsp;' }}</small>
+    </div>
+
+    <div class="flex flex-col gap-2 col-span-full md:col-span-1">
+      <div class="flex items-center gap-2">
+        <label
+          class="text-sm font-bold"
+          for="link"
+        >Link</label>
+        <i
+          v-tooltip.top="'Optionaler Link zur Transaktion (z.B. Rechnung)'"
+          class="pi pi-info-circle text-liqui-blue"
+        />
+      </div>
+      <InputText
+        v-bind="linkProps"
+        id="link"
+        v-model="link"
+        :class="{ 'p-invalid': errors['link']?.length }"
+        type="text"
+        placeholder="https://..."
+      />
+      <small class="text-liqui-red">{{ errors["link"] || '&nbsp;' }}</small>
     </div>
 
     <div class="flex flex-col gap-2 col-span-full md:col-span-1">
@@ -423,6 +445,7 @@ listVats()
 const { defineField, errors, handleSubmit, meta, setFieldValue } = useForm({
   validationSchema: yup.object({
     name: yup.string().trim().required('Name wird benötigt'),
+    link: yup.string().trim().max(2048, 'Link ist zu lang').nullable(),
     amount: yup.number().required('Betrag wird benötigt').typeError('Ungültiger Betrag'),
     vat: yup.number().nullable().typeError('Ungültige Mehrwertsteuer'),
     vatIncluded: yup.boolean().typeError('Ungültiger Wert'),
@@ -437,6 +460,7 @@ const { defineField, errors, handleSubmit, meta, setFieldValue } = useForm({
   initialValues: {
     id: isClone ? undefined : transaction?.id ?? undefined,
     name: transaction?.name ?? '',
+    link: transaction?.link ?? '',
     amount: isNumber(transaction?.amount) ? AmountToFloat(transaction!.amount) : '',
     vat: transaction?.vat?.id ?? null,
     vatIncluded: transaction?.vatIncluded ?? false,
@@ -451,6 +475,7 @@ const { defineField, errors, handleSubmit, meta, setFieldValue } = useForm({
 })
 
 const [name, nameProps] = defineField('name')
+const [link, linkProps] = defineField('link')
 const [amount, amountProps] = defineField('amount')
 const [vat, vatProps] = defineField('vat')
 const [vatIncluded, vatIncludedProps] = defineField('vatIncluded')

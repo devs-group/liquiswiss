@@ -1,5 +1,12 @@
 # Database & Migrations
 
+## Critical Rules
+
+1. **NEVER manually adjust the database with mysql commands** unless explicitly allowed by the user - always use migrations
+2. When migrations fail due to version conflicts, **always try `goose down-to <version>` first** to roll back, then reapply
+3. If old migration records exist from other branches (versions in `goose_db_version` without corresponding files), **ask the user before deleting** them via mysql
+4. Only after user approval: `DELETE FROM goose_db_version WHERE version_id > <target_version>;`
+
 ## Two-Tier Migration System
 
 LiquiSwiss uses a unique migration approach with Goose:

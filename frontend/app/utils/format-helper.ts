@@ -68,3 +68,12 @@ export const NumberToFormattedCurrency = (amount: number, locale: string) => {
   const fmt = Intl.NumberFormat(locale, { maximumFractionDigits: 2, minimumFractionDigits: 2 })
   return fmt.format(amount)
 }
+
+export const NormalizeUrl = (url: string): string => {
+  if (!url) return ''
+  const trimmed = url.trim()
+  if (trimmed.startsWith('http://') || trimmed.startsWith('https://')) {
+    return trimmed
+  }
+  return `https://${trimmed}`
+}

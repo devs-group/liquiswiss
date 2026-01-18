@@ -88,6 +88,7 @@ func (d *DatabaseAdapter) GetTransaction(userID int64, transactionID int64) (*mo
 	err = d.db.QueryRow(string(query), transactionID, userID).Scan(
 		&transaction.ID,
 		&transaction.Name,
+		&transaction.Link,
 		&transaction.Amount,
 		&transaction.VatAmount,
 		&transaction.VatIncluded,
@@ -159,7 +160,7 @@ func (d *DatabaseAdapter) CreateTransaction(payload models.CreateTransaction, us
 	defer stmt.Close()
 
 	res, err := stmt.Exec(
-		payload.Name, payload.Amount, payload.Cycle, payload.Type, payload.StartDate, payload.EndDate,
+		payload.Name, payload.Link, payload.Amount, payload.Cycle, payload.Type, payload.StartDate, payload.EndDate,
 		payload.Category, payload.Currency, payload.Employee, userID, payload.Vat, payload.VatIncluded,
 	)
 	if err != nil {
@@ -185,6 +186,13 @@ func (d *DatabaseAdapter) UpdateTransaction(payload models.UpdateTransaction, us
 	if payload.Name != nil {
 		queryBuild = append(queryBuild, "name = ?")
 		args = append(args, *payload.Name)
+	}
+	if payload.Link != nil {
+		queryBuild = append(queryBuild, "link = ?")
+		args = append(args, *payload.Link)
+	} else if payload.IsDisabled == nil {
+		queryBuild = append(queryBuild, "link = ?")
+		args = append(args, nil)
 	}
 	if payload.Amount != nil {
 		queryBuild = append(queryBuild, "amount = ?")
