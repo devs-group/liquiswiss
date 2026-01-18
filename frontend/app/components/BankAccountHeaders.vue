@@ -26,15 +26,14 @@ import type { BankAccountSortByType } from '~/utils/types'
 
 const emits = defineEmits(['onSort'])
 
-const { bankAccountSortBy, bankAccountSortOrder } = useSettings()
+const { bankAccountSortBy, bankAccountSortOrder, setBankAccountSort } = useSettings()
 
 const onSort = (column: BankAccountSortByType) => {
-  if (column == bankAccountSortBy.value) {
-    bankAccountSortOrder.value = bankAccountSortOrder.value == 'ASC' ? 'DESC' : 'ASC'
+  if (column === bankAccountSortBy.value) {
+    setBankAccountSort(column, bankAccountSortOrder.value === 'ASC' ? 'DESC' : 'ASC')
   }
   else {
-    bankAccountSortBy.value = column
-    bankAccountSortOrder.value = 'ASC'
+    setBankAccountSort(column, 'ASC')
   }
   emits('onSort')
 }
@@ -43,6 +42,6 @@ const getSortIcon = (column: BankAccountSortByType) => {
   if (column !== bankAccountSortBy.value) {
     return 'pi pi-sort'
   }
-  return bankAccountSortOrder.value == 'ASC' ? 'pi pi-sort-up' : 'pi pi-sort-down'
+  return bankAccountSortOrder.value === 'ASC' ? 'pi pi-sort-up' : 'pi pi-sort-down'
 }
 </script>

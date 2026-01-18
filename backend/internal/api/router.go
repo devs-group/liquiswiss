@@ -267,6 +267,22 @@ func (api *API) setupRouter() {
 				handlers.DeleteVatSetting(api.APIService, ctx)
 			})
 
+			// User Settings (global)
+			protected.GET("/user-settings", func(ctx *gin.Context) {
+				handlers.GetUserSetting(api.APIService, ctx)
+			})
+			protected.PATCH("/user-settings", func(ctx *gin.Context) {
+				handlers.UpdateUserSetting(api.APIService, ctx)
+			})
+
+			// User Organisation Settings (per-organisation)
+			protected.GET("/user-organisation-settings", func(ctx *gin.Context) {
+				handlers.GetUserOrganisationSetting(api.APIService, ctx)
+			})
+			protected.PATCH("/user-organisation-settings", func(ctx *gin.Context) {
+				handlers.UpdateUserOrganisationSetting(api.APIService, ctx)
+			})
+
 			// Categories
 			protected.GET("/categories", func(ctx *gin.Context) {
 				handlers.ListCategories(api.APIService, ctx)

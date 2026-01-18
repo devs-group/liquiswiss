@@ -86,15 +86,14 @@ import type { TransactionSortByType } from '~/utils/types'
 
 const emits = defineEmits(['onSort'])
 
-const { transactionSortBy, transactionSortOrder } = useSettings()
+const { transactionSortBy, transactionSortOrder, setTransactionSort } = useSettings()
 
 const onSort = (column: TransactionSortByType) => {
-  if (column == transactionSortBy.value) {
-    transactionSortOrder.value = transactionSortOrder.value == 'ASC' ? 'DESC' : 'ASC'
+  if (column === transactionSortBy.value) {
+    setTransactionSort(column, transactionSortOrder.value === 'ASC' ? 'DESC' : 'ASC')
   }
   else {
-    transactionSortBy.value = column
-    transactionSortOrder.value = 'ASC'
+    setTransactionSort(column, 'ASC')
   }
   emits('onSort')
 }
@@ -103,6 +102,6 @@ const getSortIcon = (column: TransactionSortByType) => {
   if (column !== transactionSortBy.value) {
     return 'pi pi-sort'
   }
-  return transactionSortOrder.value == 'ASC' ? 'pi pi-sort-up' : 'pi pi-sort-down'
+  return transactionSortOrder.value === 'ASC' ? 'pi pi-sort-up' : 'pi pi-sort-down'
 }
 </script>

@@ -4,6 +4,7 @@ package main
 
 import (
 	"embed"
+	"flag"
 	"github.com/joho/godotenv"
 	"github.com/pkg/errors"
 	"github.com/pressly/goose/v3"
@@ -22,6 +23,8 @@ import (
 	"os"
 )
 
+var noMigrate = flag.Bool("no-migrate", false, "Skip database migrations on startup")
+
 //go:embed internal/db/migrations/static/*.sql
 var staticMigrations embed.FS
 
@@ -29,6 +32,8 @@ var staticMigrations embed.FS
 var dynamicMigrations embed.FS
 
 func main() {
+	flag.Parse()
+
 	// Init global logger
 	logger.NewZapLogger(utils.IsProduction())
 
@@ -55,17 +60,21 @@ func runApp() {
 	}
 	defer conn.Close()
 
-	// Run auto migrations
-	err = runStaticMigrations()
-	if err != nil {
-		logger.Logger.Error(err)
-		os.Exit(1)
-	}
+	// Run auto migrations (unless --no-migrate flag is set)
+	if *noMigrate {
+		logger.Logger.Info("Skipping migrations (--no-migrate flag set)")
+	} else {
+		err = runStaticMigrations()
+		if err != nil {
+			logger.Logger.Error(err)
+			os.Exit(1)
+		}
 
-	err = runDynamicMigrations()
-	if err != nil {
-		logger.Logger.Error(err)
-		os.Exit(1)
+		err = runDynamicMigrations()
+		if err != nil {
+			logger.Logger.Error(err)
+			os.Exit(1)
+		}
 	}
 
 	cfg := config.GetConfig()

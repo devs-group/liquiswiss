@@ -59,13 +59,21 @@ make goose-dynamic-create <name>  # Create function/view migration (from backend
 
 ### Running Both Servers in Background
 
-Run these commands in background to have both servers running with real-time logs:
+**IMPORTANT**: At the start of each session, always start both servers in the background using `run_in_background: true`. First kill any existing processes:
 
 ```bash
-# Backend (run in background from backend/)
+# Kill existing processes
+pkill -f "tmp/main" 2>/dev/null; pkill -f "^air$" 2>/dev/null
+pkill -f "nuxt" 2>/dev/null
+```
+
+Then run these commands in background from their respective directories (use `run_in_background: true` parameter, NOT shell `&`):
+
+```bash
+# Backend (from backend/)
 air
 
-# Frontend (run in background from frontend/, requires nvm)
+# Frontend (from frontend/, requires nvm)
 source ~/.nvm/nvm.sh && nvm use && npm run dev
 ```
 

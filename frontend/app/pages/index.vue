@@ -43,7 +43,7 @@
               Zeitraum:
             </p>
             <InputNumber
-              v-model="forecastMonths"
+              :model-value="forecastMonths"
               show-buttons
               button-layout="horizontal"
               :step="1"
@@ -53,7 +53,7 @@
               mode="decimal"
               :suffix="forecastMonths == 1 ? ' Monat' : ' Monate'"
               :max="36"
-              @input="event => forecastMonths = event.value"
+              @update:model-value="setForecastMonths"
             >
               <template #incrementbuttonicon>
                 <span class="pi pi-plus" />
@@ -68,8 +68,9 @@
               Performance ({{ forecastPerformance }}%):
             </p>
             <Slider
-              v-model="forecastPerformance"
+              :model-value="forecastPerformance"
               class="w-56"
+              @update:model-value="setForecastPerformance"
             />
           </div>
         </div>
@@ -302,7 +303,7 @@ const {
   clearForecastExclusionChanges,
 } = useForecasts()
 const { useFetchListBankAccounts, totalBankSaldoInCHF } = useBankAccounts()
-const { forecastPerformance, forecastMonths, forecastShowRevenueDetails, forecastShowExpenseDetails } = useSettings()
+const { forecastPerformance, forecastMonths, forecastShowRevenueDetails, forecastShowExpenseDetails, setForecastShowRevenueDetails, setForecastShowExpenseDetails, setForecastPerformance, setForecastMonths } = useSettings()
 const { setChartData, getChartOptions } = useCharts()
 const toast = useToast()
 
@@ -386,12 +387,12 @@ const onCalculateForecast = async () => {
 }
 
 const onToggleRevenueDetails = () => {
-  forecastShowRevenueDetails.value = !forecastShowRevenueDetails.value
+  setForecastShowRevenueDetails(!forecastShowRevenueDetails.value)
   // ForecastDetails are already loaded, no need to fetch again
 }
 
 const onToggleExpenseDetails = () => {
-  forecastShowExpenseDetails.value = !forecastShowExpenseDetails.value
+  setForecastShowExpenseDetails(!forecastShowExpenseDetails.value)
   // ForecastDetails are already loaded, no need to fetch again
 }
 

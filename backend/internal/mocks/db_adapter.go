@@ -370,6 +370,36 @@ func (mr *MockIDatabaseAdapterMockRecorder) CreateUser(email, password any) *gom
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CreateUser", reflect.TypeOf((*MockIDatabaseAdapter)(nil).CreateUser), email, password)
 }
 
+// CreateUserOrganisationSetting mocks base method.
+func (m *MockIDatabaseAdapter) CreateUserOrganisationSetting(userID int64) (int64, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "CreateUserOrganisationSetting", userID)
+	ret0, _ := ret[0].(int64)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// CreateUserOrganisationSetting indicates an expected call of CreateUserOrganisationSetting.
+func (mr *MockIDatabaseAdapterMockRecorder) CreateUserOrganisationSetting(userID any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CreateUserOrganisationSetting", reflect.TypeOf((*MockIDatabaseAdapter)(nil).CreateUserOrganisationSetting), userID)
+}
+
+// CreateUserSetting mocks base method.
+func (m *MockIDatabaseAdapter) CreateUserSetting(userID int64) (int64, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "CreateUserSetting", userID)
+	ret0, _ := ret[0].(int64)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// CreateUserSetting indicates an expected call of CreateUserSetting.
+func (mr *MockIDatabaseAdapterMockRecorder) CreateUserSetting(userID any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CreateUserSetting", reflect.TypeOf((*MockIDatabaseAdapter)(nil).CreateUserSetting), userID)
+}
+
 // CreateVat mocks base method.
 func (m *MockIDatabaseAdapter) CreateVat(payload models.CreateVat, userID int64) (int64, error) {
 	m.ctrl.T.Helper()
@@ -750,6 +780,21 @@ func (mr *MockIDatabaseAdapterMockRecorder) GetTransaction(userID, transactionID
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetTransaction", reflect.TypeOf((*MockIDatabaseAdapter)(nil).GetTransaction), userID, transactionID)
 }
 
+// GetUserOrganisationSetting mocks base method.
+func (m *MockIDatabaseAdapter) GetUserOrganisationSetting(userID int64) (*models.UserOrganisationSetting, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "GetUserOrganisationSetting", userID)
+	ret0, _ := ret[0].(*models.UserOrganisationSetting)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// GetUserOrganisationSetting indicates an expected call of GetUserOrganisationSetting.
+func (mr *MockIDatabaseAdapterMockRecorder) GetUserOrganisationSetting(userID any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetUserOrganisationSetting", reflect.TypeOf((*MockIDatabaseAdapter)(nil).GetUserOrganisationSetting), userID)
+}
+
 // GetUserPasswordByEMail mocks base method.
 func (m *MockIDatabaseAdapter) GetUserPasswordByEMail(email string) (*models.Login, error) {
 	m.ctrl.T.Helper()
@@ -763,6 +808,21 @@ func (m *MockIDatabaseAdapter) GetUserPasswordByEMail(email string) (*models.Log
 func (mr *MockIDatabaseAdapterMockRecorder) GetUserPasswordByEMail(email any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetUserPasswordByEMail", reflect.TypeOf((*MockIDatabaseAdapter)(nil).GetUserPasswordByEMail), email)
+}
+
+// GetUserSetting mocks base method.
+func (m *MockIDatabaseAdapter) GetUserSetting(userID int64) (*models.UserSetting, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "GetUserSetting", userID)
+	ret0, _ := ret[0].(*models.UserSetting)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// GetUserSetting indicates an expected call of GetUserSetting.
+func (mr *MockIDatabaseAdapterMockRecorder) GetUserSetting(userID any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetUserSetting", reflect.TypeOf((*MockIDatabaseAdapter)(nil).GetUserSetting), userID)
 }
 
 // GetVat mocks base method.
@@ -1267,6 +1327,34 @@ func (m *MockIDatabaseAdapter) UpdateTransaction(payload models.UpdateTransactio
 func (mr *MockIDatabaseAdapterMockRecorder) UpdateTransaction(payload, userID, transactionID any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "UpdateTransaction", reflect.TypeOf((*MockIDatabaseAdapter)(nil).UpdateTransaction), payload, userID, transactionID)
+}
+
+// UpdateUserOrganisationSetting mocks base method.
+func (m *MockIDatabaseAdapter) UpdateUserOrganisationSetting(payload models.UpdateUserOrganisationSetting, userID int64) error {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "UpdateUserOrganisationSetting", payload, userID)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// UpdateUserOrganisationSetting indicates an expected call of UpdateUserOrganisationSetting.
+func (mr *MockIDatabaseAdapterMockRecorder) UpdateUserOrganisationSetting(payload, userID any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "UpdateUserOrganisationSetting", reflect.TypeOf((*MockIDatabaseAdapter)(nil).UpdateUserOrganisationSetting), payload, userID)
+}
+
+// UpdateUserSetting mocks base method.
+func (m *MockIDatabaseAdapter) UpdateUserSetting(payload models.UpdateUserSetting, userID int64) error {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "UpdateUserSetting", payload, userID)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// UpdateUserSetting indicates an expected call of UpdateUserSetting.
+func (mr *MockIDatabaseAdapterMockRecorder) UpdateUserSetting(payload, userID any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "UpdateUserSetting", reflect.TypeOf((*MockIDatabaseAdapter)(nil).UpdateUserSetting), payload, userID)
 }
 
 // UpdateVat mocks base method.

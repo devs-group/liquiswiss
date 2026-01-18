@@ -693,6 +693,36 @@ func (mr *MockIAPIServiceMockRecorder) GetTransaction(userID, transactionID any)
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetTransaction", reflect.TypeOf((*MockIAPIService)(nil).GetTransaction), userID, transactionID)
 }
 
+// GetUserOrganisationSetting mocks base method.
+func (m *MockIAPIService) GetUserOrganisationSetting(userID int64) (*models.UserOrganisationSetting, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "GetUserOrganisationSetting", userID)
+	ret0, _ := ret[0].(*models.UserOrganisationSetting)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// GetUserOrganisationSetting indicates an expected call of GetUserOrganisationSetting.
+func (mr *MockIAPIServiceMockRecorder) GetUserOrganisationSetting(userID any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetUserOrganisationSetting", reflect.TypeOf((*MockIAPIService)(nil).GetUserOrganisationSetting), userID)
+}
+
+// GetUserSetting mocks base method.
+func (m *MockIAPIService) GetUserSetting(userID int64) (*models.UserSetting, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "GetUserSetting", userID)
+	ret0, _ := ret[0].(*models.UserSetting)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// GetUserSetting indicates an expected call of GetUserSetting.
+func (mr *MockIAPIServiceMockRecorder) GetUserSetting(userID any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetUserSetting", reflect.TypeOf((*MockIAPIService)(nil).GetUserSetting), userID)
+}
+
 // GetVat mocks base method.
 func (m *MockIAPIService) GetVat(userID, vatID int64) (*models.Vat, error) {
 	m.ctrl.T.Helper()
@@ -1176,6 +1206,36 @@ func (m *MockIAPIService) UpdateTransaction(payload models.UpdateTransaction, us
 func (mr *MockIAPIServiceMockRecorder) UpdateTransaction(payload, userID, transactionID any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "UpdateTransaction", reflect.TypeOf((*MockIAPIService)(nil).UpdateTransaction), payload, userID, transactionID)
+}
+
+// UpdateUserOrganisationSetting mocks base method.
+func (m *MockIAPIService) UpdateUserOrganisationSetting(payload models.UpdateUserOrganisationSetting, userID int64) (*models.UserOrganisationSetting, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "UpdateUserOrganisationSetting", payload, userID)
+	ret0, _ := ret[0].(*models.UserOrganisationSetting)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// UpdateUserOrganisationSetting indicates an expected call of UpdateUserOrganisationSetting.
+func (mr *MockIAPIServiceMockRecorder) UpdateUserOrganisationSetting(payload, userID any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "UpdateUserOrganisationSetting", reflect.TypeOf((*MockIAPIService)(nil).UpdateUserOrganisationSetting), payload, userID)
+}
+
+// UpdateUserSetting mocks base method.
+func (m *MockIAPIService) UpdateUserSetting(payload models.UpdateUserSetting, userID int64) (*models.UserSetting, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "UpdateUserSetting", payload, userID)
+	ret0, _ := ret[0].(*models.UserSetting)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// UpdateUserSetting indicates an expected call of UpdateUserSetting.
+func (mr *MockIAPIServiceMockRecorder) UpdateUserSetting(payload, userID any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "UpdateUserSetting", reflect.TypeOf((*MockIAPIService)(nil).UpdateUserSetting), payload, userID)
 }
 
 // UpdateVat mocks base method.

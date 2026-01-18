@@ -62,15 +62,14 @@ import type { EmployeeSortByType } from '~/utils/types'
 
 const emits = defineEmits(['onSort'])
 
-const { employeeSortBy, employeeSortOrder } = useSettings()
+const { employeeSortBy, employeeSortOrder, setEmployeeSort } = useSettings()
 
 const onSort = (column: EmployeeSortByType) => {
-  if (column == employeeSortBy.value) {
-    employeeSortOrder.value = employeeSortOrder.value == 'ASC' ? 'DESC' : 'ASC'
+  if (column === employeeSortBy.value) {
+    setEmployeeSort(column, employeeSortOrder.value === 'ASC' ? 'DESC' : 'ASC')
   }
   else {
-    employeeSortBy.value = column
-    employeeSortOrder.value = 'ASC'
+    setEmployeeSort(column, 'ASC')
   }
   emits('onSort')
 }
@@ -79,6 +78,6 @@ const getSortIcon = (column: EmployeeSortByType) => {
   if (column !== employeeSortBy.value) {
     return 'pi pi-sort'
   }
-  return employeeSortOrder.value == 'ASC' ? 'pi pi-sort-up' : 'pi pi-sort-down'
+  return employeeSortOrder.value === 'ASC' ? 'pi pi-sort-up' : 'pi pi-sort-down'
 }
 </script>

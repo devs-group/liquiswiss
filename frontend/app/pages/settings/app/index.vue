@@ -16,10 +16,11 @@
       <div class="flex flex-col justify-center h-full col-span-full md:col-span-1 bg-zinc-100 dark:bg-zinc-800 p-2">
         <div class="flex items-center gap-2 ">
           <Checkbox
-            v-model="skipOrganisationSwitchQuestion"
+            :model-value="skipOrganisationSwitchQuestion"
             binary
             input-id="skip-organisation-switch-question"
             name="skip-organisation-switch-question"
+            @update:model-value="onSkipOrganisationSwitchQuestionChange"
           />
           <label
             class="cursor-pointer"
@@ -56,22 +57,21 @@ useHead({
 const toast = useToast()
 
 const colorMode = useColorMode()
-const { skipOrganisationSwitchQuestion, settingsTab } = useSettings()
+const { skipOrganisationSwitchQuestion, settingsTab, setSkipOrganisationSwitchQuestion } = useSettings()
 
 onMounted(() => {
   settingsTab.value = RouteNames.SETTINGS_APP
 })
 
-watch([skipOrganisationSwitchQuestion], (value, oldValue) => {
-  if (value !== oldValue) {
-    toast.add({
-      summary: 'Erfolg',
-      detail: `Einstellung gespeichert`,
-      severity: 'info',
-      life: Config.TOAST_LIFE_TIME_SHORT,
-    })
-  }
-})
+const onSkipOrganisationSwitchQuestionChange = (value: boolean) => {
+  setSkipOrganisationSwitchQuestion(value)
+  toast.add({
+    summary: 'Erfolg',
+    detail: `Einstellung gespeichert`,
+    severity: 'info',
+    life: Config.TOAST_LIFE_TIME_SHORT,
+  })
+}
 
 const darkModeOptions = computed(() => {
   return DarkModeOptions.map((value) => {

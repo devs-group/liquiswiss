@@ -54,7 +54,7 @@
 <script setup lang="ts">
 import type { ForecastDetailResponse, ForecastDetailRevenueExpenseResponse } from '~/models/forecast'
 
-const { forecastShowChildDetails } = useSettings()
+const { forecastShowChildDetails, setForecastShowChildDetails } = useSettings()
 
 const props = defineProps({
   category: {
@@ -90,10 +90,10 @@ const props = defineProps({
 const onToggleChildren = (categoryName: string) => {
   if (hasChildren.value) {
     if (forecastShowChildDetails.value.includes(categoryName)) {
-      forecastShowChildDetails.value = forecastShowChildDetails.value.filter(n => n != categoryName)
+      setForecastShowChildDetails(forecastShowChildDetails.value.filter(n => n !== categoryName))
     }
     else {
-      forecastShowChildDetails.value.push(categoryName)
+      setForecastShowChildDetails([...forecastShowChildDetails.value, categoryName])
     }
   }
 }

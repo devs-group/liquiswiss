@@ -104,6 +104,14 @@ type IDatabaseAdapter interface {
 	UpdateVatSetting(payload models.UpdateVatSetting, userID int64) error
 	DeleteVatSetting(userID int64) error
 
+	GetUserSetting(userID int64) (*models.UserSetting, error)
+	CreateUserSetting(userID int64) (int64, error)
+	UpdateUserSetting(payload models.UpdateUserSetting, userID int64) error
+
+	GetUserOrganisationSetting(userID int64) (*models.UserOrganisationSetting, error)
+	CreateUserOrganisationSetting(userID int64) (int64, error)
+	UpdateUserOrganisationSetting(payload models.UpdateUserOrganisationSetting, userID int64) error
+
 	ListCategories(userID, page, limit int64) ([]models.Category, int64, error)
 	GetCategory(userID int64, categoryID int64) (*models.Category, error)
 	CreateCategory(payload models.CreateCategory, userID *int64) (int64, error)

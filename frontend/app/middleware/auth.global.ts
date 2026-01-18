@@ -7,6 +7,7 @@ export default defineNuxtRouteMiddleware(async (to) => {
   }
 
   const { useFetchGetProfile, isAuthenticated, hasFetchedInitially } = useAuth()
+  const { loadSettings, loadOrganisationSettings, settingsLoaded, organisationSettingsLoaded } = useSettings()
   const redirectPathCookie = useCookie(Constants.REDIRECT_PATH_COOKIE, RedirectCookieProps)
   const explicitLogoutCookie = useCookie(Constants.EXPLICIT_LOGOUT, RedirectCookieProps)
   const sessionExpiredCookie = useCookie<boolean | null>(Constants.SESSION_EXPIRED_COOKIE, RedirectCookieProps)
@@ -15,12 +16,30 @@ export default defineNuxtRouteMiddleware(async (to) => {
 
   if (!isAuthenticated.value && !hasFetchedInitially.value) {
     await useFetchGetProfile()
+      .then(async () => {
+        // Load settings after successful authentication
+        if (!settingsLoaded.value) {
+          await loadSettings()
+        }
+        if (!organisationSettingsLoaded.value) {
+          await loadOrganisationSettings()
+        }
+      })
       .catch((err) => {
         // Check if session expired (Flow 2: page load with expired session)
         if (err?.sessionExpired) {
           isSessionExpired = true
         }
       })
+  }
+  else if (isAuthenticated.value) {
+    // User already authenticated - ensure settings are loaded
+    if (!settingsLoaded.value) {
+      await loadSettings()
+    }
+    if (!organisationSettingsLoaded.value) {
+      await loadOrganisationSettings()
+    }
   }
 
   const isOnAuthRoute = AuthRouteNames.includes(to.name as string)
