@@ -11,7 +11,7 @@ export default function useTransactions() {
 
   const abortController = ref<AbortController | null>(null)
 
-  const { transactionSortBy, transactionSortOrder } = useSettings()
+  const { transactionSortBy, transactionSortOrder, transactionHideDisabled } = useSettings()
 
   const useFetchListTransactions = async () => {
     const { data, error } = await useFetch<ListTransactionResponse>('/api/transactions', {
@@ -22,6 +22,7 @@ export default function useTransactions() {
         sortBy: transactionSortBy.value,
         sortOrder: transactionSortOrder.value,
         search: searchTransactions.value,
+        hideDisabled: transactionHideDisabled.value,
       },
     })
     if (error.value) {
@@ -45,6 +46,7 @@ export default function useTransactions() {
           sortBy: transactionSortBy.value,
           sortOrder: transactionSortOrder.value,
           search: searchTransactions.value,
+          hideDisabled: transactionHideDisabled.value,
         },
         signal: abortController.value.signal,
       })

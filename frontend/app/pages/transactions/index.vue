@@ -11,6 +11,12 @@
           :icon="getDisplayIcon"
           @click="toggleTransactionDisplayType"
         />
+        <Button
+          v-tooltip.bottom="transactionHideDisabled ? 'Deaktivierte Transaktionen anzeigen' : 'Deaktivierte Transaktionen ausblenden'"
+          :icon="transactionHideDisabled ? 'pi pi-eye-slash' : 'pi pi-eye'"
+          :severity="transactionHideDisabled ? 'secondary' : 'contrast'"
+          @click="onToggleHideDisabled"
+        />
       </div>
       <Button
         class="self-end"
@@ -97,7 +103,7 @@ useHead({
 
 const dialog = useDialog()
 const { transactions, noMoreDataTransactions, pageTransactions, searchTransactions, useFetchListTransactions, listTransactions } = useTransactions()
-const { toggleTransactionDisplayType, transactionDisplay } = useSettings()
+const { toggleTransactionDisplayType, transactionDisplay, transactionHideDisabled, toggleTransactionHideDisabled } = useSettings()
 
 const isLoading = ref(false)
 const isLoadingMore = ref(false)
@@ -155,6 +161,21 @@ const onSort = () => {
         }
       })
   })
+}
+
+const onToggleHideDisabled = () => {
+  toggleTransactionHideDisabled()
+  pageTransactions.value = 1
+  isLoading.value = true
+  listTransactions(false)
+    .catch((err) => {
+      if (err !== 'aborted') {
+        transactionsErrorMessage.value = err
+      }
+    })
+    .finally(() => {
+      isLoading.value = false
+    })
 }
 
 const onCreateTransaction = () => {

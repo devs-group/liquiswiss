@@ -140,7 +140,7 @@ func (a *APIService) CalculateForecast(userID int64) ([]models.Forecast, error) 
 	// Set the organisation wide default currency as base
 	baseCurrency := *organisation.Currency.Code
 
-	transactions, _, err := a.ListTransactions(userID, page, limit, sortBy, sortOrder, "")
+	transactions, _, err := a.ListTransactions(userID, page, limit, sortBy, sortOrder, "", true)
 	if err != nil {
 		return nil, err
 	}

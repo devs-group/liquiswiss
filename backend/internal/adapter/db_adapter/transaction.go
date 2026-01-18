@@ -12,7 +12,7 @@ import (
 	"time"
 )
 
-func (d *DatabaseAdapter) ListTransactions(userID int64, page int64, limit int64, sortBy string, sortOrder string, search string) ([]models.Transaction, int64, error) {
+func (d *DatabaseAdapter) ListTransactions(userID int64, page int64, limit int64, sortBy string, sortOrder string, search string, hideDisabled bool) ([]models.Transaction, int64, error) {
 	transactions := []models.Transaction{}
 	var totalCount int64
 	sortByMap := map[string]string{
@@ -33,9 +33,10 @@ func (d *DatabaseAdapter) ListTransactions(userID int64, page int64, limit int64
 
 	var query bytes.Buffer
 	err = parsed.Execute(&query, map[string]any{
-		"sortBy":    sortBy,
-		"sortOrder": sortOrder,
-		"hasSearch": search != "",
+		"sortBy":       sortBy,
+		"sortOrder":    sortOrder,
+		"hasSearch":    search != "",
+		"hideDisabled": hideDisabled,
 	})
 	if err != nil {
 		return nil, 0, err

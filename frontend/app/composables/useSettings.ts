@@ -43,6 +43,9 @@ export default function useSettings() {
   const employeeHideTerminated = useState<boolean>('employeeHideTerminated', () => true)
   const employeeHideTerminatedCookie = CreateSettingsCookie('employee-hide-terminated')
 
+  const transactionHideDisabled = useState<boolean>('transactionHideDisabled', () => true)
+  const transactionHideDisabledCookie = CreateSettingsCookie('transaction-hide-disabled')
+
   const bankAccountDisplay = useState<DisplayType>('bankAccountDisplay', () => 'grid')
   const bankAccountSortBy = useState<BankAccountSortByType>('bankAccountSortBy', () => 'name')
   const bankAccountSortOrder = useState<SortOrderType>('bankAccountSortOrder', () => 'ASC')
@@ -178,6 +181,19 @@ export default function useSettings() {
     employeeHideTerminated.value = true
   }
 
+  if (transactionHideDisabledCookie.value !== undefined) {
+    const val = transactionHideDisabledCookie.value
+    if (typeof val === 'boolean') {
+      transactionHideDisabled.value = val
+    }
+    else {
+      transactionHideDisabled.value = val === 'true'
+    }
+  }
+  else {
+    transactionHideDisabled.value = true
+  }
+
   if (forecastPerformanceCookie.value !== undefined) {
     const val = forecastPerformanceCookie.value
     if (val !== null && Number.isInteger(Number.parseInt(val))) {
@@ -290,6 +306,11 @@ export default function useSettings() {
     employeeHideTerminatedCookie.value = employeeHideTerminated.value.toString()
   }
 
+  const toggleTransactionHideDisabled = () => {
+    transactionHideDisabled.value = !transactionHideDisabled.value
+    transactionHideDisabledCookie.value = transactionHideDisabled.value.toString()
+  }
+
   const toggleEmployeeDisplayType = () => {
     switch (employeeDisplay.value) {
       case 'grid':
@@ -397,6 +418,8 @@ export default function useSettings() {
     transactionDisplay,
     transactionSortBy,
     transactionSortOrder,
+    toggleTransactionHideDisabled,
+    transactionHideDisabled,
     toggleEmployeeHideTerminated,
     employeeHideTerminated,
     toggleBankAccountDisplayType,

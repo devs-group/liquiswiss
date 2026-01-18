@@ -57,7 +57,7 @@ func TestListTransactions_CrossOrgIsolation(t *testing.T) {
 	require.NoError(t, err)
 
 	// User A should only see their own transactions
-	transactionsA, totalA, err := env.APIService.ListTransactions(env.UserA.ID, 1, 100, "name", "ASC", "")
+	transactionsA, totalA, err := env.APIService.ListTransactions(env.UserA.ID, 1, 100, "name", "ASC", "", false)
 	require.NoError(t, err)
 	require.Equal(t, int64(2), totalA)
 	require.Len(t, transactionsA, 2)
@@ -68,7 +68,7 @@ func TestListTransactions_CrossOrgIsolation(t *testing.T) {
 	require.NotContains(t, txIDs, txB1.ID)
 
 	// User B should only see their own transactions
-	transactionsB, totalB, err := env.APIService.ListTransactions(env.UserB.ID, 1, 100, "name", "ASC", "")
+	transactionsB, totalB, err := env.APIService.ListTransactions(env.UserB.ID, 1, 100, "name", "ASC", "", false)
 	require.NoError(t, err)
 	require.Equal(t, int64(1), totalB)
 	require.Len(t, transactionsB, 1)
@@ -230,7 +230,7 @@ func TestCreateTransaction_WithCrossOrgEmployee(t *testing.T) {
 	// The exact behavior depends on the implementation - we just verify isolation is maintained
 	if err == nil {
 		// If no error, verify the created transaction doesn't have the cross-org employee
-		transactions, _, err := env.APIService.ListTransactions(env.UserB.ID, 1, 100, "name", "ASC", "")
+		transactions, _, err := env.APIService.ListTransactions(env.UserB.ID, 1, 100, "name", "ASC", "", false)
 		require.NoError(t, err)
 		for _, tx := range transactions {
 			if tx.Employee != nil {

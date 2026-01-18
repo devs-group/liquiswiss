@@ -36,11 +36,16 @@ go generate ./...    # Regenerate mocks
 make modernize       # Apply Go modernize suggestions
 ```
 
-**Important**:
-- Always run `go test -count=1 ./...` after backend changes and check if new tests are required.
-- Tests require MariaDB running (`docker compose up`) and `.env.local.testing` configured.
-- Test environment determined by `TESTING_ENVIRONMENT` env var (uses `.env.local.testing` locally, `.env.github.testing` in CI).
-- Optional fixtures available at `backend/internal/adapter/db_adapter/fixtures/`.
+**Testing Process (MANDATORY for all backend changes)**:
+1. After implementing backend changes, ALWAYS run `go test -count=1 ./...`
+2. Evaluate if new tests are required (new endpoints, new parameters, business logic changes)
+3. Write new tests following existing patterns (see `*_test.go` files)
+4. Run tests again to verify all pass before committing
+
+**Test Requirements**:
+- Tests require MariaDB running (`docker compose up`) and `.env.local.testing` configured
+- Test environment determined by `TESTING_ENVIRONMENT` env var (uses `.env.local.testing` locally, `.env.github.testing` in CI)
+- Optional fixtures available at `backend/internal/adapter/db_adapter/fixtures/`
 
 ### Database
 ```bash

@@ -31,7 +31,7 @@ func TestListTransactions_NoSearch(t *testing.T) {
 	})
 
 	// List without search
-	transactions, total, err := apiService.ListTransactions(user.ID, 1, 100, "name", "ASC", "")
+	transactions, total, err := apiService.ListTransactions(user.ID, 1, 100, "name", "ASC", "", false)
 	require.NoError(t, err)
 	require.Equal(t, int64(3), total)
 	require.Len(t, transactions, 3)
@@ -53,7 +53,7 @@ func TestListTransactions_WithSearch(t *testing.T) {
 	})
 
 	// Search for "Office"
-	transactions, total, err := apiService.ListTransactions(user.ID, 1, 100, "name", "ASC", "Office")
+	transactions, total, err := apiService.ListTransactions(user.ID, 1, 100, "name", "ASC", "Office", false)
 	require.NoError(t, err)
 	require.Equal(t, int64(1), total)
 	require.Len(t, transactions, 1)
@@ -70,14 +70,14 @@ func TestListTransactions_SearchCaseInsensitive(t *testing.T) {
 	})
 
 	// Search with lowercase
-	transactions, total, err := apiService.ListTransactions(user.ID, 1, 100, "name", "ASC", "office")
+	transactions, total, err := apiService.ListTransactions(user.ID, 1, 100, "name", "ASC", "office", false)
 	require.NoError(t, err)
 	require.Equal(t, int64(1), total)
 	require.Len(t, transactions, 1)
 	require.Equal(t, "Office Rent", transactions[0].Name)
 
 	// Search with uppercase
-	transactions, total, err = apiService.ListTransactions(user.ID, 1, 100, "name", "ASC", "OFFICE")
+	transactions, total, err = apiService.ListTransactions(user.ID, 1, 100, "name", "ASC", "OFFICE", false)
 	require.NoError(t, err)
 	require.Equal(t, int64(1), total)
 	require.Len(t, transactions, 1)
@@ -92,10 +92,87 @@ func TestListTransactions_SearchNoResults(t *testing.T) {
 	})
 
 	// Search for non-existent term
-	transactions, total, err := apiService.ListTransactions(user.ID, 1, 100, "name", "ASC", "nonexistent")
+	transactions, total, err := apiService.ListTransactions(user.ID, 1, 100, "name", "ASC", "nonexistent", false)
 	require.NoError(t, err)
 	require.Equal(t, int64(0), total)
 	require.Len(t, transactions, 0)
+}
+
+func TestListTransactions_HideDisabled(t *testing.T) {
+	conn, apiService, _, user, category, currency := setupTransactionDependencies(t)
+	defer conn.Close()
+
+	// Create enabled transactions
+	createTransaction(t, apiService, user.ID, category.ID, *currency.ID, nil, func(p *models.CreateTransaction) {
+		p.Name = "Active Transaction 1"
+	})
+	createTransaction(t, apiService, user.ID, category.ID, *currency.ID, nil, func(p *models.CreateTransaction) {
+		p.Name = "Active Transaction 2"
+	})
+
+	// Create a disabled transaction
+	disabledTx := createTransaction(t, apiService, user.ID, category.ID, *currency.ID, nil, func(p *models.CreateTransaction) {
+		p.Name = "Disabled Transaction"
+	})
+
+	// Disable the transaction
+	isDisabled := true
+	_, err := apiService.UpdateTransaction(models.UpdateTransaction{
+		IsDisabled: &isDisabled,
+	}, user.ID, disabledTx.ID)
+	require.NoError(t, err)
+
+	// With hideDisabled=false, should see all 3 transactions
+	transactions, total, err := apiService.ListTransactions(user.ID, 1, 100, "name", "ASC", "", false)
+	require.NoError(t, err)
+	require.Equal(t, int64(3), total)
+	require.Len(t, transactions, 3)
+
+	// With hideDisabled=true, should only see 2 active transactions
+	transactions, total, err = apiService.ListTransactions(user.ID, 1, 100, "name", "ASC", "", true)
+	require.NoError(t, err)
+	require.Equal(t, int64(2), total)
+	require.Len(t, transactions, 2)
+
+	// Verify the disabled transaction is not in the list
+	for _, tx := range transactions {
+		require.NotEqual(t, "Disabled Transaction", tx.Name)
+		require.False(t, tx.IsDisabled)
+	}
+}
+
+func TestListTransactions_HideDisabledWithSearch(t *testing.T) {
+	conn, apiService, _, user, category, currency := setupTransactionDependencies(t)
+	defer conn.Close()
+
+	// Create transactions with similar names
+	createTransaction(t, apiService, user.ID, category.ID, *currency.ID, nil, func(p *models.CreateTransaction) {
+		p.Name = "Rent Payment Active"
+	})
+
+	disabledTx := createTransaction(t, apiService, user.ID, category.ID, *currency.ID, nil, func(p *models.CreateTransaction) {
+		p.Name = "Rent Payment Disabled"
+	})
+
+	// Disable one transaction
+	isDisabled := true
+	_, err := apiService.UpdateTransaction(models.UpdateTransaction{
+		IsDisabled: &isDisabled,
+	}, user.ID, disabledTx.ID)
+	require.NoError(t, err)
+
+	// Search for "Rent" with hideDisabled=false - should find 2
+	transactions, total, err := apiService.ListTransactions(user.ID, 1, 100, "name", "ASC", "Rent", false)
+	require.NoError(t, err)
+	require.Equal(t, int64(2), total)
+	require.Len(t, transactions, 2)
+
+	// Search for "Rent" with hideDisabled=true - should find only 1
+	transactions, total, err = apiService.ListTransactions(user.ID, 1, 100, "name", "ASC", "Rent", true)
+	require.NoError(t, err)
+	require.Equal(t, int64(1), total)
+	require.Len(t, transactions, 1)
+	require.Equal(t, "Rent Payment Active", transactions[0].Name)
 }
 
 func TestUpdateTransaction_SetEndDate(t *testing.T) {

@@ -10,6 +10,7 @@ FROM
 WHERE
     r.organisation_id = get_current_user_organisation_id(?)
     {{if .hasSearch}}AND LOWER(r.name) LIKE LOWER(?){{end}}
+    {{if .hideDisabled}}AND r.is_disabled = false{{end}}
 ORDER BY
     {{.sortBy}} IS NULL,
     {{.sortBy}} {{.sortOrder}},

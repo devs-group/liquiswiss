@@ -8,8 +8,8 @@ import (
 	"liquiswiss/pkg/utils"
 )
 
-func (a *APIService) ListTransactions(userID int64, page int64, limit int64, sortBy string, sortOrder string, search string) ([]models.Transaction, int64, error) {
-	transactions, totalCount, err := a.dbService.ListTransactions(userID, page, limit, sortBy, sortOrder, search)
+func (a *APIService) ListTransactions(userID int64, page int64, limit int64, sortBy string, sortOrder string, search string, hideDisabled bool) ([]models.Transaction, int64, error) {
+	transactions, totalCount, err := a.dbService.ListTransactions(userID, page, limit, sortBy, sortOrder, search, hideDisabled)
 	if err != nil {
 		logger.Logger.Error(err)
 		return nil, 0, err
