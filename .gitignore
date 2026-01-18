@@ -16,5 +16,3 @@ logs
 !.env.*.testing
 
 db_data/
-CLAUDE.md
-Agents.md
