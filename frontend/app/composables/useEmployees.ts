@@ -6,6 +6,7 @@ export default function useEmployees() {
   const limitEmployees = useState('limitEmployees', () => 20)
   const pageEmployees = useState('pageEmployees', () => 1)
   const noMoreDataEmployees = useState('noMoreDataEmployees', () => false)
+  const searchEmployees = useState('searchEmployees', () => '')
   const employees = useState<ListEmployeeResponse>('employees', () => DefaultListResponse())
 
   const { employeeSortBy, employeeSortOrder } = useSettings()
@@ -19,6 +20,7 @@ export default function useEmployees() {
         limit: limitEmployees.value,
         sortBy: employeeSortBy.value,
         sortOrder: employeeSortOrder.value,
+        search: searchEmployees.value,
       },
     })
     if (error.value) {
@@ -36,6 +38,7 @@ export default function useEmployees() {
           limit: limitEmployees.value,
           sortBy: employeeSortBy.value,
           sortOrder: employeeSortOrder.value,
+          search: searchEmployees.value,
         },
       })
       setEmployees(data, append)
@@ -133,6 +136,7 @@ export default function useEmployees() {
     limitEmployees,
     pageEmployees,
     noMoreDataEmployees,
+    searchEmployees,
     useFetchListEmployees,
     listEmployees,
     useFetchGetEmployee,

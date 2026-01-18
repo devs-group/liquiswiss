@@ -1,21 +1,51 @@
 package db_adapter
 
 import (
+	"bytes"
+	"database/sql"
+	"fmt"
+	"html/template"
 	"liquiswiss/pkg/models"
 	"strings"
 )
 
-func (d *DatabaseAdapter) ListBankAccounts(userID int64) ([]models.BankAccount, error) {
+func (d *DatabaseAdapter) ListBankAccounts(userID int64, page int64, limit int64, sortBy string, sortOrder string, search string) ([]models.BankAccount, int64, error) {
 	bankAccounts := make([]models.BankAccount, 0)
-
-	query, err := sqlQueries.ReadFile("queries/list_bank_accounts.sql")
-	if err != nil {
-		return nil, err
+	var totalCount int64
+	sortByMap := map[string]string{
+		"name": "ba.name", "amount": "ba.amount",
 	}
 
-	rows, err := d.db.Query(string(query), userID)
+	// Validate inputs
+	sortBy = sortByMap[sortBy]
+	if sortBy == "" || !allowedSortOrders[sortOrder] {
+		return nil, 0, fmt.Errorf("invalid sort by or sort order")
+	}
+
+	parsed, err := template.ParseFS(sqlQueries, "queries/list_bank_accounts.sql")
 	if err != nil {
-		return nil, err
+		return nil, 0, err
+	}
+
+	var query bytes.Buffer
+	err = parsed.Execute(&query, map[string]any{
+		"sortBy":    sortBy,
+		"sortOrder": sortOrder,
+		"hasSearch": search != "",
+	})
+	if err != nil {
+		return nil, 0, err
+	}
+
+	var rows *sql.Rows
+	if search != "" {
+		searchPattern := "%" + search + "%"
+		rows, err = d.db.Query(query.String(), userID, searchPattern, (page)*limit, 0)
+	} else {
+		rows, err = d.db.Query(query.String(), userID, (page)*limit, 0)
+	}
+	if err != nil {
+		return nil, 0, err
 	}
 	defer rows.Close()
 
@@ -25,15 +55,16 @@ func (d *DatabaseAdapter) ListBankAccounts(userID int64) ([]models.BankAccount, 
 		err := rows.Scan(
 			&bankAccount.ID, &bankAccount.Name, &bankAccount.Amount,
 			&bankAccount.Currency.ID, &bankAccount.Currency.Code, &bankAccount.Currency.Description, &bankAccount.Currency.LocaleCode,
+			&totalCount,
 		)
 		if err != nil {
-			return nil, err
+			return nil, 0, err
 		}
 
 		bankAccounts = append(bankAccounts, bankAccount)
 	}
 
-	return bankAccounts, nil
+	return bankAccounts, totalCount, nil
 }
 
 func (d *DatabaseAdapter) GetBankAccount(userID int64, bankAccountID int64) (*models.BankAccount, error) {

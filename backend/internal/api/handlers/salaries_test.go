@@ -379,7 +379,7 @@ func TestListEmployeesIncludesEmployerCosts(t *testing.T) {
 	}, user.ID, salary.ID)
 	assert.NoError(t, err)
 
-	employees, _, err := apiService.ListEmployees(user.ID, 1, 10, "name", "ASC")
+	employees, _, err := apiService.ListEmployees(user.ID, 1, 10, "name", "ASC", "")
 	assert.NoError(t, err)
 	assert.Len(t, employees, 1)
 	assert.NotNil(t, employees[0].SalaryAmount)

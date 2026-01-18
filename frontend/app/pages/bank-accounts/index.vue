@@ -1,10 +1,11 @@
 <template>
-  <div class="flex flex-col gap-4">
+  <div class="flex flex-col gap-4 relative">
     <div class="flex flex-col sm:flex-row gap-2 justify-between items-center">
       <div class="flex items-center gap-2 w-full sm:w-auto">
         <InputText
-          v-model="search"
+          :model-value="searchBankAccounts"
           placeholder="Suchen"
+          @update:model-value="onSearch"
         />
         <Button
           :icon="getDisplayIcon"
@@ -31,13 +32,13 @@
     >
       {{ bankAccountsErrorMessage }}
     </Message>
-    <template v-else-if="filterBankAccounts.length">
+    <template v-else-if="bankAccounts.data.length">
       <div
         v-if="bankAccountDisplay == 'grid'"
         class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4"
       >
         <BankAccountCard
-          v-for="bankAccount in filterBankAccounts"
+          v-for="bankAccount in bankAccounts.data"
           :key="bankAccount.id"
           :bank-account="bankAccount"
           @on-edit="onEditBankAccount"
@@ -50,7 +51,7 @@
       >
         <BankAccountHeaders @on-sort="onSort" />
         <BankAccountRow
-          v-for="bankAccount in filterBankAccounts"
+          v-for="bankAccount in bankAccounts.data"
           :key="bankAccount.id"
           :bank-account="bankAccount"
           @on-edit="onEditBankAccount"
@@ -61,6 +62,27 @@
     <p v-else>
       Es gibt noch keine Bankkonten
     </p>
+
+    <div
+      v-if="bankAccounts?.data.length"
+      class="self-center"
+    >
+      <Button
+        v-if="!noMoreDataBankAccounts"
+        severity="info"
+        label="Mehr anzeigen"
+        :loading="isLoadingMore"
+        @click="onLoadMoreBankAccounts"
+      />
+      <p
+        v-else
+        class="text-xs opacity-60"
+      >
+        Keine weiteren Bankkonten ...
+      </p>
+    </div>
+
+    <FullProgressSpinner :show="isLoading" />
   </div>
 </template>
 
@@ -70,6 +92,7 @@ import BankAccountDialog from '~/components/dialogs/BankAccountDialog.vue'
 import type { BankAccountResponse } from '~/models/bank-account'
 import BankAccountCard from '~/components/BankAccountCard.vue'
 import useBankAccounts from '~/composables/useBankAccounts'
+import FullProgressSpinner from '~/components/FullProgressSpinner.vue'
 
 useHead({
   title: 'Bankkonten',
@@ -77,32 +100,57 @@ useHead({
 
 const dialog = useDialog()
 const { getOrganisationCurrencyCode, getOrganisationCurrencyLocaleCode } = useAuth()
-const { bankAccounts, totalBankSaldoInCHF, useFetchListBankAccounts, listBankAccounts } = useBankAccounts()
+const { bankAccounts, noMoreDataBankAccounts, pageBankAccounts, searchBankAccounts, totalBankSaldoInCHF, useFetchListBankAccounts, listBankAccounts } = useBankAccounts()
 const { toggleBankAccountDisplayType, bankAccountDisplay } = useSettings()
 
 const isLoading = ref(false)
-const search = ref('')
+const isLoadingMore = ref(false)
 const bankAccountsErrorMessage = ref('')
 
+// Computed
 const totalSaldo = computed(() => {
   return NumberToFormattedCurrency(AmountToFloat(totalBankSaldoInCHF.value), getOrganisationCurrencyLocaleCode.value)
 })
 const getDisplayIcon = computed(() => bankAccountDisplay.value == 'list' ? 'pi pi-microsoft' : 'pi pi-list')
-const filterBankAccounts = computed(() => {
-  return bankAccounts.value
-    .filter(t => t.name.toLowerCase().includes(search.value.toLowerCase()))
-})
 
+// Debounced search
+let searchTimeout: ReturnType<typeof setTimeout> | null = null
+const onSearch = (value: string) => {
+  if (searchTimeout) {
+    clearTimeout(searchTimeout)
+  }
+  const trimmedValue = value.trim()
+  if (trimmedValue === searchBankAccounts.value) {
+    return
+  }
+  searchTimeout = setTimeout(() => {
+    searchBankAccounts.value = trimmedValue
+    pageBankAccounts.value = 1
+    isLoading.value = true
+    listBankAccounts(false)
+      .catch((err) => {
+        if (err !== 'aborted') {
+          bankAccountsErrorMessage.value = err
+        }
+      })
+      .finally(() => {
+        isLoading.value = false
+      })
+  }, 300)
+}
+
+// Init
 await useFetchListBankAccounts()
   .catch((reason) => {
     bankAccountsErrorMessage.value = reason
   })
 
+// Functions
 const onSort = () => {
   isLoading.value = false
   nextTick(() => {
     isLoading.value = true
-    listBankAccounts()
+    listBankAccounts(false)
       .then(() => {
         isLoading.value = false
       })
@@ -113,6 +161,18 @@ const onSort = () => {
         }
       })
   })
+}
+
+const onLoadMoreBankAccounts = async () => {
+  isLoadingMore.value = true
+  pageBankAccounts.value += 1
+  listBankAccounts(true)
+    .catch((err) => {
+      if (err !== 'aborted') {
+        bankAccountsErrorMessage.value = err
+      }
+    })
+    .finally(() => isLoadingMore.value = false)
 }
 
 const onCreateBankAccount = () => {

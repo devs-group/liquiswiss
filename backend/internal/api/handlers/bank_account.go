@@ -18,16 +18,32 @@ func ListBankAccounts(apiService api_service.IAPIService, c *gin.Context) {
 		c.Status(http.StatusUnauthorized)
 		return
 	}
+	limit, err := strconv.ParseInt(c.Query("limit"), 10, 64)
+	if err != nil {
+		c.Status(http.StatusBadRequest)
+		return
+	}
+	page, err := strconv.ParseInt(c.Query("page"), 10, 64)
+	if err != nil {
+		c.Status(http.StatusBadRequest)
+		return
+	}
+	sortBy := c.DefaultQuery("sortBy", "name")
+	sortOrder := c.DefaultQuery("sortOrder", "ASC")
+	search := c.Query("search")
 
 	// Action
-	bankAccounts, err := apiService.ListBankAccounts(userID)
+	bankAccounts, totalCount, err := apiService.ListBankAccounts(userID, page, limit, sortBy, sortOrder, search)
 	if err != nil {
 		c.Status(http.StatusInternalServerError)
 		return
 	}
 
 	// Post
-	c.JSON(http.StatusOK, bankAccounts)
+	c.JSON(http.StatusOK, models.ListResponse[models.BankAccount]{
+		Data:       bankAccounts,
+		Pagination: models.CalculatePagination(page, limit, totalCount),
+	})
 }
 
 func GetBankAccount(apiService api_service.IAPIService, c *gin.Context) {

@@ -30,9 +30,10 @@ func ListEmployees(apiService api_service.IAPIService, c *gin.Context) {
 	}
 	sortBy := c.DefaultQuery("sortBy", "name")
 	sortOrder := c.DefaultQuery("sortOrder", "ASC")
+	search := c.Query("search")
 
 	// Action
-	employees, totalCount, err := apiService.ListEmployees(userID, page, limit, sortBy, sortOrder)
+	employees, totalCount, err := apiService.ListEmployees(userID, page, limit, sortBy, sortOrder, search)
 	if err != nil {
 		c.Status(http.StatusInternalServerError)
 		return

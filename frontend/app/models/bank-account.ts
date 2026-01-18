@@ -1,4 +1,5 @@
 import type { CurrencyResponse } from '~/models/currency'
+import type { ListResponse } from '~/models/list-response'
 
 export interface BankAccountResponse {
   id: number
@@ -6,6 +7,8 @@ export interface BankAccountResponse {
   amount: number
   currency: CurrencyResponse
 }
+
+export type ListBankAccountResponse = ListResponse<BankAccountResponse>
 
 export interface BankAccountFormData {
   id: number

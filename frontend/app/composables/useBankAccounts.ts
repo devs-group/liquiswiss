@@ -1,13 +1,27 @@
-import type { BankAccountFormData, BankAccountResponse } from '~/models/bank-account'
+import type { FetchError } from 'ofetch'
+import type { BankAccountFormData, BankAccountResponse, ListBankAccountResponse } from '~/models/bank-account'
+import { DefaultListResponse } from '~/models/default-data'
 
 export default function useBankAccounts() {
-  const bankAccounts = useState<BankAccountResponse[]>('bankAccounts', () => [])
+  const limitBankAccounts = useState('limitBankAccounts', () => 20)
+  const pageBankAccounts = useState('pageBankAccounts', () => 1)
+  const noMoreDataBankAccounts = useState('noMoreDataBankAccounts', () => false)
+  const searchBankAccounts = useState('searchBankAccounts', () => '')
+  const bankAccounts = useState<ListBankAccountResponse>('bankAccounts', () => DefaultListResponse())
 
   const { convertAmountToRate } = useGlobalData()
+  const { bankAccountSortBy, bankAccountSortOrder } = useSettings()
 
   const useFetchListBankAccounts = async () => {
-    const { data, error } = await useFetch<BankAccountResponse[]>('/api/bank-accounts', {
+    const { data, error } = await useFetch<ListBankAccountResponse>('/api/bank-accounts', {
       method: 'GET',
+      query: {
+        page: pageBankAccounts.value,
+        limit: limitBankAccounts.value,
+        sortBy: bankAccountSortBy.value,
+        sortOrder: bankAccountSortOrder.value,
+        search: searchBankAccounts.value,
+      },
     })
     if (error.value) {
       return Promise.reject('Bankkonten konnten nicht geladen werden')
@@ -15,15 +29,27 @@ export default function useBankAccounts() {
     setBankAccounts(data.value, false)
   }
 
-  const listBankAccounts = async () => {
+  const listBankAccounts = async (append: boolean) => {
     try {
-      const data = await $fetch<BankAccountResponse[]>('/api/bank-accounts', {
+      const data = await $fetch<ListBankAccountResponse>('/api/bank-accounts', {
         method: 'GET',
+        query: {
+          page: pageBankAccounts.value,
+          limit: limitBankAccounts.value,
+          sortBy: bankAccountSortBy.value,
+          sortOrder: bankAccountSortOrder.value,
+          search: searchBankAccounts.value,
+        },
       })
-      setBankAccounts(data, false)
+      setBankAccounts(data, append)
     }
-    catch {
-      return Promise.reject('Fehler beim Laden der Bankkonten')
+    catch (err: unknown) {
+      if (IsAbortedError(err as FetchError)) {
+        return Promise.reject('aborted')
+      }
+      else {
+        return Promise.reject('Fehler beim Laden der Bankkonten')
+      }
     }
   }
 
@@ -47,7 +73,7 @@ export default function useBankAccounts() {
           amount: AmountToInteger(payload.amount),
         },
       })
-      await listBankAccounts()
+      await listBankAccounts(false)
     }
     catch {
       return Promise.reject('Fehler beim Erstellen des Bankkontos')
@@ -63,7 +89,7 @@ export default function useBankAccounts() {
           amount: AmountToInteger(payload.amount),
         },
       })
-      await listBankAccounts()
+      await listBankAccounts(false)
     }
     catch {
       return Promise.reject('Fehler beim Aktualisieren des Bankkontos')
@@ -75,29 +101,31 @@ export default function useBankAccounts() {
       await $fetch(`/api/bank-accounts/${bankAccountID}`, {
         method: 'DELETE',
       })
-      await listBankAccounts()
+      await listBankAccounts(false)
     }
     catch {
       return Promise.reject('Fehler beim Löschen des Bankkontos')
     }
   }
 
-  const setBankAccounts = (data: BankAccountResponse[] | null, append: boolean) => {
+  const setBankAccounts = (data: ListBankAccountResponse | null, append: boolean) => {
     if (data) {
       if (append) {
-        bankAccounts.value = bankAccounts.value.concat(data ?? [])
+        bankAccounts.value!.data = bankAccounts.value!.data.concat(data.data ?? [])
+        bankAccounts.value!.pagination = data.pagination
       }
       else {
         bankAccounts.value = data
       }
+      noMoreDataBankAccounts.value = bankAccounts.value.pagination.totalRemaining == 0
     }
     else {
-      bankAccounts.value = []
+      bankAccounts.value = DefaultListResponse()
     }
   }
 
   const totalBankSaldoInCHF = computed(() => {
-    return bankAccounts.value.reduce((previousValue, currentValue) => {
+    return bankAccounts.value.data.reduce((previousValue, currentValue) => {
       return previousValue + convertAmountToRate(currentValue.amount, currentValue.currency.code)
     }, 0)
   })
@@ -111,6 +139,10 @@ export default function useBankAccounts() {
     deleteBankAccount,
     setBankAccounts,
     bankAccounts,
+    limitBankAccounts,
+    pageBankAccounts,
+    noMoreDataBankAccounts,
+    searchBankAccounts,
     totalBankSaldoInCHF,
   }
 }

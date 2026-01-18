@@ -724,18 +724,19 @@ func (mr *MockIAPIServiceMockRecorder) GetVatSetting(userID any) *gomock.Call {
 }
 
 // ListBankAccounts mocks base method.
-func (m *MockIAPIService) ListBankAccounts(userID int64) ([]models.BankAccount, error) {
+func (m *MockIAPIService) ListBankAccounts(userID, page, limit int64, sortBy, sortOrder, search string) ([]models.BankAccount, int64, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "ListBankAccounts", userID)
+	ret := m.ctrl.Call(m, "ListBankAccounts", userID, page, limit, sortBy, sortOrder, search)
 	ret0, _ := ret[0].([]models.BankAccount)
-	ret1, _ := ret[1].(error)
-	return ret0, ret1
+	ret1, _ := ret[1].(int64)
+	ret2, _ := ret[2].(error)
+	return ret0, ret1, ret2
 }
 
 // ListBankAccounts indicates an expected call of ListBankAccounts.
-func (mr *MockIAPIServiceMockRecorder) ListBankAccounts(userID any) *gomock.Call {
+func (mr *MockIAPIServiceMockRecorder) ListBankAccounts(userID, page, limit, sortBy, sortOrder, search any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ListBankAccounts", reflect.TypeOf((*MockIAPIService)(nil).ListBankAccounts), userID)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ListBankAccounts", reflect.TypeOf((*MockIAPIService)(nil).ListBankAccounts), userID, page, limit, sortBy, sortOrder, search)
 }
 
 // ListCategories mocks base method.
@@ -770,9 +771,9 @@ func (mr *MockIAPIServiceMockRecorder) ListCurrencies(userID any) *gomock.Call {
 }
 
 // ListEmployees mocks base method.
-func (m *MockIAPIService) ListEmployees(userID, page, limit int64, sortBy, sortOrder string) ([]models.Employee, int64, error) {
+func (m *MockIAPIService) ListEmployees(userID, page, limit int64, sortBy, sortOrder, search string) ([]models.Employee, int64, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "ListEmployees", userID, page, limit, sortBy, sortOrder)
+	ret := m.ctrl.Call(m, "ListEmployees", userID, page, limit, sortBy, sortOrder, search)
 	ret0, _ := ret[0].([]models.Employee)
 	ret1, _ := ret[1].(int64)
 	ret2, _ := ret[2].(error)
@@ -780,9 +781,9 @@ func (m *MockIAPIService) ListEmployees(userID, page, limit int64, sortBy, sortO
 }
 
 // ListEmployees indicates an expected call of ListEmployees.
-func (mr *MockIAPIServiceMockRecorder) ListEmployees(userID, page, limit, sortBy, sortOrder any) *gomock.Call {
+func (mr *MockIAPIServiceMockRecorder) ListEmployees(userID, page, limit, sortBy, sortOrder, search any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ListEmployees", reflect.TypeOf((*MockIAPIService)(nil).ListEmployees), userID, page, limit, sortBy, sortOrder)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ListEmployees", reflect.TypeOf((*MockIAPIService)(nil).ListEmployees), userID, page, limit, sortBy, sortOrder, search)
 }
 
 // ListFiatRates mocks base method.

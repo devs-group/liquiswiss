@@ -44,7 +44,7 @@ type IDatabaseAdapter interface {
 	UpdateOrganisation(payload models.UpdateOrganisation, userID int64, organisationID int64) error
 	AssignUserToOrganisation(userID int64, organisationID int64, role string, isDefault bool) error
 
-	ListEmployees(userID int64, page int64, limit int64, sortBy string, sortOrder string) ([]models.Employee, int64, error)
+	ListEmployees(userID int64, page int64, limit int64, sortBy string, sortOrder string, search string) ([]models.Employee, int64, error)
 	GetEmployee(userID int64, employeeID int64) (*models.Employee, error)
 	CreateEmployee(payload models.CreateEmployee, userID int64) (int64, error)
 	UpdateEmployee(payload models.UpdateEmployee, userID int64, employeeID int64) error
@@ -87,7 +87,7 @@ type IDatabaseAdapter interface {
 	DeleteForecastExclusion(payload models.CreateForecastExclusion, userID int64) (int64, error)
 	ClearForecasts(userID int64) (int64, error)
 
-	ListBankAccounts(userID int64) ([]models.BankAccount, error)
+	ListBankAccounts(userID int64, page int64, limit int64, sortBy string, sortOrder string, search string) ([]models.BankAccount, int64, error)
 	GetBankAccount(userID int64, bankAccountID int64) (*models.BankAccount, error)
 	CreateBankAccount(payload models.CreateBankAccount, userID int64) (int64, error)
 	UpdateBankAccount(payload models.UpdateBankAccount, userID int64, bankAccountID int64) error

@@ -21,13 +21,14 @@ LEFT JOIN ranked_salaries rs ON e.id = rs.employee_id AND rs.rn = 1
 LEFT JOIN currencies c ON rs.currency_id = c.id
 LEFT JOIN salaries s ON s.employee_id = e.id AND s.from_date > CURDATE() AND s.is_termination = 1
 WHERE e.organisation_id = get_current_user_organisation_id(?)
+    {{if .hasSearch}}AND LOWER(e.name) LIKE LOWER(?){{end}}
 GROUP BY
     e.id, e.name, rs.hours_per_month, rs.amount, rs.employer_costs,
     rs.cycle, c.id, c.locale_code, c.description, c.code,
     rs.vacation_days_per_year, rs.from_date, rs.to_date,
     rs.is_in_future, rs.is_termination, rs.id
 ORDER BY
-    %s IS NULL,
-    %s %s,
+    {{.sortBy}} IS NULL,
+    {{.sortBy}} {{.sortOrder}},
     e.name ASC
 LIMIT ? OFFSET ?;

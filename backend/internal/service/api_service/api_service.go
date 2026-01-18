@@ -36,7 +36,7 @@ type IAPIService interface {
 	CreateOrganisation(payload models.CreateOrganisation, userID int64) (*models.Organisation, error)
 	UpdateOrganisation(payload models.UpdateOrganisation, userID int64, organisationID int64) (*models.Organisation, error)
 
-	ListEmployees(userID int64, page int64, limit int64, sortBy string, sortOrder string) ([]models.Employee, int64, error)
+	ListEmployees(userID int64, page int64, limit int64, sortBy string, sortOrder string, search string) ([]models.Employee, int64, error)
 	GetEmployee(userID int64, employeeID int64) (*models.Employee, error)
 	CreateEmployee(payload models.CreateEmployee, userID int64) (*models.Employee, error)
 	UpdateEmployee(payload models.UpdateEmployee, userID int64, employeeID int64) (*models.Employee, error)
@@ -75,7 +75,7 @@ type IAPIService interface {
 	UpdateForecastExclusions(payload models.UpdateForecastExclusions, userID int64) error
 	CalculateForecast(userID int64) ([]models.Forecast, error)
 
-	ListBankAccounts(userID int64) ([]models.BankAccount, error)
+	ListBankAccounts(userID int64, page int64, limit int64, sortBy string, sortOrder string, search string) ([]models.BankAccount, int64, error)
 	GetBankAccount(userID int64, bankAccountID int64) (*models.BankAccount, error)
 	CreateBankAccount(payload models.CreateBankAccount, userID int64) (*models.BankAccount, error)
 	UpdateBankAccount(payload models.UpdateBankAccount, userID int64, bankAccountID int64) (*models.BankAccount, error)

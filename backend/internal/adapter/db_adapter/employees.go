@@ -1,14 +1,16 @@
 package db_adapter
 
 import (
+	"bytes"
 	"database/sql"
 	"fmt"
+	"html/template"
 	"liquiswiss/pkg/models"
 	"liquiswiss/pkg/types"
 	"strings"
 )
 
-func (d *DatabaseAdapter) ListEmployees(userID int64, page int64, limit int64, sortBy string, sortOrder string) ([]models.Employee, int64, error) {
+func (d *DatabaseAdapter) ListEmployees(userID int64, page int64, limit int64, sortBy string, sortOrder string, search string) ([]models.Employee, int64, error) {
 	employees := make([]models.Employee, 0)
 	var totalCount int64
 	sortByMap := map[string]string{
@@ -22,14 +24,28 @@ func (d *DatabaseAdapter) ListEmployees(userID int64, page int64, limit int64, s
 		return nil, 0, fmt.Errorf("invalid sort by or sort order")
 	}
 
-	query, err := sqlQueries.ReadFile("queries/list_employees.sql")
+	parsed, err := template.ParseFS(sqlQueries, "queries/list_employees.sql")
 	if err != nil {
 		return nil, 0, err
 	}
 
-	queryString := fmt.Sprintf(string(query), sortBy, sortBy, sortOrder)
+	var query bytes.Buffer
+	err = parsed.Execute(&query, map[string]any{
+		"sortBy":    sortBy,
+		"sortOrder": sortOrder,
+		"hasSearch": search != "",
+	})
+	if err != nil {
+		return nil, 0, err
+	}
 
-	rows, err := d.db.Query(queryString, userID, (page)*limit, 0)
+	var rows *sql.Rows
+	if search != "" {
+		searchPattern := "%" + search + "%"
+		rows, err = d.db.Query(query.String(), userID, searchPattern, (page)*limit, 0)
+	} else {
+		rows, err = d.db.Query(query.String(), userID, (page)*limit, 0)
+	}
 	if err != nil {
 		return nil, 0, err
 	}

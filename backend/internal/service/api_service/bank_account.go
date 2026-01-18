@@ -6,18 +6,18 @@ import (
 	"liquiswiss/pkg/utils"
 )
 
-func (a *APIService) ListBankAccounts(userID int64) ([]models.BankAccount, error) {
-	bankAccounts, err := a.dbService.ListBankAccounts(userID)
+func (a *APIService) ListBankAccounts(userID int64, page int64, limit int64, sortBy string, sortOrder string, search string) ([]models.BankAccount, int64, error) {
+	bankAccounts, totalCount, err := a.dbService.ListBankAccounts(userID, page, limit, sortBy, sortOrder, search)
 	if err != nil {
 		logger.Logger.Error(err)
-		return bankAccounts, err
+		return nil, 0, err
 	}
 	validator := utils.GetValidator()
 	if err := validator.Var(bankAccounts, "dive"); err != nil {
 		logger.Logger.Error(err)
-		return bankAccounts, err
+		return nil, 0, err
 	}
-	return bankAccounts, nil
+	return bankAccounts, totalCount, nil
 }
 
 func (a *APIService) GetBankAccount(userID int64, bankAccountID int64) (*models.BankAccount, error) {
