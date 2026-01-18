@@ -16,3 +16,6 @@ logs
 !.env.*.testing
 
 db_data/
+
+# Claude Code conversation exports
+????-??-??-*.txt

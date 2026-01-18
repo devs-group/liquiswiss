@@ -23,9 +23,13 @@ go mod tidy          # Install dependencies
 go run .             # Run dev server
 go test -count=1 ./...  # Run all tests (requires docker compose up)
 go test -count=1 ./internal/service/api_service -run TestName  # Run specific test
+go generate ./...    # Regenerate mocks
+make modernize       # Apply Go modernize suggestions
 ```
 
-**Important**: Always run `go test -count=1 ./...` after backend changes and check if new tests are required.
+**Important**:
+- Always run `go test -count=1 ./...` after backend changes and check if new tests are required.
+- Tests require MariaDB running (`docker compose up`) and `.env.local.testing` configured.
 
 ### Database
 ```bash
@@ -60,6 +64,16 @@ Detailed documentation is in [docs/ai/](docs/ai/):
 ## Configuration
 
 See `.env.example`, `backend/.env.example`, and `frontend/.env.example` for required environment variables.
+
+## Plans
+
+- Store implementation plans in `docs/plans/`
+- Delete plan files once fully implemented
+
+## Context from Previous Sessions
+
+- Check for conversation export files in root (pattern: `YYYY-MM-DD-*.txt`)
+- Read the latest one to pick up context from the previous session
 
 ## General Guidelines
 
