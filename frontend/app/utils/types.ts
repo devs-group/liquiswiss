@@ -15,7 +15,7 @@ export type OrganisationRoleType = typeof OrganisationRoleOptions[number]
 export const SortOrderOptions = ['ASC', 'DESC'] as const
 export type SortOrderType = typeof SortOrderOptions[number]
 
-export const SettingsTabOptions = [RouteNames.SETTINGS_PROFILE, RouteNames.SETTINGS_ORGANISATIONS, RouteNames.SETTINGS_APP] as const
+export const SettingsTabOptions = [RouteNames.SETTINGS_PROFILE, RouteNames.SETTINGS_ORGANISATIONS, RouteNames.SETTINGS_AUTOMATION, RouteNames.SETTINGS_APP] as const
 export type SettingsTabType = typeof SettingsTabOptions[number]
 
 export const DarkModeOptions = ['system', 'dark', 'light'] as const

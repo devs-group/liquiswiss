@@ -47,6 +47,7 @@ import { RouteNames } from '~/config/routes'
 const items = ref<MenuItem[]>([
   { label: 'Profil', icon: 'pi pi-user', routeName: RouteNames.SETTINGS_PROFILE },
   { label: 'Organisationen', icon: 'pi pi-building', routeName: RouteNames.SETTINGS_ORGANISATIONS },
+  { label: 'Automatisierung', icon: 'pi pi-sync', routeName: RouteNames.SETTINGS_AUTOMATION },
   { label: 'App', icon: 'pi pi-mobile', routeName: RouteNames.SETTINGS_APP },
 ])
 
