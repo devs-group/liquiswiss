@@ -337,3 +337,263 @@ func assertDateEquals(t *testing.T, actual *types.AsDate, expected string) {
 	require.NotNil(t, actual)
 	require.Equal(t, expected, time.Time(*actual).Format(utils.InternalDateFormat))
 }
+
+func TestListTransactions_SortByName(t *testing.T) {
+	conn, apiService, _, user, category, currency := setupTransactionDependencies(t)
+	defer conn.Close()
+
+	createTransaction(t, apiService, user.ID, category.ID, *currency.ID, nil, func(p *models.CreateTransaction) {
+		p.Name = "Charlie"
+	})
+	createTransaction(t, apiService, user.ID, category.ID, *currency.ID, nil, func(p *models.CreateTransaction) {
+		p.Name = "Alpha"
+	})
+	createTransaction(t, apiService, user.ID, category.ID, *currency.ID, nil, func(p *models.CreateTransaction) {
+		p.Name = "Bravo"
+	})
+
+	// ASC
+	transactions, _, err := apiService.ListTransactions(user.ID, 1, 100, "name", "ASC", "", false)
+	require.NoError(t, err)
+	require.Equal(t, "Alpha", transactions[0].Name)
+	require.Equal(t, "Bravo", transactions[1].Name)
+	require.Equal(t, "Charlie", transactions[2].Name)
+
+	// DESC
+	transactions, _, err = apiService.ListTransactions(user.ID, 1, 100, "name", "DESC", "", false)
+	require.NoError(t, err)
+	require.Equal(t, "Charlie", transactions[0].Name)
+	require.Equal(t, "Bravo", transactions[1].Name)
+	require.Equal(t, "Alpha", transactions[2].Name)
+}
+
+func TestListTransactions_SortByStartDate(t *testing.T) {
+	conn, apiService, _, user, category, currency := setupTransactionDependencies(t)
+	defer conn.Close()
+
+	createTransaction(t, apiService, user.ID, category.ID, *currency.ID, nil, func(p *models.CreateTransaction) {
+		p.Name = "Middle"
+		p.StartDate = "2025-06-01"
+	})
+	createTransaction(t, apiService, user.ID, category.ID, *currency.ID, nil, func(p *models.CreateTransaction) {
+		p.Name = "First"
+		p.StartDate = "2025-01-01"
+	})
+	createTransaction(t, apiService, user.ID, category.ID, *currency.ID, nil, func(p *models.CreateTransaction) {
+		p.Name = "Last"
+		p.StartDate = "2025-12-01"
+	})
+
+	// ASC
+	transactions, _, err := apiService.ListTransactions(user.ID, 1, 100, "startDate", "ASC", "", false)
+	require.NoError(t, err)
+	require.Equal(t, "First", transactions[0].Name)
+	require.Equal(t, "Middle", transactions[1].Name)
+	require.Equal(t, "Last", transactions[2].Name)
+
+	// DESC
+	transactions, _, err = apiService.ListTransactions(user.ID, 1, 100, "startDate", "DESC", "", false)
+	require.NoError(t, err)
+	require.Equal(t, "Last", transactions[0].Name)
+	require.Equal(t, "Middle", transactions[1].Name)
+	require.Equal(t, "First", transactions[2].Name)
+}
+
+func TestListTransactions_SortByEndDate(t *testing.T) {
+	conn, apiService, _, user, category, currency := setupTransactionDependencies(t)
+	defer conn.Close()
+
+	endDate1 := "2025-06-30"
+	endDate2 := "2025-03-31"
+	endDate3 := "2025-12-31"
+
+	createTransaction(t, apiService, user.ID, category.ID, *currency.ID, &endDate1, func(p *models.CreateTransaction) {
+		p.Name = "Middle"
+	})
+	createTransaction(t, apiService, user.ID, category.ID, *currency.ID, &endDate2, func(p *models.CreateTransaction) {
+		p.Name = "First"
+	})
+	createTransaction(t, apiService, user.ID, category.ID, *currency.ID, &endDate3, func(p *models.CreateTransaction) {
+		p.Name = "Last"
+	})
+
+	// ASC
+	transactions, _, err := apiService.ListTransactions(user.ID, 1, 100, "endDate", "ASC", "", false)
+	require.NoError(t, err)
+	require.Equal(t, "First", transactions[0].Name)
+	require.Equal(t, "Middle", transactions[1].Name)
+	require.Equal(t, "Last", transactions[2].Name)
+
+	// DESC
+	transactions, _, err = apiService.ListTransactions(user.ID, 1, 100, "endDate", "DESC", "", false)
+	require.NoError(t, err)
+	require.Equal(t, "Last", transactions[0].Name)
+	require.Equal(t, "Middle", transactions[1].Name)
+	require.Equal(t, "First", transactions[2].Name)
+}
+
+func TestListTransactions_SortByAmount(t *testing.T) {
+	conn, apiService, _, user, category, currency := setupTransactionDependencies(t)
+	defer conn.Close()
+
+	createTransaction(t, apiService, user.ID, category.ID, *currency.ID, nil, func(p *models.CreateTransaction) {
+		p.Name = "Medium"
+		p.Amount = 500_00
+	})
+	createTransaction(t, apiService, user.ID, category.ID, *currency.ID, nil, func(p *models.CreateTransaction) {
+		p.Name = "Small"
+		p.Amount = 100_00
+	})
+	createTransaction(t, apiService, user.ID, category.ID, *currency.ID, nil, func(p *models.CreateTransaction) {
+		p.Name = "Large"
+		p.Amount = 1000_00
+	})
+
+	// ASC
+	transactions, _, err := apiService.ListTransactions(user.ID, 1, 100, "amount", "ASC", "", false)
+	require.NoError(t, err)
+	require.Equal(t, "Small", transactions[0].Name)
+	require.Equal(t, "Medium", transactions[1].Name)
+	require.Equal(t, "Large", transactions[2].Name)
+
+	// DESC
+	transactions, _, err = apiService.ListTransactions(user.ID, 1, 100, "amount", "DESC", "", false)
+	require.NoError(t, err)
+	require.Equal(t, "Large", transactions[0].Name)
+	require.Equal(t, "Medium", transactions[1].Name)
+	require.Equal(t, "Small", transactions[2].Name)
+}
+
+func TestListTransactions_SortByCycle(t *testing.T) {
+	conn, apiService, _, user, category, currency := setupTransactionDependencies(t)
+	defer conn.Close()
+
+	monthly := utils.CycleMonthly
+	quarterly := utils.CycleQuarterly
+	yearly := utils.CycleYearly
+
+	createTransaction(t, apiService, user.ID, category.ID, *currency.ID, nil, func(p *models.CreateTransaction) {
+		p.Name = "Quarterly"
+		p.Type = "repeating"
+		p.Cycle = &quarterly
+	})
+	createTransaction(t, apiService, user.ID, category.ID, *currency.ID, nil, func(p *models.CreateTransaction) {
+		p.Name = "Monthly"
+		p.Type = "repeating"
+		p.Cycle = &monthly
+	})
+	createTransaction(t, apiService, user.ID, category.ID, *currency.ID, nil, func(p *models.CreateTransaction) {
+		p.Name = "Yearly"
+		p.Type = "repeating"
+		p.Cycle = &yearly
+	})
+
+	// ASC - alphabetically: monthly, quarterly, yearly
+	transactions, _, err := apiService.ListTransactions(user.ID, 1, 100, "cycle", "ASC", "", false)
+	require.NoError(t, err)
+	require.Equal(t, "Monthly", transactions[0].Name)
+	require.Equal(t, "Quarterly", transactions[1].Name)
+	require.Equal(t, "Yearly", transactions[2].Name)
+
+	// DESC
+	transactions, _, err = apiService.ListTransactions(user.ID, 1, 100, "cycle", "DESC", "", false)
+	require.NoError(t, err)
+	require.Equal(t, "Yearly", transactions[0].Name)
+	require.Equal(t, "Quarterly", transactions[1].Name)
+	require.Equal(t, "Monthly", transactions[2].Name)
+}
+
+func TestListTransactions_SortByCategory(t *testing.T) {
+	conn, apiService, _, user, _, currency := setupTransactionDependencies(t)
+	defer conn.Close()
+
+	catA, err := apiService.CreateCategory(models.CreateCategory{Name: "Alpha Category"}, &user.ID)
+	require.NoError(t, err)
+	catB, err := apiService.CreateCategory(models.CreateCategory{Name: "Bravo Category"}, &user.ID)
+	require.NoError(t, err)
+	catC, err := apiService.CreateCategory(models.CreateCategory{Name: "Charlie Category"}, &user.ID)
+	require.NoError(t, err)
+
+	createTransaction(t, apiService, user.ID, catB.ID, *currency.ID, nil, func(p *models.CreateTransaction) {
+		p.Name = "TxB"
+	})
+	createTransaction(t, apiService, user.ID, catA.ID, *currency.ID, nil, func(p *models.CreateTransaction) {
+		p.Name = "TxA"
+	})
+	createTransaction(t, apiService, user.ID, catC.ID, *currency.ID, nil, func(p *models.CreateTransaction) {
+		p.Name = "TxC"
+	})
+
+	// ASC
+	transactions, _, err := apiService.ListTransactions(user.ID, 1, 100, "category", "ASC", "", false)
+	require.NoError(t, err)
+	require.Equal(t, "TxA", transactions[0].Name)
+	require.Equal(t, "TxB", transactions[1].Name)
+	require.Equal(t, "TxC", transactions[2].Name)
+
+	// DESC
+	transactions, _, err = apiService.ListTransactions(user.ID, 1, 100, "category", "DESC", "", false)
+	require.NoError(t, err)
+	require.Equal(t, "TxC", transactions[0].Name)
+	require.Equal(t, "TxB", transactions[1].Name)
+	require.Equal(t, "TxA", transactions[2].Name)
+}
+
+func TestListTransactions_SortByEmployee(t *testing.T) {
+	conn, apiService, _, user, category, currency := setupTransactionDependencies(t)
+	defer conn.Close()
+
+	empA, err := CreateEmployee(apiService, user.ID, "Alice Employee")
+	require.NoError(t, err)
+	empB, err := CreateEmployee(apiService, user.ID, "Bob Employee")
+	require.NoError(t, err)
+	empC, err := CreateEmployee(apiService, user.ID, "Carol Employee")
+	require.NoError(t, err)
+
+	createTransaction(t, apiService, user.ID, category.ID, *currency.ID, nil, func(p *models.CreateTransaction) {
+		p.Name = "TxB"
+		p.Employee = &empB.ID
+	})
+	createTransaction(t, apiService, user.ID, category.ID, *currency.ID, nil, func(p *models.CreateTransaction) {
+		p.Name = "TxA"
+		p.Employee = &empA.ID
+	})
+	createTransaction(t, apiService, user.ID, category.ID, *currency.ID, nil, func(p *models.CreateTransaction) {
+		p.Name = "TxC"
+		p.Employee = &empC.ID
+	})
+
+	// ASC
+	transactions, _, err := apiService.ListTransactions(user.ID, 1, 100, "employee", "ASC", "", false)
+	require.NoError(t, err)
+	require.Equal(t, "TxA", transactions[0].Name)
+	require.Equal(t, "TxB", transactions[1].Name)
+	require.Equal(t, "TxC", transactions[2].Name)
+
+	// DESC
+	transactions, _, err = apiService.ListTransactions(user.ID, 1, 100, "employee", "DESC", "", false)
+	require.NoError(t, err)
+	require.Equal(t, "TxC", transactions[0].Name)
+	require.Equal(t, "TxB", transactions[1].Name)
+	require.Equal(t, "TxA", transactions[2].Name)
+}
+
+func TestListTransactions_InvalidSortBy(t *testing.T) {
+	conn, apiService, _, user, category, currency := setupTransactionDependencies(t)
+	defer conn.Close()
+
+	createTransaction(t, apiService, user.ID, category.ID, *currency.ID, nil)
+
+	_, _, err := apiService.ListTransactions(user.ID, 1, 100, "invalidField", "ASC", "", false)
+	require.Error(t, err)
+}
+
+func TestListTransactions_InvalidSortOrder(t *testing.T) {
+	conn, apiService, _, user, category, currency := setupTransactionDependencies(t)
+	defer conn.Close()
+
+	createTransaction(t, apiService, user.ID, category.ID, *currency.ID, nil)
+
+	_, _, err := apiService.ListTransactions(user.ID, 1, 100, "name", "INVALID", "", false)
+	require.Error(t, err)
+}

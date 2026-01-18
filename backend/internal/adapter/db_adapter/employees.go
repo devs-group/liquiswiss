@@ -14,8 +14,8 @@ func (d *DatabaseAdapter) ListEmployees(userID int64, page int64, limit int64, s
 	employees := make([]models.Employee, 0)
 	var totalCount int64
 	sortByMap := map[string]string{
-		"name": "e.name", "hoursPerMonth": "d.hours_per_month", "salary": "d.amount", "vacationDaysPerYear": "d.vacation_days_per_year",
-		"fromDate": "d.from_date", "toDate": "d.to_date",
+		"name": "e.name", "hoursPerMonth": "rs.hours_per_month", "salary": "rs.amount", "vacationDaysPerYear": "rs.vacation_days_per_year",
+		"fromDate": "rs.from_date", "toDate": "rs.to_date",
 	}
 
 	// Validate inputs

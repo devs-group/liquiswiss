@@ -1,9 +1,9 @@
 import { RouteNames } from '~/config/routes'
 
-export const TransactionSortByOptions = ['name', 'startDate', 'endDate', 'amount', 'cycle', 'category', 'employee', 'nextExecutionDate'] as const
+export const TransactionSortByOptions = ['name', 'startDate', 'endDate', 'amount', 'cycle', 'category', 'employee'] as const
 export type TransactionSortByType = typeof TransactionSortByOptions[number]
 
-export const EmployeeSortByOptions = ['name', 'hoursPerMonth', 'salaryAmount', 'vacationDaysPerYear', 'fromDate', 'toDate'] as const
+export const EmployeeSortByOptions = ['name', 'hoursPerMonth', 'salary', 'vacationDaysPerYear', 'fromDate', 'toDate'] as const
 export type EmployeeSortByType = typeof EmployeeSortByOptions[number]
 
 export const BankAccountSortByOptions = ['name', 'amount'] as const
