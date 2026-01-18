@@ -40,6 +40,9 @@ export default function useSettings() {
   const transactionSortByCookie = CreateSettingsCookie('transaction-sort-by')
   const transactionSortOrderCookie = CreateSettingsCookie('transaction-sort-order')
 
+  const employeeHideTerminated = useState<boolean>('employeeHideTerminated', () => true)
+  const employeeHideTerminatedCookie = CreateSettingsCookie('employee-hide-terminated')
+
   const bankAccountDisplay = useState<DisplayType>('bankAccountDisplay', () => 'grid')
   const bankAccountSortBy = useState<BankAccountSortByType>('bankAccountSortBy', () => 'name')
   const bankAccountSortOrder = useState<SortOrderType>('bankAccountSortOrder', () => 'ASC')
@@ -162,6 +165,19 @@ export default function useSettings() {
     transactionSortOrder.value = 'ASC'
   }
 
+  if (employeeHideTerminatedCookie.value !== undefined) {
+    const val = employeeHideTerminatedCookie.value
+    if (typeof val === 'boolean') {
+      employeeHideTerminated.value = val
+    }
+    else {
+      employeeHideTerminated.value = val === 'true'
+    }
+  }
+  else {
+    employeeHideTerminated.value = true
+  }
+
   if (forecastPerformanceCookie.value !== undefined) {
     const val = forecastPerformanceCookie.value
     if (val !== null && Number.isInteger(Number.parseInt(val))) {
@@ -267,6 +283,11 @@ export default function useSettings() {
         transactionDisplay.value = 'grid'
     }
     transactionDisplayCookie.value = transactionDisplay.value
+  }
+
+  const toggleEmployeeHideTerminated = () => {
+    employeeHideTerminated.value = !employeeHideTerminated.value
+    employeeHideTerminatedCookie.value = employeeHideTerminated.value.toString()
   }
 
   const toggleEmployeeDisplayType = () => {
@@ -376,6 +397,8 @@ export default function useSettings() {
     transactionDisplay,
     transactionSortBy,
     transactionSortOrder,
+    toggleEmployeeHideTerminated,
+    employeeHideTerminated,
     toggleBankAccountDisplayType,
     bankAccountDisplay,
     bankAccountSortBy,

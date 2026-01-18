@@ -377,7 +377,7 @@ func (a *APIService) CalculateForecast(userID int64) ([]models.Forecast, error) 
 	}
 
 	// Collect the employee expenses now
-	employees, _, err := a.ListEmployees(userID, page, limit, sortBy, sortOrder, "")
+	employees, _, err := a.ListEmployees(userID, page, limit, sortBy, sortOrder, "", false)
 	if err != nil {
 		return nil, err
 	}

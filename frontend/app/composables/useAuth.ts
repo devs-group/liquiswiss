@@ -121,7 +121,8 @@ export default function useAuth() {
     if (error.value) {
       console.error(error.value)
       // Check if the error response indicates session expiry
-      const isSessionExpired = (error.value as any)?.data?.logout === true
+      const errorData = error.value.data as { logout?: boolean } | undefined
+      const isSessionExpired = errorData?.logout === true
       return Promise.reject({ message: 'Benutzer konnte nicht geladen werden', sessionExpired: isSessionExpired })
     }
     user.value = data.value

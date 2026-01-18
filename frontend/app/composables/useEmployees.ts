@@ -9,7 +9,7 @@ export default function useEmployees() {
   const searchEmployees = useState('searchEmployees', () => '')
   const employees = useState<ListEmployeeResponse>('employees', () => DefaultListResponse())
 
-  const { employeeSortBy, employeeSortOrder } = useSettings()
+  const { employeeSortBy, employeeSortOrder, employeeHideTerminated } = useSettings()
 
   // Employees
   const useFetchListEmployees = async () => {
@@ -21,6 +21,7 @@ export default function useEmployees() {
         sortBy: employeeSortBy.value,
         sortOrder: employeeSortOrder.value,
         search: searchEmployees.value,
+        hideTerminated: employeeHideTerminated.value,
       },
     })
     if (error.value) {
@@ -39,6 +40,7 @@ export default function useEmployees() {
           sortBy: employeeSortBy.value,
           sortOrder: employeeSortOrder.value,
           search: searchEmployees.value,
+          hideTerminated: employeeHideTerminated.value,
         },
       })
       setEmployees(data, append)

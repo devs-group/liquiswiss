@@ -25,7 +25,7 @@ func TestListEmployees_CrossOrgIsolation(t *testing.T) {
 	require.NoError(t, err)
 
 	// User A should only see their own employees
-	employeesA, totalA, err := env.APIService.ListEmployees(env.UserA.ID, 1, 100, "name", "ASC", "")
+	employeesA, totalA, err := env.APIService.ListEmployees(env.UserA.ID, 1, 100, "name", "ASC", "", false)
 	require.NoError(t, err)
 	require.Equal(t, int64(2), totalA)
 	require.Len(t, employeesA, 2)
@@ -36,7 +36,7 @@ func TestListEmployees_CrossOrgIsolation(t *testing.T) {
 	require.NotContains(t, employeeIDs, employeeB1.ID)
 
 	// User B should only see their own employees
-	employeesB, totalB, err := env.APIService.ListEmployees(env.UserB.ID, 1, 100, "name", "ASC", "")
+	employeesB, totalB, err := env.APIService.ListEmployees(env.UserB.ID, 1, 100, "name", "ASC", "", false)
 	require.NoError(t, err)
 	require.Equal(t, int64(1), totalB)
 	require.Len(t, employeesB, 1)

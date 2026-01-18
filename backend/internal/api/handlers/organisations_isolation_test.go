@@ -134,7 +134,7 @@ func TestUserSwitchOrganisation_DataChanges(t *testing.T) {
 	require.NoError(t, err)
 
 	// List employees - should only see Org A2 employee
-	employees, total, err := env.APIService.ListEmployees(env.UserA.ID, 1, 100, "name", "ASC", "")
+	employees, total, err := env.APIService.ListEmployees(env.UserA.ID, 1, 100, "name", "ASC", "", false)
 	require.NoError(t, err)
 	require.Equal(t, int64(1), total)
 	require.Len(t, employees, 1)
@@ -154,7 +154,7 @@ func TestUserSwitchOrganisation_DataChanges(t *testing.T) {
 	require.NoError(t, err)
 
 	// List employees - should only see Org A employee
-	employees, total, err = env.APIService.ListEmployees(env.UserA.ID, 1, 100, "name", "ASC", "")
+	employees, total, err = env.APIService.ListEmployees(env.UserA.ID, 1, 100, "name", "ASC", "", false)
 	require.NoError(t, err)
 	require.Equal(t, int64(1), total)
 	require.Len(t, employees, 1)

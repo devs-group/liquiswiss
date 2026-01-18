@@ -6,8 +6,8 @@ import (
 	"liquiswiss/pkg/utils"
 )
 
-func (a *APIService) ListEmployees(userID int64, page int64, limit int64, sortBy string, sortOrder string, search string) ([]models.Employee, int64, error) {
-	employees, totalCount, err := a.dbService.ListEmployees(userID, page, limit, sortBy, sortOrder, search)
+func (a *APIService) ListEmployees(userID int64, page int64, limit int64, sortBy string, sortOrder string, search string, hideTerminated bool) ([]models.Employee, int64, error) {
+	employees, totalCount, err := a.dbService.ListEmployees(userID, page, limit, sortBy, sortOrder, search, hideTerminated)
 	if err != nil {
 		logger.Logger.Error(err)
 		return nil, 0, err

@@ -23,6 +23,7 @@ go mod tidy          # Install dependencies
 go run .             # Run dev server (or use `air` for hot-reloading)
 go test -count=1 ./...  # Run all tests (requires docker compose up)
 go test -count=1 ./internal/service/api_service -run TestName  # Run specific test
+go vet ./...         # Static analysis
 go generate ./...    # Regenerate mocks
 make modernize       # Apply Go modernize suggestions
 ```

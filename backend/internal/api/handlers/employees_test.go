@@ -59,7 +59,7 @@ func TestListEmployees_NoSearch(t *testing.T) {
 	require.NoError(t, err)
 
 	// List without search
-	employees, total, err := apiService.ListEmployees(user.ID, 1, 100, "name", "ASC", "")
+	employees, total, err := apiService.ListEmployees(user.ID, 1, 100, "name", "ASC", "", false)
 	require.NoError(t, err)
 	require.Equal(t, int64(3), total)
 	require.Len(t, employees, 3)
@@ -78,7 +78,7 @@ func TestListEmployees_WithSearch(t *testing.T) {
 	require.NoError(t, err)
 
 	// Search for "Alice"
-	employees, total, err := apiService.ListEmployees(user.ID, 1, 100, "name", "ASC", "Alice")
+	employees, total, err := apiService.ListEmployees(user.ID, 1, 100, "name", "ASC", "Alice", false)
 	require.NoError(t, err)
 	require.Equal(t, int64(1), total)
 	require.Len(t, employees, 1)
@@ -94,14 +94,14 @@ func TestListEmployees_SearchCaseInsensitive(t *testing.T) {
 	require.NoError(t, err)
 
 	// Search with lowercase
-	employees, total, err := apiService.ListEmployees(user.ID, 1, 100, "name", "ASC", "alice")
+	employees, total, err := apiService.ListEmployees(user.ID, 1, 100, "name", "ASC", "alice", false)
 	require.NoError(t, err)
 	require.Equal(t, int64(1), total)
 	require.Len(t, employees, 1)
 	require.Equal(t, "Alice Smith", employees[0].Name)
 
 	// Search with uppercase
-	employees, total, err = apiService.ListEmployees(user.ID, 1, 100, "name", "ASC", "ALICE")
+	employees, total, err = apiService.ListEmployees(user.ID, 1, 100, "name", "ASC", "ALICE", false)
 	require.NoError(t, err)
 	require.Equal(t, int64(1), total)
 	require.Len(t, employees, 1)
@@ -115,7 +115,7 @@ func TestListEmployees_SearchNoResults(t *testing.T) {
 	require.NoError(t, err)
 
 	// Search for non-existent term
-	employees, total, err := apiService.ListEmployees(user.ID, 1, 100, "name", "ASC", "nonexistent")
+	employees, total, err := apiService.ListEmployees(user.ID, 1, 100, "name", "ASC", "nonexistent", false)
 	require.NoError(t, err)
 	require.Equal(t, int64(0), total)
 	require.Len(t, employees, 0)

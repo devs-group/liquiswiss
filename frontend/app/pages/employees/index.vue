@@ -11,6 +11,12 @@
           :icon="getDisplayIcon"
           @click="toggleEmployeeDisplayType"
         />
+        <Button
+          v-tooltip.bottom="employeeHideTerminated ? 'Ausgetretene Mitarbeiter anzeigen' : 'Ausgetretene Mitarbeiter ausblenden'"
+          :icon="employeeHideTerminated ? 'pi pi-eye-slash' : 'pi pi-eye'"
+          :severity="employeeHideTerminated ? 'secondary' : 'contrast'"
+          @click="onToggleHideTerminated"
+        />
       </div>
       <Button
         class="self-end"
@@ -92,7 +98,7 @@ useHead({
 })
 
 const { employees, noMoreDataEmployees, pageEmployees, searchEmployees, useFetchListEmployees, listEmployees } = useEmployees()
-const { toggleEmployeeDisplayType, employeeDisplay } = useSettings()
+const { toggleEmployeeDisplayType, toggleEmployeeHideTerminated, employeeDisplay, employeeHideTerminated } = useSettings()
 const dialog = useDialog()
 
 const isLoading = ref(false)
@@ -150,6 +156,21 @@ const onSort = () => {
         }
       })
   })
+}
+
+const onToggleHideTerminated = () => {
+  toggleEmployeeHideTerminated()
+  pageEmployees.value = 1
+  isLoading.value = true
+  listEmployees(false)
+    .catch((err) => {
+      if (err !== 'aborted') {
+        employeesErrorMessage.value = err
+      }
+    })
+    .finally(() => {
+      isLoading.value = false
+    })
 }
 
 const onCreateEmployee = () => {

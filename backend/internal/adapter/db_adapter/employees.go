@@ -10,7 +10,7 @@ import (
 	"strings"
 )
 
-func (d *DatabaseAdapter) ListEmployees(userID int64, page int64, limit int64, sortBy string, sortOrder string, search string) ([]models.Employee, int64, error) {
+func (d *DatabaseAdapter) ListEmployees(userID int64, page int64, limit int64, sortBy string, sortOrder string, search string, hideTerminated bool) ([]models.Employee, int64, error) {
 	employees := make([]models.Employee, 0)
 	var totalCount int64
 	sortByMap := map[string]string{
@@ -31,9 +31,10 @@ func (d *DatabaseAdapter) ListEmployees(userID int64, page int64, limit int64, s
 
 	var query bytes.Buffer
 	err = parsed.Execute(&query, map[string]any{
-		"sortBy":    sortBy,
-		"sortOrder": sortOrder,
-		"hasSearch": search != "",
+		"sortBy":         sortBy,
+		"sortOrder":      sortOrder,
+		"hasSearch":      search != "",
+		"hideTerminated": hideTerminated,
 	})
 	if err != nil {
 		return nil, 0, err

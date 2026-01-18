@@ -114,7 +114,7 @@ func TestCalculateForecast_SkipsDisabledTransactions(t *testing.T) {
 		Return(map[string]bool{}, nil)
 
 	mockDB.EXPECT().
-		ListEmployees(userID, int64(1), int64(100000), "name", "ASC", "").
+		ListEmployees(userID, int64(1), int64(100000), "name", "ASC", "", false).
 		Return([]models.Employee{}, int64(0), nil)
 
 	mockDB.EXPECT().
@@ -223,7 +223,7 @@ func TestCalculateForecast_SkipsDisabledSalariesOnly(t *testing.T) {
 	}
 
 	mockDB.EXPECT().
-		ListEmployees(userID, int64(1), int64(100000), "name", "ASC", "").
+		ListEmployees(userID, int64(1), int64(100000), "name", "ASC", "", false).
 		Return([]models.Employee{employee}, int64(1), nil)
 
 	activeFrom := time.Date(2024, time.February, 1, 0, 0, 0, 0, time.UTC)
@@ -385,7 +385,7 @@ func TestCalculateForecast_CountsBothSalaryCostsTwice(t *testing.T) {
 	}
 
 	mockDB.EXPECT().
-		ListEmployees(userID, int64(1), int64(100000), "name", "ASC", "").
+		ListEmployees(userID, int64(1), int64(100000), "name", "ASC", "", false).
 		Return([]models.Employee{employee}, int64(1), nil)
 
 	activeFrom := time.Date(2024, time.February, 1, 0, 0, 0, 0, time.UTC)
