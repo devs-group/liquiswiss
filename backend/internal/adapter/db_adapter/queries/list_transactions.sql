@@ -9,6 +9,7 @@ FROM
     LEFT JOIN employees emp ON r.employee_id = emp.id
 WHERE
     r.organisation_id = get_current_user_organisation_id(?)
+    {{if .hasSearch}}AND LOWER(r.name) LIKE LOWER(?){{end}}
 ORDER BY
     {{.sortBy}} IS NULL,
     {{.sortBy}} {{.sortOrder}},

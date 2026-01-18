@@ -70,7 +70,7 @@ func (d *DatabaseAdapter) UpdateVatSetting(payload models.UpdateVatSetting, user
 	// Base query
 	query := "UPDATE vat_settings SET "
 	queryBuild := []string{}
-	args := []interface{}{}
+	args := []any{}
 
 	// Dynamically add fields that are not nil
 	if payload.Enabled != nil {

@@ -17,10 +17,9 @@ func CalculatePagination(currentPage int64, limit int64, totalCount int64) Pagin
 	}
 
 	// Calculate the total remaining items after the current page
-	itemsAfterCurrentPage := totalCount - (currentPage * limit)
-	if itemsAfterCurrentPage < 0 {
-		itemsAfterCurrentPage = 0 // Ensure it doesn't go negative
-	}
+	itemsAfterCurrentPage := max(totalCount-(currentPage*limit),
+		// Ensure it doesn't go negative
+		0)
 	pagination.TotalRemaining = itemsAfterCurrentPage
 
 	return pagination

@@ -29,10 +29,7 @@ func addMonthsStable(date time.Time, months int) time.Time {
 	lastDayOfTargetMonth := firstOfNextMonth.AddDate(0, 0, -1).Day()
 
 	// Use the original day or the last day of the target month, whichever is smaller
-	targetDay := date.Day()
-	if targetDay > lastDayOfTargetMonth {
-		targetDay = lastDayOfTargetMonth
-	}
+	targetDay := min(date.Day(), lastDayOfTargetMonth)
 
 	return time.Date(targetYear, targetMonth, targetDay, date.Hour(), date.Minute(), date.Second(), date.Nanosecond(), date.Location())
 }
@@ -143,7 +140,7 @@ func (a *APIService) CalculateForecast(userID int64) ([]models.Forecast, error) 
 	// Set the organisation wide default currency as base
 	baseCurrency := *organisation.Currency.Code
 
-	transactions, _, err := a.ListTransactions(userID, page, limit, sortBy, sortOrder)
+	transactions, _, err := a.ListTransactions(userID, page, limit, sortBy, sortOrder, "")
 	if err != nil {
 		return nil, err
 	}
@@ -851,12 +848,12 @@ func initForecastMapKey(forecastMap map[string]map[string]int64, monthKey string
 func addForecastDetail(detailMap map[string]*models.ForecastDetails, monthKey string, amount int64, isRevenue, isExcluded bool, relatedID int64, relatedTable string, categories ...string) {
 	if detailMap[monthKey] == nil {
 		detailMap[monthKey] = &models.ForecastDetails{
-			Revenue: make(map[string]interface{}),
-			Expense: make(map[string]interface{}),
+			Revenue: make(map[string]any),
+			Expense: make(map[string]any),
 		}
 	}
 
-	var currentMap map[string]interface{}
+	var currentMap map[string]any
 
 	if isRevenue {
 		currentMap = detailMap[monthKey].Revenue
@@ -883,14 +880,14 @@ func addForecastDetail(detailMap map[string]*models.ForecastDetails, monthKey st
 		} else {
 			// Otherwise, ensure the nested map exists and navigate deeper
 			if _, exists := currentMap[category]; !exists {
-				currentMap[category] = make(map[string]interface{})
+				currentMap[category] = make(map[string]any)
 			}
-			currentMap = currentMap[category].(map[string]interface{})
+			currentMap = currentMap[category].(map[string]any)
 		}
 	}
 }
 
-func iterateForecastDetails(data map[string]interface{}, result *[]models.ForecastDetailRevenueExpense) {
+func iterateForecastDetails(data map[string]any, result *[]models.ForecastDetailRevenueExpense) {
 	keys := make([]string, 0, len(data))
 	for key := range data {
 		keys = append(keys, key)
@@ -909,7 +906,7 @@ func iterateForecastDetails(data map[string]interface{}, result *[]models.Foreca
 				RelatedTable: v.RelatedTable,
 				IsExcluded:   v.IsExcluded,
 			})
-		case map[string]interface{}:
+		case map[string]any:
 			// Nested node with children
 			children := []models.ForecastDetailRevenueExpense{}
 			iterateForecastDetails(v, &children)

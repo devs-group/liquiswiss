@@ -33,9 +33,9 @@ type ForecastDetail struct {
 }
 
 type ForecastDetails struct {
-	Revenue    map[string]interface{} `db:"revenue" json:"revenue"`
-	Expense    map[string]interface{} `db:"expense" json:"expense"`
-	ForecastID int64                  `db:"forecast_id" json:"forecastID"`
+	Revenue    map[string]any `db:"revenue" json:"revenue"`
+	Expense    map[string]any `db:"expense" json:"expense"`
+	ForecastID int64          `db:"forecast_id" json:"forecastID"`
 }
 
 type ForecastDatabaseDetails struct {

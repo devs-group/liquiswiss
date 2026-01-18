@@ -84,7 +84,7 @@ func (d *DatabaseAdapter) CreateCurrency(payload models.CreateCurrency) (int64, 
 func (d *DatabaseAdapter) UpdateCurrency(payload models.UpdateCurrency, currencyID int64) error {
 	query := "UPDATE currencies SET "
 	queryBuild := []string{}
-	args := []interface{}{}
+	args := []any{}
 
 	if payload.Code != nil {
 		queryBuild = append(queryBuild, "code = ?")

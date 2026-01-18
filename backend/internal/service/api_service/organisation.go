@@ -5,6 +5,7 @@ import (
 	"liquiswiss/pkg/logger"
 	"liquiswiss/pkg/models"
 	"liquiswiss/pkg/utils"
+	"slices"
 )
 
 func (a *APIService) ListOrganisations(userID int64, page int64, limit int64) ([]models.Organisation, int64, error) {
@@ -91,10 +92,5 @@ func (a *APIService) UpdateOrganisation(payload models.UpdateOrganisation, userI
 
 func (a *APIService) hasEditingPermission(role string) bool {
 	editingRoles := []string{"owner", "admin"}
-	for _, editingRole := range editingRoles {
-		if role == editingRole {
-			return true
-		}
-	}
-	return false
+	return slices.Contains(editingRoles, role)
 }

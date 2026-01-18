@@ -87,7 +87,7 @@ func (d *DatabaseAdapter) UpdateBankAccount(payload models.UpdateBankAccount, us
 	// Base query
 	query := "UPDATE bank_accounts SET "
 	queryBuild := []string{}
-	args := []interface{}{}
+	args := []any{}
 
 	// Dynamically add fields that are not nil
 	if payload.Name != nil {

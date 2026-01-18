@@ -3,8 +3,9 @@
     <div class="flex flex-col sm:flex-row gap-2 justify-between items-center">
       <div class="flex items-center gap-2 w-full sm:w-auto">
         <InputText
-          v-model="search"
+          :model-value="searchTransactions"
           placeholder="Suchen"
+          @update:model-value="onSearch"
         />
         <Button
           :icon="getDisplayIcon"
@@ -27,13 +28,13 @@
     >
       {{ transactionsErrorMessage }}
     </Message>
-    <template v-else-if="filterTransactions.length">
+    <template v-else-if="transactions.data.length">
       <div
         v-if="transactionDisplay == 'grid'"
         class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4"
       >
         <TransactionCard
-          v-for="transaction in filterTransactions"
+          v-for="transaction in transactions.data"
           :key="transaction.id"
           :transaction="transaction"
           @on-edit="onEditTransaction"
@@ -46,7 +47,7 @@
       >
         <TransactionHeaders @on-sort="onSort" />
         <TransactionRow
-          v-for="transaction in filterTransactions"
+          v-for="transaction in transactions.data"
           :key="transaction.id"
           :transaction="transaction"
           @on-edit="onEditTransaction"
@@ -95,20 +96,37 @@ useHead({
 })
 
 const dialog = useDialog()
-const { transactions, noMoreDataTransactions, pageTransactions, useFetchListTransactions, listTransactions } = useTransactions()
+const { transactions, noMoreDataTransactions, pageTransactions, searchTransactions, useFetchListTransactions, listTransactions } = useTransactions()
 const { toggleTransactionDisplayType, transactionDisplay } = useSettings()
 
 const isLoading = ref(false)
 const isLoadingMore = ref(false)
 const transactionsErrorMessage = ref('')
-const search = ref('')
 
 // Computed
 const getDisplayIcon = computed(() => transactionDisplay.value == 'list' ? 'pi pi-microsoft' : 'pi pi-list')
-const filterTransactions = computed(() => {
-  return transactions.value.data
-    .filter(t => t.name.toLowerCase().includes(search.value.toLowerCase()))
-})
+
+// Debounced search
+let searchTimeout: ReturnType<typeof setTimeout> | null = null
+const onSearch = (value: string) => {
+  if (searchTimeout) {
+    clearTimeout(searchTimeout)
+  }
+  searchTimeout = setTimeout(() => {
+    searchTransactions.value = value
+    pageTransactions.value = 1
+    isLoading.value = true
+    listTransactions(false)
+      .catch((err) => {
+        if (err !== 'aborted') {
+          transactionsErrorMessage.value = err
+        }
+      })
+      .finally(() => {
+        isLoading.value = false
+      })
+  }, 300)
+}
 
 // Init
 await useFetchListTransactions()

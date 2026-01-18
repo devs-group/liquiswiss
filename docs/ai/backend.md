@@ -24,6 +24,8 @@
 
 **Handler structure**: Each handler file in `internal/api/handlers/` corresponds to a domain entity.
 
+**Modernize**: Always apply Go modernize suggestions (e.g., use `any` instead of `interface{}`). Run `make modernize` to auto-fix.
+
 ## Testing
 
 **Always run tests after backend changes:**

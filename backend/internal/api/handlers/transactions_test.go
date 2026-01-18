@@ -15,6 +15,89 @@ import (
 	"liquiswiss/pkg/utils"
 )
 
+func TestListTransactions_NoSearch(t *testing.T) {
+	conn, apiService, _, user, category, currency := setupTransactionDependencies(t)
+	defer conn.Close()
+
+	// Create multiple transactions
+	createTransaction(t, apiService, user.ID, category.ID, *currency.ID, nil, func(p *models.CreateTransaction) {
+		p.Name = "Office Rent"
+	})
+	createTransaction(t, apiService, user.ID, category.ID, *currency.ID, nil, func(p *models.CreateTransaction) {
+		p.Name = "Software License"
+	})
+	createTransaction(t, apiService, user.ID, category.ID, *currency.ID, nil, func(p *models.CreateTransaction) {
+		p.Name = "Bank Fees"
+	})
+
+	// List without search
+	transactions, total, err := apiService.ListTransactions(user.ID, 1, 100, "name", "ASC", "")
+	require.NoError(t, err)
+	require.Equal(t, int64(3), total)
+	require.Len(t, transactions, 3)
+}
+
+func TestListTransactions_WithSearch(t *testing.T) {
+	conn, apiService, _, user, category, currency := setupTransactionDependencies(t)
+	defer conn.Close()
+
+	// Create multiple transactions
+	createTransaction(t, apiService, user.ID, category.ID, *currency.ID, nil, func(p *models.CreateTransaction) {
+		p.Name = "Office Rent"
+	})
+	createTransaction(t, apiService, user.ID, category.ID, *currency.ID, nil, func(p *models.CreateTransaction) {
+		p.Name = "Software License"
+	})
+	createTransaction(t, apiService, user.ID, category.ID, *currency.ID, nil, func(p *models.CreateTransaction) {
+		p.Name = "Bank Fees"
+	})
+
+	// Search for "Office"
+	transactions, total, err := apiService.ListTransactions(user.ID, 1, 100, "name", "ASC", "Office")
+	require.NoError(t, err)
+	require.Equal(t, int64(1), total)
+	require.Len(t, transactions, 1)
+	require.Equal(t, "Office Rent", transactions[0].Name)
+}
+
+func TestListTransactions_SearchCaseInsensitive(t *testing.T) {
+	conn, apiService, _, user, category, currency := setupTransactionDependencies(t)
+	defer conn.Close()
+
+	// Create transaction with mixed case
+	createTransaction(t, apiService, user.ID, category.ID, *currency.ID, nil, func(p *models.CreateTransaction) {
+		p.Name = "Office Rent"
+	})
+
+	// Search with lowercase
+	transactions, total, err := apiService.ListTransactions(user.ID, 1, 100, "name", "ASC", "office")
+	require.NoError(t, err)
+	require.Equal(t, int64(1), total)
+	require.Len(t, transactions, 1)
+	require.Equal(t, "Office Rent", transactions[0].Name)
+
+	// Search with uppercase
+	transactions, total, err = apiService.ListTransactions(user.ID, 1, 100, "name", "ASC", "OFFICE")
+	require.NoError(t, err)
+	require.Equal(t, int64(1), total)
+	require.Len(t, transactions, 1)
+}
+
+func TestListTransactions_SearchNoResults(t *testing.T) {
+	conn, apiService, _, user, category, currency := setupTransactionDependencies(t)
+	defer conn.Close()
+
+	createTransaction(t, apiService, user.ID, category.ID, *currency.ID, nil, func(p *models.CreateTransaction) {
+		p.Name = "Office Rent"
+	})
+
+	// Search for non-existent term
+	transactions, total, err := apiService.ListTransactions(user.ID, 1, 100, "name", "ASC", "nonexistent")
+	require.NoError(t, err)
+	require.Equal(t, int64(0), total)
+	require.Len(t, transactions, 0)
+}
+
 func TestUpdateTransaction_SetEndDate(t *testing.T) {
 	conn, apiService, dbAdapter, user, category, currency := setupTransactionDependencies(t)
 	defer conn.Close()

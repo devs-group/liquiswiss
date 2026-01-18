@@ -277,7 +277,7 @@ func (d *DatabaseAdapter) UpdateSalary(payload models.UpdateSalary, employeeID i
 	// Base query
 	query := "UPDATE salaries SET "
 	queryBuild := []string{}
-	args := []interface{}{}
+	args := []any{}
 
 	// Dynamically add fields that are not nil
 	if payload.HoursPerMonth != nil {

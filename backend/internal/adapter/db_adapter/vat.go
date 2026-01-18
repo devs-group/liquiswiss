@@ -85,7 +85,7 @@ func (d *DatabaseAdapter) UpdateVat(payload models.UpdateVat, userID int64, vatI
 	// Base query
 	query := "UPDATE vats SET "
 	queryBuild := []string{}
-	args := []interface{}{}
+	args := []any{}
 
 	// Dynamically add fields that are not nil
 	if payload.Value != nil {

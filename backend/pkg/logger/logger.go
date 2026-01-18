@@ -20,5 +20,5 @@ func NewZapLogger(isProduction bool) *zap.SugaredLogger {
 
 type StdLogger struct{}
 
-func (StdLogger) Fatalf(format string, v ...interface{}) { log.Fatalf(format, v...) }
-func (StdLogger) Printf(format string, v ...interface{}) { log.Printf(format, v...) }
+func (StdLogger) Fatalf(format string, v ...any) { log.Fatalf(format, v...) }
+func (StdLogger) Printf(format string, v ...any) { log.Printf(format, v...) }

@@ -80,7 +80,7 @@ func (d *DatabaseAdapter) UpdateProfile(payload models.UpdateUser, userID int64)
 	// Base query
 	query := "UPDATE users SET "
 	queryBuild := []string{}
-	args := []interface{}{}
+	args := []any{}
 
 	// Dynamically add fields that are not nil
 	if payload.Name != nil {
@@ -117,7 +117,7 @@ func (d *DatabaseAdapter) UpdatePassword(userID int64, password string) error {
 	// Base query
 	query := "UPDATE users SET "
 	queryBuild := []string{}
-	args := []interface{}{}
+	args := []any{}
 
 	// Dynamically add fields that are not nil
 	queryBuild = append(queryBuild, "password = ?")
@@ -147,7 +147,7 @@ func (d *DatabaseAdapter) ResetPassword(password string, email string) error {
 	// Base query
 	query := "UPDATE users SET "
 	queryBuild := []string{}
-	args := []interface{}{}
+	args := []any{}
 
 	// Dynamically add fields that are not nil
 	queryBuild = append(queryBuild, "password = ?")

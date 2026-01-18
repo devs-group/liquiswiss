@@ -78,7 +78,7 @@ func (d *DatabaseAdapter) CreateCategory(payload models.CreateCategory, userID *
 func (d *DatabaseAdapter) UpdateCategory(payload models.UpdateCategory, userID int64, categoryID int64) error {
 	query := "UPDATE categories SET "
 	queryBuild := []string{}
-	args := []interface{}{}
+	args := []any{}
 
 	if payload.Name != nil {
 		queryBuild = append(queryBuild, "name = ?")

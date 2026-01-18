@@ -102,7 +102,7 @@ func TestCalculateForecast_SkipsDisabledTransactions(t *testing.T) {
 	}
 
 	mockDB.EXPECT().
-		ListTransactions(userID, int64(1), int64(100000), "name", "ASC").
+		ListTransactions(userID, int64(1), int64(100000), "name", "ASC", "").
 		Return(transactions, int64(len(transactions)), nil)
 
 	mockDB.EXPECT().
@@ -210,7 +210,7 @@ func TestCalculateForecast_SkipsDisabledSalariesOnly(t *testing.T) {
 
 	// No transactions in this scenario
 	mockDB.EXPECT().
-		ListTransactions(userID, int64(1), int64(100000), "name", "ASC").
+		ListTransactions(userID, int64(1), int64(100000), "name", "ASC", "").
 		Return([]models.Transaction{}, int64(0), nil)
 
 	mockDB.EXPECT().
@@ -372,7 +372,7 @@ func TestCalculateForecast_CountsBothSalaryCostsTwice(t *testing.T) {
 		Return(&organisation, nil)
 
 	mockDB.EXPECT().
-		ListTransactions(userID, int64(1), int64(100000), "name", "ASC").
+		ListTransactions(userID, int64(1), int64(100000), "name", "ASC", "").
 		Return([]models.Transaction{}, int64(0), nil)
 
 	mockDB.EXPECT().

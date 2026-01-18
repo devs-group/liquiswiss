@@ -163,10 +163,3 @@ func lastDayOfMonth(t time.Time) int {
 	year, month := t.Year(), t.Month()
 	return time.Date(year, month+1, 0, 0, 0, 0, 0, t.Location()).Day()
 }
-
-func min(a, b int) int {
-	if a < b {
-		return a
-	}
-	return b
-}

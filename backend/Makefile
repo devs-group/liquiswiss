@@ -1,3 +1,6 @@
+modernize:
+	go run golang.org/x/tools/gopls/internal/analysis/modernize/cmd/modernize@latest -fix ./...
+
 goose-static-create:
 	@if [ -z "$(word 2, $(MAKECMDGOALS))" ]; then \
 		echo "Usage: make goose-static-create <type_of_creation>_<name_of_migration> (eg. create_table_my_table)"; \

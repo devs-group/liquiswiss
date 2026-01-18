@@ -32,7 +32,7 @@ type IDatabaseAdapter interface {
 	ValidateResetPassword(email, code string, validity time.Duration) (int64, error)
 	DeleteResetPassword(email string) error
 
-	ListTransactions(userID int64, page int64, limit int64, sortBy string, sortOrder string) ([]models.Transaction, int64, error)
+	ListTransactions(userID int64, page int64, limit int64, sortBy string, sortOrder string, search string) ([]models.Transaction, int64, error)
 	GetTransaction(userID int64, transactionID int64) (*models.Transaction, error)
 	CreateTransaction(payload models.CreateTransaction, userID int64) (int64, error)
 	UpdateTransaction(payload models.UpdateTransaction, userID int64, transactionID int64) error

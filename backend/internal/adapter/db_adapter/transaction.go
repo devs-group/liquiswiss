@@ -12,7 +12,7 @@ import (
 	"time"
 )
 
-func (d *DatabaseAdapter) ListTransactions(userID int64, page int64, limit int64, sortBy string, sortOrder string) ([]models.Transaction, int64, error) {
+func (d *DatabaseAdapter) ListTransactions(userID int64, page int64, limit int64, sortBy string, sortOrder string, search string) ([]models.Transaction, int64, error) {
 	transactions := []models.Transaction{}
 	var totalCount int64
 	sortByMap := map[string]string{
@@ -32,15 +32,22 @@ func (d *DatabaseAdapter) ListTransactions(userID int64, page int64, limit int64
 	}
 
 	var query bytes.Buffer
-	err = parsed.Execute(&query, map[string]string{
+	err = parsed.Execute(&query, map[string]any{
 		"sortBy":    sortBy,
 		"sortOrder": sortOrder,
+		"hasSearch": search != "",
 	})
 	if err != nil {
 		return nil, 0, err
 	}
 
-	rows, err := d.db.Query(query.String(), userID, (page)*limit, 0)
+	var rows *sql.Rows
+	if search != "" {
+		searchPattern := "%" + search + "%"
+		rows, err = d.db.Query(query.String(), userID, searchPattern, (page)*limit, 0)
+	} else {
+		rows, err = d.db.Query(query.String(), userID, (page)*limit, 0)
+	}
 	if err != nil {
 		return nil, 0, err
 	}
@@ -180,7 +187,7 @@ func (d *DatabaseAdapter) UpdateTransaction(payload models.UpdateTransaction, us
 	// Base query
 	query := "UPDATE transactions SET "
 	queryBuild := []string{}
-	args := []interface{}{}
+	args := []any{}
 
 	// Dynamically add fields that are not nil
 	if payload.Name != nil {

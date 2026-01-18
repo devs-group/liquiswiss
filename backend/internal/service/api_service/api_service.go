@@ -25,7 +25,7 @@ type IAPIService interface {
 	SetUserCurrentOrganisation(payload models.UpdateUserCurrentOrganisation, userID int64) error
 	GetCurrentOrganisation(userID int64) (*models.Organisation, error)
 
-	ListTransactions(userID int64, page int64, limit int64, sortBy string, sortOrder string) ([]models.Transaction, int64, error)
+	ListTransactions(userID int64, page int64, limit int64, sortBy string, sortOrder string, search string) ([]models.Transaction, int64, error)
 	GetTransaction(userID int64, transactionID int64) (*models.Transaction, error)
 	CreateTransaction(payload models.CreateTransaction, userID int64) (*models.Transaction, error)
 	UpdateTransaction(payload models.UpdateTransaction, userID int64, transactionID int64) (*models.Transaction, error)

@@ -158,7 +158,7 @@ func (d *DatabaseAdapter) UpdateEmployee(payload models.UpdateEmployee, userID i
 	// Base query
 	query := "UPDATE employees SET "
 	queryBuild := []string{}
-	args := []interface{}{}
+	args := []any{}
 
 	// Dynamically add fields that are not nil
 	if payload.Name != nil {

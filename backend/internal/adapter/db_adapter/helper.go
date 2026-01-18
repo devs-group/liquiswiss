@@ -169,7 +169,7 @@ func (d *DatabaseAdapter) CalculateCostAmount(userID int64, cost models.SalaryCo
 				if err != nil {
 					return 0, err
 				}
-			baseAmount += amount * models.SalaryCostDistributionMultiplier(baseCost.DistributionType)
+				baseAmount += amount * models.SalaryCostDistributionMultiplier(baseCost.DistributionType)
 			}
 		} else {
 			baseAmount = salary.Amount
@@ -224,11 +224,4 @@ func subtractCycle(t time.Time, cycle string, offset int64) time.Time {
 func lastDayOfMonth(t time.Time) int {
 	year, month := t.Year(), t.Month()
 	return time.Date(year, month+1, 0, 0, 0, 0, 0, t.Location()).Day()
-}
-
-func min(a, b int) int {
-	if a < b {
-		return a
-	}
-	return b
 }

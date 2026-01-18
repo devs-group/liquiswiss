@@ -29,9 +29,10 @@ func ListTransactions(apiService api_service.IAPIService, c *gin.Context) {
 	}
 	sortBy := c.DefaultQuery("sortBy", "name")
 	sortOrder := c.DefaultQuery("sortOrder", "ASC")
+	search := c.DefaultQuery("search", "")
 
 	// Actions
-	transactions, totalCount, err := apiService.ListTransactions(userID, page, limit, sortBy, sortOrder)
+	transactions, totalCount, err := apiService.ListTransactions(userID, page, limit, sortBy, sortOrder, search)
 	if err != nil {
 		c.Status(http.StatusInternalServerError)
 		return

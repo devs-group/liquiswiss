@@ -17,13 +17,13 @@ func GenerateUUID() string {
 	return uuid.New().String()
 }
 
-func StructToMap[T any](r T) (map[string]interface{}, error) {
+func StructToMap[T any](r T) (map[string]any, error) {
 	jsonData, err := json.Marshal(r)
 	if err != nil {
 		return nil, err
 	}
 
-	var templateData map[string]interface{}
+	var templateData map[string]any
 	err = json.Unmarshal(jsonData, &templateData)
 	if err != nil {
 		return nil, err
@@ -32,7 +32,7 @@ func StructToMap[T any](r T) (map[string]interface{}, error) {
 	return templateData, nil
 }
 
-func IsStructEmpty(v interface{}) bool {
+func IsStructEmpty(v any) bool {
 	val := reflect.ValueOf(v)
 
 	if val.Kind() == reflect.Ptr {

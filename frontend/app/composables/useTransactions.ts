@@ -7,6 +7,7 @@ export default function useTransactions() {
   const pageTransactions = useState('pageTransactions', () => 1)
   const noMoreDataTransactions = useState('noMoreDataTransactions', () => false)
   const transactions = useState<ListTransactionResponse>('transactions', () => DefaultListResponse())
+  const searchTransactions = useState('searchTransactions', () => '')
 
   const abortController = ref<AbortController | null>(null)
 
@@ -20,6 +21,7 @@ export default function useTransactions() {
         limit: limitTransactions.value,
         sortBy: transactionSortBy.value,
         sortOrder: transactionSortOrder.value,
+        search: searchTransactions.value,
       },
     })
     if (error.value) {
@@ -42,6 +44,7 @@ export default function useTransactions() {
           limit: limitTransactions.value,
           sortBy: transactionSortBy.value,
           sortOrder: transactionSortOrder.value,
+          search: searchTransactions.value,
         },
         signal: abortController.value.signal,
       })
@@ -151,6 +154,7 @@ export default function useTransactions() {
     limitTransactions,
     pageTransactions,
     noMoreDataTransactions,
+    searchTransactions,
     useFetchListTransactions,
     listTransactions,
     createTransaction,

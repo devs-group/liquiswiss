@@ -18,7 +18,7 @@ type SendgridAdapter struct {
 }
 
 type ISendgridAdapter interface {
-	SendMail(from *mail.Email, to *mail.Email, templateId string, dynamicTemplateData interface{}) error
+	SendMail(from *mail.Email, to *mail.Email, templateId string, dynamicTemplateData any) error
 	SendRegistrationMail(email, code string) error
 	SendPasswordResetMail(email, code string) error
 }
@@ -29,7 +29,7 @@ func NewSendgridAdapter(apiKey string) ISendgridAdapter {
 	}
 }
 
-func (s SendgridAdapter) SendMail(from *mail.Email, to *mail.Email, templateId string, templateData interface{}) error {
+func (s SendgridAdapter) SendMail(from *mail.Email, to *mail.Email, templateId string, templateData any) error {
 	m := mail.NewV3Mail()
 	m.SetFrom(from)
 	m.SetTemplateID(templateId)

@@ -60,7 +60,7 @@ func VerifyToken(tokenString string) (*Claims, error) {
 	claims := &Claims{}
 
 	cfg := config.GetConfig()
-	token, err := jwt.ParseWithClaims(tokenString, claims, func(token *jwt.Token) (interface{}, error) {
+	token, err := jwt.ParseWithClaims(tokenString, claims, func(token *jwt.Token) (any, error) {
 		return cfg.JWTKey, nil
 	})
 

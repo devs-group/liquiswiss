@@ -100,7 +100,7 @@ func (d *DatabaseAdapter) UpdateOrganisation(payload models.UpdateOrganisation, 
 	// Base query
 	query := "UPDATE organisations SET "
 	queryBuild := []string{}
-	args := []interface{}{}
+	args := []any{}
 
 	// Dynamically add fields that are not nil
 	if payload.Name != nil {
