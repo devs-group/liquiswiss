@@ -9,8 +9,9 @@ export default defineNuxtPlugin((_nuxtApp) => {
         // Save current path for redirect after re-login
         const redirectPathCookie = useCookie(Constants.REDIRECT_PATH_COOKIE, RedirectCookieProps)
         redirectPathCookie.value = _nuxtApp._route.fullPath
-        localStorage.setItem(Constants.SESSION_EXPIRED_NAME, 'true')
-        reloadNuxtApp({ force: true })
+        // Set state to trigger session expired dialog in app.vue (Flow 1: active session expiry)
+        const { sessionExpired } = useAuth()
+        sessionExpired.value = true
       }
     },
   })

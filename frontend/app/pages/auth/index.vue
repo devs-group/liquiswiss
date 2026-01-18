@@ -83,6 +83,7 @@ import useAuth from '~/composables/useAuth'
 import { Config } from '~/config/config'
 import { RouteNames } from '~/config/routes'
 import type { LoginFormData } from '~/models/auth'
+import { Constants, RedirectCookieProps } from '~/utils/constants'
 
 useHead({
   title: 'Login',
@@ -90,8 +91,24 @@ useHead({
 
 const { login } = useAuth()
 const toast = useToast()
-
+const sessionExpiredCookie = useCookie(Constants.SESSION_EXPIRED_COOKIE, RedirectCookieProps)
 const isLoading = ref(false)
+
+// Check for session expired cookie and show toast (Flow 2: page load with expired session)
+onMounted(() => {
+  if (sessionExpiredCookie.value) {
+    sessionExpiredCookie.value = null
+    // Small delay to ensure Toast component is ready
+    setTimeout(() => {
+      toast.add({
+        summary: 'Session abgelaufen',
+        detail: 'Ihre Session ist aus Sicherheitsgründen abgelaufen. Bitte loggen Sie sich erneut ein.',
+        severity: 'info',
+        life: Config.TOAST_LIFE_TIME,
+      })
+    }, 100)
+  }
+})
 
 const { defineField, errors, handleSubmit, meta } = useForm({
   validationSchema: yup.object({

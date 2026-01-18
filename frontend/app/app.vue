@@ -37,6 +37,13 @@
     :draggable="false"
     :breakpoints="confirmBreakpoints"
   />
+  <ConfirmDialog
+    group="session-expired"
+    :draggable="false"
+    :closable="false"
+    :close-on-escape="false"
+    :breakpoints="confirmBreakpoints"
+  />
   <Toast position="bottom-center" />
   <NuxtLoadingIndicator
     :height="4"
@@ -51,10 +58,11 @@ import type { ConfirmDialogBreakpoints } from 'primevue'
 import useAuth from '~/composables/useAuth'
 import { Config } from '~/config/config'
 
-const { isAuthenticated, getAccessToken, getOrganisationCurrencyCode } = useAuth()
+const { isAuthenticated, getAccessToken, getOrganisationCurrencyCode, sessionExpired } = useAuth()
 const { useFetchListCurrencies, useFetchListCategories, useFetchListFiatRates, useFetchGetServerTime, serverDate, showGlobalLoadingSpinner } = useGlobalData()
 const { useFetchListOrganisations } = useOrganisations()
 const toast = useToast()
+const confirm = useConfirm()
 const { hook } = useNuxtApp()
 const hasInitialLoadError = ref(false)
 const updateAvailable = ref(false)
@@ -86,6 +94,31 @@ if (isAuthenticated.value) {
     })
 }
 
+// Watch for session expiry and show dialog before reload
+watch(sessionExpired, (expired) => {
+  if (expired) {
+    confirm.require({
+      group: 'session-expired',
+      header: 'Session abgelaufen',
+      message: 'Ihre Session ist aus Sicherheitsgründen abgelaufen. Sie werden nun zur Anmeldeseite weitergeleitet.',
+      icon: 'pi pi-info-circle',
+      rejectClass: 'hidden',
+      acceptLabel: 'OK',
+      accept: () => {
+        reloadNuxtApp({ force: true })
+      },
+      reject: () => {
+        // Fallback: reload anyway if dialog is dismissed
+        reloadNuxtApp({ force: true })
+      },
+      onHide: () => {
+        // Fallback: reload if dialog disappears for any reason
+        reloadNuxtApp({ force: true })
+      },
+    })
+  }
+})
+
 // This is to ensure users gets an access token if it expires
 onMounted(() => {
   hook('app:manifest:update', () => {
@@ -99,17 +132,6 @@ onMounted(() => {
         summary: 'Fehler',
         detail: `Es scheint aktuell technische Probleme zu geben.`,
         severity: 'warn',
-        life: Config.TOAST_LIFE_TIME,
-      })
-    }
-  }
-  else {
-    if (localStorage.getItem(Constants.SESSION_EXPIRED_NAME) === 'true') {
-      localStorage.removeItem(Constants.SESSION_EXPIRED_NAME)
-      toast.add({
-        summary: 'Info',
-        detail: `Ihre Session ist aus Sicherheitsgründen abgelaufen. Bitte loggen Sie sich erneut ein.`,
-        severity: 'info',
         life: Config.TOAST_LIFE_TIME,
       })
     }

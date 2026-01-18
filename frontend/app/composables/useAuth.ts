@@ -16,6 +16,7 @@ import { Constants, RedirectCookieProps } from '~/utils/constants'
 export default function useAuth() {
   const user = useState<User | null>('user')
   const hasFetchedInitially = useState('hasFetchedInitially', () => false)
+  const sessionExpired = useState<boolean>(Constants.SESSION_EXPIRED_STATE, () => false)
 
   const login = async (payload: LoginFormData): Promise<void> => {
     await $fetch('/api/auth/login', {
@@ -111,7 +112,7 @@ export default function useAuth() {
     }
   }
 
-  const useFetchGetProfile = async () => {
+  const useFetchGetProfile = async (): Promise<{ sessionExpired: boolean }> => {
     hasFetchedInitially.value = true
     const { data, error } = await useFetch('/api/profile', {
       method: 'GET',
@@ -119,9 +120,12 @@ export default function useAuth() {
     })
     if (error.value) {
       console.error(error.value)
-      return Promise.reject('Benutzer konnte nicht geladen werden')
+      // Check if the error response indicates session expiry
+      const isSessionExpired = (error.value as any)?.data?.logout === true
+      return Promise.reject({ message: 'Benutzer konnte nicht geladen werden', sessionExpired: isSessionExpired })
     }
     user.value = data.value
+    return { sessionExpired: false }
   }
 
   const updateProfile = async (payload: UserProfileFormData) => {
@@ -177,6 +181,7 @@ export default function useAuth() {
   return {
     user,
     hasFetchedInitially,
+    sessionExpired,
     isAuthenticated,
     getOrganisationCurrencyID,
     getOrganisationCurrencyCode,

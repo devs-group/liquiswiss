@@ -9,11 +9,17 @@ export default defineNuxtRouteMiddleware(async (to) => {
   const { useFetchGetProfile, isAuthenticated, hasFetchedInitially } = useAuth()
   const redirectPathCookie = useCookie(Constants.REDIRECT_PATH_COOKIE, RedirectCookieProps)
   const explicitLogoutCookie = useCookie(Constants.EXPLICIT_LOGOUT, RedirectCookieProps)
+  const sessionExpiredCookie = useCookie<boolean | null>(Constants.SESSION_EXPIRED_COOKIE, RedirectCookieProps)
+
+  let isSessionExpired = false
 
   if (!isAuthenticated.value && !hasFetchedInitially.value) {
     await useFetchGetProfile()
-      .catch(() => {
-        // Ignore because user is most likely not authenticated
+      .catch((err) => {
+        // Check if session expired (Flow 2: page load with expired session)
+        if (err?.sessionExpired) {
+          isSessionExpired = true
+        }
       })
   }
 
@@ -29,6 +35,10 @@ export default defineNuxtRouteMiddleware(async (to) => {
     else {
       // Save current path for redirect after login
       redirectPathCookie.value = to.fullPath
+      // Set session expired cookie (same place as redirectPath to ensure it's sent)
+      if (isSessionExpired) {
+        sessionExpiredCookie.value = true
+      }
     }
     return navigateTo({ name: RouteNames.AUTH_LOGIN }, { replace: true })
   }
