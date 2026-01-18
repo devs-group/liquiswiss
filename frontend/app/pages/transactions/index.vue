@@ -112,8 +112,13 @@ const onSearch = (value: string) => {
   if (searchTimeout) {
     clearTimeout(searchTimeout)
   }
+  const trimmedValue = value.trim()
+  // Skip search if only whitespace was entered and current search is already empty
+  if (trimmedValue === searchTransactions.value) {
+    return
+  }
   searchTimeout = setTimeout(() => {
-    searchTransactions.value = value
+    searchTransactions.value = trimmedValue
     pageTransactions.value = 1
     isLoading.value = true
     listTransactions(false)
