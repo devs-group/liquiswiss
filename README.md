@@ -47,9 +47,9 @@ We are using [phpMyAdmin](https://www.phpmyadmin.net/) with Docker to provide an
   information [here](https://hub.docker.com/_/phpmyadmin)
 - You can check out your database (locally) at: http://localhost:8082/
 
-# Frontend (Nuxt 3)
+# Frontend (Nuxt 4)
 
-Look at the [Nuxt 3 documentation](https://nuxt.com/docs/getting-started/introduction) to learn more.
+Look at the [Nuxt documentation](https://nuxt.com/docs/getting-started/introduction) to learn more.
 
 > Make sure you are in the [frontend](frontend) directory for all the following actions
 

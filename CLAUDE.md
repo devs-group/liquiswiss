@@ -39,6 +39,8 @@ make modernize       # Apply Go modernize suggestions
 **Important**:
 - Always run `go test -count=1 ./...` after backend changes and check if new tests are required.
 - Tests require MariaDB running (`docker compose up`) and `.env.local.testing` configured.
+- Test environment determined by `TESTING_ENVIRONMENT` env var (uses `.env.local.testing` locally, `.env.github.testing` in CI).
+- Optional fixtures available at `backend/internal/adapter/db_adapter/fixtures/`.
 
 ### Database
 ```bash
@@ -87,6 +89,11 @@ Detailed documentation is in [docs/ai/](docs/ai/):
 ## Configuration
 
 See `.env.example`, `backend/.env.example`, and `frontend/.env.example` for required environment variables.
+
+## External Services
+
+- **Fixer.io**: Currency exchange rates (synced every 12 hours)
+- **SendGrid**: Transactional emails (requires API key and dynamic template)
 
 ## Plans
 
