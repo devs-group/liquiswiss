@@ -60,3 +60,7 @@ Detailed documentation is in [docs/ai/](docs/ai/):
 ## Configuration
 
 See `.env.example`, `backend/.env.example`, and `frontend/.env.example` for required environment variables.
+
+## General Guidelines
+
+- **Current year is 2026**: Always search for up-to-date methods and documentation (2025-2026) to prevent outdated implementations. Libraries and frameworks evolve rapidly.

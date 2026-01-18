@@ -26,6 +26,17 @@
 
 **Global middleware**: `auth.global.ts` runs on every route, protecting pages and auto-refreshing tokens.
 
+**Constants**: Always use `app/utils/constants.ts` as the first choice for adding cookie names, magic strings, and configuration values. This centralizes all constants and makes them easy to find and maintain.
+
+**Cookies over localStorage**: Always use cookies (`useCookie`) instead of localStorage for storing state. localStorage doesn't work with SSR since it's only available on the client side. Cookies work on both server and client.
+
+**Cookie value types**: Nuxt's `useCookie` automatically serializes/deserializes values to JSON. This means:
+- `cookie.value = true` → stored as JSON `true` → read back as boolean `true`
+- `cookie.value = 'hello'` → stored as JSON `"hello"` → read back as string `'hello'`
+- `cookie.value = { foo: 1 }` → stored as JSON object → read back as object
+
+Always use truthy checks (`if (cookie.value)`) instead of string comparisons (`if (cookie.value === 'true')`). Custom `encode`/`decode` options can be passed to `useCookie` if you need different serialization behavior. See [Nuxt useCookie docs](https://nuxt.com/docs/api/composables/use-cookie).
+
 ## Composables Overview
 
 | Composable | Purpose |

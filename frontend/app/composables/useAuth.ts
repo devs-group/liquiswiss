@@ -11,7 +11,7 @@ import type {
   UserProfileFormData,
   UserUpdateOrganisationFormData,
 } from '~/models/auth'
-import { Constants } from '~/utils/constants'
+import { Constants, RedirectCookieProps } from '~/utils/constants'
 
 export default function useAuth() {
   const user = useState<User | null>('user')
@@ -90,6 +90,9 @@ export default function useAuth() {
         method: 'GET',
       })
       user.value = null
+      // Mark as explicit logout so middleware doesn't save redirect path
+      const explicitLogoutCookie = useCookie(Constants.EXPLICIT_LOGOUT, RedirectCookieProps)
+      explicitLogoutCookie.value = 'true'
     }
     catch (error) {
       console.error('Error logging out:', error)
