@@ -1,0 +1,55 @@
+#!/bin/bash
+
+# Get the root directory of the git repo
+ROOT_DIR=$(git rev-parse --show-toplevel)
+
+echo "Running pre-commit hooks..."
+
+# Run frontend lint:fix
+echo ""
+echo "=== Running frontend lint:fix ==="
+cd "$ROOT_DIR/frontend"
+
+# Source nvm if available
+export NVM_DIR="$HOME/.nvm"
+[ -s "$NVM_DIR/nvm.sh" ] && \. "$NVM_DIR/nvm.sh"
+
+# Use the correct node version
+if [ -f ".nvmrc" ]; then
+    nvm use > /dev/null 2>&1
+fi
+
+npm run lint:fix
+LINT_EXIT_CODE=$?
+
+if [ $LINT_EXIT_CODE -ne 0 ]; then
+    echo ""
+    echo "❌ Frontend lint:fix failed. Commit aborted."
+    exit 1
+fi
+
+echo "✓ Frontend lint:fix passed"
+
+# Stage any files that were fixed by lint:fix
+cd "$ROOT_DIR"
+git add -u
+
+# Run backend tests
+echo ""
+echo "=== Running backend tests ==="
+cd "$ROOT_DIR/backend"
+
+go test ./...
+TEST_EXIT_CODE=$?
+
+if [ $TEST_EXIT_CODE -ne 0 ]; then
+    echo ""
+    echo "❌ Backend tests failed. Commit aborted."
+    exit 1
+fi
+
+echo "✓ Backend tests passed"
+
+echo ""
+echo "✓ All pre-commit checks passed!"
+exit 0
