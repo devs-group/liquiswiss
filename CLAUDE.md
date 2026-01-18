@@ -6,6 +6,14 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 LiquiSwiss is a liquidity planning application with a Go backend and Nuxt 4 frontend. It helps organizations forecast cash flow based on employee salaries, salary costs, transactions, and multi-currency exchange rates.
 
+## Setup (after cloning)
+
+```bash
+git config core.hooksPath .githooks
+```
+
+This enables pre-commit hooks that run `npm run lint:fix` and `go test -count=1 ./...` before each commit.
+
 ## Quick Commands
 
 ### Frontend (`frontend/`)
@@ -92,3 +100,4 @@ See `.env.example`, `backend/.env.example`, and `frontend/.env.example` for requ
 ## General Guidelines
 
 - **Current year is 2026**: Always search for up-to-date methods and documentation (2025-2026) to prevent outdated implementations. Libraries and frameworks evolve rapidly.
+- **Always verify current directory**: Before running any shell command, verify the working directory using `pwd` or by using absolute paths. This prevents errors from running commands in the wrong directory.

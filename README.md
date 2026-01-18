@@ -5,6 +5,14 @@ Liquidity Planning
 - [Landing Page](https://liquiswiss.ch/)
 - [Discord](https://discord.gg/7ckBNzskYh)
 
+## Setup (after cloning)
+
+```bash
+git config core.hooksPath .githooks
+```
+
+This enables pre-commit hooks that run lint and tests before each commit.
+
 ## Configuration
 
 > We are planning to add [Mailpit](https://mailpit.axllent.org/) for local e-mail testing and replace fixer.io with a
