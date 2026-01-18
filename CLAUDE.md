@@ -20,7 +20,7 @@ npm run build        # Production build
 ### Backend (`backend/`)
 ```bash
 go mod tidy          # Install dependencies
-go run .             # Run dev server
+go run .             # Run dev server (or use `air` for hot-reloading)
 go test -count=1 ./...  # Run all tests (requires docker compose up)
 go test -count=1 ./internal/service/api_service -run TestName  # Run specific test
 go generate ./...    # Regenerate mocks
@@ -37,6 +37,20 @@ docker compose up    # Start MariaDB
 make goose-static-create <name>   # Create schema migration (from backend/)
 make goose-dynamic-create <name>  # Create function/view migration (from backend/)
 ```
+
+### Running Both Servers in Background
+
+Run these commands in background to have both servers running with real-time logs:
+
+```bash
+# Backend (run in background from backend/)
+air
+
+# Frontend (run in background from frontend/, requires nvm)
+source ~/.nvm/nvm.sh && nvm use && npm run dev
+```
+
+**Note**: During hot-reloading, refreshing, or in-between states, you may see transient errors in the logs until the code changes are complete or fixed.
 
 ## Documentation
 
@@ -72,8 +86,7 @@ See `.env.example`, `backend/.env.example`, and `frontend/.env.example` for requ
 
 ## Context from Previous Sessions
 
-- Check for conversation export files in root (pattern: `YYYY-MM-DD-*.txt`)
-- Read the latest one to pick up context from the previous session
+- Check for `claude_chat_history.txt` in root for context from the previous session
 
 ## General Guidelines
 

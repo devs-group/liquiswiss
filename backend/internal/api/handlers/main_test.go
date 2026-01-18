@@ -12,6 +12,7 @@ import (
 	"github.com/pressly/goose/v3"
 
 	"liquiswiss/internal/adapter/db_adapter"
+	"liquiswiss/internal/adapter/sendgrid_adapter"
 	"liquiswiss/internal/db"
 	"liquiswiss/internal/service/api_service"
 	"liquiswiss/pkg/logger"
@@ -161,4 +162,58 @@ func isMissingTableError(err error) bool {
 	}
 	msg := err.Error()
 	return strings.Contains(msg, "doesn't exist") || strings.Contains(msg, "Unknown table")
+}
+
+// CrossOrgTestEnv holds the test environment for cross-organisation isolation tests
+type CrossOrgTestEnv struct {
+	Conn       *sql.DB
+	APIService api_service.IAPIService
+	DBAdapter  db_adapter.IDatabaseAdapter
+	UserA      *models.User
+	UserB      *models.User
+	OrgA       *models.Organisation
+	OrgB       *models.Organisation
+	Currency   *models.Currency
+}
+
+// SetupCrossOrgTestEnvironment creates two separate users with their own organisations
+// for testing cross-organisation data isolation
+func SetupCrossOrgTestEnvironment(t *testing.T) *CrossOrgTestEnv {
+	t.Helper()
+
+	conn := SetupTestEnvironment(t)
+
+	dbAdapter := db_adapter.NewDatabaseAdapter(conn)
+	sendgridService := sendgrid_adapter.NewSendgridAdapter("")
+	apiService := api_service.NewAPIService(dbAdapter, sendgridService)
+
+	currency, err := CreateCurrency(apiService, "CHF", "Swiss Franc", "de-CH")
+	if err != nil {
+		t.Fatalf("Failed to create currency: %v", err)
+	}
+
+	userA, orgA, err := CreateUserWithOrganisation(
+		apiService, dbAdapter, "userA@isolation-test.com", "test", "Organisation A",
+	)
+	if err != nil {
+		t.Fatalf("Failed to create user A: %v", err)
+	}
+
+	userB, orgB, err := CreateUserWithOrganisation(
+		apiService, dbAdapter, "userB@isolation-test.com", "test", "Organisation B",
+	)
+	if err != nil {
+		t.Fatalf("Failed to create user B: %v", err)
+	}
+
+	return &CrossOrgTestEnv{
+		Conn:       conn,
+		APIService: apiService,
+		DBAdapter:  dbAdapter,
+		UserA:      userA,
+		UserB:      userB,
+		OrgA:       orgA,
+		OrgB:       orgB,
+		Currency:   currency,
+	}
 }

@@ -96,6 +96,7 @@ func CreateTransaction(apiService api_service.IAPIService, c *gin.Context) {
 	// Action
 	transaction, err := apiService.CreateTransaction(payload, userID)
 	if err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 		return
 	}
 
@@ -129,7 +130,7 @@ func UpdateTransaction(apiService api_service.IAPIService, c *gin.Context) {
 	// Action
 	transaction, err := apiService.UpdateTransaction(payload, userID, transactionID)
 	if err != nil {
-		c.Status(http.StatusInternalServerError)
+		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 		return
 	}
 

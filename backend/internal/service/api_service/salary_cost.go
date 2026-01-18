@@ -57,6 +57,13 @@ func (a *APIService) CreateSalaryCost(payload models.CreateSalaryCost, userID in
 		return nil, fmt.Errorf("cannot attach costs to a termination salary")
 	}
 
+	// Validate that label belongs to user's organisation
+	if payload.LabelID != nil {
+		if _, err := a.dbService.GetSalaryCostLabel(userID, *payload.LabelID); err != nil {
+			return nil, fmt.Errorf("invalid label: not found")
+		}
+	}
+
 	if err := a.validateSalaryCostBase(payload, userID, salaryID, nil); err != nil {
 		logger.Logger.Error(err)
 		return nil, err
@@ -101,6 +108,13 @@ func (a *APIService) UpdateSalaryCost(payload models.CreateSalaryCost, userID in
 	if err != nil {
 		logger.Logger.Error(err)
 		return nil, err
+	}
+
+	// Validate that label belongs to user's organisation
+	if payload.LabelID != nil {
+		if _, err := a.dbService.GetSalaryCostLabel(userID, *payload.LabelID); err != nil {
+			return nil, fmt.Errorf("invalid label: not found")
+		}
 	}
 
 	if err := a.validateSalaryCostBase(payload, userID, existingSalaryCost.SalaryID, &salaryCostID); err != nil {

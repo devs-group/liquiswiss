@@ -18,4 +18,4 @@ logs
 db_data/
 
 # Claude Code conversation exports
-????-??-??-*.txt
+claude_chat_history.txt
