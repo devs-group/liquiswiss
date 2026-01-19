@@ -12,7 +12,7 @@ LiquiSwiss is a liquidity planning application with a Go backend and Nuxt 4 fron
 git config core.hooksPath .githooks
 ```
 
-This enables pre-commit hooks that run `npm run lint:fix` and `go test -count=1 ./...` before each commit.
+This enables pre-commit hooks that run `npm run lint:fix` and `go test ./...` before each commit.
 
 **Important**: At the start of each session, verify git hooks are configured by running the command above. The pre-commit hook runs `npm run lint:fix` and `go test` automatically on commit, so there's no need to run these separately right before committing.
 
@@ -33,7 +33,7 @@ Note: `npm run lint:fix` runs automatically via pre-commit hook.
 go mod tidy          # Install dependencies
 go run .             # Run dev server (or use `air` for hot-reloading)
 go test -count=1 ./...  # Run all tests (requires docker compose up)
-go test -count=1 ./internal/service/api_service -run TestName  # Run specific test
+go test -count=1 ./internal/api/handlers -run TestName  # Run specific test
 go vet ./...         # Static analysis
 go generate ./...    # Regenerate mocks
 make modernize       # Apply Go modernize suggestions

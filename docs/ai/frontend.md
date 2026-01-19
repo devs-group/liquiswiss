@@ -37,20 +37,9 @@
 
 Always use truthy checks (`if (cookie.value)`) instead of string comparisons (`if (cookie.value === 'true')`). Custom `encode`/`decode` options can be passed to `useCookie` if you need different serialization behavior. See [Nuxt useCookie docs](https://nuxt.com/docs/api/composables/use-cookie).
 
-## Composables Overview
+## Composables
 
-| Composable | Purpose |
-|------------|---------|
-| `useAuth` | Login, logout, token refresh |
-| `useEmployees` | Employee CRUD |
-| `useSalaries` | Salary management |
-| `useSalaryCosts` | Cost calculations |
-| `useForecasts` | Forecast data + exclusions |
-| `useTransactions` | Transaction CRUD |
-| `useBankAccounts` | Bank account management |
-| `useVat` / `useVatSettings` | VAT calculations and config |
-| `useGlobalData` | Currencies, categories, fiat rates |
-| `useCharts` | Chart data preparation |
+All composables are located in `app/composables/`. Each feature has a composable that encapsulates state, API calls, and computed properties.
 
 ## E2E Testing (Playwright)
 

@@ -103,7 +103,7 @@ All new endpoints and entity relationships **MUST** have cross-organisation isol
 2. Users cannot reference entities from other organisations
 3. List operations only return data from the user's organisation
 
-Test files follow the pattern `*_isolation_test.go` and use `SetupCrossOrgTestEnvironment()` to create two users in separate organisations.
+Test files follow the pattern `*_isolation_test.go` and use `SetupCrossOrgTestEnvironment()` (defined in `internal/api/handlers/main_test.go`) to create two users in separate organisations.
 
 Example test structure:
 ```go
