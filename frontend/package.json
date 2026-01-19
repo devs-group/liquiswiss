@@ -10,12 +10,18 @@
     "lint:fix": "eslint . --fix",
     "generate": "nuxt generate",
     "preview": "nuxt preview",
-    "postinstall": "nuxt prepare"
+    "postinstall": "nuxt prepare",
+    "test:e2e:install": "npx playwright install chromium",
+    "test:e2e": "playwright test",
+    "test:e2e:ui": "playwright test --ui",
+    "test:e2e:headed": "playwright test --headed",
+    "test:e2e:debug": "playwright test --debug"
   },
   "devDependencies": {
     "@nuxt/eslint": "^0.7.6",
     "@nuxtjs/color-mode": "^3.5.2",
     "@nuxtjs/tailwindcss": "^6.14.0",
+    "@playwright/test": "^1.57.0",
     "@primevue/nuxt-module": "^4.4.1",
     "nuxt": "^4.2.0",
     "vue": "^3.4.14",

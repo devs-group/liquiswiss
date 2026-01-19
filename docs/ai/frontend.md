@@ -51,3 +51,57 @@ Always use truthy checks (`if (cookie.value)`) instead of string comparisons (`i
 | `useVat` / `useVatSettings` | VAT calculations and config |
 | `useGlobalData` | Currencies, categories, fiat rates |
 | `useCharts` | Chart data preparation |
+
+## E2E Testing (Playwright)
+
+**Location**: `frontend/e2e/`
+
+### Key Patterns
+
+**Wait for SSR hydration**: Nuxt uses SSR, so pages render on the server first and then Vue "hydrates" them on the client. Always wait for hydration before interacting:
+
+```typescript
+await page.waitForLoadState('networkidle')
+await expect(locator).toBeEditable()
+```
+
+**Click before fill**: For PrimeVue inputs with vee-validate, click to focus before filling to ensure proper Vue reactivity:
+
+```typescript
+await emailInput.click()
+await emailInput.fill('test@example.com')
+```
+
+**Use native IDs over data-testid**: PrimeVue components sometimes have complex DOM structures. Use native `id` attributes when available:
+
+```typescript
+// Prefer this (more reliable)
+this.emailInput = page.locator('#email')
+
+// Over this (can be flaky with component wrappers)
+this.emailInput = page.locator('[data-testid="email-input"]')
+```
+
+### Running Tests
+
+```bash
+npm run test:e2e           # Headless
+npm run test:e2e:ui        # Interactive UI mode
+npm run test:e2e:headed    # Visible browser
+npm run test:e2e:debug     # Debug mode
+```
+
+### Test Structure
+
+- `e2e/fixtures/` - Reusable test fixtures (e.g., authenticated user)
+- `e2e/pages/` - Page object models
+- `e2e/*.spec.ts` - Test files
+
+### E2E Test User
+
+A test user is automatically seeded via dynamic migration:
+- **Email**: `e2e@test.liquiswiss.ch`
+- **Password**: `Test123!`
+- **Migration**: `backend/internal/db/migrations/dynamic/10001_apply_e2e_test_fixtures.sql`
+
+Override credentials with environment variables: `E2E_TEST_EMAIL`, `E2E_TEST_PASSWORD`

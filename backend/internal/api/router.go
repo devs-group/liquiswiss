@@ -37,6 +37,11 @@ func NewAPI(
 func (api *API) setupRouter() {
 	group := api.Router.Group("/api")
 	{
+		// Health check endpoint for monitoring and CI
+		group.GET("/health", func(ctx *gin.Context) {
+			ctx.JSON(200, gin.H{"status": "ok"})
+		})
+
 		public := group.Group("/auth")
 		{
 			public.POST("/login", func(ctx *gin.Context) {

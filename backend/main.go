@@ -60,21 +60,24 @@ func runApp() {
 	}
 	defer conn.Close()
 
-	// Run auto migrations (unless --no-migrate flag is set)
+	// Run auto migrations
+	// --no-migrate flag only skips static migrations (schema changes)
+	// Dynamic migrations (functions, views) always run as they're idempotent
 	if *noMigrate {
-		logger.Logger.Info("Skipping migrations (--no-migrate flag set)")
+		logger.Logger.Info("Skipping static migrations (--no-migrate flag set)")
 	} else {
 		err = runStaticMigrations()
 		if err != nil {
 			logger.Logger.Error(err)
 			os.Exit(1)
 		}
+	}
 
-		err = runDynamicMigrations()
-		if err != nil {
-			logger.Logger.Error(err)
-			os.Exit(1)
-		}
+	// Always run dynamic migrations (functions, views, fixtures)
+	err = runDynamicMigrations()
+	if err != nil {
+		logger.Logger.Error(err)
+		os.Exit(1)
 	}
 
 	cfg := config.GetConfig()

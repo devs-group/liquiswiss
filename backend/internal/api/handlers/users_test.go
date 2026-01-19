@@ -35,7 +35,7 @@ func TestCreateAndUpdateUser(t *testing.T) {
 	user, err = dbAdapter.GetProfile(user.ID)
 	assert.NoError(t, err)
 
-	assert.Equal(t, int64(1), user.ID)
+	assert.Greater(t, user.ID, int64(0))
 	assert.Equal(t, "Jane Doe", user.Name)
 	assert.Equal(t, organisation.ID, user.CurrentOrganisationID)
 }

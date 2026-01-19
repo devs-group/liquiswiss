@@ -24,6 +24,7 @@
             v-bind="emailProps"
             id="email"
             v-model="email"
+            data-testid="email-input"
             :class="{ 'p-invalid': errors['email']?.length }"
             type="email"
             autocomplete="email"
@@ -40,6 +41,7 @@
             v-bind="passwordProps"
             id="password"
             v-model="password"
+            data-testid="password-input"
             :class="{ 'p-invalid': errors['password']?.length }"
             type="password"
             autocomplete="current-password"
@@ -65,6 +67,7 @@
           <Button
             :disabled="!meta.valid || (meta.valid && !meta.dirty) || isLoading"
             :loading="isLoading"
+            data-testid="login-button"
             label="Login"
             icon="pi pi-sign-in"
             type="submit"

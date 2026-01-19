@@ -26,6 +26,7 @@ jobs:
       frontend: ${{ steps.filter.outputs.frontend }}
       backend: ${{ steps.filter.outputs.backend }}
       workflow: ${{ steps.filter.outputs.workflow }}
+      e2e: ${{ steps.filter.outputs.e2e }}
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
@@ -44,6 +45,9 @@ jobs:
               - 'backend/**'
             workflow:
               - '.github/workflows/ci.yml'
+            e2e:
+              - 'frontend/e2e/**'
+              - 'frontend/playwright.config.ts'
 
   lint_nuxt:
     name: Lint Nuxt
@@ -99,6 +103,105 @@ jobs:
       - name: Run Backend Tests
         working-directory: backend
         run: go test ./...
+
+  e2e_tests:
+    name: E2E Tests
+    runs-on: ubuntu-latest
+    needs: [ changes, lint_nuxt, test_backend ]
+    if: ${{ always()
+      && (needs.changes.outputs.frontend == 'true' || needs.changes.outputs.e2e == 'true' || needs.changes.outputs.workflow == 'true')
+      && (needs.lint_nuxt.result == 'success' || needs.lint_nuxt.result == 'skipped')
+      && (needs.test_backend.result == 'success' || needs.test_backend.result == 'skipped') }}
+    services:
+      database:
+        image: mariadb:10.6.16
+        options: >-
+          --health-cmd "healthcheck.sh --connect --innodb_initialized"
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+        env:
+          MARIADB_USER: "test"
+          MARIADB_PASSWORD: "test"
+          MARIADB_DATABASE: "test"
+          MARIADB_ROOT_PASSWORD: "test"
+        ports:
+          - 3306:3306
+    env:
+      TESTING_ENVIRONMENT: "github"
+      E2E_BASE_URL: http://localhost:3000
+      NUXT_API_HOST: http://localhost:8080
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '22.19.0'
+          cache: 'npm'
+          cache-dependency-path: frontend/package-lock.json
+
+      - name: Setup Go
+        uses: actions/setup-go@v5
+        with:
+          go-version: '1.25.3'
+          cache-dependency-path: backend/go.sum
+
+      - name: Install frontend dependencies
+        working-directory: frontend
+        run: npm ci
+
+      - name: Install Playwright browsers
+        working-directory: frontend
+        run: npx playwright install chromium --with-deps
+
+      - name: Install backend dependencies
+        working-directory: backend
+        run: go mod download
+
+      - name: Build frontend
+        working-directory: frontend
+        run: npm run build
+
+      - name: Start backend server
+        working-directory: backend
+        run: go run . &
+        env:
+          DB_USER: test
+          DB_PASSWORD: test
+          DB_HOST: 127.0.0.1
+          DB_PORT: 3306
+          DB_NAME: test
+          JWT_KEY: test-jwt-key
+          WEB_HOST: http://localhost:3000
+          SEND_GRID_TOKEN: ""
+          SEND_GRID_TEMPLATE_ID: ""
+          FIXER_IO_URL: ""
+          FIXER_IO_KEY: ""
+
+      - name: Start frontend server
+        working-directory: frontend
+        run: npm run preview &
+
+      - name: Wait for servers
+        run: |
+          echo "Waiting for backend..."
+          timeout 60 bash -c 'until curl -s http://localhost:8080/api/health > /dev/null 2>&1; do sleep 1; done' || echo "Backend timeout"
+          echo "Waiting for frontend..."
+          timeout 60 bash -c 'until curl -s http://localhost:3000 > /dev/null 2>&1; do sleep 1; done' || echo "Frontend timeout"
+
+      - name: Run E2E tests
+        working-directory: frontend
+        run: npm run test:e2e -- --project=chromium
+
+      - name: Upload Playwright report
+        uses: actions/upload-artifact@v4
+        if: failure()
+        with:
+          name: playwright-report
+          path: frontend/playwright-report/
+          retention-days: 7
 
   build_nuxt:
     name: Build Nuxt

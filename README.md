@@ -112,7 +112,7 @@ You can fixtures from the [fixtures](backend/internal/adapter/db_adapter/fixture
 The dynamic migrations insert a minimal set of data required to make the app work properly. You can check out the
 minimal inserted data in [10000_apply_minimal_fixtures.sql](backend/internal/db/migrations/dynamic/10000_apply_minimal_fixtures.sql)
 
-## Tests
+## Backend Tests
 
 > Make sure you are in the [backend](backend) directory
 
@@ -126,6 +126,32 @@ minimal inserted data in [10000_apply_minimal_fixtures.sql](backend/internal/db/
 4. For the Github Action the [.env.github.testing](backend/.env.github.testing) is used
     - Check out the [ci.yml](.github/workflows/ci.yml) and check for the service used in the **test_backend** job
     - The environment variable `TESTING_ENVIRONMENT` determines which .env file to use
+
+## E2E Tests (Playwright)
+
+> Make sure you are in the [frontend](frontend) directory
+
+### Setup
+
+1. Install dependencies: `npm install`
+2. Install Playwright browsers: `npm run test:e2e:install`
+
+### Running Tests
+
+```bash
+npm run test:e2e          # Run all tests headless
+npm run test:e2e:ui       # Open interactive UI mode
+npm run test:e2e:headed   # Run tests with visible browser
+npm run test:e2e:debug    # Run tests in debug mode
+```
+
+### Requirements
+
+- Frontend dev server running (`npm run dev`)
+- Backend server running (`air` or `go run .`)
+- Test user credentials configured via environment variables:
+  - `E2E_TEST_EMAIL` - Test user email
+  - `E2E_TEST_PASSWORD` - Test user password
 
 # Production
 
