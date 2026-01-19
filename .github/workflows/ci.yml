@@ -165,6 +165,7 @@ jobs:
         working-directory: backend
         run: go run . &
         env:
+          GIN_MODE: release
           DB_USER: test
           DB_PASSWORD: test
           DB_HOST: 127.0.0.1
