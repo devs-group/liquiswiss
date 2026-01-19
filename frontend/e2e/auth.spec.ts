@@ -221,9 +221,9 @@ test.describe('Authentication', () => {
       await expect(page).toHaveURL(/\/auth/)
       await page.waitForLoadState('networkidle')
 
-      // Session expired toast SHOULD appear on login page
-      const sessionExpiredToast = page.getByText('Sitzung abgelaufen')
-      await expect(sessionExpiredToast).toBeVisible({ timeout: 5000 })
+      // Session expired toast SHOULD appear on login page (info severity)
+      await expect(page.locator('.p-toast-message-info')).toBeVisible({ timeout: 10000 })
+      await expect(page.getByText('Sitzung abgelaufen')).toBeVisible()
     })
 
     test('should show session expired toast when loading a protected page after session expires', async ({ page }) => {
@@ -238,9 +238,9 @@ test.describe('Authentication', () => {
       await expect(page).toHaveURL(/\/auth/)
       await page.waitForLoadState('networkidle')
 
-      // Session expired toast SHOULD appear on login page
-      const sessionExpiredToast = page.getByText('Sitzung abgelaufen')
-      await expect(sessionExpiredToast).toBeVisible({ timeout: 5000 })
+      // Session expired toast SHOULD appear on login page (info severity)
+      await expect(page.locator('.p-toast-message-info')).toBeVisible({ timeout: 10000 })
+      await expect(page.getByText('Sitzung abgelaufen')).toBeVisible()
     })
   })
 })
