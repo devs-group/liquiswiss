@@ -97,15 +97,15 @@ const toast = useToast()
 const sessionExpiredCookie = useCookie(Constants.SESSION_EXPIRED_COOKIE, RedirectCookieProps)
 const isLoading = ref(false)
 
-// Check for session expired cookie and show toast (Flow 2: page load with expired session)
+// Check for session expired cookie and show toast
 onMounted(() => {
   if (sessionExpiredCookie.value) {
     sessionExpiredCookie.value = null
     // Small delay to ensure Toast component is ready
     setTimeout(() => {
       toast.add({
-        summary: 'Session abgelaufen',
-        detail: 'Ihre Session ist aus Sicherheitsgründen abgelaufen. Bitte loggen Sie sich erneut ein.',
+        summary: 'Sitzung abgelaufen',
+        detail: 'Ihre Sitzung ist aus Sicherheitsgründen abgelaufen. Bitte loggen Sie sich erneut ein.',
         severity: 'info',
         life: Config.TOAST_LIFE_TIME,
       })

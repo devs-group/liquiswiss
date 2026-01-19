@@ -3,8 +3,10 @@ import type { CookieOptions } from '#app'
 export const Constants = {
   SESSION_EXPIRED_STATE: 'sessionExpiredState',
   SESSION_EXPIRED_COOKIE: 'sessionExpiredCookie',
+  SESSION_EXPIRED_DIALOG_COOKIE: 'sessionExpiredDialog',
   EXPLICIT_LOGOUT: 'explicitLogout',
   REDIRECT_PATH_COOKIE: 'redirectPath',
+  HAD_SESSION_COOKIE: 'hadSession',
   BASE_CURRENCY: 'CHF',
   BASE_LOCALE_CODE: 'de-CH',
 }

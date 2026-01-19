@@ -135,9 +135,9 @@ test.describe('Authentication', () => {
   })
 
   test.describe('Protected Routes', () => {
-    test('should redirect unauthenticated users to login without showing session expired toast', async ({ page }) => {
-      // First-time visitor accessing a protected route should NOT see "session expired" toast
-      // This was a bug: the backend was returning logout:true even for users who never had a session
+    test('should redirect unauthenticated users to login without showing session expired message', async ({ page }) => {
+      // First-time visitor accessing a protected route should NOT see any "session expired" message
+      // They never had a session, so there's nothing to expire
 
       // Try to access a protected route directly (as first-time visitor with no cookies)
       await page.goto('/employees')
@@ -148,10 +148,9 @@ test.describe('Authentication', () => {
       // Wait for page to be fully loaded
       await page.waitForLoadState('networkidle')
 
-      // Session expired toast should NOT appear for first-time visitors
-      // The toast has German text "Session abgelaufen"
-      const sessionExpiredToast = page.getByText('Session abgelaufen')
-      await expect(sessionExpiredToast).not.toBeVisible({ timeout: 2000 })
+      // No session expired message should appear (neither toast nor dialog)
+      const sessionExpiredMessage = page.getByText('Sitzung abgelaufen')
+      await expect(sessionExpiredMessage).not.toBeVisible({ timeout: 2000 })
     })
 
     test('should redirect to login when accessing settings', async ({ page }) => {
@@ -162,6 +161,86 @@ test.describe('Authentication', () => {
     test('should redirect to login when accessing transactions', async ({ page }) => {
       await page.goto('/transactions')
       await expect(page).toHaveURL(/\/auth/)
+    })
+  })
+
+  test.describe('Session Expiry', () => {
+    // Helper to log in and clear auth cookies
+    async function loginAndClearAuthCookies(page: import('@playwright/test').Page) {
+      const loginPage = new LoginPage(page)
+      await loginPage.goto()
+      await page.waitForLoadState('networkidle')
+
+      const testEmail = process.env.E2E_TEST_EMAIL || 'e2e@test.liquiswiss.ch'
+      const testPassword = process.env.E2E_TEST_PASSWORD || 'Test123!'
+
+      await loginPage.emailInput.click()
+      await loginPage.emailInput.fill(testEmail)
+      await loginPage.passwordInput.click()
+      await loginPage.passwordInput.fill(testPassword)
+      await expect(loginPage.loginButton).toBeEnabled({ timeout: 10000 })
+      await loginPage.loginButton.click()
+
+      await loginPage.expectLoginSuccess()
+
+      // Clear only auth cookies, keep hadSession cookie
+      const cookies = await page.context().cookies()
+      const authCookieNames = ['liq-access-token', 'liq-refresh-token']
+      const nonAuthCookies = cookies
+        .filter(c => !authCookieNames.includes(c.name))
+        .map(c => ({
+          ...c,
+          // Override secure to false for HTTP testing environment
+          secure: false,
+        }))
+
+      await page.context().clearCookies()
+      if (nonAuthCookies.length > 0) {
+        await page.context().addCookies(nonAuthCookies)
+      }
+    }
+
+    // Note: Client-side navigation with deleted cookies cannot be tested in E2E because
+    // auth cookies are HTTP-only (cannot be read by JavaScript). Session expiry is detected
+    // when the next API call fails with 401, which triggers the fetchInterceptor to show
+    // the session expired dialog. Manual testing:
+    // 1. Log in to the app
+    // 2. Open browser DevTools and delete liq-access-token and liq-refresh-token cookies
+    // 3. Perform any action that makes an API call (e.g., navigate to a page that loads data)
+    // 4. The "Sitzung abgelaufen" dialog should appear when the API call fails
+
+    test('should show session expired toast when page is reloaded after session expires', async ({ page }) => {
+      // Scenario: User logged in, session expires, user reloads the page
+      // Expected: Redirect to login page, toast message appears
+      await loginAndClearAuthCookies(page)
+
+      // Reload the page (this is a full page load, not client-side navigation)
+      await page.reload()
+
+      // Should be redirected to login
+      await expect(page).toHaveURL(/\/auth/)
+      await page.waitForLoadState('networkidle')
+
+      // Session expired toast SHOULD appear on login page
+      const sessionExpiredToast = page.getByText('Sitzung abgelaufen')
+      await expect(sessionExpiredToast).toBeVisible({ timeout: 5000 })
+    })
+
+    test('should show session expired toast when loading a protected page after session expires', async ({ page }) => {
+      // Scenario: User logged in, session expires, user types URL directly (page load)
+      // Expected: Redirect to login page, toast message appears
+      await loginAndClearAuthCookies(page)
+
+      // Navigate via URL (full page load)
+      await page.goto('/employees')
+
+      // Should be redirected to login
+      await expect(page).toHaveURL(/\/auth/)
+      await page.waitForLoadState('networkidle')
+
+      // Session expired toast SHOULD appear on login page
+      const sessionExpiredToast = page.getByText('Sitzung abgelaufen')
+      await expect(sessionExpiredToast).toBeVisible({ timeout: 5000 })
     })
   })
 })

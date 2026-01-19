@@ -57,8 +57,10 @@
 import type { ConfirmDialogBreakpoints } from 'primevue'
 import useAuth from '~/composables/useAuth'
 import { Config } from '~/config/config'
+import { Constants, RedirectCookieProps } from '~/utils/constants'
 
 const { isAuthenticated, getAccessToken, getOrganisationCurrencyCode, sessionExpired } = useAuth()
+const sessionExpiredDialogCookie = useCookie<boolean | null>(Constants.SESSION_EXPIRED_DIALOG_COOKIE, RedirectCookieProps)
 const { useFetchListCurrencies, useFetchListCategories, useFetchListFiatRates, useFetchGetServerTime, serverDate, showGlobalLoadingSpinner } = useGlobalData()
 const { useFetchListOrganisations } = useOrganisations()
 const toast = useToast()
@@ -94,36 +96,45 @@ if (isAuthenticated.value) {
     })
 }
 
-// Watch for session expiry and show dialog before reload
+// Watch for session expiry and show dialog before reload (triggered by fetchInterceptor)
 watch(sessionExpired, (expired) => {
   if (expired) {
-    confirm.require({
-      group: 'session-expired',
-      header: 'Session abgelaufen',
-      message: 'Ihre Session ist aus Sicherheitsgründen abgelaufen. Sie werden nun zur Anmeldeseite weitergeleitet.',
-      icon: 'pi pi-info-circle',
-      rejectClass: 'hidden',
-      acceptLabel: 'OK',
-      accept: () => {
-        reloadNuxtApp({ force: true })
-      },
-      reject: () => {
-        // Fallback: reload anyway if dialog is dismissed
-        reloadNuxtApp({ force: true })
-      },
-      onHide: () => {
-        // Fallback: reload if dialog disappears for any reason
-        reloadNuxtApp({ force: true })
-      },
-    })
+    showSessionExpiredDialog()
   }
 })
+
+// Helper function to show session expired dialog
+const showSessionExpiredDialog = () => {
+  confirm.require({
+    group: 'session-expired',
+    header: 'Sitzung abgelaufen',
+    message: 'Ihre Sitzung ist aus Sicherheitsgründen abgelaufen. Sie werden nun zur Anmeldeseite weitergeleitet.',
+    icon: 'pi pi-info-circle',
+    rejectClass: 'hidden',
+    acceptLabel: 'OK',
+    accept: () => {
+      reloadNuxtApp({ force: true })
+    },
+    reject: () => {
+      reloadNuxtApp({ force: true })
+    },
+    onHide: () => {
+      reloadNuxtApp({ force: true })
+    },
+  })
+}
 
 // This is to ensure users gets an access token if it expires
 onMounted(() => {
   hook('app:manifest:update', () => {
     updateAvailable.value = true
   })
+
+  // Check for session expired dialog cookie (set by middleware when session expires)
+  if (sessionExpiredDialogCookie.value) {
+    sessionExpiredDialogCookie.value = null
+    showSessionExpiredDialog()
+  }
 
   if (isAuthenticated.value) {
     getAccessToken()
