@@ -29,9 +29,10 @@ func AuthMiddleware(c *gin.Context) {
 		// If access token is invalid, check if a refresh token exists
 		refreshToken, err := c.Cookie(utils.RefreshTokenName)
 		if err != nil || refreshToken == "" {
-			// Delete both tokens and abort
+			// No refresh token - this is a first-time visitor, not an expired session
+			// Don't set logout:true as that would incorrectly show "session expired" toast
 			auth.ClearAuthCookies(c)
-			c.AbortWithStatusJSON(http.StatusUnauthorized, gin.H{"error": "Nicht angemeldet, Kein Refresh Token vorhanden", "logout": true})
+			c.AbortWithStatusJSON(http.StatusUnauthorized, gin.H{"error": "Nicht angemeldet, Kein Refresh Token vorhanden"})
 			return
 		}
 

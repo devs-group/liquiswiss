@@ -135,12 +135,23 @@ test.describe('Authentication', () => {
   })
 
   test.describe('Protected Routes', () => {
-    test('should redirect unauthenticated users to login', async ({ page }) => {
-      // Try to access a protected route directly
+    test('should redirect unauthenticated users to login without showing session expired toast', async ({ page }) => {
+      // First-time visitor accessing a protected route should NOT see "session expired" toast
+      // This was a bug: the backend was returning logout:true even for users who never had a session
+
+      // Try to access a protected route directly (as first-time visitor with no cookies)
       await page.goto('/employees')
 
       // Should be redirected to login
       await expect(page).toHaveURL(/\/auth/)
+
+      // Wait for page to be fully loaded
+      await page.waitForLoadState('networkidle')
+
+      // Session expired toast should NOT appear for first-time visitors
+      // The toast has German text "Session abgelaufen"
+      const sessionExpiredToast = page.getByText('Session abgelaufen')
+      await expect(sessionExpiredToast).not.toBeVisible({ timeout: 2000 })
     })
 
     test('should redirect to login when accessing settings', async ({ page }) => {
