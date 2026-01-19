@@ -1,8 +1,5 @@
 import type { CookieOptions } from '#app'
 
-// Helper: secure cookies only in production (HTTPS), not in dev/CI (HTTP)
-export const isProduction = process.env.NODE_ENV === 'production'
-
 export const Constants = {
   SESSION_EXPIRED_STATE: 'sessionExpiredState',
   SESSION_EXPIRED_COOKIE: 'sessionExpiredCookie',
@@ -32,12 +29,11 @@ export const RedirectCookieProps = {
   sameSite: 'lax',
 } as CookieOptions
 
-// Session tracking cookies - secure only in production (HTTPS)
-// In dev/CI (HTTP), secure cookies won't work
+// Session tracking cookies - no secure flag needed (not sensitive data)
+// This ensures they work on both HTTP (dev/CI) and HTTPS (production)
 export const SessionTrackingCookieProps = {
   maxAge: 60 * 60 * 24 * 3, // 72-hour expiry
   path: '/',
-  secure: isProduction,
   sameSite: 'lax',
 } as CookieOptions
 
