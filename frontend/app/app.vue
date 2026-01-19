@@ -110,7 +110,7 @@ const showSessionExpiredDialog = () => {
     header: 'Sitzung abgelaufen',
     message: 'Ihre Sitzung ist aus Sicherheitsgründen abgelaufen. Sie werden nun zur Anmeldeseite weitergeleitet.',
     icon: 'pi pi-info-circle',
-    rejectClass: 'hidden',
+    rejectClass: '!hidden',
     acceptLabel: 'OK',
     accept: () => {
       reloadNuxtApp({ force: true })
