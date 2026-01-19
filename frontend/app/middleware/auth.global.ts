@@ -1,5 +1,5 @@
 import { AuthRouteNames, RouteNames } from '~/config/routes'
-import { Constants, RedirectCookieProps, SettingsCookieProps } from '~/utils/constants'
+import { Constants, RedirectCookieProps, SessionTrackingCookieProps } from '~/utils/constants'
 
 export default defineNuxtRouteMiddleware(async (to) => {
   if (to.path?.startsWith('/api/')) {
@@ -11,7 +11,7 @@ export default defineNuxtRouteMiddleware(async (to) => {
   const redirectPathCookie = useCookie(Constants.REDIRECT_PATH_COOKIE, RedirectCookieProps)
   const explicitLogoutCookie = useCookie(Constants.EXPLICIT_LOGOUT, RedirectCookieProps)
   const sessionExpiredCookie = useCookie<boolean | null>(Constants.SESSION_EXPIRED_COOKIE, RedirectCookieProps)
-  const hadSessionCookie = useCookie<boolean | null>(Constants.HAD_SESSION_COOKIE, SettingsCookieProps)
+  const hadSessionCookie = useCookie<boolean | null>(Constants.HAD_SESSION_COOKIE, SessionTrackingCookieProps)
 
   // Note: We cannot detect cookie deletion via JavaScript because auth cookies are HTTP-only (secure).
   // Session expiry is detected through:
