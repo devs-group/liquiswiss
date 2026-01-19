@@ -18,6 +18,17 @@
 | Auth middleware | [internal/middleware/auth.go](../../backend/internal/middleware/auth.go) |
 | Environment config | [config/config.go](../../backend/config/config.go) |
 
+## Environment Modes
+
+The backend has two modes controlled by `GIN_MODE`:
+
+| Mode | `GIN_MODE` | Behavior |
+|------|-----------|----------|
+| Development | (unset or `debug`) | Loads `.env` file via godotenv, verbose logging |
+| Production | `release` | Expects env vars from environment, minimal logging |
+
+**Important for CI/Docker**: Set `GIN_MODE=release` to skip `.env` file loading. Without this, the backend will crash if no `.env` file exists.
+
 ## Patterns
 
 **Embedded SQL**: Queries live in `internal/adapter/db_adapter/queries/*.sql` and are embedded into the binary.
