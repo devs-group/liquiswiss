@@ -107,11 +107,8 @@ jobs:
   e2e_tests:
     name: E2E Tests
     runs-on: ubuntu-latest
-    needs: [ changes, lint_nuxt, test_backend ]
-    if: ${{ always()
-      && (needs.changes.outputs.frontend == 'true' || needs.changes.outputs.e2e == 'true' || needs.changes.outputs.workflow == 'true')
-      && (needs.lint_nuxt.result == 'success' || needs.lint_nuxt.result == 'skipped')
-      && (needs.test_backend.result == 'success' || needs.test_backend.result == 'skipped') }}
+    needs: [ changes ]
+    if: ${{ needs.changes.outputs.frontend == 'true' || needs.changes.outputs.e2e == 'true' || needs.changes.outputs.workflow == 'true' }}
     services:
       database:
         image: mariadb:10.6.16
@@ -191,25 +188,40 @@ jobs:
           echo "Waiting for frontend..."
           timeout 60 bash -c 'until curl -s http://localhost:3000 > /dev/null 2>&1; do sleep 1; done' || echo "Frontend timeout"
 
+      - name: Verify E2E test user exists
+        run: |
+          sudo apt-get update && sudo apt-get install -y mariadb-client
+          mysql -h 127.0.0.1 -u test -ptest test -e "SELECT id, email FROM users WHERE email = 'e2e@test.liquiswiss.ch';" || echo "User not found"
+          mysql -h 127.0.0.1 -u test -ptest test -e "SELECT COUNT(*) as currency_count FROM currencies;" || echo "No currencies"
+
       - name: Run E2E tests
         working-directory: frontend
         run: npm run test:e2e -- --project=chromium
 
       - name: Upload Playwright report
         uses: actions/upload-artifact@v4
-        if: failure()
+        if: always()
         with:
           name: playwright-report
           path: frontend/playwright-report/
           retention-days: 7
 
+      - name: Upload test results
+        uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: test-results
+          path: frontend/test-results/
+          retention-days: 7
+
   build_nuxt:
     name: Build Nuxt
     runs-on: ubuntu-latest
-    needs: [ changes, lint_nuxt ]
+    needs: [ changes, lint_nuxt, e2e_tests ]
     if: ${{ github.ref == 'refs/heads/main'
       && (needs.changes.outputs.frontend == 'true' || needs.changes.outputs.workflow == 'true')
-      && needs.lint_nuxt.result == 'success' }}
+      && needs.lint_nuxt.result == 'success'
+      && needs.e2e_tests.result == 'success' }}
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
@@ -260,14 +272,15 @@ jobs:
   push_images:
     name: Push Images
     runs-on: ubuntu-latest
-    needs: [ build_nuxt, build_backend, lint_nuxt, test_backend ]
+    needs: [ build_nuxt, build_backend, lint_nuxt, test_backend, e2e_tests ]
     if: ${{ always()
       && github.ref == 'refs/heads/main'
       && (needs.build_nuxt.result == 'success' || needs.build_backend.result == 'success')
       && needs.build_nuxt.result != 'failure'
       && needs.build_backend.result != 'failure'
       && needs.lint_nuxt.result != 'failure'
-      && needs.test_backend.result != 'failure' }}
+      && needs.test_backend.result != 'failure'
+      && needs.e2e_tests.result != 'failure' }}
     steps:
       - name: Download Nuxt Image Artifact
         uses: actions/download-artifact@v4

@@ -10,8 +10,9 @@ export default defineConfig({
 
   use: {
     baseURL: process.env.E2E_BASE_URL || 'http://localhost:3000',
-    trace: 'on-first-retry',
+    trace: 'retain-on-failure',
     screenshot: 'only-on-failure',
+    video: 'retain-on-failure',
   },
 
   projects: [

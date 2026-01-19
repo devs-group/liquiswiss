@@ -35,7 +35,14 @@ export class LoginPage {
   }
 
   async expectLoginSuccess(): Promise<void> {
-    await expect(this.page).toHaveURL('/', { timeout: 10000 })
+    // Wait for either redirect to home OR error toast (to diagnose failures)
+    // The login triggers reloadNuxtApp which causes a full page reload
+    await Promise.race([
+      expect(this.page).toHaveURL('/', { timeout: 30000 }),
+      expect(this.errorMessage).toBeVisible({ timeout: 30000 }).then(() => {
+        throw new Error('Login failed - error toast appeared instead of redirect')
+      }),
+    ])
   }
 
   async expectLoginError(): Promise<void> {
