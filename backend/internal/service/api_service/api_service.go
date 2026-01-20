@@ -113,6 +113,17 @@ type IAPIService interface {
 	GetFiatRate(base, target string) (*models.FiatRate, error)
 	UpsertFiatRate(payload models.CreateFiatRate) error
 	CountUniqueCurrenciesInFiatRates() (int64, error)
+
+	ListOrganisationInvitations(userID int64, organisationID int64) ([]models.Invitation, error)
+	CreateOrganisationInvitation(payload models.CreateInvitation, userID int64, organisationID int64) (*models.Invitation, error)
+	DeleteOrganisationInvitation(userID int64, organisationID int64, invitationID int64) error
+	ResendOrganisationInvitation(userID int64, organisationID int64, invitationID int64) error
+	CheckInvitation(token string) (*models.CheckInvitationResponse, error)
+	AcceptInvitation(payload models.AcceptInvitation, deviceName string) (*models.User, *string, *time.Time, *string, *time.Time, error)
+
+	ListOrganisationMembers(userID int64, organisationID int64) ([]models.OrganisationMember, error)
+	UpdateOrganisationMember(payload models.UpdateMember, userID int64, organisationID int64, memberUserID int64) error
+	RemoveOrganisationMember(userID int64, organisationID int64, memberUserID int64) error
 }
 
 type APIService struct {

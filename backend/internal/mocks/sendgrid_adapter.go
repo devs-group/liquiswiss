@@ -40,6 +40,20 @@ func (m *MockISendgridAdapter) EXPECT() *MockISendgridAdapterMockRecorder {
 	return m.recorder
 }
 
+// SendInvitationMail mocks base method.
+func (m *MockISendgridAdapter) SendInvitationMail(email, token, organisationName, invitedByName string) error {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "SendInvitationMail", email, token, organisationName, invitedByName)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// SendInvitationMail indicates an expected call of SendInvitationMail.
+func (mr *MockISendgridAdapterMockRecorder) SendInvitationMail(email, token, organisationName, invitedByName any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "SendInvitationMail", reflect.TypeOf((*MockISendgridAdapter)(nil).SendInvitationMail), email, token, organisationName, invitedByName)
+}
+
 // SendMail mocks base method.
 func (m *MockISendgridAdapter) SendMail(from, to *mail.Email, templateId string, dynamicTemplateData any) error {
 	m.ctrl.T.Helper()

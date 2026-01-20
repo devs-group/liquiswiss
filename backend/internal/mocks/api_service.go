@@ -41,6 +41,25 @@ func (m *MockIAPIService) EXPECT() *MockIAPIServiceMockRecorder {
 	return m.recorder
 }
 
+// AcceptInvitation mocks base method.
+func (m *MockIAPIService) AcceptInvitation(payload models.AcceptInvitation, deviceName string) (*models.User, *string, *time.Time, *string, *time.Time, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "AcceptInvitation", payload, deviceName)
+	ret0, _ := ret[0].(*models.User)
+	ret1, _ := ret[1].(*string)
+	ret2, _ := ret[2].(*time.Time)
+	ret3, _ := ret[3].(*string)
+	ret4, _ := ret[4].(*time.Time)
+	ret5, _ := ret[5].(error)
+	return ret0, ret1, ret2, ret3, ret4, ret5
+}
+
+// AcceptInvitation indicates an expected call of AcceptInvitation.
+func (mr *MockIAPIServiceMockRecorder) AcceptInvitation(payload, deviceName any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "AcceptInvitation", reflect.TypeOf((*MockIAPIService)(nil).AcceptInvitation), payload, deviceName)
+}
+
 // CalculateForecast mocks base method.
 func (m *MockIAPIService) CalculateForecast(userID int64) ([]models.Forecast, error) {
 	m.ctrl.T.Helper()
@@ -54,6 +73,21 @@ func (m *MockIAPIService) CalculateForecast(userID int64) ([]models.Forecast, er
 func (mr *MockIAPIServiceMockRecorder) CalculateForecast(userID any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CalculateForecast", reflect.TypeOf((*MockIAPIService)(nil).CalculateForecast), userID)
+}
+
+// CheckInvitation mocks base method.
+func (m *MockIAPIService) CheckInvitation(token string) (*models.CheckInvitationResponse, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "CheckInvitation", token)
+	ret0, _ := ret[0].(*models.CheckInvitationResponse)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// CheckInvitation indicates an expected call of CheckInvitation.
+func (mr *MockIAPIServiceMockRecorder) CheckInvitation(token any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CheckInvitation", reflect.TypeOf((*MockIAPIService)(nil).CheckInvitation), token)
 }
 
 // CheckRegistrationCode mocks base method.
@@ -234,6 +268,21 @@ func (mr *MockIAPIServiceMockRecorder) CreateOrganisation(payload, userID any) *
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CreateOrganisation", reflect.TypeOf((*MockIAPIService)(nil).CreateOrganisation), payload, userID)
 }
 
+// CreateOrganisationInvitation mocks base method.
+func (m *MockIAPIService) CreateOrganisationInvitation(payload models.CreateInvitation, userID, organisationID int64) (*models.Invitation, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "CreateOrganisationInvitation", payload, userID, organisationID)
+	ret0, _ := ret[0].(*models.Invitation)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// CreateOrganisationInvitation indicates an expected call of CreateOrganisationInvitation.
+func (mr *MockIAPIServiceMockRecorder) CreateOrganisationInvitation(payload, userID, organisationID any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CreateOrganisationInvitation", reflect.TypeOf((*MockIAPIService)(nil).CreateOrganisationInvitation), payload, userID, organisationID)
+}
+
 // CreateRegistration mocks base method.
 func (m *MockIAPIService) CreateRegistration(payload models.CreateRegistration, code string) (int64, error) {
 	m.ctrl.T.Helper()
@@ -380,6 +429,20 @@ func (m *MockIAPIService) DeleteForecastExclusion(payload models.CreateForecastE
 func (mr *MockIAPIServiceMockRecorder) DeleteForecastExclusion(payload, userID any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "DeleteForecastExclusion", reflect.TypeOf((*MockIAPIService)(nil).DeleteForecastExclusion), payload, userID)
+}
+
+// DeleteOrganisationInvitation mocks base method.
+func (m *MockIAPIService) DeleteOrganisationInvitation(userID, organisationID, invitationID int64) error {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "DeleteOrganisationInvitation", userID, organisationID, invitationID)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// DeleteOrganisationInvitation indicates an expected call of DeleteOrganisationInvitation.
+func (mr *MockIAPIServiceMockRecorder) DeleteOrganisationInvitation(userID, organisationID, invitationID any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "DeleteOrganisationInvitation", reflect.TypeOf((*MockIAPIService)(nil).DeleteOrganisationInvitation), userID, organisationID, invitationID)
 }
 
 // DeleteRegistration mocks base method.
@@ -876,6 +939,36 @@ func (mr *MockIAPIServiceMockRecorder) ListForecasts(userID, limit any) *gomock.
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ListForecasts", reflect.TypeOf((*MockIAPIService)(nil).ListForecasts), userID, limit)
 }
 
+// ListOrganisationInvitations mocks base method.
+func (m *MockIAPIService) ListOrganisationInvitations(userID, organisationID int64) ([]models.Invitation, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "ListOrganisationInvitations", userID, organisationID)
+	ret0, _ := ret[0].([]models.Invitation)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// ListOrganisationInvitations indicates an expected call of ListOrganisationInvitations.
+func (mr *MockIAPIServiceMockRecorder) ListOrganisationInvitations(userID, organisationID any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ListOrganisationInvitations", reflect.TypeOf((*MockIAPIService)(nil).ListOrganisationInvitations), userID, organisationID)
+}
+
+// ListOrganisationMembers mocks base method.
+func (m *MockIAPIService) ListOrganisationMembers(userID, organisationID int64) ([]models.OrganisationMember, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "ListOrganisationMembers", userID, organisationID)
+	ret0, _ := ret[0].([]models.OrganisationMember)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// ListOrganisationMembers indicates an expected call of ListOrganisationMembers.
+func (mr *MockIAPIServiceMockRecorder) ListOrganisationMembers(userID, organisationID any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ListOrganisationMembers", reflect.TypeOf((*MockIAPIService)(nil).ListOrganisationMembers), userID, organisationID)
+}
+
 // ListOrganisations mocks base method.
 func (m *MockIAPIService) ListOrganisations(userID, page, limit int64) ([]models.Organisation, int64, error) {
 	m.ctrl.T.Helper()
@@ -1002,6 +1095,34 @@ func (mr *MockIAPIServiceMockRecorder) Logout(existingRefreshToken any) *gomock.
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Logout", reflect.TypeOf((*MockIAPIService)(nil).Logout), existingRefreshToken)
 }
 
+// RemoveOrganisationMember mocks base method.
+func (m *MockIAPIService) RemoveOrganisationMember(userID, organisationID, memberUserID int64) error {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "RemoveOrganisationMember", userID, organisationID, memberUserID)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// RemoveOrganisationMember indicates an expected call of RemoveOrganisationMember.
+func (mr *MockIAPIServiceMockRecorder) RemoveOrganisationMember(userID, organisationID, memberUserID any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "RemoveOrganisationMember", reflect.TypeOf((*MockIAPIService)(nil).RemoveOrganisationMember), userID, organisationID, memberUserID)
+}
+
+// ResendOrganisationInvitation mocks base method.
+func (m *MockIAPIService) ResendOrganisationInvitation(userID, organisationID, invitationID int64) error {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "ResendOrganisationInvitation", userID, organisationID, invitationID)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// ResendOrganisationInvitation indicates an expected call of ResendOrganisationInvitation.
+func (mr *MockIAPIServiceMockRecorder) ResendOrganisationInvitation(userID, organisationID, invitationID any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ResendOrganisationInvitation", reflect.TypeOf((*MockIAPIService)(nil).ResendOrganisationInvitation), userID, organisationID, invitationID)
+}
+
 // ResetPassword mocks base method.
 func (m *MockIAPIService) ResetPassword(payload models.ResetPassword) error {
 	m.ctrl.T.Helper()
@@ -1117,6 +1238,20 @@ func (m *MockIAPIService) UpdateOrganisation(payload models.UpdateOrganisation, 
 func (mr *MockIAPIServiceMockRecorder) UpdateOrganisation(payload, userID, organisationID any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "UpdateOrganisation", reflect.TypeOf((*MockIAPIService)(nil).UpdateOrganisation), payload, userID, organisationID)
+}
+
+// UpdateOrganisationMember mocks base method.
+func (m *MockIAPIService) UpdateOrganisationMember(payload models.UpdateMember, userID, organisationID, memberUserID int64) error {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "UpdateOrganisationMember", payload, userID, organisationID, memberUserID)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// UpdateOrganisationMember indicates an expected call of UpdateOrganisationMember.
+func (mr *MockIAPIServiceMockRecorder) UpdateOrganisationMember(payload, userID, organisationID, memberUserID any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "UpdateOrganisationMember", reflect.TypeOf((*MockIAPIService)(nil).UpdateOrganisationMember), payload, userID, organisationID, memberUserID)
 }
 
 // UpdatePassword mocks base method.

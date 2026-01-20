@@ -1,0 +1,1 @@
+DELETE FROM users_2_organisations WHERE organisation_id = ? AND user_id = ?

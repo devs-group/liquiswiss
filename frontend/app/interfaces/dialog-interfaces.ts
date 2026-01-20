@@ -109,3 +109,30 @@ export interface ISalaryCostLabelFormDialog {
     }
   }
 }
+
+export interface IInviteMemberDialog {
+  close: () => object
+  value: {
+    close: () => void
+    data: {
+      organisationId: number
+    }
+  }
+}
+
+export interface IMemberFormDialog {
+  close: () => object
+  value: {
+    close: () => void
+    data: {
+      organisationId: number
+      member: {
+        userId: number
+        name: string
+        email: string
+        role: string
+        isDefault: boolean
+      }
+    }
+  }
+}

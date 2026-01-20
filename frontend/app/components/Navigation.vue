@@ -75,6 +75,7 @@ const items = ref<MenuItem[]>([
   { label: 'Mitarbeitende', icon: 'pi pi-users', routeName: RouteNames.EMPLOYEES },
   { label: 'Transaktionen', icon: 'pi pi-money-bill', routeName: RouteNames.TRANSACTIONS },
   { label: 'Bankkonten', icon: 'pi pi-building', routeName: RouteNames.BANK_ACCOUNTS },
+  { label: 'Organisation', icon: 'pi pi-sitemap', routeName: RouteNames.ORGANISATION },
   { label: 'Einstellungen', icon: 'pi pi-cog', routeName: RouteNames.SETTINGS },
   { label: 'Abmelden', icon: 'pi pi-sign-out', command: async () => {
     confirm.require({

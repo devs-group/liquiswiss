@@ -131,6 +131,25 @@ type IDatabaseAdapter interface {
 	CountUniqueCurrenciesInFiatRates() (int64, error)
 	GetFiatRate(base, target string) (*models.FiatRate, error)
 	UpsertFiatRate(payload models.CreateFiatRate) error
+
+	CreateInvitation(organisationID int64, email string, role string, token string, invitedBy int64, expiresAt time.Time) (int64, error)
+	ListInvitations(organisationID int64) ([]models.Invitation, error)
+	GetInvitationByID(organisationID int64, invitationID int64) (*models.Invitation, error)
+	GetInvitationByToken(token string) (*models.Invitation, error)
+	DeleteInvitation(organisationID int64, invitationID int64) error
+	DeleteInvitationByToken(token string) error
+	GetOrganisationName(organisationID int64) (string, error)
+	GetUserIDByEmail(email string) (int64, error)
+	CheckUserInOrganisation(userID int64, organisationID int64) (bool, error)
+
+	ListMembers(organisationID int64) ([]models.OrganisationMember, error)
+	GetMember(organisationID int64, userID int64) (*models.OrganisationMember, error)
+	UpdateMemberRole(organisationID int64, userID int64, role string) error
+	DeleteMember(organisationID int64, userID int64) error
+	CountOwners(organisationID int64) (int64, error)
+	GetMemberPermission(userID int64, organisationID int64) (*models.MemberPermission, error)
+	UpsertMemberPermission(userID int64, organisationID int64, canView bool, canEdit bool, canDelete bool) error
+	DeleteMemberPermissions(userID int64, organisationID int64) error
 }
 
 type DatabaseAdapter struct {

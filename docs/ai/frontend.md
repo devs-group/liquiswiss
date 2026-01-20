@@ -22,7 +22,30 @@
 
 ## Patterns
 
-**Composables**: Each feature has a composable that encapsulates state (`useState`), API calls (`$fetch`/`useFetch`), and computed properties. No Pinia/Vuex needed.
+**Composables**: Each feature has a composable that encapsulates state (`useState`), API calls, and computed properties. No Pinia/Vuex needed.
+
+**CRITICAL - useFetch over $fetch**: Always use `useFetch` for data fetching in composables, never `$fetch`. This is essential for SSR compatibility:
+- `useFetch` integrates with Nuxt's SSR suspense mechanism and works correctly with top-level `await`
+- `$fetch` does NOT integrate with SSR and will cause pages to hang indefinitely when awaited at the top level of `<script setup>`
+- Only use `$fetch` for mutations (POST, PATCH, DELETE) or when you are 100% certain the code only runs client-side (e.g., inside `onMounted`, event handlers)
+- Always use the `refresh()` method from `useFetch` to re-fetch data instead of calling the fetch function again
+
+```typescript
+// GOOD - SSR compatible with refresh support
+const { data, error, refresh } = await useFetch<Item[]>('/api/items')
+
+// Re-fetch data after a mutation
+await refresh()
+
+// Deferred fetching - doesn't fetch until execute() is called
+const { data, execute } = await useFetch<Item[]>('/api/items', { immediate: false })
+await execute()  // Fetch when needed
+
+// BAD - Will hang during SSR if awaited at top level
+const listItems = async () => {
+  return await $fetch<Item[]>('/api/items')  // Don't do this for GET requests
+}
+```
 
 **Global middleware**: `auth.global.ts` runs on every route, protecting pages and auto-refreshing tokens.
 

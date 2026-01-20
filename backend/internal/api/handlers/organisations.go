@@ -131,7 +131,7 @@ func UpdateOrganisation(apiService api_service.IAPIService, c *gin.Context) {
 	}
 
 	// Action
-	organisation, err := apiService.UpdateOrganisation(payload, organisationID, userID)
+	organisation, err := apiService.UpdateOrganisation(payload, userID, organisationID)
 	if err != nil {
 		c.Status(http.StatusInternalServerError)
 		return

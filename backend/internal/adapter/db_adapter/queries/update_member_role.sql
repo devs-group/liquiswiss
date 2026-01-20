@@ -1,0 +1,1 @@
+UPDATE users_2_organisations SET role = ? WHERE organisation_id = ? AND user_id = ?

@@ -1,0 +1,1 @@
+SELECT COUNT(*) > 0 FROM users_2_organisations WHERE user_id = ? AND organisation_id = ?

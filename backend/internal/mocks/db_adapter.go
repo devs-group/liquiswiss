@@ -99,6 +99,21 @@ func (mr *MockIDatabaseAdapterMockRecorder) CheckUserExistence(id any) *gomock.C
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CheckUserExistence", reflect.TypeOf((*MockIDatabaseAdapter)(nil).CheckUserExistence), id)
 }
 
+// CheckUserInOrganisation mocks base method.
+func (m *MockIDatabaseAdapter) CheckUserInOrganisation(userID, organisationID int64) (bool, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "CheckUserInOrganisation", userID, organisationID)
+	ret0, _ := ret[0].(bool)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// CheckUserInOrganisation indicates an expected call of CheckUserInOrganisation.
+func (mr *MockIDatabaseAdapterMockRecorder) CheckUserInOrganisation(userID, organisationID any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CheckUserInOrganisation", reflect.TypeOf((*MockIDatabaseAdapter)(nil).CheckUserInOrganisation), userID, organisationID)
+}
+
 // ClearForecasts mocks base method.
 func (m *MockIDatabaseAdapter) ClearForecasts(userID int64) (int64, error) {
 	m.ctrl.T.Helper()
@@ -156,6 +171,21 @@ func (m *MockIDatabaseAdapter) CountEmployees(userID, page, limit int64) (int64,
 func (mr *MockIDatabaseAdapterMockRecorder) CountEmployees(userID, page, limit any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CountEmployees", reflect.TypeOf((*MockIDatabaseAdapter)(nil).CountEmployees), userID, page, limit)
+}
+
+// CountOwners mocks base method.
+func (m *MockIDatabaseAdapter) CountOwners(organisationID int64) (int64, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "CountOwners", organisationID)
+	ret0, _ := ret[0].(int64)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// CountOwners indicates an expected call of CountOwners.
+func (mr *MockIDatabaseAdapterMockRecorder) CountOwners(organisationID any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CountOwners", reflect.TypeOf((*MockIDatabaseAdapter)(nil).CountOwners), organisationID)
 }
 
 // CountUniqueCurrenciesInFiatRates mocks base method.
@@ -246,6 +276,21 @@ func (m *MockIDatabaseAdapter) CreateForecastExclusion(payload models.CreateFore
 func (mr *MockIDatabaseAdapterMockRecorder) CreateForecastExclusion(payload, userID any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CreateForecastExclusion", reflect.TypeOf((*MockIDatabaseAdapter)(nil).CreateForecastExclusion), payload, userID)
+}
+
+// CreateInvitation mocks base method.
+func (m *MockIDatabaseAdapter) CreateInvitation(organisationID int64, email, role, token string, invitedBy int64, expiresAt time.Time) (int64, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "CreateInvitation", organisationID, email, role, token, invitedBy, expiresAt)
+	ret0, _ := ret[0].(int64)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// CreateInvitation indicates an expected call of CreateInvitation.
+func (mr *MockIDatabaseAdapterMockRecorder) CreateInvitation(organisationID, email, role, token, invitedBy, expiresAt any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CreateInvitation", reflect.TypeOf((*MockIDatabaseAdapter)(nil).CreateInvitation), organisationID, email, role, token, invitedBy, expiresAt)
 }
 
 // CreateOrganisation mocks base method.
@@ -473,6 +518,62 @@ func (mr *MockIDatabaseAdapterMockRecorder) DeleteForecastExclusion(payload, use
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "DeleteForecastExclusion", reflect.TypeOf((*MockIDatabaseAdapter)(nil).DeleteForecastExclusion), payload, userID)
 }
 
+// DeleteInvitation mocks base method.
+func (m *MockIDatabaseAdapter) DeleteInvitation(organisationID, invitationID int64) error {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "DeleteInvitation", organisationID, invitationID)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// DeleteInvitation indicates an expected call of DeleteInvitation.
+func (mr *MockIDatabaseAdapterMockRecorder) DeleteInvitation(organisationID, invitationID any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "DeleteInvitation", reflect.TypeOf((*MockIDatabaseAdapter)(nil).DeleteInvitation), organisationID, invitationID)
+}
+
+// DeleteInvitationByToken mocks base method.
+func (m *MockIDatabaseAdapter) DeleteInvitationByToken(token string) error {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "DeleteInvitationByToken", token)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// DeleteInvitationByToken indicates an expected call of DeleteInvitationByToken.
+func (mr *MockIDatabaseAdapterMockRecorder) DeleteInvitationByToken(token any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "DeleteInvitationByToken", reflect.TypeOf((*MockIDatabaseAdapter)(nil).DeleteInvitationByToken), token)
+}
+
+// DeleteMember mocks base method.
+func (m *MockIDatabaseAdapter) DeleteMember(organisationID, userID int64) error {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "DeleteMember", organisationID, userID)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// DeleteMember indicates an expected call of DeleteMember.
+func (mr *MockIDatabaseAdapterMockRecorder) DeleteMember(organisationID, userID any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "DeleteMember", reflect.TypeOf((*MockIDatabaseAdapter)(nil).DeleteMember), organisationID, userID)
+}
+
+// DeleteMemberPermissions mocks base method.
+func (m *MockIDatabaseAdapter) DeleteMemberPermissions(userID, organisationID int64) error {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "DeleteMemberPermissions", userID, organisationID)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// DeleteMemberPermissions indicates an expected call of DeleteMemberPermissions.
+func (mr *MockIDatabaseAdapterMockRecorder) DeleteMemberPermissions(userID, organisationID any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "DeleteMemberPermissions", reflect.TypeOf((*MockIDatabaseAdapter)(nil).DeleteMemberPermissions), userID, organisationID)
+}
+
 // DeleteRefreshToken mocks base method.
 func (m *MockIDatabaseAdapter) DeleteRefreshToken(userID int64, tokenID string) error {
 	m.ctrl.T.Helper()
@@ -690,6 +791,66 @@ func (mr *MockIDatabaseAdapterMockRecorder) GetFiatRate(base, target any) *gomoc
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetFiatRate", reflect.TypeOf((*MockIDatabaseAdapter)(nil).GetFiatRate), base, target)
 }
 
+// GetInvitationByID mocks base method.
+func (m *MockIDatabaseAdapter) GetInvitationByID(organisationID, invitationID int64) (*models.Invitation, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "GetInvitationByID", organisationID, invitationID)
+	ret0, _ := ret[0].(*models.Invitation)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// GetInvitationByID indicates an expected call of GetInvitationByID.
+func (mr *MockIDatabaseAdapterMockRecorder) GetInvitationByID(organisationID, invitationID any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetInvitationByID", reflect.TypeOf((*MockIDatabaseAdapter)(nil).GetInvitationByID), organisationID, invitationID)
+}
+
+// GetInvitationByToken mocks base method.
+func (m *MockIDatabaseAdapter) GetInvitationByToken(token string) (*models.Invitation, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "GetInvitationByToken", token)
+	ret0, _ := ret[0].(*models.Invitation)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// GetInvitationByToken indicates an expected call of GetInvitationByToken.
+func (mr *MockIDatabaseAdapterMockRecorder) GetInvitationByToken(token any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetInvitationByToken", reflect.TypeOf((*MockIDatabaseAdapter)(nil).GetInvitationByToken), token)
+}
+
+// GetMember mocks base method.
+func (m *MockIDatabaseAdapter) GetMember(organisationID, userID int64) (*models.OrganisationMember, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "GetMember", organisationID, userID)
+	ret0, _ := ret[0].(*models.OrganisationMember)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// GetMember indicates an expected call of GetMember.
+func (mr *MockIDatabaseAdapterMockRecorder) GetMember(organisationID, userID any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetMember", reflect.TypeOf((*MockIDatabaseAdapter)(nil).GetMember), organisationID, userID)
+}
+
+// GetMemberPermission mocks base method.
+func (m *MockIDatabaseAdapter) GetMemberPermission(userID, organisationID int64) (*models.MemberPermission, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "GetMemberPermission", userID, organisationID)
+	ret0, _ := ret[0].(*models.MemberPermission)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// GetMemberPermission indicates an expected call of GetMemberPermission.
+func (mr *MockIDatabaseAdapterMockRecorder) GetMemberPermission(userID, organisationID any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetMemberPermission", reflect.TypeOf((*MockIDatabaseAdapter)(nil).GetMemberPermission), userID, organisationID)
+}
+
 // GetOrganisation mocks base method.
 func (m *MockIDatabaseAdapter) GetOrganisation(userID, organisationID int64) (*models.Organisation, error) {
 	m.ctrl.T.Helper()
@@ -703,6 +864,21 @@ func (m *MockIDatabaseAdapter) GetOrganisation(userID, organisationID int64) (*m
 func (mr *MockIDatabaseAdapterMockRecorder) GetOrganisation(userID, organisationID any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetOrganisation", reflect.TypeOf((*MockIDatabaseAdapter)(nil).GetOrganisation), userID, organisationID)
+}
+
+// GetOrganisationName mocks base method.
+func (m *MockIDatabaseAdapter) GetOrganisationName(organisationID int64) (string, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "GetOrganisationName", organisationID)
+	ret0, _ := ret[0].(string)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// GetOrganisationName indicates an expected call of GetOrganisationName.
+func (mr *MockIDatabaseAdapterMockRecorder) GetOrganisationName(organisationID any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetOrganisationName", reflect.TypeOf((*MockIDatabaseAdapter)(nil).GetOrganisationName), organisationID)
 }
 
 // GetProfile mocks base method.
@@ -778,6 +954,21 @@ func (m *MockIDatabaseAdapter) GetTransaction(userID, transactionID int64) (*mod
 func (mr *MockIDatabaseAdapterMockRecorder) GetTransaction(userID, transactionID any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetTransaction", reflect.TypeOf((*MockIDatabaseAdapter)(nil).GetTransaction), userID, transactionID)
+}
+
+// GetUserIDByEmail mocks base method.
+func (m *MockIDatabaseAdapter) GetUserIDByEmail(email string) (int64, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "GetUserIDByEmail", email)
+	ret0, _ := ret[0].(int64)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// GetUserIDByEmail indicates an expected call of GetUserIDByEmail.
+func (mr *MockIDatabaseAdapterMockRecorder) GetUserIDByEmail(email any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetUserIDByEmail", reflect.TypeOf((*MockIDatabaseAdapter)(nil).GetUserIDByEmail), email)
 }
 
 // GetUserOrganisationSetting mocks base method.
@@ -976,6 +1167,36 @@ func (m *MockIDatabaseAdapter) ListForecasts(userID, limit int64) ([]models.Fore
 func (mr *MockIDatabaseAdapterMockRecorder) ListForecasts(userID, limit any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ListForecasts", reflect.TypeOf((*MockIDatabaseAdapter)(nil).ListForecasts), userID, limit)
+}
+
+// ListInvitations mocks base method.
+func (m *MockIDatabaseAdapter) ListInvitations(organisationID int64) ([]models.Invitation, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "ListInvitations", organisationID)
+	ret0, _ := ret[0].([]models.Invitation)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// ListInvitations indicates an expected call of ListInvitations.
+func (mr *MockIDatabaseAdapterMockRecorder) ListInvitations(organisationID any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ListInvitations", reflect.TypeOf((*MockIDatabaseAdapter)(nil).ListInvitations), organisationID)
+}
+
+// ListMembers mocks base method.
+func (m *MockIDatabaseAdapter) ListMembers(organisationID int64) ([]models.OrganisationMember, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "ListMembers", organisationID)
+	ret0, _ := ret[0].([]models.OrganisationMember)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// ListMembers indicates an expected call of ListMembers.
+func (mr *MockIDatabaseAdapterMockRecorder) ListMembers(organisationID any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ListMembers", reflect.TypeOf((*MockIDatabaseAdapter)(nil).ListMembers), organisationID)
 }
 
 // ListOrganisations mocks base method.
@@ -1229,6 +1450,20 @@ func (mr *MockIDatabaseAdapterMockRecorder) UpdateEmployee(payload, userID, empl
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "UpdateEmployee", reflect.TypeOf((*MockIDatabaseAdapter)(nil).UpdateEmployee), payload, userID, employeeID)
 }
 
+// UpdateMemberRole mocks base method.
+func (m *MockIDatabaseAdapter) UpdateMemberRole(organisationID, userID int64, role string) error {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "UpdateMemberRole", organisationID, userID, role)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// UpdateMemberRole indicates an expected call of UpdateMemberRole.
+func (mr *MockIDatabaseAdapterMockRecorder) UpdateMemberRole(organisationID, userID, role any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "UpdateMemberRole", reflect.TypeOf((*MockIDatabaseAdapter)(nil).UpdateMemberRole), organisationID, userID, role)
+}
+
 // UpdateOrganisation mocks base method.
 func (m *MockIDatabaseAdapter) UpdateOrganisation(payload models.UpdateOrganisation, userID, organisationID int64) error {
 	m.ctrl.T.Helper()
@@ -1427,6 +1662,20 @@ func (m *MockIDatabaseAdapter) UpsertForecastDetail(payload models.CreateForecas
 func (mr *MockIDatabaseAdapterMockRecorder) UpsertForecastDetail(payload, userID, forecastID any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "UpsertForecastDetail", reflect.TypeOf((*MockIDatabaseAdapter)(nil).UpsertForecastDetail), payload, userID, forecastID)
+}
+
+// UpsertMemberPermission mocks base method.
+func (m *MockIDatabaseAdapter) UpsertMemberPermission(userID, organisationID int64, canView, canEdit, canDelete bool) error {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "UpsertMemberPermission", userID, organisationID, canView, canEdit, canDelete)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// UpsertMemberPermission indicates an expected call of UpsertMemberPermission.
+func (mr *MockIDatabaseAdapterMockRecorder) UpsertMemberPermission(userID, organisationID, canView, canEdit, canDelete any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "UpsertMemberPermission", reflect.TypeOf((*MockIDatabaseAdapter)(nil).UpsertMemberPermission), userID, organisationID, canView, canEdit, canDelete)
 }
 
 // UpsertSalaryCostDetails mocks base method.

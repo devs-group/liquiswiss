@@ -1,0 +1,1 @@
+SELECT COUNT(*) FROM users_2_organisations WHERE organisation_id = ? AND role = 'owner'

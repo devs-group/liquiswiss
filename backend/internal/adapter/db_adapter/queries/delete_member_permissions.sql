@@ -1,0 +1,1 @@
+DELETE FROM member_permissions WHERE user_id = ? AND organisation_id = ?

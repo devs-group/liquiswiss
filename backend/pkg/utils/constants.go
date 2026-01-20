@@ -13,6 +13,8 @@ const (
 
 	ResetPasswordDelay = 1 * time.Hour
 
+	InvitationValidity = 7 * 24 * time.Hour // 7 days validity
+
 	MaxForecastYears = 3
 
 	AccessTokenName  = "liq-access-token"

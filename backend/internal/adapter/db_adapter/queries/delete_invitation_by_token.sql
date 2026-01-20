@@ -1,0 +1,1 @@
+DELETE FROM organisation_invitations WHERE token = ?

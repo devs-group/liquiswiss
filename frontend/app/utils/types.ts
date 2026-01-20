@@ -12,6 +12,9 @@ export type BankAccountSortByType = typeof BankAccountSortByOptions[number]
 export const OrganisationRoleOptions = ['owner', 'admin', 'editor', 'read-only'] as const
 export type OrganisationRoleType = typeof OrganisationRoleOptions[number]
 
+export const MemberRoleOptions = ['admin', 'editor', 'read-only'] as const
+export type MemberRoleType = typeof MemberRoleOptions[number]
+
 export const SortOrderOptions = ['ASC', 'DESC'] as const
 export type SortOrderType = typeof SortOrderOptions[number]
 

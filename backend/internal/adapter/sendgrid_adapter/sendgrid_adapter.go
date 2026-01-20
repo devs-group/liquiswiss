@@ -21,6 +21,7 @@ type ISendgridAdapter interface {
 	SendMail(from *mail.Email, to *mail.Email, templateId string, dynamicTemplateData any) error
 	SendRegistrationMail(email, code string) error
 	SendPasswordResetMail(email, code string) error
+	SendInvitationMail(email, token, organisationName, invitedByName string) error
 }
 
 func NewSendgridAdapter(apiKey string) ISendgridAdapter {
@@ -125,6 +126,43 @@ func (s SendgridAdapter) SendPasswordResetMail(email, code string) error {
 			ButtonText: "Passwort zurücksetzen",
 			ButtonUrl:  fmt.Sprintf("%s/auth/reset-password?%s", cfg.WebHost, params.Encode()),
 			Greetings:  "Sollten Sie dies nicht beantragt haben, können Sie diese E-Mail ignorieren.<br/><br/>Wir wünschen Ihnen weiterhin viel Erfolg<br/>Ihr liquiswiss.ch Team 🚀",
+		},
+	)
+	if err != nil {
+		return err
+	}
+	return nil
+}
+
+func (s SendgridAdapter) SendInvitationMail(email, token, organisationName, invitedByName string) error {
+	cfg := config.GetConfig()
+
+	params := url.Values{}
+	params.Add("token", token)
+
+	err := s.SendMail(
+		&mail.Email{
+			Name:    "LiquiSwiss",
+			Address: "no-reply@liquiswiss.ch",
+		},
+		&mail.Email{
+			Name:    "",
+			Address: email,
+		},
+		cfg.SendgridTemplateID,
+		models.SendgridMail{
+			Subject:   fmt.Sprintf("Einladung zu %s auf LiquiSwiss", organisationName),
+			PreHeader: fmt.Sprintf("%s hat Sie eingeladen ...", invitedByName),
+			Hello:     "Guten Tag! 👋",
+			Content: fmt.Sprintf(
+				"%s hat Sie eingeladen, der Organisation <strong>%s</strong> auf LiquiSwiss beizutreten. Klicken Sie auf den Button unten, um die Einladung anzunehmen. Bitte beachten Sie, dass dieser Link für maximal %.0f Tag(e) gültig ist.",
+				invitedByName,
+				organisationName,
+				utils.InvitationValidity.Hours()/24,
+			),
+			ButtonText: "Einladung annehmen",
+			ButtonUrl:  fmt.Sprintf("%s/auth/invitation?%s", cfg.WebHost, params.Encode()),
+			Greetings:  "Wir wünschen Ihnen viel Erfolg<br/>Ihr liquiswiss.ch Team 🚀",
 		},
 	)
 	if err != nil {

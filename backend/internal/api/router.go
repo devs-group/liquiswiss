@@ -70,6 +70,14 @@ func (api *API) setupRouter() {
 			public.POST("/registration/finish", func(ctx *gin.Context) {
 				handlers.FinishRegistration(api.APIService, ctx)
 			})
+
+			// Invitations (public)
+			public.GET("/invitation/check", func(ctx *gin.Context) {
+				handlers.CheckInvitation(api.APIService, ctx)
+			})
+			public.POST("/invitation/accept", func(ctx *gin.Context) {
+				handlers.AcceptInvitation(api.APIService, ctx)
+			})
 		}
 
 		protected := group.Group("/")
@@ -109,6 +117,31 @@ func (api *API) setupRouter() {
 				handlers.UpdateOrganisation(api.APIService, ctx)
 			})
 			// TODO: Find a way to delete organisations by offering reassigning or transferring data
+
+			// Organisation Members
+			protected.GET("/organisations/:organisationID/members", func(ctx *gin.Context) {
+				handlers.ListOrganisationMembers(api.APIService, ctx)
+			})
+			protected.PATCH("/organisations/:organisationID/members/:memberUserID", func(ctx *gin.Context) {
+				handlers.UpdateOrganisationMember(api.APIService, ctx)
+			})
+			protected.DELETE("/organisations/:organisationID/members/:memberUserID", func(ctx *gin.Context) {
+				handlers.RemoveOrganisationMember(api.APIService, ctx)
+			})
+
+			// Organisation Invitations
+			protected.GET("/organisations/:organisationID/invitations", func(ctx *gin.Context) {
+				handlers.ListOrganisationInvitations(api.APIService, ctx)
+			})
+			protected.POST("/organisations/:organisationID/invitations", func(ctx *gin.Context) {
+				handlers.CreateOrganisationInvitation(api.APIService, ctx)
+			})
+			protected.DELETE("/organisations/:organisationID/invitations/:invitationID", func(ctx *gin.Context) {
+				handlers.DeleteOrganisationInvitation(api.APIService, ctx)
+			})
+			protected.POST("/organisations/:organisationID/invitations/:invitationID/resend", func(ctx *gin.Context) {
+				handlers.ResendOrganisationInvitation(api.APIService, ctx)
+			})
 
 			// Transactions
 			protected.GET("/transactions", func(ctx *gin.Context) {
