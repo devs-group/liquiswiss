@@ -95,13 +95,15 @@ export default function useInvitations() {
   }
 
   const loadMyPendingInvitations = async () => {
-    try {
-      const data = await $fetch<UserPendingInvitation[]>(`/api/me/invitations`, { method: 'GET' })
-      myPendingInvitations.value = data ?? []
-    }
-    catch {
+    const { data, error } = await useFetch<UserPendingInvitation[]>(`/api/me/invitations`, {
+      method: 'GET',
+      key: 'my-pending-invitations',
+    })
+    if (error.value) {
       myPendingInvitations.value = []
+      return
     }
+    myPendingInvitations.value = data.value ?? []
   }
 
   return {
