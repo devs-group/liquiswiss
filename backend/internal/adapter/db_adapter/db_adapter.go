@@ -40,6 +40,7 @@ type IDatabaseAdapter interface {
 
 	ListOrganisations(userID int64, page int64, limit int64) ([]models.Organisation, int64, error)
 	GetOrganisation(userID int64, organisationID int64) (*models.Organisation, error)
+	GetCurrentUserRole(userID int64) (string, error)
 	CreateOrganisation(name string) (int64, error)
 	UpdateOrganisation(payload models.UpdateOrganisation, userID int64, organisationID int64) error
 	AssignUserToOrganisation(userID int64, organisationID int64, role string, isDefault bool) error

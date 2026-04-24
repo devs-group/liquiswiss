@@ -761,6 +761,21 @@ func (mr *MockIDatabaseAdapterMockRecorder) GetCurrency(currencyID any) *gomock.
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetCurrency", reflect.TypeOf((*MockIDatabaseAdapter)(nil).GetCurrency), currencyID)
 }
 
+// GetCurrentUserRole mocks base method.
+func (m *MockIDatabaseAdapter) GetCurrentUserRole(userID int64) (string, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "GetCurrentUserRole", userID)
+	ret0, _ := ret[0].(string)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// GetCurrentUserRole indicates an expected call of GetCurrentUserRole.
+func (mr *MockIDatabaseAdapterMockRecorder) GetCurrentUserRole(userID any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetCurrentUserRole", reflect.TypeOf((*MockIDatabaseAdapter)(nil).GetCurrentUserRole), userID)
+}
+
 // GetEmployee mocks base method.
 func (m *MockIDatabaseAdapter) GetEmployee(userID, employeeID int64) (*models.Employee, error) {
 	m.ctrl.T.Helper()
