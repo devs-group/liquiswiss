@@ -240,7 +240,22 @@ func (a *APIService) AcceptInvitation(payload models.AcceptInvitation, deviceNam
 	}
 
 	if existingUserID > 0 {
-		// Existing user - just add to organisation
+		// Existing user - require password to prevent anyone with the invitation token from hijacking the account
+		if payload.Password == nil || *payload.Password == "" {
+			err = errors.New("password is required to accept invitation")
+			logger.Logger.Error(err)
+			return nil, nil, nil, nil, nil, err
+		}
+
+		loginUser, err := a.dbService.GetUserPasswordByEMail(invitation.Email)
+		if err != nil {
+			logger.Logger.Error(err)
+			return nil, nil, nil, nil, nil, err
+		}
+		if err := bcrypt.CompareHashAndPassword([]byte(loginUser.Password), []byte(*payload.Password)); err != nil {
+			logger.Logger.Error(err)
+			return nil, nil, nil, nil, nil, errors.New("invalid credentials")
+		}
 		userID = existingUserID
 	} else {
 		// New user - password is required
