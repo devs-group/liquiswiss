@@ -94,6 +94,16 @@ export default function useInvitations() {
     invitations.value = data ?? []
   }
 
+  const declineMyInvitation = async (invitationId: number) => {
+    try {
+      await $fetch(`/api/me/invitations/${invitationId}`, { method: 'DELETE' })
+      myPendingInvitations.value = myPendingInvitations.value.filter(i => i.id !== invitationId)
+    }
+    catch {
+      return Promise.reject('Fehler beim Ablehnen der Einladung')
+    }
+  }
+
   const loadMyPendingInvitations = async () => {
     try {
       // Forward the incoming request's cookies so the call succeeds during SSR.
@@ -120,5 +130,6 @@ export default function useInvitations() {
     acceptInvitation,
     setInvitations,
     loadMyPendingInvitations,
+    declineMyInvitation,
   }
 }

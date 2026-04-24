@@ -215,6 +215,37 @@ func (a *APIService) CheckInvitation(token string) (*models.CheckInvitationRespo
 	}, nil
 }
 
+func (a *APIService) DeclineMyInvitation(userID int64, invitationID int64) error {
+	profile, err := a.dbService.GetProfile(userID)
+	if err != nil {
+		logger.Logger.Error(err)
+		return err
+	}
+
+	invitations, err := a.dbService.ListPendingInvitationsByEmail(profile.Email)
+	if err != nil {
+		logger.Logger.Error(err)
+		return err
+	}
+
+	var target *models.UserPendingInvitation
+	for i := range invitations {
+		if invitations[i].ID == invitationID {
+			target = &invitations[i]
+			break
+		}
+	}
+	if target == nil {
+		return errors.New("invitation not found")
+	}
+
+	if err := a.dbService.DeleteInvitation(target.OrganisationID, target.ID); err != nil {
+		logger.Logger.Error(err)
+		return err
+	}
+	return nil
+}
+
 func (a *APIService) ListMyPendingInvitations(userID int64) ([]models.UserPendingInvitation, error) {
 	profile, err := a.dbService.GetProfile(userID)
 	if err != nil {

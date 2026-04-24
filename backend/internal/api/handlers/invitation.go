@@ -177,6 +177,30 @@ func CheckInvitation(apiService api_service.IAPIService, c *gin.Context) {
 	c.JSON(http.StatusOK, response)
 }
 
+func DeclineMyInvitation(apiService api_service.IAPIService, c *gin.Context) {
+	userID := c.GetInt64("userID")
+	if userID == 0 {
+		c.Status(http.StatusUnauthorized)
+		return
+	}
+	invitationID, err := strconv.ParseInt(c.Param("invitationID"), 10, 64)
+	if err != nil {
+		c.Status(http.StatusBadRequest)
+		return
+	}
+
+	if err := apiService.DeclineMyInvitation(userID, invitationID); err != nil {
+		if err.Error() == "invitation not found" {
+			c.Status(http.StatusNotFound)
+			return
+		}
+		c.Status(http.StatusInternalServerError)
+		return
+	}
+
+	c.Status(http.StatusNoContent)
+}
+
 func ListMyPendingInvitations(apiService api_service.IAPIService, c *gin.Context) {
 	userID := c.GetInt64("userID")
 	if userID == 0 {

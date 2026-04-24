@@ -133,6 +133,9 @@ func (api *API) setupRouter() {
 			protected.GET("/me/invitations", func(ctx *gin.Context) {
 				handlers.ListMyPendingInvitations(api.APIService, ctx)
 			})
+			protected.DELETE("/me/invitations/:invitationID", func(ctx *gin.Context) {
+				handlers.DeclineMyInvitation(api.APIService, ctx)
+			})
 
 			// Organisation Invitations
 			protected.GET("/organisations/:organisationID/invitations", func(ctx *gin.Context) {

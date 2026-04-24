@@ -52,17 +52,28 @@
                   value="Ausstehend"
                 />
               </div>
-              <NuxtLink
-                :to="{ name: RouteNames.AUTH_INVITATION, query: { token: invitation.token } }"
-                class="w-full"
-              >
+              <div class="flex flex-col sm:flex-row gap-2">
+                <NuxtLink
+                  :to="{ name: RouteNames.AUTH_INVITATION, query: { token: invitation.token } }"
+                  class="flex-1"
+                >
+                  <Button
+                    label="Annehmen"
+                    icon="pi pi-check"
+                    class="w-full"
+                    size="small"
+                  />
+                </NuxtLink>
                 <Button
-                  label="Annehmen"
-                  icon="pi pi-check"
-                  class="w-full"
+                  label="Ablehnen"
+                  icon="pi pi-times"
+                  severity="danger"
+                  outlined
                   size="small"
+                  class="flex-1"
+                  @click="onDeclineInvitation(invitation)"
                 />
-              </NuxtLink>
+              </div>
             </div>
           </template>
         </Card>
@@ -152,7 +163,7 @@ const { organisations } = useOrganisations()
 const { user, updateCurrentOrganisation } = useAuth()
 const { showGlobalLoadingSpinner } = useGlobalData()
 const { skipOrganisationSwitchQuestion } = useSettings()
-const { myPendingInvitations } = useInvitations()
+const { myPendingInvitations, declineMyInvitation } = useInvitations()
 
 const currentOrganisationID = computed(() => user.value?.currentOrganisationID)
 
@@ -173,6 +184,35 @@ const getInvitationRoleSeverity = (role: string) => {
     'read-only': 'secondary',
   }
   return severities[role] ?? 'secondary'
+}
+
+const onDeclineInvitation = (invitation: { id: number, organisationName: string }) => {
+  confirm.require({
+    header: 'Einladung ablehnen',
+    message: `Möchten Sie die Einladung zu "${invitation.organisationName}" ablehnen?`,
+    icon: 'pi pi-exclamation-triangle',
+    rejectProps: { label: 'Abbrechen', severity: 'secondary' },
+    acceptProps: { label: 'Ablehnen', severity: 'danger' },
+    accept: () => {
+      declineMyInvitation(invitation.id)
+        .then(() => {
+          toast.add({
+            summary: 'Einladung abgelehnt',
+            detail: `Sie haben die Einladung zu "${invitation.organisationName}" abgelehnt`,
+            severity: 'info',
+            life: Config.TOAST_LIFE_TIME,
+          })
+        })
+        .catch((err) => {
+          toast.add({
+            summary: 'Fehler',
+            detail: err,
+            severity: 'error',
+            life: Config.TOAST_LIFE_TIME,
+          })
+        })
+    },
+  })
 }
 
 const onCreateOrganisation = () => {

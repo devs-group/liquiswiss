@@ -388,6 +388,20 @@ func (mr *MockIAPIServiceMockRecorder) CreateVatSetting(payload, userID any) *go
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CreateVatSetting", reflect.TypeOf((*MockIAPIService)(nil).CreateVatSetting), payload, userID)
 }
 
+// DeclineMyInvitation mocks base method.
+func (m *MockIAPIService) DeclineMyInvitation(userID, invitationID int64) error {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "DeclineMyInvitation", userID, invitationID)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// DeclineMyInvitation indicates an expected call of DeclineMyInvitation.
+func (mr *MockIAPIServiceMockRecorder) DeclineMyInvitation(userID, invitationID any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "DeclineMyInvitation", reflect.TypeOf((*MockIAPIService)(nil).DeclineMyInvitation), userID, invitationID)
+}
+
 // DeleteBankAccount mocks base method.
 func (m *MockIAPIService) DeleteBankAccount(userID, bankAccountID int64) error {
 	m.ctrl.T.Helper()
