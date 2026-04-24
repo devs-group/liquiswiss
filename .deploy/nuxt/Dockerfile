@@ -1,4 +1,4 @@
-FROM node:22.19.0 as dev
+FROM node:22.19.0 AS dev
 
 WORKDIR /app
 COPY ./frontend /app
@@ -6,7 +6,7 @@ RUN npm install
 
 CMD ["npm", "run", "dev"]
 
-FROM dev as prod
+FROM dev AS prod
 
 RUN npm run build
 
