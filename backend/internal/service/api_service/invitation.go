@@ -215,7 +215,7 @@ func (a *APIService) CheckInvitation(token string) (*models.CheckInvitationRespo
 	}, nil
 }
 
-func (a *APIService) AcceptInvitation(payload models.AcceptInvitation, deviceName string) (*models.User, *string, *time.Time, *string, *time.Time, error) {
+func (a *APIService) AcceptInvitation(payload models.AcceptInvitation, deviceName string, authenticatedUserID int64) (*models.User, *string, *time.Time, *string, *time.Time, error) {
 	// Get invitation by token
 	invitation, err := a.dbService.GetInvitationByToken(payload.Token)
 	if err != nil {
@@ -240,20 +240,27 @@ func (a *APIService) AcceptInvitation(payload models.AcceptInvitation, deviceNam
 	}
 
 	if existingUserID > 0 {
-		// Existing user - require password to prevent anyone with the invitation token from hijacking the account
-		if payload.Password == nil || *payload.Password == "" {
-			return nil, nil, nil, nil, nil, errors.New("invalid credentials")
-		}
+		// If the caller is already authenticated as the invited user, skip the
+		// password challenge since we already trust the session.
+		if authenticatedUserID > 0 && authenticatedUserID == existingUserID {
+			userID = existingUserID
+		} else {
+			// Otherwise require password to prevent anyone with the invitation
+			// token from hijacking the account.
+			if payload.Password == nil || *payload.Password == "" {
+				return nil, nil, nil, nil, nil, errors.New("invalid credentials")
+			}
 
-		loginUser, err := a.dbService.GetUserPasswordByEMail(invitation.Email)
-		if err != nil {
-			logger.Logger.Error(err)
-			return nil, nil, nil, nil, nil, errors.New("invalid credentials")
+			loginUser, err := a.dbService.GetUserPasswordByEMail(invitation.Email)
+			if err != nil {
+				logger.Logger.Error(err)
+				return nil, nil, nil, nil, nil, errors.New("invalid credentials")
+			}
+			if err := bcrypt.CompareHashAndPassword([]byte(loginUser.Password), []byte(*payload.Password)); err != nil {
+				return nil, nil, nil, nil, nil, errors.New("invalid credentials")
+			}
+			userID = existingUserID
 		}
-		if err := bcrypt.CompareHashAndPassword([]byte(loginUser.Password), []byte(*payload.Password)); err != nil {
-			return nil, nil, nil, nil, nil, errors.New("invalid credentials")
-		}
-		userID = existingUserID
 	} else {
 		// New user - password is required
 		if payload.Password == nil || *payload.Password == "" {

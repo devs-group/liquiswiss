@@ -136,7 +136,7 @@ func TestAcceptInvitation_JoinsCorrectOrganisation(t *testing.T) {
 	acceptedUser, _, _, _, _, err := env.APIService.AcceptInvitation(models.AcceptInvitation{
 		Token:    token,
 		Password: &password,
-	}, "Test Device")
+	}, "Test Device", 0)
 	require.NoError(t, err)
 	require.NotNil(t, acceptedUser)
 

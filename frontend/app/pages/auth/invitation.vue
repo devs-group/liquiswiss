@@ -24,9 +24,32 @@
         Eingeladen von: {{ invitationData.invitedByName }}
       </div>
 
-      <!-- Existing user - verify password before accepting -->
-      <template v-if="invitationData.existingUser">
+      <!-- Existing user, already logged in as the invited email - accept with one click -->
+      <template v-if="invitationData.existingUser && isLoggedInAsInvitee">
         <Message severity="info">
+          Sie sind als {{ invitationData.email }} angemeldet. Klicken Sie auf "Annehmen", um der Organisation beizutreten.
+        </Message>
+
+        <Button
+          label="Einladung annehmen"
+          icon="pi pi-check"
+          :loading="isSubmitting"
+          @click="onAcceptLoggedIn"
+        />
+      </template>
+
+      <!-- Existing user - verify password before accepting -->
+      <template v-else-if="invitationData.existingUser">
+        <Message
+          v-if="isAuthenticated && user?.email !== invitationData.email"
+          severity="warn"
+        >
+          Sie sind als {{ user?.email }} angemeldet, die Einladung ist für {{ invitationData.email }}. Melden Sie sich ab und bestätigen Sie das Passwort des eingeladenen Kontos.
+        </Message>
+        <Message
+          v-else
+          severity="info"
+        >
           Sie haben bereits ein Konto. Bestätigen Sie Ihr Passwort, um der Organisation beizutreten.
         </Message>
 
@@ -184,6 +207,7 @@ useHead({
 const route = useRoute()
 const toast = useToast()
 const { checkInvitation, acceptInvitation } = useInvitations()
+const { isAuthenticated, user } = useAuth()
 
 const token = ref(route.query.token as string ?? '')
 const isChecking = ref(true)
@@ -238,6 +262,34 @@ const { defineField: defineExistingField, errors: existingErrors, handleSubmit: 
 })
 
 const [existingPassword, existingPasswordProps] = defineExistingField('password')
+
+const isLoggedInAsInvitee = computed(() => {
+  return isAuthenticated.value && user.value?.email === invitationData.value?.email
+})
+
+// Accept for logged-in user whose email matches invitation (no password required)
+const onAcceptLoggedIn = async () => {
+  isSubmitting.value = true
+  await acceptInvitation({ token: token.value })
+    .then(() => {
+      toast.add({
+        summary: 'Erfolg',
+        detail: 'Sie sind der Organisation beigetreten',
+        severity: 'success',
+        life: Config.TOAST_LIFE_TIME,
+      })
+      reloadNuxtApp({ force: true })
+    })
+    .catch((err) => {
+      toast.add({
+        summary: 'Fehler',
+        detail: err,
+        severity: 'error',
+        life: Config.TOAST_LIFE_TIME,
+      })
+      isSubmitting.value = false
+    })
+}
 
 // Accept for existing user
 const onAcceptExistingUser = handleExistingSubmit(async (values) => {

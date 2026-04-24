@@ -42,9 +42,9 @@ func (m *MockIAPIService) EXPECT() *MockIAPIServiceMockRecorder {
 }
 
 // AcceptInvitation mocks base method.
-func (m *MockIAPIService) AcceptInvitation(payload models.AcceptInvitation, deviceName string) (*models.User, *string, *time.Time, *string, *time.Time, error) {
+func (m *MockIAPIService) AcceptInvitation(payload models.AcceptInvitation, deviceName string, authenticatedUserID int64) (*models.User, *string, *time.Time, *string, *time.Time, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "AcceptInvitation", payload, deviceName)
+	ret := m.ctrl.Call(m, "AcceptInvitation", payload, deviceName, authenticatedUserID)
 	ret0, _ := ret[0].(*models.User)
 	ret1, _ := ret[1].(*string)
 	ret2, _ := ret[2].(*time.Time)
@@ -55,9 +55,9 @@ func (m *MockIAPIService) AcceptInvitation(payload models.AcceptInvitation, devi
 }
 
 // AcceptInvitation indicates an expected call of AcceptInvitation.
-func (mr *MockIAPIServiceMockRecorder) AcceptInvitation(payload, deviceName any) *gomock.Call {
+func (mr *MockIAPIServiceMockRecorder) AcceptInvitation(payload, deviceName, authenticatedUserID any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "AcceptInvitation", reflect.TypeOf((*MockIAPIService)(nil).AcceptInvitation), payload, deviceName)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "AcceptInvitation", reflect.TypeOf((*MockIAPIService)(nil).AcceptInvitation), payload, deviceName, authenticatedUserID)
 }
 
 // CalculateForecast mocks base method.

@@ -91,7 +91,8 @@ export default defineNuxtRouteMiddleware(async (to) => {
   }
 
   // Authenticated user on auth route - redirect to saved path or home
-  if (isAuthenticated.value && isOnAuthRoute) {
+  // (except invitation route - logged-in users need to accept invitations too)
+  if (isAuthenticated.value && isOnAuthRoute && to.name !== RouteNames.AUTH_INVITATION) {
     const wasExplicitLogout = !!explicitLogoutCookie.value
     const savedPath = redirectPathCookie.value
 

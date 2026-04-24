@@ -191,8 +191,18 @@ func AcceptInvitation(apiService api_service.IAPIService, c *gin.Context) {
 	}
 	deviceName := c.Request.UserAgent()
 
+	// Best-effort: extract userID from the access token cookie if present so
+	// an already-authenticated user can accept without re-entering a password
+	// when their session matches the invited email.
+	var authenticatedUserID int64
+	if accessTokenCookie, err := c.Cookie(utils.AccessTokenName); err == nil {
+		if claims, err := auth.VerifyToken(accessTokenCookie); err == nil && claims != nil {
+			authenticatedUserID = claims.UserID
+		}
+	}
+
 	// Action
-	user, accessToken, accessExpirationTime, refreshToken, refreshExpirationTime, err := apiService.AcceptInvitation(payload, deviceName)
+	user, accessToken, accessExpirationTime, refreshToken, refreshExpirationTime, err := apiService.AcceptInvitation(payload, deviceName, authenticatedUserID)
 	if err != nil {
 		if errors.Is(err, sql.ErrNoRows) {
 			c.Status(http.StatusNotFound)

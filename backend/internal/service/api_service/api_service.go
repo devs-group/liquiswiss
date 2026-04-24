@@ -119,7 +119,7 @@ type IAPIService interface {
 	DeleteOrganisationInvitation(userID int64, organisationID int64, invitationID int64) error
 	ResendOrganisationInvitation(userID int64, organisationID int64, invitationID int64) error
 	CheckInvitation(token string) (*models.CheckInvitationResponse, error)
-	AcceptInvitation(payload models.AcceptInvitation, deviceName string) (*models.User, *string, *time.Time, *string, *time.Time, error)
+	AcceptInvitation(payload models.AcceptInvitation, deviceName string, authenticatedUserID int64) (*models.User, *string, *time.Time, *string, *time.Time, error)
 
 	ListOrganisationMembers(userID int64, organisationID int64) ([]models.OrganisationMember, error)
 	UpdateOrganisationMember(payload models.UpdateMember, userID int64, organisationID int64, memberUserID int64) error
