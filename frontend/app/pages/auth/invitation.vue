@@ -278,7 +278,7 @@ const onAcceptLoggedIn = async () => {
         severity: 'success',
         life: Config.TOAST_LIFE_TIME,
       })
-      reloadNuxtApp({ force: true })
+      reloadNuxtApp({ force: true, path: '/' })
     })
     .catch((err) => {
       toast.add({
@@ -302,7 +302,7 @@ const onAcceptExistingUser = handleExistingSubmit(async (values) => {
         severity: 'success',
         life: Config.TOAST_LIFE_TIME,
       })
-      reloadNuxtApp({ force: true })
+      reloadNuxtApp({ force: true, path: '/' })
     })
     .catch((err) => {
       toast.add({
@@ -326,7 +326,7 @@ const onAcceptNewUser = handleSubmit(async (values) => {
         severity: 'success',
         life: Config.TOAST_LIFE_TIME,
       })
-      reloadNuxtApp({ force: true })
+      reloadNuxtApp({ force: true, path: '/' })
     })
     .catch((err) => {
       toast.add({
