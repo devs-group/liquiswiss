@@ -7,6 +7,7 @@ import (
 	"time"
 
 	"github.com/stretchr/testify/require"
+	"golang.org/x/crypto/bcrypt"
 
 	"liquiswiss/internal/adapter/db_adapter"
 	"liquiswiss/internal/adapter/sendgrid_adapter"
@@ -324,7 +325,7 @@ func TestAcceptInvitation_NewUser(t *testing.T) {
 	acceptedUser, accessToken, _, refreshToken, _, err := apiService.AcceptInvitation(models.AcceptInvitation{
 		Token:    token,
 		Password: &password,
-	}, "Test Device")
+	}, "Test Device", 0)
 	require.NoError(t, err)
 
 	require.NotNil(t, acceptedUser)
@@ -351,8 +352,10 @@ func TestAcceptInvitation_ExistingUser(t *testing.T) {
 	conn, apiService, dbAdapter, user, org := setupInvitationDependencies(t)
 	defer conn.Close()
 
-	// Create an existing user (not in this org)
-	existingUserID, err := dbAdapter.CreateUser("existingaccept@test.com", "password")
+	// Create an existing user (not in this org) with bcrypt-hashed password
+	hashedPassword, err := bcrypt.GenerateFromPassword([]byte("password"), 12)
+	require.NoError(t, err)
+	existingUserID, err := dbAdapter.CreateUser("existingaccept@test.com", string(hashedPassword))
 	require.NoError(t, err)
 
 	// Create a different org for them
@@ -370,10 +373,12 @@ func TestAcceptInvitation_ExistingUser(t *testing.T) {
 	_, err = dbAdapter.CreateInvitation(org.ID, "existingaccept@test.com", "admin", token, user.ID, expiresAt)
 	require.NoError(t, err)
 
-	// Accept the invitation without password
+	// Accept the invitation with correct password
+	plainPassword := "password"
 	acceptedUser, accessToken, _, refreshToken, _, err := apiService.AcceptInvitation(models.AcceptInvitation{
-		Token: token,
-	}, "Test Device")
+		Token:    token,
+		Password: &plainPassword,
+	}, "Test Device", 0)
 	require.NoError(t, err)
 
 	require.NotNil(t, acceptedUser)
@@ -396,6 +401,96 @@ func TestAcceptInvitation_ExistingUser(t *testing.T) {
 	require.True(t, found, "Existing user should be a member of the new organisation")
 }
 
+func TestAcceptInvitation_ExistingUserWithoutPassword(t *testing.T) {
+	conn, apiService, dbAdapter, user, org := setupInvitationDependencies(t)
+	defer conn.Close()
+
+	hashedPassword, err := bcrypt.GenerateFromPassword([]byte("password"), 12)
+	require.NoError(t, err)
+	_, err = dbAdapter.CreateUser("existing-no-pw@test.com", string(hashedPassword))
+	require.NoError(t, err)
+
+	token := "existing-no-password-token"
+	expiresAt := time.Now().Add(utils.InvitationValidity)
+	_, err = dbAdapter.CreateInvitation(org.ID, "existing-no-pw@test.com", "admin", token, user.ID, expiresAt)
+	require.NoError(t, err)
+
+	_, _, _, _, _, err = apiService.AcceptInvitation(models.AcceptInvitation{
+		Token: token,
+	}, "Test Device", 0)
+	require.Error(t, err)
+	require.Contains(t, err.Error(), "invalid credentials")
+}
+
+func TestAcceptInvitation_ExistingUserWrongPassword(t *testing.T) {
+	conn, apiService, dbAdapter, user, org := setupInvitationDependencies(t)
+	defer conn.Close()
+
+	hashedPassword, err := bcrypt.GenerateFromPassword([]byte("correct-password"), 12)
+	require.NoError(t, err)
+	_, err = dbAdapter.CreateUser("existing-wrong-pw@test.com", string(hashedPassword))
+	require.NoError(t, err)
+
+	token := "existing-wrong-password-token"
+	expiresAt := time.Now().Add(utils.InvitationValidity)
+	_, err = dbAdapter.CreateInvitation(org.ID, "existing-wrong-pw@test.com", "admin", token, user.ID, expiresAt)
+	require.NoError(t, err)
+
+	wrongPassword := "wrong-password"
+	_, _, _, _, _, err = apiService.AcceptInvitation(models.AcceptInvitation{
+		Token:    token,
+		Password: &wrongPassword,
+	}, "Test Device", 0)
+	require.Error(t, err)
+	require.Contains(t, err.Error(), "invalid credentials")
+}
+
+func TestAcceptInvitation_AuthenticatedExistingUserSkipsPassword(t *testing.T) {
+	conn, apiService, dbAdapter, user, org := setupInvitationDependencies(t)
+	defer conn.Close()
+
+	hashedPassword, err := bcrypt.GenerateFromPassword([]byte("irrelevant"), 12)
+	require.NoError(t, err)
+	existingUserID, err := dbAdapter.CreateUser("authuser@test.com", string(hashedPassword))
+	require.NoError(t, err)
+
+	token := "authenticated-accept-token"
+	expiresAt := time.Now().Add(utils.InvitationValidity)
+	_, err = dbAdapter.CreateInvitation(org.ID, "authuser@test.com", "admin", token, user.ID, expiresAt)
+	require.NoError(t, err)
+
+	acceptedUser, accessToken, _, refreshToken, _, err := apiService.AcceptInvitation(models.AcceptInvitation{
+		Token: token,
+	}, "Test Device", existingUserID)
+	require.NoError(t, err)
+	require.NotNil(t, acceptedUser)
+	require.Equal(t, "authuser@test.com", acceptedUser.Email)
+	require.NotNil(t, accessToken)
+	require.NotNil(t, refreshToken)
+}
+
+func TestAcceptInvitation_AuthenticatedDifferentUserRequiresPassword(t *testing.T) {
+	conn, apiService, dbAdapter, user, org := setupInvitationDependencies(t)
+	defer conn.Close()
+
+	hashedPassword, err := bcrypt.GenerateFromPassword([]byte("password"), 12)
+	require.NoError(t, err)
+	_, err = dbAdapter.CreateUser("invited@test.com", string(hashedPassword))
+	require.NoError(t, err)
+
+	token := "auth-mismatch-token"
+	expiresAt := time.Now().Add(utils.InvitationValidity)
+	_, err = dbAdapter.CreateInvitation(org.ID, "invited@test.com", "admin", token, user.ID, expiresAt)
+	require.NoError(t, err)
+
+	// Different authenticated userID must not bypass password check.
+	_, _, _, _, _, err = apiService.AcceptInvitation(models.AcceptInvitation{
+		Token: token,
+	}, "Test Device", user.ID)
+	require.Error(t, err)
+	require.Contains(t, err.Error(), "invalid credentials")
+}
+
 func TestAcceptInvitation_NewUserWithoutPassword(t *testing.T) {
 	conn, apiService, dbAdapter, user, org := setupInvitationDependencies(t)
 	defer conn.Close()
@@ -409,7 +504,7 @@ func TestAcceptInvitation_NewUserWithoutPassword(t *testing.T) {
 	// Try to accept without password - should fail for new user
 	_, _, _, _, _, err = apiService.AcceptInvitation(models.AcceptInvitation{
 		Token: token,
-	}, "Test Device")
+	}, "Test Device", 0)
 	require.Error(t, err)
 	require.Contains(t, err.Error(), "password is required")
 }
@@ -428,7 +523,7 @@ func TestAcceptInvitation_ExpiredToken(t *testing.T) {
 	_, _, _, _, _, err = apiService.AcceptInvitation(models.AcceptInvitation{
 		Token:    token,
 		Password: &password,
-	}, "Test Device")
+	}, "Test Device", 0)
 	require.Error(t, err)
 	require.Contains(t, err.Error(), "expired")
 }
@@ -441,6 +536,6 @@ func TestAcceptInvitation_InvalidToken(t *testing.T) {
 	_, _, _, _, _, err := apiService.AcceptInvitation(models.AcceptInvitation{
 		Token:    "invalid-token",
 		Password: &password,
-	}, "Test Device")
+	}, "Test Device", 0)
 	require.Error(t, err)
 }

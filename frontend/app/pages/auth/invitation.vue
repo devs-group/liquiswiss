@@ -24,18 +24,78 @@
         Eingeladen von: {{ invitationData.invitedByName }}
       </div>
 
-      <!-- Existing user - just accept -->
-      <template v-if="invitationData.existingUser">
+      <!-- Existing user, already logged in as the invited email - accept with one click -->
+      <template v-if="invitationData.existingUser && isLoggedInAsInvitee">
         <Message severity="info">
-          Sie haben bereits ein Konto. Klicken Sie auf "Annehmen", um der Organisation beizutreten.
+          Sie sind als {{ invitationData.email }} angemeldet. Klicken Sie auf "Annehmen", um der Organisation beizutreten.
         </Message>
 
         <Button
           label="Einladung annehmen"
           icon="pi pi-check"
           :loading="isSubmitting"
-          @click="onAcceptExistingUser"
+          @click="onAcceptLoggedIn"
         />
+      </template>
+
+      <!-- Existing user - verify password before accepting -->
+      <template v-else-if="invitationData.existingUser">
+        <Message
+          v-if="isAuthenticated && user?.email !== invitationData.email"
+          severity="warn"
+        >
+          Sie sind als {{ user?.email }} angemeldet, die Einladung ist für {{ invitationData.email }}. Melden Sie sich ab und bestätigen Sie das Passwort des eingeladenen Kontos.
+        </Message>
+        <Message
+          v-else
+          severity="info"
+        >
+          Sie haben bereits ein Konto. Bestätigen Sie Ihr Passwort, um der Organisation beizutreten.
+        </Message>
+
+        <form
+          class="grid grid-cols-1 gap-2 w-full max-w-sm"
+          @submit.prevent
+        >
+          <div class="flex flex-col gap-2 col-span-full">
+            <label
+              class="text-sm font-bold"
+              for="email-existing"
+            >E-Mail</label>
+            <InputText
+              id="email-existing"
+              :model-value="invitationData.email"
+              disabled
+              type="email"
+            />
+          </div>
+
+          <div class="flex flex-col gap-2 col-span-full">
+            <label
+              class="text-sm font-bold"
+              for="password-existing"
+            >Passwort *</label>
+            <InputText
+              v-bind="existingPasswordProps"
+              id="password-existing"
+              v-model="existingPassword"
+              :class="{ 'p-invalid': existingErrors['password']?.length }"
+              type="password"
+            />
+            <small class="text-liqui-red">{{ existingErrors["password"] || '&nbsp;' }}</small>
+          </div>
+
+          <div class="col-span-full flex justify-center">
+            <Button
+              label="Einladung annehmen"
+              icon="pi pi-check"
+              type="submit"
+              :loading="isSubmitting"
+              :disabled="!existingMeta.valid || isSubmitting"
+              @click="onAcceptExistingUser"
+            />
+          </div>
+        </form>
       </template>
 
       <!-- New user - needs password -->
@@ -147,6 +207,7 @@ useHead({
 const route = useRoute()
 const toast = useToast()
 const { checkInvitation, acceptInvitation } = useInvitations()
+const { isAuthenticated, user } = useAuth()
 
 const token = ref(route.query.token as string ?? '')
 const isChecking = ref(true)
@@ -190,8 +251,24 @@ const { defineField, errors, handleSubmit, meta } = useForm({
 const [password, passwordProps] = defineField('password')
 const [passwordRepeat, passwordRepeatProps] = defineField('passwordRepeat')
 
-// Accept for existing user
-const onAcceptExistingUser = async () => {
+// Form for existing users (password re-auth)
+const { defineField: defineExistingField, errors: existingErrors, handleSubmit: handleExistingSubmit, meta: existingMeta } = useForm({
+  validationSchema: yup.object({
+    password: yup.string().required('Passwort wird benötigt'),
+  }),
+  initialValues: {
+    password: '',
+  },
+})
+
+const [existingPassword, existingPasswordProps] = defineExistingField('password')
+
+const isLoggedInAsInvitee = computed(() => {
+  return isAuthenticated.value && user.value?.email === invitationData.value?.email
+})
+
+// Accept for logged-in user whose email matches invitation (no password required)
+const onAcceptLoggedIn = async () => {
   isSubmitting.value = true
   await acceptInvitation({ token: token.value })
     .then(() => {
@@ -201,7 +278,7 @@ const onAcceptExistingUser = async () => {
         severity: 'success',
         life: Config.TOAST_LIFE_TIME,
       })
-      reloadNuxtApp({ force: true })
+      reloadNuxtApp({ force: true, path: '/' })
     })
     .catch((err) => {
       toast.add({
@@ -214,6 +291,30 @@ const onAcceptExistingUser = async () => {
     })
 }
 
+// Accept for existing user
+const onAcceptExistingUser = handleExistingSubmit(async (values) => {
+  isSubmitting.value = true
+  await acceptInvitation({ token: token.value, password: values.password })
+    .then(() => {
+      toast.add({
+        summary: 'Erfolg',
+        detail: 'Sie sind der Organisation beigetreten',
+        severity: 'success',
+        life: Config.TOAST_LIFE_TIME,
+      })
+      reloadNuxtApp({ force: true, path: '/' })
+    })
+    .catch((err) => {
+      toast.add({
+        summary: 'Fehler',
+        detail: err,
+        severity: 'error',
+        life: Config.TOAST_LIFE_TIME,
+      })
+      isSubmitting.value = false
+    })
+})
+
 // Accept for new user (with password)
 const onAcceptNewUser = handleSubmit(async (values) => {
   isSubmitting.value = true
@@ -225,7 +326,7 @@ const onAcceptNewUser = handleSubmit(async (values) => {
         severity: 'success',
         life: Config.TOAST_LIFE_TIME,
       })
-      reloadNuxtApp({ force: true })
+      reloadNuxtApp({ force: true, path: '/' })
     })
     .catch((err) => {
       toast.add({

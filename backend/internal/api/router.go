@@ -82,6 +82,12 @@ func (api *API) setupRouter() {
 
 		protected := group.Group("/")
 		protected.Use(middleware.AuthMiddleware)
+		// editorRoutes: mutations on organisation-scoped business data (editor+)
+		editorRoutes := protected.Group("/")
+		editorRoutes.Use(middleware.RequireMinRole(middleware.RoleEditor))
+		// adminRoutes: organisation + member/invitation management (admin+)
+		adminRoutes := protected.Group("/")
+		adminRoutes.Use(middleware.RequireMinRole(middleware.RoleAdmin))
 		{
 			// Profile & Auth
 			protected.GET("/profile", func(ctx *gin.Context) {
@@ -113,7 +119,7 @@ func (api *API) setupRouter() {
 			protected.POST("/organisations", func(ctx *gin.Context) {
 				handlers.CreateOrganisation(api.APIService, ctx)
 			})
-			protected.PATCH("/organisations/:organisationID", func(ctx *gin.Context) {
+			adminRoutes.PATCH("/organisations/:organisationID", func(ctx *gin.Context) {
 				handlers.UpdateOrganisation(api.APIService, ctx)
 			})
 			// TODO: Find a way to delete organisations by offering reassigning or transferring data
@@ -122,24 +128,32 @@ func (api *API) setupRouter() {
 			protected.GET("/organisations/:organisationID/members", func(ctx *gin.Context) {
 				handlers.ListOrganisationMembers(api.APIService, ctx)
 			})
-			protected.PATCH("/organisations/:organisationID/members/:memberUserID", func(ctx *gin.Context) {
+			adminRoutes.PATCH("/organisations/:organisationID/members/:memberUserID", func(ctx *gin.Context) {
 				handlers.UpdateOrganisationMember(api.APIService, ctx)
 			})
-			protected.DELETE("/organisations/:organisationID/members/:memberUserID", func(ctx *gin.Context) {
+			adminRoutes.DELETE("/organisations/:organisationID/members/:memberUserID", func(ctx *gin.Context) {
 				handlers.RemoveOrganisationMember(api.APIService, ctx)
 			})
 
-			// Organisation Invitations
-			protected.GET("/organisations/:organisationID/invitations", func(ctx *gin.Context) {
+			// Pending invitations for the current user (across any organisation)
+			protected.GET("/me/invitations", func(ctx *gin.Context) {
+				handlers.ListMyPendingInvitations(api.APIService, ctx)
+			})
+			protected.DELETE("/me/invitations/:invitationID", func(ctx *gin.Context) {
+				handlers.DeclineMyInvitation(api.APIService, ctx)
+			})
+
+			// Organisation Invitations (admin+ only)
+			adminRoutes.GET("/organisations/:organisationID/invitations", func(ctx *gin.Context) {
 				handlers.ListOrganisationInvitations(api.APIService, ctx)
 			})
-			protected.POST("/organisations/:organisationID/invitations", func(ctx *gin.Context) {
+			adminRoutes.POST("/organisations/:organisationID/invitations", func(ctx *gin.Context) {
 				handlers.CreateOrganisationInvitation(api.APIService, ctx)
 			})
-			protected.DELETE("/organisations/:organisationID/invitations/:invitationID", func(ctx *gin.Context) {
+			adminRoutes.DELETE("/organisations/:organisationID/invitations/:invitationID", func(ctx *gin.Context) {
 				handlers.DeleteOrganisationInvitation(api.APIService, ctx)
 			})
-			protected.POST("/organisations/:organisationID/invitations/:invitationID/resend", func(ctx *gin.Context) {
+			adminRoutes.POST("/organisations/:organisationID/invitations/:invitationID/resend", func(ctx *gin.Context) {
 				handlers.ResendOrganisationInvitation(api.APIService, ctx)
 			})
 
@@ -150,13 +164,13 @@ func (api *API) setupRouter() {
 			protected.GET("/transactions/:transactionID", func(ctx *gin.Context) {
 				handlers.GetTransaction(api.APIService, ctx)
 			})
-			protected.POST("/transactions", func(ctx *gin.Context) {
+			editorRoutes.POST("/transactions", func(ctx *gin.Context) {
 				handlers.CreateTransaction(api.APIService, ctx)
 			})
-			protected.PATCH("/transactions/:transactionID", func(ctx *gin.Context) {
+			editorRoutes.PATCH("/transactions/:transactionID", func(ctx *gin.Context) {
 				handlers.UpdateTransaction(api.APIService, ctx)
 			})
-			protected.DELETE("/transactions/:transactionID", func(ctx *gin.Context) {
+			editorRoutes.DELETE("/transactions/:transactionID", func(ctx *gin.Context) {
 				handlers.DeleteTransaction(api.APIService, ctx)
 			})
 
@@ -167,13 +181,13 @@ func (api *API) setupRouter() {
 			protected.GET("/employees/:employeeID", func(ctx *gin.Context) {
 				handlers.GetEmployee(api.APIService, ctx)
 			})
-			protected.POST("/employees", func(ctx *gin.Context) {
+			editorRoutes.POST("/employees", func(ctx *gin.Context) {
 				handlers.CreateEmployee(api.APIService, ctx)
 			})
-			protected.PATCH("/employees/:employeeID", func(ctx *gin.Context) {
+			editorRoutes.PATCH("/employees/:employeeID", func(ctx *gin.Context) {
 				handlers.UpdateEmployee(api.APIService, ctx)
 			})
-			protected.DELETE("/employees/:employeeID", func(ctx *gin.Context) {
+			editorRoutes.DELETE("/employees/:employeeID", func(ctx *gin.Context) {
 				handlers.DeleteEmployee(api.APIService, ctx)
 			})
 			protected.GET("/employees/pagination", func(ctx *gin.Context) {
@@ -187,13 +201,13 @@ func (api *API) setupRouter() {
 			protected.GET("/employees/salary/:salaryID", func(ctx *gin.Context) {
 				handlers.GetSalary(api.APIService, ctx)
 			})
-			protected.POST("/employees/:employeeID/salary", func(ctx *gin.Context) {
+			editorRoutes.POST("/employees/:employeeID/salary", func(ctx *gin.Context) {
 				handlers.CreateSalary(api.APIService, ctx)
 			})
-			protected.PATCH("/employees/salary/:salaryID", func(ctx *gin.Context) {
+			editorRoutes.PATCH("/employees/salary/:salaryID", func(ctx *gin.Context) {
 				handlers.UpdateSalary(api.APIService, ctx)
 			})
-			protected.DELETE("/employees/salary/:salaryID", func(ctx *gin.Context) {
+			editorRoutes.DELETE("/employees/salary/:salaryID", func(ctx *gin.Context) {
 				handlers.DeleteSalary(api.APIService, ctx)
 			})
 
@@ -204,16 +218,16 @@ func (api *API) setupRouter() {
 			protected.GET("/employees/salary/costs/:salaryCostID", func(ctx *gin.Context) {
 				handlers.GetSalaryCost(api.APIService, ctx)
 			})
-			protected.POST("/employees/salary/:salaryID/costs", func(ctx *gin.Context) {
+			editorRoutes.POST("/employees/salary/:salaryID/costs", func(ctx *gin.Context) {
 				handlers.CreateSalaryCost(api.APIService, ctx)
 			})
-			protected.POST("/employees/salary/:salaryID/costs/copy", func(ctx *gin.Context) {
+			editorRoutes.POST("/employees/salary/:salaryID/costs/copy", func(ctx *gin.Context) {
 				handlers.CopySalaryCosts(api.APIService, ctx)
 			})
-			protected.PATCH("/employees/salary/costs/:salaryCostID", func(ctx *gin.Context) {
+			editorRoutes.PATCH("/employees/salary/costs/:salaryCostID", func(ctx *gin.Context) {
 				handlers.UpdateSalaryCost(api.APIService, ctx)
 			})
-			protected.DELETE("/employees/salary/costs/:salaryCostID", func(ctx *gin.Context) {
+			editorRoutes.DELETE("/employees/salary/costs/:salaryCostID", func(ctx *gin.Context) {
 				handlers.DeleteSalaryCost(api.APIService, ctx)
 			})
 
@@ -224,13 +238,13 @@ func (api *API) setupRouter() {
 			protected.GET("/employees/salary/costs/labels/:salaryCostLabelID", func(ctx *gin.Context) {
 				handlers.GetSalaryCostLabel(api.APIService, ctx)
 			})
-			protected.POST("/employees/salary/costs/labels", func(ctx *gin.Context) {
+			editorRoutes.POST("/employees/salary/costs/labels", func(ctx *gin.Context) {
 				handlers.CreateSalaryCostLabel(api.APIService, ctx)
 			})
-			protected.PATCH("/employees/salary/costs/labels/:salaryCostLabelID", func(ctx *gin.Context) {
+			editorRoutes.PATCH("/employees/salary/costs/labels/:salaryCostLabelID", func(ctx *gin.Context) {
 				handlers.UpdateSalaryCostLabel(api.APIService, ctx)
 			})
-			protected.DELETE("/employees/salary/costs/labels/:salaryCostLabelID", func(ctx *gin.Context) {
+			editorRoutes.DELETE("/employees/salary/costs/labels/:salaryCostLabelID", func(ctx *gin.Context) {
 				handlers.DeleteSalaryCostLabel(api.APIService, ctx)
 			})
 
@@ -247,13 +261,13 @@ func (api *API) setupRouter() {
 			protected.GET("/forecasts/exclude", func(ctx *gin.Context) {
 				handlers.ListForecastExclusions(api.APIService, ctx)
 			})
-			protected.POST("/forecasts/exclude", func(ctx *gin.Context) {
+			editorRoutes.POST("/forecasts/exclude", func(ctx *gin.Context) {
 				handlers.CreateForecastExclusion(api.APIService, ctx)
 			})
-			protected.PUT("/forecasts/exclude", func(ctx *gin.Context) {
+			editorRoutes.PUT("/forecasts/exclude", func(ctx *gin.Context) {
 				handlers.UpdateForecastExclusions(api.APIService, ctx)
 			})
-			protected.DELETE("/forecasts/exclude", func(ctx *gin.Context) {
+			editorRoutes.DELETE("/forecasts/exclude", func(ctx *gin.Context) {
 				handlers.DeleteForecastExclusion(api.APIService, ctx)
 			})
 
@@ -264,13 +278,13 @@ func (api *API) setupRouter() {
 			protected.GET("/bank-accounts/:bankAccountID", func(ctx *gin.Context) {
 				handlers.GetBankAccount(api.APIService, ctx)
 			})
-			protected.POST("/bank-accounts", func(ctx *gin.Context) {
+			editorRoutes.POST("/bank-accounts", func(ctx *gin.Context) {
 				handlers.CreateBankAccount(api.APIService, ctx)
 			})
-			protected.PATCH("/bank-accounts/:bankAccountID", func(ctx *gin.Context) {
+			editorRoutes.PATCH("/bank-accounts/:bankAccountID", func(ctx *gin.Context) {
 				handlers.UpdateBankAccount(api.APIService, ctx)
 			})
-			protected.DELETE("/bank-accounts/:bankAccountID", func(ctx *gin.Context) {
+			editorRoutes.DELETE("/bank-accounts/:bankAccountID", func(ctx *gin.Context) {
 				handlers.DeleteBankAccount(api.APIService, ctx)
 			})
 
@@ -281,13 +295,13 @@ func (api *API) setupRouter() {
 			protected.GET("/vats/:vatID", func(ctx *gin.Context) {
 				handlers.GetVat(api.APIService, ctx)
 			})
-			protected.POST("/vats", func(ctx *gin.Context) {
+			editorRoutes.POST("/vats", func(ctx *gin.Context) {
 				handlers.CreateVat(api.APIService, ctx)
 			})
-			protected.PATCH("/vats/:vatID", func(ctx *gin.Context) {
+			editorRoutes.PATCH("/vats/:vatID", func(ctx *gin.Context) {
 				handlers.UpdateVat(api.APIService, ctx)
 			})
-			protected.DELETE("/vats/:vatID", func(ctx *gin.Context) {
+			editorRoutes.DELETE("/vats/:vatID", func(ctx *gin.Context) {
 				handlers.DeleteVat(api.APIService, ctx)
 			})
 
@@ -295,13 +309,13 @@ func (api *API) setupRouter() {
 			protected.GET("/vat-settings", func(ctx *gin.Context) {
 				handlers.GetVatSetting(api.APIService, ctx)
 			})
-			protected.POST("/vat-settings", func(ctx *gin.Context) {
+			editorRoutes.POST("/vat-settings", func(ctx *gin.Context) {
 				handlers.CreateVatSetting(api.APIService, ctx)
 			})
-			protected.PATCH("/vat-settings", func(ctx *gin.Context) {
+			editorRoutes.PATCH("/vat-settings", func(ctx *gin.Context) {
 				handlers.UpdateVatSetting(api.APIService, ctx)
 			})
-			protected.DELETE("/vat-settings", func(ctx *gin.Context) {
+			editorRoutes.DELETE("/vat-settings", func(ctx *gin.Context) {
 				handlers.DeleteVatSetting(api.APIService, ctx)
 			})
 
@@ -328,10 +342,10 @@ func (api *API) setupRouter() {
 			protected.GET("/categories/:id", func(ctx *gin.Context) {
 				handlers.GetCategory(api.APIService, ctx)
 			})
-			protected.POST("/categories", func(ctx *gin.Context) {
+			editorRoutes.POST("/categories", func(ctx *gin.Context) {
 				handlers.CreateCategory(api.APIService, ctx)
 			})
-			protected.PATCH("/categories/:id", func(ctx *gin.Context) {
+			editorRoutes.PATCH("/categories/:id", func(ctx *gin.Context) {
 				handlers.UpdateCategory(api.APIService, ctx)
 			})
 

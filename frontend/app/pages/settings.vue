@@ -22,6 +22,12 @@
               class="ml-2"
               :class="{ 'text-liqui-green': isActive }"
             >{{ item.label }}</span>
+            <Badge
+              v-if="item.badge"
+              :value="item.badge"
+              severity="warn"
+              class="ml-2"
+            />
           </a>
         </router-link>
         <a
@@ -44,9 +50,16 @@
 import type { MenuItem } from 'primevue/menuitem'
 import { RouteNames } from '~/config/routes'
 
-const items = ref<MenuItem[]>([
+const { myPendingInvitations } = useInvitations()
+
+const items = computed<MenuItem[]>(() => [
   { label: 'Profil', icon: 'pi pi-user', routeName: RouteNames.SETTINGS_PROFILE },
-  { label: 'Organisationen', icon: 'pi pi-building', routeName: RouteNames.SETTINGS_ORGANISATIONS },
+  {
+    label: 'Organisationen',
+    icon: 'pi pi-building',
+    routeName: RouteNames.SETTINGS_ORGANISATIONS,
+    badge: myPendingInvitations.value.length > 0 ? myPendingInvitations.value.length.toString() : undefined,
+  },
   { label: 'Automatisierung', icon: 'pi pi-sync', routeName: RouteNames.SETTINGS_AUTOMATION },
   { label: 'App', icon: 'pi pi-mobile', routeName: RouteNames.SETTINGS_APP },
 ])

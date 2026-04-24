@@ -215,7 +215,54 @@ func (a *APIService) CheckInvitation(token string) (*models.CheckInvitationRespo
 	}, nil
 }
 
-func (a *APIService) AcceptInvitation(payload models.AcceptInvitation, deviceName string) (*models.User, *string, *time.Time, *string, *time.Time, error) {
+func (a *APIService) DeclineMyInvitation(userID int64, invitationID int64) error {
+	profile, err := a.dbService.GetProfile(userID)
+	if err != nil {
+		logger.Logger.Error(err)
+		return err
+	}
+
+	invitations, err := a.dbService.ListPendingInvitationsByEmail(profile.Email)
+	if err != nil {
+		logger.Logger.Error(err)
+		return err
+	}
+
+	var target *models.UserPendingInvitation
+	for i := range invitations {
+		if invitations[i].ID == invitationID {
+			target = &invitations[i]
+			break
+		}
+	}
+	if target == nil {
+		return errors.New("invitation not found")
+	}
+
+	if err := a.dbService.DeleteInvitation(target.OrganisationID, target.ID); err != nil {
+		logger.Logger.Error(err)
+		return err
+	}
+	return nil
+}
+
+func (a *APIService) ListMyPendingInvitations(userID int64) ([]models.UserPendingInvitation, error) {
+	profile, err := a.dbService.GetProfile(userID)
+	if err != nil {
+		logger.Logger.Error(err)
+		return nil, err
+	}
+
+	invitations, err := a.dbService.ListPendingInvitationsByEmail(profile.Email)
+	if err != nil {
+		logger.Logger.Error(err)
+		return nil, err
+	}
+
+	return invitations, nil
+}
+
+func (a *APIService) AcceptInvitation(payload models.AcceptInvitation, deviceName string, authenticatedUserID int64) (*models.User, *string, *time.Time, *string, *time.Time, error) {
 	// Get invitation by token
 	invitation, err := a.dbService.GetInvitationByToken(payload.Token)
 	if err != nil {
@@ -240,8 +287,27 @@ func (a *APIService) AcceptInvitation(payload models.AcceptInvitation, deviceNam
 	}
 
 	if existingUserID > 0 {
-		// Existing user - just add to organisation
-		userID = existingUserID
+		// If the caller is already authenticated as the invited user, skip the
+		// password challenge since we already trust the session.
+		if authenticatedUserID > 0 && authenticatedUserID == existingUserID {
+			userID = existingUserID
+		} else {
+			// Otherwise require password to prevent anyone with the invitation
+			// token from hijacking the account.
+			if payload.Password == nil || *payload.Password == "" {
+				return nil, nil, nil, nil, nil, errors.New("invalid credentials")
+			}
+
+			loginUser, err := a.dbService.GetUserPasswordByEMail(invitation.Email)
+			if err != nil {
+				logger.Logger.Error(err)
+				return nil, nil, nil, nil, nil, errors.New("invalid credentials")
+			}
+			if err := bcrypt.CompareHashAndPassword([]byte(loginUser.Password), []byte(*payload.Password)); err != nil {
+				return nil, nil, nil, nil, nil, errors.New("invalid credentials")
+			}
+			userID = existingUserID
+		}
 	} else {
 		// New user - password is required
 		if payload.Password == nil || *payload.Password == "" {

@@ -16,7 +16,8 @@ func (d *DatabaseAdapter) ListForecasts(userID int64, limit int64) ([]models.For
 		return nil, err
 	}
 
-	rows, err := d.db.Query(string(query), limit, userID)
+	today := utils.GetTodayAsUTC().Format(utils.InternalDateFormat)
+	rows, err := d.db.Query(string(query), today, today, limit, userID)
 	if err != nil {
 		return nil, err
 	}
@@ -47,7 +48,8 @@ func (d *DatabaseAdapter) ListForecastDetails(userID int64, limit int64) ([]mode
 		return nil, err
 	}
 
-	rows, err := d.db.Query(string(query), limit, userID)
+	today := utils.GetTodayAsUTC().Format(utils.InternalDateFormat)
+	rows, err := d.db.Query(string(query), today, today, limit, userID)
 	if err != nil {
 		return nil, err
 	}

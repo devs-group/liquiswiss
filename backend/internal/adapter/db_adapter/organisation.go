@@ -70,6 +70,21 @@ func (d *DatabaseAdapter) GetOrganisation(userID int64, organisationID int64) (*
 	return &organisation, nil
 }
 
+func (d *DatabaseAdapter) GetCurrentUserRole(userID int64) (string, error) {
+	query, err := sqlQueries.ReadFile("queries/get_current_user_role.sql")
+	if err != nil {
+		return "", err
+	}
+
+	var role string
+	err = d.db.QueryRow(string(query), userID, userID).Scan(&role)
+	if err != nil {
+		return "", err
+	}
+
+	return role, nil
+}
+
 func (d *DatabaseAdapter) CreateOrganisation(name string) (int64, error) {
 	query, err := sqlQueries.ReadFile("queries/create_organisation.sql")
 	if err != nil {

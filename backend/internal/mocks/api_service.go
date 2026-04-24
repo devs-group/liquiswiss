@@ -42,9 +42,9 @@ func (m *MockIAPIService) EXPECT() *MockIAPIServiceMockRecorder {
 }
 
 // AcceptInvitation mocks base method.
-func (m *MockIAPIService) AcceptInvitation(payload models.AcceptInvitation, deviceName string) (*models.User, *string, *time.Time, *string, *time.Time, error) {
+func (m *MockIAPIService) AcceptInvitation(payload models.AcceptInvitation, deviceName string, authenticatedUserID int64) (*models.User, *string, *time.Time, *string, *time.Time, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "AcceptInvitation", payload, deviceName)
+	ret := m.ctrl.Call(m, "AcceptInvitation", payload, deviceName, authenticatedUserID)
 	ret0, _ := ret[0].(*models.User)
 	ret1, _ := ret[1].(*string)
 	ret2, _ := ret[2].(*time.Time)
@@ -55,9 +55,9 @@ func (m *MockIAPIService) AcceptInvitation(payload models.AcceptInvitation, devi
 }
 
 // AcceptInvitation indicates an expected call of AcceptInvitation.
-func (mr *MockIAPIServiceMockRecorder) AcceptInvitation(payload, deviceName any) *gomock.Call {
+func (mr *MockIAPIServiceMockRecorder) AcceptInvitation(payload, deviceName, authenticatedUserID any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "AcceptInvitation", reflect.TypeOf((*MockIAPIService)(nil).AcceptInvitation), payload, deviceName)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "AcceptInvitation", reflect.TypeOf((*MockIAPIService)(nil).AcceptInvitation), payload, deviceName, authenticatedUserID)
 }
 
 // CalculateForecast mocks base method.
@@ -386,6 +386,20 @@ func (m *MockIAPIService) CreateVatSetting(payload models.CreateVatSetting, user
 func (mr *MockIAPIServiceMockRecorder) CreateVatSetting(payload, userID any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CreateVatSetting", reflect.TypeOf((*MockIAPIService)(nil).CreateVatSetting), payload, userID)
+}
+
+// DeclineMyInvitation mocks base method.
+func (m *MockIAPIService) DeclineMyInvitation(userID, invitationID int64) error {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "DeclineMyInvitation", userID, invitationID)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// DeclineMyInvitation indicates an expected call of DeclineMyInvitation.
+func (mr *MockIAPIServiceMockRecorder) DeclineMyInvitation(userID, invitationID any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "DeclineMyInvitation", reflect.TypeOf((*MockIAPIService)(nil).DeclineMyInvitation), userID, invitationID)
 }
 
 // DeleteBankAccount mocks base method.
@@ -937,6 +951,21 @@ func (m *MockIAPIService) ListForecasts(userID, limit int64) ([]models.Forecast,
 func (mr *MockIAPIServiceMockRecorder) ListForecasts(userID, limit any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ListForecasts", reflect.TypeOf((*MockIAPIService)(nil).ListForecasts), userID, limit)
+}
+
+// ListMyPendingInvitations mocks base method.
+func (m *MockIAPIService) ListMyPendingInvitations(userID int64) ([]models.UserPendingInvitation, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "ListMyPendingInvitations", userID)
+	ret0, _ := ret[0].([]models.UserPendingInvitation)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// ListMyPendingInvitations indicates an expected call of ListMyPendingInvitations.
+func (mr *MockIAPIServiceMockRecorder) ListMyPendingInvitations(userID any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ListMyPendingInvitations", reflect.TypeOf((*MockIAPIService)(nil).ListMyPendingInvitations), userID)
 }
 
 // ListOrganisationInvitations mocks base method.

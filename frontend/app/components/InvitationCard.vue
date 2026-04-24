@@ -1,13 +1,10 @@
 <template>
   <Card class="border-dashed border-2">
     <template #title>
-      <div class="flex items-center justify-between">
-        <div class="flex items-center gap-2">
-          <i class="pi pi-clock text-yellow-500" />
-          <p class="truncate text-base">
-            {{ invitation.email }}
-          </p>
-        </div>
+      <div class="flex items-center justify-between min-h-[42px] gap-2">
+        <p class="truncate text-base">
+          {{ invitation.email }}
+        </p>
         <div class="flex justify-end gap-1">
           <Button
             v-tooltip.top="'Erneut senden'"
@@ -30,7 +27,7 @@
     </template>
     <template #content>
       <div class="flex flex-col gap-2 text-sm">
-        <p><strong>Rolle:</strong> {{ getRoleLabel(invitation.role) }}</p>
+        <p><strong>E-Mail:</strong> {{ invitation.email }}</p>
         <p><strong>Eingeladen von:</strong> {{ invitation.invitedByName }}</p>
         <p>
           <strong>Läuft ab:</strong>
@@ -38,16 +35,23 @@
             {{ formatDate(invitation.expiresAt) }}
           </span>
         </p>
-        <Tag
-          v-if="isExpired"
-          severity="danger"
-          value="Abgelaufen"
-        />
-        <Tag
-          v-else
-          severity="info"
-          value="Ausstehend"
-        />
+        <div class="flex flex-wrap gap-2">
+          <Tag
+            :severity="getRoleSeverity(invitation.role)"
+            :value="getRoleLabel(invitation.role)"
+          />
+          <Tag
+            v-if="isExpired"
+            severity="danger"
+            value="Abgelaufen"
+          />
+          <Tag
+            v-else
+            severity="info"
+            icon="pi pi-clock"
+            value="Ausstehend"
+          />
+        </div>
       </div>
     </template>
   </Card>
@@ -88,6 +92,15 @@ const getRoleLabel = (role: string) => {
     'read-only': 'Nur Lesen',
   }
   return labels[role] ?? role
+}
+
+const getRoleSeverity = (role: string) => {
+  const severities: Record<string, string> = {
+    'admin': 'info',
+    'editor': 'success',
+    'read-only': 'secondary',
+  }
+  return severities[role] ?? 'secondary'
 }
 
 const formatDate = (dateString: string) => {

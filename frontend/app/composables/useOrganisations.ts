@@ -97,6 +97,24 @@ export default function useOrganisations() {
     }
   }
 
+  const { user } = useAuth()
+  const currentOrganisationRole = computed(() => {
+    const currentID = user.value?.currentOrganisationID
+    return organisations.value.find(o => o.id === currentID)?.role ?? ''
+  })
+  const roleRank = (role: string): number => {
+    switch (role) {
+      case 'owner': return 3
+      case 'admin': return 2
+      case 'editor': return 1
+      case 'read-only': return 0
+      default: return -1
+    }
+  }
+  const canEdit = computed(() => roleRank(currentOrganisationRole.value) >= roleRank('editor'))
+  const canInvite = computed(() => roleRank(currentOrganisationRole.value) >= roleRank('admin'))
+  const canManageOrganisation = computed(() => roleRank(currentOrganisationRole.value) >= roleRank('admin'))
+
   return {
     useFetchListOrganisations,
     listOrganisations,
@@ -106,5 +124,9 @@ export default function useOrganisations() {
     updateOrganisation,
     setOrganisations,
     organisations,
+    currentOrganisationRole,
+    canEdit,
+    canInvite,
+    canManageOrganisation,
   }
 }

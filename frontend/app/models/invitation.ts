@@ -27,3 +27,15 @@ export interface AcceptInvitationFormData {
   token: string
   password?: string
 }
+
+export interface UserPendingInvitation {
+  id: number
+  organisationId: number
+  organisationName: string
+  email: string
+  role: MemberRoleType
+  token: string
+  invitedByName: string
+  expiresAt: string
+  createdAt: string
+}

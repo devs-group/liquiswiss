@@ -16,6 +16,70 @@
       />
     </div>
 
+    <div
+      v-if="myPendingInvitations.length"
+      class="flex flex-col gap-3"
+    >
+      <Message severity="warn">
+        Sie haben {{ myPendingInvitations.length }} ausstehende
+        {{ myPendingInvitations.length === 1 ? 'Einladung' : 'Einladungen' }} zu einer Organisation.
+      </Message>
+      <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+        <Card
+          v-for="invitation in myPendingInvitations"
+          :key="invitation.id"
+          class="border-dashed border-2"
+          :pt="{ body: { class: 'p-4' }, content: { class: 'p-0' } }"
+        >
+          <template #content>
+            <div class="flex flex-col gap-3">
+              <div>
+                <p class="font-semibold">
+                  {{ invitation.organisationName }}
+                </p>
+                <p class="text-xs text-gray-500">
+                  Eingeladen von {{ invitation.invitedByName }}
+                </p>
+              </div>
+              <div class="flex flex-wrap items-center gap-2">
+                <Tag
+                  :severity="getInvitationRoleSeverity(invitation.role)"
+                  :value="getRoleLabel(invitation.role)"
+                />
+                <Tag
+                  severity="info"
+                  icon="pi pi-clock"
+                  value="Ausstehend"
+                />
+              </div>
+              <div class="flex flex-col sm:flex-row gap-2">
+                <NuxtLink
+                  :to="{ name: RouteNames.AUTH_INVITATION, query: { token: invitation.token } }"
+                  class="flex-1"
+                >
+                  <Button
+                    label="Annehmen"
+                    icon="pi pi-check"
+                    class="w-full"
+                    size="small"
+                  />
+                </NuxtLink>
+                <Button
+                  label="Ablehnen"
+                  icon="pi pi-times"
+                  severity="danger"
+                  outlined
+                  size="small"
+                  class="flex-1"
+                  @click="onDeclineInvitation(invitation)"
+                />
+              </div>
+            </div>
+          </template>
+        </Card>
+      </div>
+    </div>
+
     <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
       <Card
         v-for="org in organisations"
@@ -99,6 +163,7 @@ const { organisations } = useOrganisations()
 const { user, updateCurrentOrganisation } = useAuth()
 const { showGlobalLoadingSpinner } = useGlobalData()
 const { skipOrganisationSwitchQuestion } = useSettings()
+const { myPendingInvitations, declineMyInvitation } = useInvitations()
 
 const currentOrganisationID = computed(() => user.value?.currentOrganisationID)
 
@@ -110,6 +175,44 @@ const getRoleLabel = (role: string): string => {
     'read-only': 'Nur Lesen',
   }
   return labels[role] ?? role
+}
+
+const getInvitationRoleSeverity = (role: string) => {
+  const severities: Record<string, string> = {
+    'admin': 'info',
+    'editor': 'success',
+    'read-only': 'secondary',
+  }
+  return severities[role] ?? 'secondary'
+}
+
+const onDeclineInvitation = (invitation: { id: number, organisationName: string }) => {
+  confirm.require({
+    header: 'Einladung ablehnen',
+    message: `Möchten Sie die Einladung zu "${invitation.organisationName}" ablehnen?`,
+    icon: 'pi pi-exclamation-triangle',
+    rejectProps: { label: 'Abbrechen', severity: 'secondary' },
+    acceptProps: { label: 'Ablehnen', severity: 'danger' },
+    accept: () => {
+      declineMyInvitation(invitation.id)
+        .then(() => {
+          toast.add({
+            summary: 'Einladung abgelehnt',
+            detail: `Sie haben die Einladung zu "${invitation.organisationName}" abgelehnt`,
+            severity: 'info',
+            life: Config.TOAST_LIFE_TIME,
+          })
+        })
+        .catch((err) => {
+          toast.add({
+            summary: 'Fehler',
+            detail: err,
+            severity: 'error',
+            life: Config.TOAST_LIFE_TIME,
+          })
+        })
+    },
+  })
 }
 
 const onCreateOrganisation = () => {

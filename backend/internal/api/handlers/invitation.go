@@ -177,6 +177,46 @@ func CheckInvitation(apiService api_service.IAPIService, c *gin.Context) {
 	c.JSON(http.StatusOK, response)
 }
 
+func DeclineMyInvitation(apiService api_service.IAPIService, c *gin.Context) {
+	userID := c.GetInt64("userID")
+	if userID == 0 {
+		c.Status(http.StatusUnauthorized)
+		return
+	}
+	invitationID, err := strconv.ParseInt(c.Param("invitationID"), 10, 64)
+	if err != nil {
+		c.Status(http.StatusBadRequest)
+		return
+	}
+
+	if err := apiService.DeclineMyInvitation(userID, invitationID); err != nil {
+		if err.Error() == "invitation not found" {
+			c.Status(http.StatusNotFound)
+			return
+		}
+		c.Status(http.StatusInternalServerError)
+		return
+	}
+
+	c.Status(http.StatusNoContent)
+}
+
+func ListMyPendingInvitations(apiService api_service.IAPIService, c *gin.Context) {
+	userID := c.GetInt64("userID")
+	if userID == 0 {
+		c.Status(http.StatusUnauthorized)
+		return
+	}
+
+	invitations, err := apiService.ListMyPendingInvitations(userID)
+	if err != nil {
+		c.Status(http.StatusInternalServerError)
+		return
+	}
+
+	c.JSON(http.StatusOK, invitations)
+}
+
 func AcceptInvitation(apiService api_service.IAPIService, c *gin.Context) {
 	// Pre
 	var payload models.AcceptInvitation
@@ -191,8 +231,18 @@ func AcceptInvitation(apiService api_service.IAPIService, c *gin.Context) {
 	}
 	deviceName := c.Request.UserAgent()
 
+	// Best-effort: extract userID from the access token cookie if present so
+	// an already-authenticated user can accept without re-entering a password
+	// when their session matches the invited email.
+	var authenticatedUserID int64
+	if accessTokenCookie, err := c.Cookie(utils.AccessTokenName); err == nil {
+		if claims, err := auth.VerifyToken(accessTokenCookie); err == nil && claims != nil {
+			authenticatedUserID = claims.UserID
+		}
+	}
+
 	// Action
-	user, accessToken, accessExpirationTime, refreshToken, refreshExpirationTime, err := apiService.AcceptInvitation(payload, deviceName)
+	user, accessToken, accessExpirationTime, refreshToken, refreshExpirationTime, err := apiService.AcceptInvitation(payload, deviceName, authenticatedUserID)
 	if err != nil {
 		if errors.Is(err, sql.ErrNoRows) {
 			c.Status(http.StatusNotFound)
@@ -200,6 +250,10 @@ func AcceptInvitation(apiService api_service.IAPIService, c *gin.Context) {
 		}
 		if err.Error() == "invitation has expired" {
 			c.JSON(http.StatusGone, gin.H{"error": "invitation has expired"})
+			return
+		}
+		if err.Error() == "invalid credentials" {
+			c.JSON(http.StatusUnauthorized, gin.H{"error": "invalid credentials"})
 			return
 		}
 		if err.Error() == "password is required for new users" {

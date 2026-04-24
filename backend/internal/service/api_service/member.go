@@ -174,5 +174,21 @@ func (a *APIService) RemoveOrganisationMember(userID int64, organisationID int64
 		return err
 	}
 
+	// Reassign the removed user's current organisation to one they still belong
+	// to so their next request doesn't keep querying the org they were removed
+	// from. If they have no remaining orgs we leave current_organisation_id as
+	// is — the hardened get_current_user_organisation_id function treats stale
+	// values as NULL.
+	remainingOrgs, _, listErr := a.dbService.ListOrganisations(memberUserID, 1, 1)
+	if listErr != nil {
+		logger.Logger.Error(listErr)
+		return nil
+	}
+	if len(remainingOrgs) > 0 {
+		if err := a.dbService.SetUserCurrentOrganisation(memberUserID, remainingOrgs[0].ID); err != nil {
+			logger.Logger.Error(err)
+		}
+	}
+
 	return nil
 }

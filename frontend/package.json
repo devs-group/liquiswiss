@@ -4,8 +4,8 @@
   "type": "module",
   "scripts": {
     "build": "nuxt build",
-    "dev": "nuxt dev",
-    "dev-host": "nuxt dev --host",
+    "dev": "nuxt dev --port 3007",
+    "dev-host": "nuxt dev --host --port 3007",
     "lint": "eslint .",
     "lint:fix": "eslint . --fix",
     "generate": "nuxt generate",

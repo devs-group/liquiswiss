@@ -8,9 +8,10 @@ export default defineNuxtRouteMiddleware(async (to) => {
 
   const { useFetchGetProfile, isAuthenticated, hasFetchedInitially } = useAuth()
   const { loadSettings, loadOrganisationSettings, settingsLoaded, organisationSettingsLoaded } = useSettings()
+  const { loadMyPendingInvitations } = useInvitations()
   const redirectPathCookie = useCookie(Constants.REDIRECT_PATH_COOKIE, RedirectCookieProps)
   const explicitLogoutCookie = useCookie(Constants.EXPLICIT_LOGOUT, RedirectCookieProps)
-  const sessionExpiredCookie = useCookie<boolean | null>(Constants.SESSION_EXPIRED_COOKIE, RedirectCookieProps)
+  const sessionExpiredCookie = useCookie<boolean | null>(Constants.SESSION_EXPIRED_COOKIE, SessionTrackingCookieProps)
   const hadSessionCookie = useCookie<boolean | null>(Constants.HAD_SESSION_COOKIE, SessionTrackingCookieProps)
 
   // Note: We cannot detect cookie deletion via JavaScript because auth cookies are HTTP-only (secure).
@@ -46,6 +47,11 @@ export default defineNuxtRouteMiddleware(async (to) => {
     if (!organisationSettingsLoaded.value) {
       await loadOrganisationSettings()
     }
+  }
+
+  // Load pending invitations for the authenticated user (deduped by useFetch key).
+  if (isAuthenticated.value) {
+    await loadMyPendingInvitations()
   }
 
   // Track that user has had a session (for detecting session expiry later)
@@ -91,7 +97,8 @@ export default defineNuxtRouteMiddleware(async (to) => {
   }
 
   // Authenticated user on auth route - redirect to saved path or home
-  if (isAuthenticated.value && isOnAuthRoute) {
+  // (except invitation route - logged-in users need to accept invitations too)
+  if (isAuthenticated.value && isOnAuthRoute && to.name !== RouteNames.AUTH_INVITATION) {
     const wasExplicitLogout = !!explicitLogoutCookie.value
     const savedPath = redirectPathCookie.value
 
