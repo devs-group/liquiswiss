@@ -75,15 +75,11 @@ const { logout, user, updateCurrentOrganisation } = useAuth()
 const { organisations } = useOrganisations()
 const { showGlobalLoadingSpinner } = useGlobalData()
 const { skipOrganisationSwitchQuestion } = useSettings()
-const { myPendingInvitations, loadMyPendingInvitations } = useInvitations()
+const { myPendingInvitations } = useInvitations()
 const confirm = useConfirm()
 const toast = useToast()
 
 const selectedOrganisationID = ref<number | null>(user.value?.currentOrganisationID ?? null)
-
-onMounted(() => {
-  loadMyPendingInvitations()
-})
 
 const pendingInvitationCount = computed(() => myPendingInvitations.value.length)
 

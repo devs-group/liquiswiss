@@ -50,11 +50,7 @@
 import type { MenuItem } from 'primevue/menuitem'
 import { RouteNames } from '~/config/routes'
 
-const { myPendingInvitations, loadMyPendingInvitations } = useInvitations()
-
-onMounted(() => {
-  loadMyPendingInvitations()
-})
+const { myPendingInvitations } = useInvitations()
 
 const items = computed<MenuItem[]>(() => [
   { label: 'Profil', icon: 'pi pi-user', routeName: RouteNames.SETTINGS_PROFILE },

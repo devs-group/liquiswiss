@@ -152,7 +152,7 @@ const { organisations } = useOrganisations()
 const { user, updateCurrentOrganisation } = useAuth()
 const { showGlobalLoadingSpinner } = useGlobalData()
 const { skipOrganisationSwitchQuestion } = useSettings()
-const { myPendingInvitations, loadMyPendingInvitations } = useInvitations()
+const { myPendingInvitations } = useInvitations()
 
 const currentOrganisationID = computed(() => user.value?.currentOrganisationID)
 
@@ -219,6 +219,5 @@ const doSwitchOrganisation = (organisationId: number) => {
 
 onMounted(() => {
   settingsTab.value = RouteNames.SETTINGS_ORGANISATIONS
-  loadMyPendingInvitations()
 })
 </script>

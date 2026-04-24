@@ -8,6 +8,7 @@ export default defineNuxtRouteMiddleware(async (to) => {
 
   const { useFetchGetProfile, isAuthenticated, hasFetchedInitially } = useAuth()
   const { loadSettings, loadOrganisationSettings, settingsLoaded, organisationSettingsLoaded } = useSettings()
+  const { loadMyPendingInvitations } = useInvitations()
   const redirectPathCookie = useCookie(Constants.REDIRECT_PATH_COOKIE, RedirectCookieProps)
   const explicitLogoutCookie = useCookie(Constants.EXPLICIT_LOGOUT, RedirectCookieProps)
   const sessionExpiredCookie = useCookie<boolean | null>(Constants.SESSION_EXPIRED_COOKIE, SessionTrackingCookieProps)
@@ -30,6 +31,7 @@ export default defineNuxtRouteMiddleware(async (to) => {
         if (!organisationSettingsLoaded.value) {
           await loadOrganisationSettings()
         }
+        await loadMyPendingInvitations()
       })
       .catch((err) => {
         // Check if session expired (Flow 2: page load with expired session)
