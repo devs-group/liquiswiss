@@ -419,7 +419,7 @@ func TestAcceptInvitation_ExistingUserWithoutPassword(t *testing.T) {
 		Token: token,
 	}, "Test Device")
 	require.Error(t, err)
-	require.Contains(t, err.Error(), "password is required")
+	require.Contains(t, err.Error(), "invalid credentials")
 }
 
 func TestAcceptInvitation_ExistingUserWrongPassword(t *testing.T) {

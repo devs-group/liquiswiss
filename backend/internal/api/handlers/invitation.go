@@ -202,6 +202,10 @@ func AcceptInvitation(apiService api_service.IAPIService, c *gin.Context) {
 			c.JSON(http.StatusGone, gin.H{"error": "invitation has expired"})
 			return
 		}
+		if err.Error() == "invalid credentials" {
+			c.JSON(http.StatusUnauthorized, gin.H{"error": "invalid credentials"})
+			return
+		}
 		if err.Error() == "password is required for new users" {
 			c.JSON(http.StatusBadRequest, gin.H{"error": "password is required"})
 			return

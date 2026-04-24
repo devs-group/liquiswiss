@@ -82,8 +82,8 @@ export default function useInvitations() {
       if ((error as { statusCode?: number })?.statusCode === 410) {
         return Promise.reject('Einladung ist abgelaufen')
       }
-      if ((error as { statusCode?: number })?.statusCode === 400) {
-        return Promise.reject('Passwort ist erforderlich')
+      if ((error as { statusCode?: number })?.statusCode === 401) {
+        return Promise.reject('E-Mail oder Passwort ist falsch')
       }
       return Promise.reject('Fehler beim Annehmen der Einladung')
     }
