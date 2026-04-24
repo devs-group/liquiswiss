@@ -31,7 +31,6 @@ export default defineNuxtRouteMiddleware(async (to) => {
         if (!organisationSettingsLoaded.value) {
           await loadOrganisationSettings()
         }
-        await loadMyPendingInvitations()
       })
       .catch((err) => {
         // Check if session expired (Flow 2: page load with expired session)
@@ -48,6 +47,11 @@ export default defineNuxtRouteMiddleware(async (to) => {
     if (!organisationSettingsLoaded.value) {
       await loadOrganisationSettings()
     }
+  }
+
+  // Load pending invitations for the authenticated user (deduped by useFetch key).
+  if (isAuthenticated.value) {
+    await loadMyPendingInvitations()
   }
 
   // Track that user has had a session (for detecting session expiry later)

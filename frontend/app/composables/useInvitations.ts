@@ -95,15 +95,18 @@ export default function useInvitations() {
   }
 
   const loadMyPendingInvitations = async () => {
-    const { data, error } = await useFetch<UserPendingInvitation[]>(`/api/me/invitations`, {
-      method: 'GET',
-      key: 'my-pending-invitations',
-    })
-    if (error.value) {
-      myPendingInvitations.value = []
-      return
+    try {
+      // Forward the incoming request's cookies so the call succeeds during SSR.
+      const headers = import.meta.server ? useRequestHeaders(['cookie']) : undefined
+      const data = await $fetch<UserPendingInvitation[]>(`/api/me/invitations`, {
+        method: 'GET',
+        headers,
+      })
+      myPendingInvitations.value = data ?? []
     }
-    myPendingInvitations.value = data.value ?? []
+    catch {
+      myPendingInvitations.value = []
+    }
   }
 
   return {
