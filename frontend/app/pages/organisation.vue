@@ -190,9 +190,6 @@
         </p>
       </Panel>
     </template>
-
-    <!-- Delete Member Confirmation -->
-    <ConfirmDialog />
   </div>
 </template>
 
