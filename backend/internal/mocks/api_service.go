@@ -939,6 +939,21 @@ func (mr *MockIAPIServiceMockRecorder) ListForecasts(userID, limit any) *gomock.
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ListForecasts", reflect.TypeOf((*MockIAPIService)(nil).ListForecasts), userID, limit)
 }
 
+// ListMyPendingInvitations mocks base method.
+func (m *MockIAPIService) ListMyPendingInvitations(userID int64) ([]models.UserPendingInvitation, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "ListMyPendingInvitations", userID)
+	ret0, _ := ret[0].([]models.UserPendingInvitation)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// ListMyPendingInvitations indicates an expected call of ListMyPendingInvitations.
+func (mr *MockIAPIServiceMockRecorder) ListMyPendingInvitations(userID any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ListMyPendingInvitations", reflect.TypeOf((*MockIAPIService)(nil).ListMyPendingInvitations), userID)
+}
+
 // ListOrganisationInvitations mocks base method.
 func (m *MockIAPIService) ListOrganisationInvitations(userID, organisationID int64) ([]models.Invitation, error) {
 	m.ctrl.T.Helper()

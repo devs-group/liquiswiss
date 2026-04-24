@@ -215,6 +215,22 @@ func (a *APIService) CheckInvitation(token string) (*models.CheckInvitationRespo
 	}, nil
 }
 
+func (a *APIService) ListMyPendingInvitations(userID int64) ([]models.UserPendingInvitation, error) {
+	profile, err := a.dbService.GetProfile(userID)
+	if err != nil {
+		logger.Logger.Error(err)
+		return nil, err
+	}
+
+	invitations, err := a.dbService.ListPendingInvitationsByEmail(profile.Email)
+	if err != nil {
+		logger.Logger.Error(err)
+		return nil, err
+	}
+
+	return invitations, nil
+}
+
 func (a *APIService) AcceptInvitation(payload models.AcceptInvitation, deviceName string, authenticatedUserID int64) (*models.User, *string, *time.Time, *string, *time.Time, error) {
 	// Get invitation by token
 	invitation, err := a.dbService.GetInvitationByToken(payload.Token)

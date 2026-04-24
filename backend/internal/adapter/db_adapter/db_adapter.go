@@ -134,6 +134,7 @@ type IDatabaseAdapter interface {
 
 	CreateInvitation(organisationID int64, email string, role string, token string, invitedBy int64, expiresAt time.Time) (int64, error)
 	ListInvitations(organisationID int64) ([]models.Invitation, error)
+	ListPendingInvitationsByEmail(email string) ([]models.UserPendingInvitation, error)
 	GetInvitationByID(organisationID int64, invitationID int64) (*models.Invitation, error)
 	GetInvitationByToken(token string) (*models.Invitation, error)
 	DeleteInvitation(organisationID int64, invitationID int64) error

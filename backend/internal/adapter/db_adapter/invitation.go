@@ -30,6 +30,46 @@ func (d *DatabaseAdapter) CreateInvitation(organisationID int64, email string, r
 	return id, nil
 }
 
+func (d *DatabaseAdapter) ListPendingInvitationsByEmail(email string) ([]models.UserPendingInvitation, error) {
+	invitations := []models.UserPendingInvitation{}
+
+	query, err := sqlQueries.ReadFile("queries/list_invitations_by_email.sql")
+	if err != nil {
+		return nil, err
+	}
+
+	rows, err := d.db.Query(string(query), email)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+
+	for rows.Next() {
+		var invitation models.UserPendingInvitation
+		var invitedBy int64
+
+		err := rows.Scan(
+			&invitation.ID,
+			&invitation.OrganisationID,
+			&invitation.OrganisationName,
+			&invitation.Email,
+			&invitation.Role,
+			&invitation.Token,
+			&invitedBy,
+			&invitation.InvitedByName,
+			&invitation.ExpiresAt,
+			&invitation.CreatedAt,
+		)
+		if err != nil {
+			return nil, err
+		}
+
+		invitations = append(invitations, invitation)
+	}
+
+	return invitations, nil
+}
+
 func (d *DatabaseAdapter) ListInvitations(organisationID int64) ([]models.Invitation, error) {
 	invitations := []models.Invitation{}
 

@@ -177,6 +177,22 @@ func CheckInvitation(apiService api_service.IAPIService, c *gin.Context) {
 	c.JSON(http.StatusOK, response)
 }
 
+func ListMyPendingInvitations(apiService api_service.IAPIService, c *gin.Context) {
+	userID := c.GetInt64("userID")
+	if userID == 0 {
+		c.Status(http.StatusUnauthorized)
+		return
+	}
+
+	invitations, err := apiService.ListMyPendingInvitations(userID)
+	if err != nil {
+		c.Status(http.StatusInternalServerError)
+		return
+	}
+
+	c.JSON(http.StatusOK, invitations)
+}
+
 func AcceptInvitation(apiService api_service.IAPIService, c *gin.Context) {
 	// Pre
 	var payload models.AcceptInvitation

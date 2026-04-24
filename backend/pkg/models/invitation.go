@@ -30,3 +30,15 @@ type CheckInvitationResponse struct {
 	InvitedByName    string `json:"invitedByName"`
 	ExistingUser     bool   `json:"existingUser"`
 }
+
+type UserPendingInvitation struct {
+	ID               int64     `json:"id"`
+	OrganisationID   int64     `json:"organisationId"`
+	OrganisationName string    `json:"organisationName"`
+	Email            string    `json:"email"`
+	Role             string    `json:"role"`
+	Token            string    `json:"token"`
+	InvitedByName    string    `json:"invitedByName"`
+	ExpiresAt        time.Time `json:"expiresAt"`
+	CreatedAt        time.Time `json:"createdAt"`
+}

@@ -16,6 +16,59 @@
       />
     </div>
 
+    <div
+      v-if="myPendingInvitations.length"
+      class="flex flex-col gap-3"
+    >
+      <Message severity="warn">
+        Sie haben {{ myPendingInvitations.length }} ausstehende
+        {{ myPendingInvitations.length === 1 ? 'Einladung' : 'Einladungen' }} zu einer Organisation.
+      </Message>
+      <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+        <Card
+          v-for="invitation in myPendingInvitations"
+          :key="invitation.id"
+          class="border-dashed border-2"
+          :pt="{ body: { class: 'p-4' }, content: { class: 'p-0' } }"
+        >
+          <template #content>
+            <div class="flex flex-col gap-3">
+              <div>
+                <p class="font-semibold">
+                  {{ invitation.organisationName }}
+                </p>
+                <p class="text-xs text-gray-500">
+                  Eingeladen von {{ invitation.invitedByName }}
+                </p>
+              </div>
+              <div class="flex flex-wrap items-center gap-2">
+                <Tag
+                  :severity="getInvitationRoleSeverity(invitation.role)"
+                  :value="getRoleLabel(invitation.role)"
+                />
+                <Tag
+                  severity="info"
+                  icon="pi pi-clock"
+                  value="Ausstehend"
+                />
+              </div>
+              <NuxtLink
+                :to="{ name: RouteNames.AUTH_INVITATION, query: { token: invitation.token } }"
+                class="w-full"
+              >
+                <Button
+                  label="Annehmen"
+                  icon="pi pi-check"
+                  class="w-full"
+                  size="small"
+                />
+              </NuxtLink>
+            </div>
+          </template>
+        </Card>
+      </div>
+    </div>
+
     <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
       <Card
         v-for="org in organisations"
@@ -99,6 +152,7 @@ const { organisations } = useOrganisations()
 const { user, updateCurrentOrganisation } = useAuth()
 const { showGlobalLoadingSpinner } = useGlobalData()
 const { skipOrganisationSwitchQuestion } = useSettings()
+const { myPendingInvitations, loadMyPendingInvitations } = useInvitations()
 
 const currentOrganisationID = computed(() => user.value?.currentOrganisationID)
 
@@ -110,6 +164,15 @@ const getRoleLabel = (role: string): string => {
     'read-only': 'Nur Lesen',
   }
   return labels[role] ?? role
+}
+
+const getInvitationRoleSeverity = (role: string) => {
+  const severities: Record<string, string> = {
+    'admin': 'info',
+    'editor': 'success',
+    'read-only': 'secondary',
+  }
+  return severities[role] ?? 'secondary'
 }
 
 const onCreateOrganisation = () => {
@@ -156,5 +219,6 @@ const doSwitchOrganisation = (organisationId: number) => {
 
 onMounted(() => {
   settingsTab.value = RouteNames.SETTINGS_ORGANISATIONS
+  loadMyPendingInvitations()
 })
 </script>

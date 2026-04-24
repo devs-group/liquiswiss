@@ -1215,6 +1215,21 @@ func (mr *MockIDatabaseAdapterMockRecorder) ListOrganisations(userID, page, limi
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ListOrganisations", reflect.TypeOf((*MockIDatabaseAdapter)(nil).ListOrganisations), userID, page, limit)
 }
 
+// ListPendingInvitationsByEmail mocks base method.
+func (m *MockIDatabaseAdapter) ListPendingInvitationsByEmail(email string) ([]models.UserPendingInvitation, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "ListPendingInvitationsByEmail", email)
+	ret0, _ := ret[0].([]models.UserPendingInvitation)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// ListPendingInvitationsByEmail indicates an expected call of ListPendingInvitationsByEmail.
+func (mr *MockIDatabaseAdapterMockRecorder) ListPendingInvitationsByEmail(email any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ListPendingInvitationsByEmail", reflect.TypeOf((*MockIDatabaseAdapter)(nil).ListPendingInvitationsByEmail), email)
+}
+
 // ListSalaries mocks base method.
 func (m *MockIDatabaseAdapter) ListSalaries(userID, employeeID, page, limit int64) ([]models.Salary, int64, error) {
 	m.ctrl.T.Helper()

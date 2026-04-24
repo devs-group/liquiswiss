@@ -129,6 +129,11 @@ func (api *API) setupRouter() {
 				handlers.RemoveOrganisationMember(api.APIService, ctx)
 			})
 
+			// Pending invitations for the current user (across any organisation)
+			protected.GET("/me/invitations", func(ctx *gin.Context) {
+				handlers.ListMyPendingInvitations(api.APIService, ctx)
+			})
+
 			// Organisation Invitations
 			protected.GET("/organisations/:organisationID/invitations", func(ctx *gin.Context) {
 				handlers.ListOrganisationInvitations(api.APIService, ctx)

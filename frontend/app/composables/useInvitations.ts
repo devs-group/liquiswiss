@@ -1,8 +1,9 @@
 import type { User } from '~/models/auth'
-import type { AcceptInvitationFormData, CheckInvitationResponse, CreateInvitationFormData, InvitationResponse } from '~/models/invitation'
+import type { AcceptInvitationFormData, CheckInvitationResponse, CreateInvitationFormData, InvitationResponse, UserPendingInvitation } from '~/models/invitation'
 
 export default function useInvitations() {
   const invitations = useState<InvitationResponse[]>('invitations', () => [])
+  const myPendingInvitations = useState<UserPendingInvitation[]>('myPendingInvitations', () => [])
   const refreshInvitations = useState<(() => Promise<void>) | null>('refreshInvitations', () => null)
 
   const setRefreshInvitations = (fn: () => Promise<void>) => {
@@ -93,8 +94,19 @@ export default function useInvitations() {
     invitations.value = data ?? []
   }
 
+  const loadMyPendingInvitations = async () => {
+    try {
+      const data = await $fetch<UserPendingInvitation[]>(`/api/me/invitations`, { method: 'GET' })
+      myPendingInvitations.value = data ?? []
+    }
+    catch {
+      myPendingInvitations.value = []
+    }
+  }
+
   return {
     invitations,
+    myPendingInvitations,
     setRefreshInvitations,
     createInvitation,
     deleteInvitation,
@@ -102,5 +114,6 @@ export default function useInvitations() {
     checkInvitation,
     acceptInvitation,
     setInvitations,
+    loadMyPendingInvitations,
   }
 }

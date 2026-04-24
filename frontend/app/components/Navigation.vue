@@ -35,9 +35,14 @@
         >
           <span :class="item.icon" />
           <span
-            class="ml-2"
+            class="ml-2 flex-1"
             :class="{ 'text-liqui-green': isActive }"
           >{{ item.label }}</span>
+          <Badge
+            v-if="item.badge"
+            :value="item.badge"
+            severity="warn"
+          />
         </a>
       </router-link>
       <a
@@ -48,7 +53,12 @@
         v-bind="props.action"
       >
         <span :class="item.icon" />
-        <span class="ml-2">{{ item.label }}</span>
+        <span class="ml-2 flex-1">{{ item.label }}</span>
+        <Badge
+          v-if="item.badge"
+          :value="item.badge"
+          severity="warn"
+        />
       </a>
     </template>
   </Menu>
@@ -65,18 +75,30 @@ const { logout, user, updateCurrentOrganisation } = useAuth()
 const { organisations } = useOrganisations()
 const { showGlobalLoadingSpinner } = useGlobalData()
 const { skipOrganisationSwitchQuestion } = useSettings()
+const { myPendingInvitations, loadMyPendingInvitations } = useInvitations()
 const confirm = useConfirm()
 const toast = useToast()
 
 const selectedOrganisationID = ref<number | null>(user.value?.currentOrganisationID ?? null)
 
-const items = ref<MenuItem[]>([
+onMounted(() => {
+  loadMyPendingInvitations()
+})
+
+const pendingInvitationCount = computed(() => myPendingInvitations.value.length)
+
+const items = computed<MenuItem[]>(() => [
   { label: 'Prognose', icon: 'pi pi-chart-line', routeName: RouteNames.HOME },
   { label: 'Mitarbeitende', icon: 'pi pi-users', routeName: RouteNames.EMPLOYEES },
   { label: 'Transaktionen', icon: 'pi pi-money-bill', routeName: RouteNames.TRANSACTIONS },
   { label: 'Bankkonten', icon: 'pi pi-building', routeName: RouteNames.BANK_ACCOUNTS },
   { label: 'Organisation', icon: 'pi pi-sitemap', routeName: RouteNames.ORGANISATION },
-  { label: 'Einstellungen', icon: 'pi pi-cog', routeName: RouteNames.SETTINGS },
+  {
+    label: 'Einstellungen',
+    icon: 'pi pi-cog',
+    routeName: RouteNames.SETTINGS,
+    badge: pendingInvitationCount.value > 0 ? pendingInvitationCount.value.toString() : undefined,
+  },
   { label: 'Abmelden', icon: 'pi pi-sign-out', command: async () => {
     confirm.require({
       header: 'Abmelden',
