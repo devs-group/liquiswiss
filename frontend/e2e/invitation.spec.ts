@@ -98,7 +98,7 @@ test.describe('Invitation Flow', () => {
       await invitationPage.passwordRepeatInput.blur()
 
       // Button should be disabled or show validation error
-      await expect(page.getByText('mind. 8 Zeichen')).toBeVisible()
+      await expect(page.getByText('Bitte geben Sie mind. 8 Zeichen ein')).toBeVisible()
     })
 
     test('should keep button disabled with mismatched passwords', async ({ page }) => {

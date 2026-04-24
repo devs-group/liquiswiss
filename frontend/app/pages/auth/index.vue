@@ -86,7 +86,7 @@ import useAuth from '~/composables/useAuth'
 import { Config } from '~/config/config'
 import { RouteNames } from '~/config/routes'
 import type { LoginFormData } from '~/models/auth'
-import { Constants, RedirectCookieProps } from '~/utils/constants'
+import { Constants, SessionTrackingCookieProps } from '~/utils/constants'
 
 useHead({
   title: 'Login',
@@ -94,7 +94,7 @@ useHead({
 
 const { login } = useAuth()
 const toast = useToast()
-const sessionExpiredCookie = useCookie(Constants.SESSION_EXPIRED_COOKIE, RedirectCookieProps)
+const sessionExpiredCookie = useCookie(Constants.SESSION_EXPIRED_COOKIE, SessionTrackingCookieProps)
 const isLoading = ref(false)
 
 // Check for session expired cookie and show toast

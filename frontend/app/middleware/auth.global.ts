@@ -10,7 +10,7 @@ export default defineNuxtRouteMiddleware(async (to) => {
   const { loadSettings, loadOrganisationSettings, settingsLoaded, organisationSettingsLoaded } = useSettings()
   const redirectPathCookie = useCookie(Constants.REDIRECT_PATH_COOKIE, RedirectCookieProps)
   const explicitLogoutCookie = useCookie(Constants.EXPLICIT_LOGOUT, RedirectCookieProps)
-  const sessionExpiredCookie = useCookie<boolean | null>(Constants.SESSION_EXPIRED_COOKIE, RedirectCookieProps)
+  const sessionExpiredCookie = useCookie<boolean | null>(Constants.SESSION_EXPIRED_COOKIE, SessionTrackingCookieProps)
   const hadSessionCookie = useCookie<boolean | null>(Constants.HAD_SESSION_COOKIE, SessionTrackingCookieProps)
 
   // Note: We cannot detect cookie deletion via JavaScript because auth cookies are HTTP-only (secure).
