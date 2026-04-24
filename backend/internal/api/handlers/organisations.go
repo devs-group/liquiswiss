@@ -103,6 +103,64 @@ func CreateOrganisation(apiService api_service.IAPIService, c *gin.Context) {
 	c.JSON(http.StatusCreated, organisation)
 }
 
+func GetOrganisationChatbotStatus(apiService api_service.IAPIService, c *gin.Context) {
+	userID := c.GetInt64("userID")
+	if userID == 0 {
+		c.Status(http.StatusUnauthorized)
+		return
+	}
+
+	has, err := apiService.HasOrganisationChatbots(userID)
+	if err != nil {
+		c.Status(http.StatusInternalServerError)
+		return
+	}
+
+	c.JSON(http.StatusOK, gin.H{"active": has})
+}
+
+func ProvisionOrganisationChatbots(apiService api_service.IAPIService, c *gin.Context) {
+	userID := c.GetInt64("userID")
+	if userID == 0 {
+		c.Status(http.StatusUnauthorized)
+		return
+	}
+	organisationID, err := strconv.ParseInt(c.Param("organisationID"), 10, 64)
+	if err != nil {
+		c.Status(http.StatusBadRequest)
+		return
+	}
+
+	err = apiService.ProvisionOrganisationChatbots(userID, organisationID)
+	if err != nil {
+		c.Status(http.StatusInternalServerError)
+		return
+	}
+
+	c.JSON(http.StatusOK, gin.H{"status": "ok"})
+}
+
+func DeleteOrganisationChatbots(apiService api_service.IAPIService, c *gin.Context) {
+	userID := c.GetInt64("userID")
+	if userID == 0 {
+		c.Status(http.StatusUnauthorized)
+		return
+	}
+	organisationID, err := strconv.ParseInt(c.Param("organisationID"), 10, 64)
+	if err != nil {
+		c.Status(http.StatusBadRequest)
+		return
+	}
+
+	err = apiService.DeleteOrganisationChatbots(userID, organisationID)
+	if err != nil {
+		c.Status(http.StatusInternalServerError)
+		return
+	}
+
+	c.JSON(http.StatusOK, gin.H{"status": "ok"})
+}
+
 func UpdateOrganisation(apiService api_service.IAPIService, c *gin.Context) {
 	// Pre
 	userID := c.GetInt64("userID")

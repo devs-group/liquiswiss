@@ -1,0 +1,5374 @@
+schemes:
+  - https
+swagger: "2.0"
+info:
+  description: "VectorChat API. Authentication: first request a token via POST
+    /public/oauth/token (see
+    http://localhost:4456/#tag/apikey/POST/public/oauth/token), then use
+    'Authorize' with Bearer <token>."
+  title: VectorChat API
+  contact: {}
+  version: "1.0"
+host: api.vectorchat.rke2.devs-group.com
+basePath: /
+paths:
+  /agent/sessions/{sessionID}/approve:
+    post:
+      security:
+        - BearerAuth: []
+      description: Submit an approval decision for a tool call
+      consumes:
+        - application/json
+      produces:
+        - application/json
+      tags:
+        - agent
+      summary: Approve or deny a tool call
+      parameters:
+        - type: string
+          description: Session ID
+          name: sessionID
+          in: path
+          required: true
+        - type: string
+          description: Approval ID
+          name: approval_id
+          in: query
+          required: true
+        - description: Decision
+          name: request
+          in: body
+          required: true
+          schema:
+            $ref: "#/definitions/github_com_yourusername_vectorchat_pkg_models.AgentApprova\
+              lDecisionRequest"
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: "#/definitions/github_com_yourusername_vectorchat_pkg_models.APIResponse"
+        "400":
+          description: Bad Request
+          schema:
+            $ref: "#/definitions/github_com_yourusername_vectorchat_pkg_models.APIResponse"
+        "403":
+          description: Forbidden
+          schema:
+            $ref: "#/definitions/github_com_yourusername_vectorchat_pkg_models.APIResponse"
+        "404":
+          description: Not Found
+          schema:
+            $ref: "#/definitions/github_com_yourusername_vectorchat_pkg_models.APIResponse"
+  /agent/sessions/{sessionID}/compact:
+    post:
+      security:
+        - BearerAuth: []
+      description: Compact the session context
+      produces:
+        - application/json
+      tags:
+        - agent
+      summary: Compact agent session
+      parameters:
+        - type: string
+          description: Session ID
+          name: sessionID
+          in: path
+          required: true
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: "#/definitions/github_com_yourusername_vectorchat_pkg_models.APIResponse"
+        "400":
+          description: Bad Request
+          schema:
+            $ref: "#/definitions/github_com_yourusername_vectorchat_pkg_models.APIResponse"
+        "403":
+          description: Forbidden
+          schema:
+            $ref: "#/definitions/github_com_yourusername_vectorchat_pkg_models.APIResponse"
+        "404":
+          description: Not Found
+          schema:
+            $ref: "#/definitions/github_com_yourusername_vectorchat_pkg_models.APIResponse"
+  /agent/sessions/{sessionID}/events:
+    get:
+      security:
+        - BearerAuth: []
+      description: Stream agent status events for a session
+      produces:
+        - text/event-stream
+      tags:
+        - agent
+      summary: Stream agent events
+      parameters:
+        - type: string
+          description: Session ID
+          name: sessionID
+          in: path
+          required: true
+      responses:
+        "200":
+          description: Streamed events
+          schema:
+            type: string
+        "400":
+          description: Bad Request
+          schema:
+            $ref: "#/definitions/github_com_yourusername_vectorchat_pkg_models.APIResponse"
+        "403":
+          description: Forbidden
+          schema:
+            $ref: "#/definitions/github_com_yourusername_vectorchat_pkg_models.APIResponse"
+        "404":
+          description: Not Found
+          schema:
+            $ref: "#/definitions/github_com_yourusername_vectorchat_pkg_models.APIResponse"
+  /agent/sessions/{sessionID}/interrupt:
+    post:
+      security:
+        - BearerAuth: []
+      description: Interrupt a running agent session
+      produces:
+        - application/json
+      tags:
+        - agent
+      summary: Interrupt agent session
+      parameters:
+        - type: string
+          description: Session ID
+          name: sessionID
+          in: path
+          required: true
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: "#/definitions/github_com_yourusername_vectorchat_pkg_models.APIResponse"
+        "400":
+          description: Bad Request
+          schema:
+            $ref: "#/definitions/github_com_yourusername_vectorchat_pkg_models.APIResponse"
+        "403":
+          description: Forbidden
+          schema:
+            $ref: "#/definitions/github_com_yourusername_vectorchat_pkg_models.APIResponse"
+        "404":
+          description: Not Found
+          schema:
+            $ref: "#/definitions/github_com_yourusername_vectorchat_pkg_models.APIResponse"
+  /agent/sessions/{sessionID}/review:
+    post:
+      security:
+        - BearerAuth: []
+      description: Trigger a review pass for the agent session
+      produces:
+        - application/json
+      tags:
+        - agent
+      summary: Review agent session
+      parameters:
+        - type: string
+          description: Session ID
+          name: sessionID
+          in: path
+          required: true
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: "#/definitions/github_com_yourusername_vectorchat_pkg_models.APIResponse"
+        "400":
+          description: Bad Request
+          schema:
+            $ref: "#/definitions/github_com_yourusername_vectorchat_pkg_models.APIResponse"
+        "403":
+          description: Forbidden
+          schema:
+            $ref: "#/definitions/github_com_yourusername_vectorchat_pkg_models.APIResponse"
+        "404":
+          description: Not Found
+          schema:
+            $ref: "#/definitions/github_com_yourusername_vectorchat_pkg_models.APIResponse"
+  /agent/sessions/{sessionID}/undo:
+    post:
+      security:
+        - BearerAuth: []
+      description: Undo the latest agent action
+      produces:
+        - application/json
+      tags:
+        - agent
+      summary: Undo last agent step
+      parameters:
+        - type: string
+          description: Session ID
+          name: sessionID
+          in: path
+          required: true
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: "#/definitions/github_com_yourusername_vectorchat_pkg_models.APIResponse"
+        "400":
+          description: Bad Request
+          schema:
+            $ref: "#/definitions/github_com_yourusername_vectorchat_pkg_models.APIResponse"
+        "403":
+          description: Forbidden
+          schema:
+            $ref: "#/definitions/github_com_yourusername_vectorchat_pkg_models.APIResponse"
+        "404":
+          description: Not Found
+          schema:
+            $ref: "#/definitions/github_com_yourusername_vectorchat_pkg_models.APIResponse"
+  /agent/{chatbotID}/sessions:
+    post:
+      security:
+        - BearerAuth: []
+      description: Start or continue an agent session for a chatbot
+      consumes:
+        - application/json
+      produces:
+        - application/json
+      tags:
+        - agent
+      summary: Start an agent session
+      parameters:
+        - type: string
+          description: Chatbot ID
+          name: chatbotID
+          in: path
+          required: true
+        - description: Agent start request
+          name: request
+          in: body
+          required: true
+          schema:
+            $ref: "#/definitions/github_com_yourusername_vectorchat_pkg_models.AgentStartRe\
+              quest"
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: "#/definitions/github_com_yourusername_vectorchat_pkg_models.AgentStartRe\
+              sponse"
+        "400":
+          description: Bad Request
+          schema:
+            $ref: "#/definitions/github_com_yourusername_vectorchat_pkg_models.APIResponse"
+        "403":
+          description: Forbidden
+          schema:
+            $ref: "#/definitions/github_com_yourusername_vectorchat_pkg_models.APIResponse"
+        "404":
+          description: Not Found
+          schema:
+            $ref: "#/definitions/github_com_yourusername_vectorchat_pkg_models.APIResponse"
+  /api/chatbots/import:
+    post:
+      consumes:
+        - application/json
+      produces:
+        - application/json
+      tags:
+        - Agents
+      summary: Import agent configuration
+      parameters:
+        - description: Agent export data
+          name: agent
+          in: body
+          required: true
+          schema:
+            $ref: "#/definitions/github_com_yourusername_vectorchat_pkg_models.AgentImportR\
+              equest"
+      responses:
+        "201":
+          description: Created
+          schema:
+            $ref: "#/definitions/github_com_yourusername_vectorchat_pkg_models.AgentImportR\
+              esponse"
+  /api/chatbots/{chatbotId}/conversations:
+    post:
+      description: Create new conversation session for chatbot
+      consumes:
+        - application/json
+      produces:
+        - application/json
+      tags:
+        - conversations
+      summary: Create conversation
+      parameters:
+        - type: string
+          description: Chatbot ID
+          name: chatbotId
+          in: path
+          required: true
+        - description: Optional initial message
+          name: request
+          in: body
+          schema:
+            $ref: "#/definitions/github_com_yourusername_vectorchat_pkg_models.CreateConver\
+              sationRequest"
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: "#/definitions/github_com_yourusername_vectorchat_pkg_models.Conversation"
+        "400":
+          description: Bad Request
+          schema:
+            $ref: "#/definitions/github_com_yourusername_vectorchat_pkg_models.APIResponse"
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: "#/definitions/github_com_yourusername_vectorchat_pkg_models.APIResponse"
+  /api/chatbots/{id}/export:
+    get:
+      produces:
+        - application/json
+      tags:
+        - Agents
+      summary: Export agent configuration
+      parameters:
+        - type: string
+          description: Chatbot ID
+          name: id
+          in: path
+          required: true
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: "#/definitions/github_com_yourusername_vectorchat_pkg_models.AgentExport"
+  /api/collections:
+    post:
+      consumes:
+        - application/json
+      produces:
+        - application/json
+      tags:
+        - Collections
+      summary: Create collection
+      parameters:
+        - description: Collection payload
+          name: collection
+          in: body
+          required: true
+          schema:
+            $ref: "#/definitions/internal_api.CreateCollectionRequest"
+      responses:
+        "201":
+          description: Created
+          schema:
+            $ref: "#/definitions/github_com_yourusername_vectorchat_internal_db.Collection"
+  /api/collections/{id}:
+    get:
+      produces:
+        - application/json
+      tags:
+        - Collections
+      summary: Get collection
+      parameters:
+        - type: string
+          description: Collection ID
+          name: id
+          in: path
+          required: true
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: "#/definitions/github_com_yourusername_vectorchat_internal_db.Collection"
+    put:
+      consumes:
+        - application/json
+      produces:
+        - application/json
+      tags:
+        - Collections
+      summary: Update collection
+      parameters:
+        - type: string
+          description: Collection ID
+          name: id
+          in: path
+          required: true
+        - description: Collection updates
+          name: collection
+          in: body
+          required: true
+          schema:
+            $ref: "#/definitions/internal_api.UpdateCollectionRequest"
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: "#/definitions/github_com_yourusername_vectorchat_internal_db.Collection"
+    delete:
+      tags:
+        - Collections
+      summary: Delete collection
+      parameters:
+        - type: string
+          description: Collection ID
+          name: id
+          in: path
+          required: true
+      responses:
+        "204":
+          description: No Content
+  /api/collections/{id}/records:
+    post:
+      consumes:
+        - application/json
+      produces:
+        - application/json
+      tags:
+        - Collections
+      summary: Import records (replaces all existing)
+      parameters:
+        - type: string
+          description: Collection ID
+          name: id
+          in: path
+          required: true
+        - description: Records to import
+          name: records
+          in: body
+          required: true
+          schema:
+            $ref: "#/definitions/internal_api.ImportRecordsRequest"
+      responses:
+        "200":
+          description: OK
+          schema:
+            type: object
+            additionalProperties:
+              type: integer
+  /api/collections/{id}/records/export:
+    get:
+      produces:
+        - application/json
+        - text/csv
+      tags:
+        - Collections
+      summary: Export records as JSON or CSV
+      parameters:
+        - type: string
+          description: Collection ID
+          name: id
+          in: path
+          required: true
+        - type: string
+          default: json
+          description: "Export format: json or csv"
+          name: format
+          in: query
+      responses:
+        "200":
+          description: OK
+          schema:
+            type: array
+            items:
+              type: object
+              additionalProperties: true
+  /api/conversations:
+    get:
+      description: Get paginated list of conversations for authenticated user
+      consumes:
+        - application/json
+      produces:
+        - application/json
+      tags:
+        - conversations
+      summary: List conversations
+      parameters:
+        - type: string
+          description: Filter by chatbot ID
+          name: chatbot_id
+          in: query
+        - type: integer
+          description: Max results (default 50, max 100)
+          name: limit
+          in: query
+        - type: integer
+          description: Pagination offset (default 0)
+          name: offset
+          in: query
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: "#/definitions/github_com_yourusername_vectorchat_pkg_models.Conversation\
+              ListResponse"
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: "#/definitions/github_com_yourusername_vectorchat_pkg_models.APIResponse"
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: "#/definitions/github_com_yourusername_vectorchat_pkg_models.APIResponse"
+  /api/conversations/{sessionId}:
+    get:
+      description: Get conversation with full message history
+      consumes:
+        - application/json
+      produces:
+        - application/json
+      tags:
+        - conversations
+      summary: Get conversation details
+      parameters:
+        - type: string
+          description: Session ID
+          name: sessionId
+          in: path
+          required: true
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: "#/definitions/github_com_yourusername_vectorchat_pkg_models.Conversation\
+              Detail"
+        "400":
+          description: Bad Request
+          schema:
+            $ref: "#/definitions/github_com_yourusername_vectorchat_pkg_models.APIResponse"
+        "404":
+          description: Not Found
+          schema:
+            $ref: "#/definitions/github_com_yourusername_vectorchat_pkg_models.APIResponse"
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: "#/definitions/github_com_yourusername_vectorchat_pkg_models.APIResponse"
+    delete:
+      description: Soft delete conversation
+      consumes:
+        - application/json
+      produces:
+        - application/json
+      tags:
+        - conversations
+      summary: Delete conversation
+      parameters:
+        - type: string
+          description: Session ID
+          name: sessionId
+          in: path
+          required: true
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: "#/definitions/github_com_yourusername_vectorchat_pkg_models.APIResponse"
+        "400":
+          description: Bad Request
+          schema:
+            $ref: "#/definitions/github_com_yourusername_vectorchat_pkg_models.APIResponse"
+        "404":
+          description: Not Found
+          schema:
+            $ref: "#/definitions/github_com_yourusername_vectorchat_pkg_models.APIResponse"
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: "#/definitions/github_com_yourusername_vectorchat_pkg_models.APIResponse"
+  /api/conversations/{sessionId}/rename:
+    post:
+      description: Update conversation title
+      consumes:
+        - application/json
+      produces:
+        - application/json
+      tags:
+        - conversations
+      summary: Rename conversation
+      parameters:
+        - type: string
+          description: Session ID
+          name: sessionId
+          in: path
+          required: true
+        - description: New title
+          name: request
+          in: body
+          required: true
+          schema:
+            $ref: "#/definitions/github_com_yourusername_vectorchat_pkg_models.RenameConver\
+              sationRequest"
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: "#/definitions/github_com_yourusername_vectorchat_pkg_models.Conversation\
+              UpdateResponse"
+        "400":
+          description: Bad Request
+          schema:
+            $ref: "#/definitions/github_com_yourusername_vectorchat_pkg_models.APIResponse"
+        "404":
+          description: Not Found
+          schema:
+            $ref: "#/definitions/github_com_yourusername_vectorchat_pkg_models.APIResponse"
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: "#/definitions/github_com_yourusername_vectorchat_pkg_models.APIResponse"
+  /api/skills:
+    get:
+      produces:
+        - application/json
+      tags:
+        - Skills
+      summary: List skills
+      parameters:
+        - type: integer
+          description: Limit
+          name: limit
+          in: query
+      responses:
+        "200":
+          description: OK
+          schema:
+            type: array
+            items:
+              $ref: "#/definitions/github_com_yourusername_vectorchat_pkg_models.Skill"
+    post:
+      consumes:
+        - application/json
+      produces:
+        - application/json
+      tags:
+        - Skills
+      summary: Create skill
+      parameters:
+        - description: Skill payload
+          name: skill
+          in: body
+          required: true
+          schema:
+            $ref: "#/definitions/github_com_yourusername_vectorchat_pkg_models.CreateSkillR\
+              equest"
+      responses:
+        "201":
+          description: Created
+          schema:
+            $ref: "#/definitions/github_com_yourusername_vectorchat_pkg_models.Skill"
+  /api/skills/generate:
+    post:
+      consumes:
+        - application/json
+      produces:
+        - application/json
+      tags:
+        - Skills
+      summary: Generate skill content from description (no persistence)
+      parameters:
+        - description: Description payload
+          name: payload
+          in: body
+          required: true
+          schema:
+            type: object
+            additionalProperties:
+              type: string
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: "#/definitions/github_com_yourusername_vectorchat_pkg_models.SkillDraft"
+  /api/skills/{id}:
+    get:
+      produces:
+        - application/json
+      tags:
+        - Skills
+      summary: Get skill
+      parameters:
+        - type: string
+          description: Skill ID
+          name: id
+          in: path
+          required: true
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: "#/definitions/github_com_yourusername_vectorchat_pkg_models.Skill"
+    put:
+      consumes:
+        - application/json
+      produces:
+        - application/json
+      tags:
+        - Skills
+      summary: Update skill
+      parameters:
+        - type: string
+          description: Skill ID
+          name: id
+          in: path
+          required: true
+        - description: Skill payload
+          name: skill
+          in: body
+          required: true
+          schema:
+            $ref: "#/definitions/github_com_yourusername_vectorchat_pkg_models.UpdateSkillR\
+              equest"
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: "#/definitions/github_com_yourusername_vectorchat_pkg_models.Skill"
+    delete:
+      tags:
+        - Skills
+      summary: Delete skill
+      parameters:
+        - type: string
+          description: Skill ID
+          name: id
+          in: path
+          required: true
+      responses:
+        "204":
+          description: No Content
+  /api/skills/{skillId}/mcp-servers:
+    get:
+      produces:
+        - application/json
+      tags:
+        - MCP Servers
+      summary: List MCP servers for a skill
+      parameters:
+        - type: string
+          description: Skill ID
+          name: skillId
+          in: path
+          required: true
+      responses:
+        "200":
+          description: OK
+          schema:
+            type: array
+            items:
+              $ref: "#/definitions/github_com_yourusername_vectorchat_pkg_models.MCPServerRes\
+                ponse"
+    post:
+      consumes:
+        - application/json
+      produces:
+        - application/json
+      tags:
+        - MCP Servers
+      summary: Create MCP server
+      parameters:
+        - type: string
+          description: Skill ID
+          name: skillId
+          in: path
+          required: true
+        - description: MCP server payload
+          name: server
+          in: body
+          required: true
+          schema:
+            $ref: "#/definitions/github_com_yourusername_vectorchat_pkg_models.CreateMCPSer\
+              verRequest"
+      responses:
+        "201":
+          description: Created
+          schema:
+            $ref: "#/definitions/github_com_yourusername_vectorchat_pkg_models.MCPServerRes\
+              ponse"
+  /api/skills/{skillId}/mcp-servers/test:
+    post:
+      consumes:
+        - application/json
+      produces:
+        - application/json
+      tags:
+        - MCP Servers
+      summary: Test MCP server connection
+      parameters:
+        - type: string
+          description: Skill ID
+          name: skillId
+          in: path
+          required: true
+        - description: Test connection payload
+          name: server
+          in: body
+          required: true
+          schema:
+            $ref: "#/definitions/github_com_yourusername_vectorchat_pkg_models.TestMCPServe\
+              rRequest"
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: "#/definitions/github_com_yourusername_vectorchat_pkg_models.TestMCPServe\
+              rResponse"
+  /api/skills/{skillId}/mcp-servers/{id}:
+    put:
+      consumes:
+        - application/json
+      produces:
+        - application/json
+      tags:
+        - MCP Servers
+      summary: Update MCP server
+      parameters:
+        - type: string
+          description: Skill ID
+          name: skillId
+          in: path
+          required: true
+        - type: string
+          description: MCP Server ID
+          name: id
+          in: path
+          required: true
+        - description: MCP server payload
+          name: server
+          in: body
+          required: true
+          schema:
+            $ref: "#/definitions/github_com_yourusername_vectorchat_pkg_models.UpdateMCPSer\
+              verRequest"
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: "#/definitions/github_com_yourusername_vectorchat_pkg_models.MCPServerRes\
+              ponse"
+    delete:
+      tags:
+        - MCP Servers
+      summary: Delete MCP server
+      parameters:
+        - type: string
+          description: Skill ID
+          name: skillId
+          in: path
+          required: true
+        - type: string
+          description: MCP Server ID
+          name: id
+          in: path
+          required: true
+      responses:
+        "204":
+          description: No Content
+  /api/supported-extensions:
+    get:
+      produces:
+        - application/json
+      tags:
+        - uploads
+      summary: Get supported file extensions
+      responses:
+        "200":
+          description: OK
+          schema:
+            type: object
+            additionalProperties: true
+  /api/tools/catalog:
+    get:
+      produces:
+        - application/json
+      tags:
+        - Tools
+      summary: List tool catalog
+      responses:
+        "200":
+          description: OK
+          schema:
+            type: array
+            items:
+              $ref: "#/definitions/github_com_yourusername_vectorchat_pkg_models.ToolCatalogE\
+                ntry"
+  /auth/apikey:
+    get:
+      security:
+        - BearerAuth: []
+      description: Lists OAuth clients created by the authenticated user with
+        pagination support
+      consumes:
+        - application/json
+      produces:
+        - application/json
+      tags:
+        - apiKey
+      summary: List OAuth clients
+      parameters:
+        - type: integer
+          description: "Page number (default: 1)"
+          name: page
+          in: query
+        - type: integer
+          description: "Items per page (default: 10, max: 100)"
+          name: limit
+          in: query
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: "#/definitions/github_com_yourusername_vectorchat_pkg_models.APIKeysListR\
+              esponse"
+        "400":
+          description: Bad Request
+          schema:
+            $ref: "#/definitions/github_com_yourusername_vectorchat_pkg_models.APIResponse"
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: "#/definitions/github_com_yourusername_vectorchat_pkg_models.APIResponse"
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: "#/definitions/github_com_yourusername_vectorchat_pkg_models.APIResponse"
+    post:
+      security:
+        - BearerAuth: []
+      description: Creates a new machine-to-machine OAuth client via Ory Hydra for the
+        authenticated user
+      consumes:
+        - application/json
+      produces:
+        - application/json
+      tags:
+        - apiKey
+      summary: Provision OAuth client
+      parameters:
+        - description: API Key Details
+          name: apiKey
+          in: body
+          required: true
+          schema:
+            $ref: "#/definitions/github_com_yourusername_vectorchat_pkg_models.APIKeyCreate\
+              Request"
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: "#/definitions/github_com_yourusername_vectorchat_pkg_models.APIKeyCreate\
+              Response"
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: "#/definitions/github_com_yourusername_vectorchat_pkg_models.APIResponse"
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: "#/definitions/github_com_yourusername_vectorchat_pkg_models.APIResponse"
+  /auth/apikey/{id}:
+    delete:
+      security:
+        - BearerAuth: []
+      description: Revokes an OAuth client for the authenticated user
+      consumes:
+        - application/json
+      produces:
+        - application/json
+      tags:
+        - apiKey
+      summary: Revoke OAuth client
+      parameters:
+        - type: string
+          description: API key ID
+          name: id
+          in: path
+          required: true
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: "#/definitions/github_com_yourusername_vectorchat_pkg_models.MessageRespo\
+              nse"
+        "400":
+          description: Bad Request
+          schema:
+            $ref: "#/definitions/github_com_yourusername_vectorchat_pkg_models.APIResponse"
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: "#/definitions/github_com_yourusername_vectorchat_pkg_models.APIResponse"
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: "#/definitions/github_com_yourusername_vectorchat_pkg_models.APIResponse"
+  /auth/logout:
+    post:
+      description: Terminates the active Kratos session and clears the browser cookie
+      consumes:
+        - application/json
+      produces:
+        - application/json
+      tags:
+        - auth
+      summary: Logout
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: "#/definitions/github_com_yourusername_vectorchat_pkg_models.MessageRespo\
+              nse"
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: "#/definitions/github_com_yourusername_vectorchat_pkg_models.APIResponse"
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: "#/definitions/github_com_yourusername_vectorchat_pkg_models.APIResponse"
+  /auth/session:
+    get:
+      description: Returns information about the authenticated user bound to the request
+      produces:
+        - application/json
+      tags:
+        - auth
+      summary: Get current session
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: "#/definitions/github_com_yourusername_vectorchat_pkg_models.SessionRespo\
+              nse"
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: "#/definitions/github_com_yourusername_vectorchat_pkg_models.APIResponse"
+  /chat/chatbot:
+    post:
+      security:
+        - BearerAuth: []
+      description: Create a new chatbot with specified configuration
+      consumes:
+        - application/json
+      produces:
+        - application/json
+      tags:
+        - chat
+      summary: Create a new chatbot
+      parameters:
+        - description: Chatbot configuration
+          name: chatbot
+          in: body
+          required: true
+          schema:
+            $ref: "#/definitions/github_com_yourusername_vectorchat_pkg_models.ChatbotCreat\
+              eRequest"
+      responses:
+        "201":
+          description: Created
+          schema:
+            $ref: "#/definitions/github_com_yourusername_vectorchat_pkg_models.ChatbotRespo\
+              nse"
+        "400":
+          description: Bad Request
+          schema:
+            $ref: "#/definitions/github_com_yourusername_vectorchat_pkg_models.APIResponse"
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: "#/definitions/github_com_yourusername_vectorchat_pkg_models.APIResponse"
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: "#/definitions/github_com_yourusername_vectorchat_pkg_models.APIResponse"
+  /chat/chatbot/{chatID}:
+    delete:
+      security:
+        - BearerAuth: []
+      description: Delete a chatbot by ID
+      consumes:
+        - application/json
+      produces:
+        - application/json
+      tags:
+        - chatbot
+      summary: Delete chatbot
+      parameters:
+        - type: string
+          description: Chatbot ID
+          name: chatID
+          in: path
+          required: true
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: "#/definitions/github_com_yourusername_vectorchat_pkg_models.APIResponse"
+        "400":
+          description: Bad Request
+          schema:
+            $ref: "#/definitions/github_com_yourusername_vectorchat_pkg_models.APIResponse"
+        "404":
+          description: Not Found
+          schema:
+            $ref: "#/definitions/github_com_yourusername_vectorchat_pkg_models.APIResponse"
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: "#/definitions/github_com_yourusername_vectorchat_pkg_models.APIResponse"
+  /chat/chatbot/{chatID}/skills:
+    get:
+      security:
+        - BearerAuth: []
+      description: Get summaries of skills assigned to a chatbot
+      produces:
+        - application/json
+      tags:
+        - chat
+      summary: List chatbot skills
+      parameters:
+        - type: string
+          description: Chatbot ID
+          name: chatID
+          in: path
+          required: true
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: "#/definitions/github_com_yourusername_vectorchat_pkg_models.ChatbotSkill\
+              sResponse"
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: "#/definitions/github_com_yourusername_vectorchat_pkg_models.APIResponse"
+        "403":
+          description: Forbidden
+          schema:
+            $ref: "#/definitions/github_com_yourusername_vectorchat_pkg_models.APIResponse"
+        "404":
+          description: Not Found
+          schema:
+            $ref: "#/definitions/github_com_yourusername_vectorchat_pkg_models.APIResponse"
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: "#/definitions/github_com_yourusername_vectorchat_pkg_models.APIResponse"
+  /chat/chatbot/{chatID}/toggle:
+    patch:
+      security:
+        - BearerAuth: []
+      description: Enable or disable a chatbot
+      consumes:
+        - application/json
+      produces:
+        - application/json
+      tags:
+        - chatbot
+      summary: Toggle chatbot enabled state
+      parameters:
+        - type: string
+          description: Chatbot ID
+          name: chatID
+          in: path
+          required: true
+        - description: Toggle request
+          name: request
+          in: body
+          required: true
+          schema:
+            $ref: "#/definitions/github_com_yourusername_vectorchat_pkg_models.ChatbotToggl\
+              eRequest"
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: "#/definitions/github_com_yourusername_vectorchat_pkg_models.ChatbotRespo\
+              nse"
+        "400":
+          description: Bad Request
+          schema:
+            $ref: "#/definitions/github_com_yourusername_vectorchat_pkg_models.APIResponse"
+        "404":
+          description: Not Found
+          schema:
+            $ref: "#/definitions/github_com_yourusername_vectorchat_pkg_models.APIResponse"
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: "#/definitions/github_com_yourusername_vectorchat_pkg_models.APIResponse"
+  /chat/chatbot/{chatbotID}:
+    get:
+      security:
+        - BearerAuth: []
+      description: Get details of a specific chatbot by ID
+      consumes:
+        - application/json
+      produces:
+        - application/json
+      tags:
+        - chat
+      summary: Get chatbot by ID
+      parameters:
+        - type: string
+          description: Chatbot ID
+          name: chatbotID
+          in: path
+          required: true
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: "#/definitions/github_com_yourusername_vectorchat_pkg_models.ChatbotRespo\
+              nse"
+        "400":
+          description: Bad Request
+          schema:
+            $ref: "#/definitions/github_com_yourusername_vectorchat_pkg_models.APIResponse"
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: "#/definitions/github_com_yourusername_vectorchat_pkg_models.APIResponse"
+        "403":
+          description: Forbidden
+          schema:
+            $ref: "#/definitions/github_com_yourusername_vectorchat_pkg_models.APIResponse"
+        "404":
+          description: Not Found
+          schema:
+            $ref: "#/definitions/github_com_yourusername_vectorchat_pkg_models.APIResponse"
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: "#/definitions/github_com_yourusername_vectorchat_pkg_models.APIResponse"
+    put:
+      security:
+        - BearerAuth: []
+      description: Update chatbot configuration including name, description, system
+        instructions, model settings
+      consumes:
+        - application/json
+      produces:
+        - application/json
+      tags:
+        - chat
+      summary: Update chatbot
+      parameters:
+        - type: string
+          description: Chatbot ID
+          name: chatbotID
+          in: path
+          required: true
+        - description: Updated chatbot configuration
+          name: chatbot
+          in: body
+          required: true
+          schema:
+            $ref: "#/definitions/github_com_yourusername_vectorchat_pkg_models.ChatbotUpdat\
+              eRequest"
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: "#/definitions/github_com_yourusername_vectorchat_pkg_models.ChatbotRespo\
+              nse"
+        "400":
+          description: Bad Request
+          schema:
+            $ref: "#/definitions/github_com_yourusername_vectorchat_pkg_models.APIResponse"
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: "#/definitions/github_com_yourusername_vectorchat_pkg_models.APIResponse"
+        "403":
+          description: Forbidden
+          schema:
+            $ref: "#/definitions/github_com_yourusername_vectorchat_pkg_models.APIResponse"
+        "404":
+          description: Not Found
+          schema:
+            $ref: "#/definitions/github_com_yourusername_vectorchat_pkg_models.APIResponse"
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: "#/definitions/github_com_yourusername_vectorchat_pkg_models.APIResponse"
+  /chat/chatbots:
+    get:
+      security:
+        - BearerAuth: []
+      description: Get a list of all chatbots owned by the current user
+      consumes:
+        - application/json
+      produces:
+        - application/json
+      tags:
+        - chat
+      summary: Get list of chatbots
+      responses:
+        "200":
+          description: OK
+          schema:
+            type: array
+            items:
+              $ref: "#/definitions/github_com_yourusername_vectorchat_pkg_models.ChatbotsList\
+                Response"
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: "#/definitions/github_com_yourusername_vectorchat_pkg_models.APIResponse"
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: "#/definitions/github_com_yourusername_vectorchat_pkg_models.APIResponse"
+  /chat/system-prompt/generate:
+    post:
+      security:
+        - BearerAuth: []
+      description: Generate a tailored system prompt from a short purpose and tone
+      consumes:
+        - application/json
+      produces:
+        - application/json
+      tags:
+        - chat
+      summary: Generate a system prompt
+      parameters:
+        - description: Prompt generation request
+          name: body
+          in: body
+          required: true
+          schema:
+            $ref: "#/definitions/github_com_yourusername_vectorchat_pkg_models.SystemPrompt\
+              GenerateRequest"
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: "#/definitions/github_com_yourusername_vectorchat_pkg_models.SystemPrompt\
+              GenerateResponse"
+        "400":
+          description: Bad Request
+          schema:
+            $ref: "#/definitions/github_com_yourusername_vectorchat_pkg_models.APIResponse"
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: "#/definitions/github_com_yourusername_vectorchat_pkg_models.APIResponse"
+  /chat/{chatID}/crawl:
+    post:
+      security:
+        - BearerAuth: []
+      description: Unified endpoint to crawl a website once or create a recurring schedule.
+      consumes:
+        - application/json
+      produces:
+        - application/json
+      tags:
+        - chat
+      summary: Crawl website
+      parameters:
+        - type: string
+          description: Chat session ID
+          name: chatID
+          in: path
+          required: true
+        - description: Crawl request with URL and frequency
+          name: body
+          in: body
+          required: true
+          schema:
+            $ref: "#/definitions/github_com_yourusername_vectorchat_pkg_models.CrawlRequest"
+      responses:
+        "202":
+          description: Accepted
+          schema:
+            $ref: "#/definitions/github_com_yourusername_vectorchat_pkg_models.CrawlSchedul\
+              eResponse"
+        "400":
+          description: Bad Request
+          schema:
+            $ref: "#/definitions/github_com_yourusername_vectorchat_pkg_models.APIResponse"
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: "#/definitions/github_com_yourusername_vectorchat_pkg_models.APIResponse"
+  /chat/{chatID}/crawl-now:
+    post:
+      security:
+        - BearerAuth: []
+      description: Enqueue a single crawl job for this chatbot knowledge base using
+        the provided URL.
+      consumes:
+        - application/json
+      produces:
+        - application/json
+      tags:
+        - chat
+      summary: Crawl once now
+      parameters:
+        - type: string
+          description: Chat session ID
+          name: chatID
+          in: path
+          required: true
+        - description: Website URL
+          name: body
+          in: body
+          required: true
+          schema:
+            $ref: "#/definitions/github_com_yourusername_vectorchat_pkg_models.WebsiteUploa\
+              dRequest"
+      responses:
+        "202":
+          description: Accepted
+          schema:
+            $ref: "#/definitions/github_com_yourusername_vectorchat_pkg_models.MessageRespo\
+              nse"
+        "400":
+          description: Bad Request
+          schema:
+            $ref: "#/definitions/github_com_yourusername_vectorchat_pkg_models.APIResponse"
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: "#/definitions/github_com_yourusername_vectorchat_pkg_models.APIResponse"
+  /chat/{chatID}/crawl-schedules:
+    get:
+      security:
+        - BearerAuth: []
+      description: List all crawl schedules for a chatbot knowledge base
+      consumes:
+        - application/json
+      produces:
+        - application/json
+      tags:
+        - chat
+      summary: List crawl schedules
+      parameters:
+        - type: string
+          description: Chat session ID
+          name: chatID
+          in: path
+          required: true
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: "#/definitions/github_com_yourusername_vectorchat_pkg_models.CrawlSchedul\
+              eListResponse"
+        "400":
+          description: Bad Request
+          schema:
+            $ref: "#/definitions/github_com_yourusername_vectorchat_pkg_models.APIResponse"
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: "#/definitions/github_com_yourusername_vectorchat_pkg_models.APIResponse"
+    put:
+      security:
+        - BearerAuth: []
+      description: Create or update a crawl schedule for a chatbot knowledge base
+      consumes:
+        - application/json
+      produces:
+        - application/json
+      tags:
+        - chat
+      summary: Upsert crawl schedule
+      parameters:
+        - type: string
+          description: Chat session ID
+          name: chatID
+          in: path
+          required: true
+        - description: Schedule payload
+          name: body
+          in: body
+          required: true
+          schema:
+            $ref: "#/definitions/github_com_yourusername_vectorchat_pkg_models.CrawlSchedul\
+              eRequest"
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: "#/definitions/github_com_yourusername_vectorchat_pkg_models.CrawlSchedul\
+              eResponse"
+        "400":
+          description: Bad Request
+          schema:
+            $ref: "#/definitions/github_com_yourusername_vectorchat_pkg_models.APIResponse"
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: "#/definitions/github_com_yourusername_vectorchat_pkg_models.APIResponse"
+  /chat/{chatID}/crawl-schedules/{scheduleID}:
+    delete:
+      security:
+        - BearerAuth: []
+      description: Delete a crawl schedule for a chatbot knowledge base
+      consumes:
+        - application/json
+      produces:
+        - application/json
+      tags:
+        - chat
+      summary: Delete crawl schedule
+      parameters:
+        - type: string
+          description: Chat session ID
+          name: chatID
+          in: path
+          required: true
+        - type: string
+          description: Schedule ID (UUID)
+          name: scheduleID
+          in: path
+          required: true
+      responses:
+        "204":
+          description: No Content
+          schema:
+            type: string
+        "400":
+          description: Bad Request
+          schema:
+            $ref: "#/definitions/github_com_yourusername_vectorchat_pkg_models.APIResponse"
+        "404":
+          description: Not Found
+          schema:
+            $ref: "#/definitions/github_com_yourusername_vectorchat_pkg_models.APIResponse"
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: "#/definitions/github_com_yourusername_vectorchat_pkg_models.APIResponse"
+  /chat/{chatID}/files:
+    get:
+      security:
+        - BearerAuth: []
+      description: List all files in a chat session
+      consumes:
+        - application/json
+      produces:
+        - application/json
+      tags:
+        - chat
+      summary: List chat files
+      parameters:
+        - type: string
+          description: Chat session ID
+          name: chatID
+          in: path
+          required: true
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: "#/definitions/github_com_yourusername_vectorchat_pkg_models.ChatFilesRes\
+              ponse"
+        "404":
+          description: Not Found
+          schema:
+            $ref: "#/definitions/github_com_yourusername_vectorchat_pkg_models.APIResponse"
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: "#/definitions/github_com_yourusername_vectorchat_pkg_models.APIResponse"
+  /chat/{chatID}/files/{filename}:
+    delete:
+      security:
+        - BearerAuth: []
+      description: Delete a file from a chat session
+      consumes:
+        - application/json
+      produces:
+        - application/json
+      tags:
+        - chat
+      summary: Delete chat file
+      parameters:
+        - type: string
+          description: Chat session ID
+          name: chatID
+          in: path
+          required: true
+        - type: string
+          description: File name
+          name: filename
+          in: path
+          required: true
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: "#/definitions/github_com_yourusername_vectorchat_pkg_models.MessageRespo\
+              nse"
+        "400":
+          description: Bad Request
+          schema:
+            $ref: "#/definitions/github_com_yourusername_vectorchat_pkg_models.APIResponse"
+        "404":
+          description: Not Found
+          schema:
+            $ref: "#/definitions/github_com_yourusername_vectorchat_pkg_models.APIResponse"
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: "#/definitions/github_com_yourusername_vectorchat_pkg_models.APIResponse"
+  /chat/{chatID}/memories:
+    get:
+      description: Get all memories for the current user and specified chatbot
+      consumes:
+        - application/json
+      produces:
+        - application/json
+      tags:
+        - memories
+      summary: List user memories
+      parameters:
+        - type: string
+          description: Chatbot ID
+          name: chatID
+          in: path
+          required: true
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: "#/definitions/github_com_yourusername_vectorchat_pkg_models.UserMemories\
+              ListResponse"
+        "400":
+          description: Bad Request
+          schema:
+            $ref: "#/definitions/github_com_yourusername_vectorchat_pkg_models.APIResponse"
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: "#/definitions/github_com_yourusername_vectorchat_pkg_models.APIResponse"
+        "404":
+          description: Not Found
+          schema:
+            $ref: "#/definitions/github_com_yourusername_vectorchat_pkg_models.APIResponse"
+    post:
+      description: Create a new memory for the current user and specified chatbot
+      consumes:
+        - application/json
+      produces:
+        - application/json
+      tags:
+        - memories
+      summary: Create memory
+      parameters:
+        - type: string
+          description: Chatbot ID
+          name: chatID
+          in: path
+          required: true
+        - description: Memory data
+          name: request
+          in: body
+          required: true
+          schema:
+            $ref: "#/definitions/github_com_yourusername_vectorchat_pkg_models.UserMemoryCr\
+              eateRequest"
+      responses:
+        "201":
+          description: Created
+          schema:
+            $ref: "#/definitions/github_com_yourusername_vectorchat_pkg_models.UserMemoryRe\
+              sponse"
+        "400":
+          description: Bad Request
+          schema:
+            $ref: "#/definitions/github_com_yourusername_vectorchat_pkg_models.APIResponse"
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: "#/definitions/github_com_yourusername_vectorchat_pkg_models.APIResponse"
+        "404":
+          description: Not Found
+          schema:
+            $ref: "#/definitions/github_com_yourusername_vectorchat_pkg_models.APIResponse"
+    delete:
+      description: Delete all memories for the current user and specified chatbot
+      consumes:
+        - application/json
+      produces:
+        - application/json
+      tags:
+        - memories
+      summary: Clear all memories
+      parameters:
+        - type: string
+          description: Chatbot ID
+          name: chatID
+          in: path
+          required: true
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: "#/definitions/github_com_yourusername_vectorchat_pkg_models.APIResponse"
+        "400":
+          description: Bad Request
+          schema:
+            $ref: "#/definitions/github_com_yourusername_vectorchat_pkg_models.APIResponse"
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: "#/definitions/github_com_yourusername_vectorchat_pkg_models.APIResponse"
+        "404":
+          description: Not Found
+          schema:
+            $ref: "#/definitions/github_com_yourusername_vectorchat_pkg_models.APIResponse"
+  /chat/{chatID}/memories/{memoryID}:
+    get:
+      description: Get a single memory by ID
+      consumes:
+        - application/json
+      produces:
+        - application/json
+      tags:
+        - memories
+      summary: Get memory
+      parameters:
+        - type: string
+          description: Chatbot ID
+          name: chatID
+          in: path
+          required: true
+        - type: string
+          description: Memory ID
+          name: memoryID
+          in: path
+          required: true
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: "#/definitions/github_com_yourusername_vectorchat_pkg_models.UserMemoryRe\
+              sponse"
+        "400":
+          description: Bad Request
+          schema:
+            $ref: "#/definitions/github_com_yourusername_vectorchat_pkg_models.APIResponse"
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: "#/definitions/github_com_yourusername_vectorchat_pkg_models.APIResponse"
+        "404":
+          description: Not Found
+          schema:
+            $ref: "#/definitions/github_com_yourusername_vectorchat_pkg_models.APIResponse"
+    put:
+      description: Update an existing memory
+      consumes:
+        - application/json
+      produces:
+        - application/json
+      tags:
+        - memories
+      summary: Update memory
+      parameters:
+        - type: string
+          description: Chatbot ID
+          name: chatID
+          in: path
+          required: true
+        - type: string
+          description: Memory ID
+          name: memoryID
+          in: path
+          required: true
+        - description: Memory data
+          name: request
+          in: body
+          required: true
+          schema:
+            $ref: "#/definitions/github_com_yourusername_vectorchat_pkg_models.UserMemoryUp\
+              dateRequest"
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: "#/definitions/github_com_yourusername_vectorchat_pkg_models.UserMemoryRe\
+              sponse"
+        "400":
+          description: Bad Request
+          schema:
+            $ref: "#/definitions/github_com_yourusername_vectorchat_pkg_models.APIResponse"
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: "#/definitions/github_com_yourusername_vectorchat_pkg_models.APIResponse"
+        "404":
+          description: Not Found
+          schema:
+            $ref: "#/definitions/github_com_yourusername_vectorchat_pkg_models.APIResponse"
+    delete:
+      description: Delete a single memory by ID
+      consumes:
+        - application/json
+      produces:
+        - application/json
+      tags:
+        - memories
+      summary: Delete memory
+      parameters:
+        - type: string
+          description: Chatbot ID
+          name: chatID
+          in: path
+          required: true
+        - type: string
+          description: Memory ID
+          name: memoryID
+          in: path
+          required: true
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: "#/definitions/github_com_yourusername_vectorchat_pkg_models.APIResponse"
+        "400":
+          description: Bad Request
+          schema:
+            $ref: "#/definitions/github_com_yourusername_vectorchat_pkg_models.APIResponse"
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: "#/definitions/github_com_yourusername_vectorchat_pkg_models.APIResponse"
+        "404":
+          description: Not Found
+          schema:
+            $ref: "#/definitions/github_com_yourusername_vectorchat_pkg_models.APIResponse"
+  /chat/{chatID}/message:
+    post:
+      security:
+        - BearerAuth: []
+      description: Send a message and get a response with context from uploaded files
+      consumes:
+        - application/json
+      produces:
+        - application/json
+      tags:
+        - chat
+      summary: Send chat message
+      parameters:
+        - description: Chat message
+          name: message
+          in: body
+          required: true
+          schema:
+            $ref: "#/definitions/github_com_yourusername_vectorchat_pkg_models.ChatMessageR\
+              equest"
+        - type: string
+          description: Chat session ID
+          name: chatID
+          in: path
+          required: true
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: "#/definitions/github_com_yourusername_vectorchat_pkg_models.ChatResponse"
+        "400":
+          description: Bad Request
+          schema:
+            $ref: "#/definitions/github_com_yourusername_vectorchat_pkg_models.APIResponse"
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: "#/definitions/github_com_yourusername_vectorchat_pkg_models.APIResponse"
+  /chat/{chatID}/stream-message:
+    post:
+      security:
+        - BearerAuth: []
+      description: Send a message and receive a streamed response with context from
+        uploaded files
+      consumes:
+        - application/json
+      produces:
+        - text/event-stream
+      tags:
+        - chat
+      summary: Stream chat message
+      parameters:
+        - description: Chat message
+          name: message
+          in: body
+          required: true
+          schema:
+            $ref: "#/definitions/github_com_yourusername_vectorchat_pkg_models.ChatMessageR\
+              equest"
+        - type: string
+          description: Chat session ID
+          name: chatID
+          in: path
+          required: true
+      responses:
+        "200":
+          description: Streamed response
+          schema:
+            type: string
+        "400":
+          description: Bad Request
+          schema:
+            $ref: "#/definitions/github_com_yourusername_vectorchat_pkg_models.APIResponse"
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: "#/definitions/github_com_yourusername_vectorchat_pkg_models.APIResponse"
+  /chat/{chatID}/text:
+    get:
+      security:
+        - BearerAuth: []
+      description: List text sources indexed for a chat session
+      consumes:
+        - application/json
+      produces:
+        - application/json
+      tags:
+        - chat
+      summary: List text sources
+      parameters:
+        - type: string
+          description: Chat session ID
+          name: chatID
+          in: path
+          required: true
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: "#/definitions/github_com_yourusername_vectorchat_pkg_models.TextSourcesR\
+              esponse"
+        "400":
+          description: Bad Request
+          schema:
+            $ref: "#/definitions/github_com_yourusername_vectorchat_pkg_models.APIResponse"
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: "#/definitions/github_com_yourusername_vectorchat_pkg_models.APIResponse"
+    post:
+      security:
+        - BearerAuth: []
+      description: Upload plain text to be indexed for chat context
+      consumes:
+        - application/json
+      produces:
+        - application/json
+      tags:
+        - chat
+      summary: Upload plain text
+      parameters:
+        - type: string
+          description: Chat session ID
+          name: chatID
+          in: path
+          required: true
+        - description: Text payload
+          name: body
+          in: body
+          required: true
+          schema:
+            $ref: "#/definitions/github_com_yourusername_vectorchat_pkg_models.TextUploadRe\
+              quest"
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: "#/definitions/github_com_yourusername_vectorchat_pkg_models.MessageRespo\
+              nse"
+        "400":
+          description: Bad Request
+          schema:
+            $ref: "#/definitions/github_com_yourusername_vectorchat_pkg_models.APIResponse"
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: "#/definitions/github_com_yourusername_vectorchat_pkg_models.APIResponse"
+  /chat/{chatID}/text/{id}:
+    delete:
+      security:
+        - BearerAuth: []
+      description: Delete a text source and its associated chunks
+      consumes:
+        - application/json
+      produces:
+        - application/json
+      tags:
+        - chat
+      summary: Delete text source
+      parameters:
+        - type: string
+          description: Chat session ID
+          name: chatID
+          in: path
+          required: true
+        - type: string
+          description: Text source ID
+          name: id
+          in: path
+          required: true
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: "#/definitions/github_com_yourusername_vectorchat_pkg_models.MessageRespo\
+              nse"
+        "400":
+          description: Bad Request
+          schema:
+            $ref: "#/definitions/github_com_yourusername_vectorchat_pkg_models.APIResponse"
+        "404":
+          description: Not Found
+          schema:
+            $ref: "#/definitions/github_com_yourusername_vectorchat_pkg_models.APIResponse"
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: "#/definitions/github_com_yourusername_vectorchat_pkg_models.APIResponse"
+  /chat/{chatID}/upload:
+    post:
+      security:
+        - BearerAuth: []
+      description: Upload a file to be used for chat context
+      consumes:
+        - multipart/form-data
+      produces:
+        - application/json
+      tags:
+        - chat
+      summary: Upload file
+      parameters:
+        - type: string
+          description: Chat session ID
+          name: chatID
+          in: path
+          required: true
+        - type: file
+          description: File to upload
+          name: file
+          in: formData
+          required: true
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: "#/definitions/github_com_yourusername_vectorchat_pkg_models.FileUploadRe\
+              sponse"
+        "400":
+          description: Bad Request
+          schema:
+            $ref: "#/definitions/github_com_yourusername_vectorchat_pkg_models.APIResponse"
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: "#/definitions/github_com_yourusername_vectorchat_pkg_models.APIResponse"
+  /chat/{chatID}/website:
+    post:
+      security:
+        - BearerAuth: []
+      description: Crawl a website from a root URL and index its text content
+      consumes:
+        - application/json
+      produces:
+        - application/json
+      tags:
+        - chat
+      summary: Add website
+      parameters:
+        - type: string
+          description: Chat session ID
+          name: chatID
+          in: path
+          required: true
+        - description: Website URL
+          name: body
+          in: body
+          required: true
+          schema:
+            $ref: "#/definitions/github_com_yourusername_vectorchat_pkg_models.WebsiteUploa\
+              dRequest"
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: "#/definitions/github_com_yourusername_vectorchat_pkg_models.MessageRespo\
+              nse"
+        "400":
+          description: Bad Request
+          schema:
+            $ref: "#/definitions/github_com_yourusername_vectorchat_pkg_models.APIResponse"
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: "#/definitions/github_com_yourusername_vectorchat_pkg_models.APIResponse"
+  /chat/{chatID}/widget:
+    get:
+      security:
+        - BearerAuth: []
+      produces:
+        - application/json
+      tags:
+        - widget
+      summary: Get widget settings for a chatbot
+      parameters:
+        - type: string
+          description: Chatbot ID
+          name: chatID
+          in: path
+          required: true
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: "#/definitions/github_com_yourusername_vectorchat_pkg_models.WidgetSettin\
+              gsResponse"
+        "400":
+          description: Bad Request
+          schema:
+            $ref: "#/definitions/github_com_yourusername_vectorchat_pkg_models.APIResponse"
+        "404":
+          description: Not Found
+          schema:
+            $ref: "#/definitions/github_com_yourusername_vectorchat_pkg_models.APIResponse"
+    put:
+      security:
+        - BearerAuth: []
+      consumes:
+        - application/json
+      produces:
+        - application/json
+      tags:
+        - widget
+      summary: Update widget settings for a chatbot
+      parameters:
+        - type: string
+          description: Chatbot ID
+          name: chatID
+          in: path
+          required: true
+        - description: Widget settings
+          name: body
+          in: body
+          required: true
+          schema:
+            $ref: "#/definitions/github_com_yourusername_vectorchat_pkg_models.WidgetSettin\
+              gsUpdateRequest"
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: "#/definitions/github_com_yourusername_vectorchat_pkg_models.WidgetSettin\
+              gsResponse"
+        "400":
+          description: Bad Request
+          schema:
+            $ref: "#/definitions/github_com_yourusername_vectorchat_pkg_models.APIResponse"
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: "#/definitions/github_com_yourusername_vectorchat_pkg_models.APIResponse"
+  /executions/{id}:
+    get:
+      security:
+        - BearerAuth: []
+      description: Get an execution by ID
+      produces:
+        - application/json
+      tags:
+        - executions
+      summary: Get an execution
+      parameters:
+        - type: string
+          description: Execution ID
+          name: id
+          in: path
+          required: true
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: "#/definitions/github_com_yourusername_vectorchat_pkg_models.ExecutionRes\
+              ponse"
+        "403":
+          description: Forbidden
+          schema:
+            $ref: "#/definitions/github_com_yourusername_vectorchat_pkg_models.APIResponse"
+        "404":
+          description: Not Found
+          schema:
+            $ref: "#/definitions/github_com_yourusername_vectorchat_pkg_models.APIResponse"
+  /executions/{id}/approve:
+    post:
+      security:
+        - BearerAuth: []
+      description: Approve a pending execution
+      tags:
+        - executions
+      summary: Approve an execution
+      parameters:
+        - type: string
+          description: Execution ID
+          name: id
+          in: path
+          required: true
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: "#/definitions/github_com_yourusername_vectorchat_pkg_models.APIResponse"
+        "400":
+          description: Bad Request
+          schema:
+            $ref: "#/definitions/github_com_yourusername_vectorchat_pkg_models.APIResponse"
+        "403":
+          description: Forbidden
+          schema:
+            $ref: "#/definitions/github_com_yourusername_vectorchat_pkg_models.APIResponse"
+        "404":
+          description: Not Found
+          schema:
+            $ref: "#/definitions/github_com_yourusername_vectorchat_pkg_models.APIResponse"
+  /executions/{id}/reject:
+    post:
+      security:
+        - BearerAuth: []
+      description: Reject a pending execution
+      tags:
+        - executions
+      summary: Reject an execution
+      parameters:
+        - type: string
+          description: Execution ID
+          name: id
+          in: path
+          required: true
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: "#/definitions/github_com_yourusername_vectorchat_pkg_models.APIResponse"
+        "400":
+          description: Bad Request
+          schema:
+            $ref: "#/definitions/github_com_yourusername_vectorchat_pkg_models.APIResponse"
+        "403":
+          description: Forbidden
+          schema:
+            $ref: "#/definitions/github_com_yourusername_vectorchat_pkg_models.APIResponse"
+        "404":
+          description: Not Found
+          schema:
+            $ref: "#/definitions/github_com_yourusername_vectorchat_pkg_models.APIResponse"
+  /health:
+    get:
+      security:
+        - BearerAuth: []
+      description: Check if the API is running
+      consumes:
+        - application/json
+      produces:
+        - text/plain
+      tags:
+        - health
+      summary: Health check endpoint
+      responses:
+        "200":
+          description: VectorChat API is running
+          schema:
+            type: string
+  /knowledge-bases:
+    get:
+      security:
+        - BearerAuth: []
+      description: Retrieve all shared knowledge bases owned by the authenticated user
+      consumes:
+        - application/json
+      produces:
+        - application/json
+      tags:
+        - sharedKnowledgeBase
+      summary: List shared knowledge bases
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: "#/definitions/github_com_yourusername_vectorchat_pkg_models.SharedKnowle\
+              dgeBaseListResponse"
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: "#/definitions/github_com_yourusername_vectorchat_pkg_models.APIResponse"
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: "#/definitions/github_com_yourusername_vectorchat_pkg_models.APIResponse"
+    post:
+      security:
+        - BearerAuth: []
+      description: Create a new shared knowledge base for the authenticated user
+      consumes:
+        - application/json
+      produces:
+        - application/json
+      tags:
+        - sharedKnowledgeBase
+      summary: Create shared knowledge base
+      parameters:
+        - description: Knowledge base payload
+          name: body
+          in: body
+          required: true
+          schema:
+            $ref: "#/definitions/github_com_yourusername_vectorchat_pkg_models.SharedKnowle\
+              dgeBaseCreateRequest"
+      responses:
+        "201":
+          description: Created
+          schema:
+            $ref: "#/definitions/github_com_yourusername_vectorchat_pkg_models.SharedKnowle\
+              dgeBaseResponse"
+        "400":
+          description: Bad Request
+          schema:
+            $ref: "#/definitions/github_com_yourusername_vectorchat_pkg_models.APIResponse"
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: "#/definitions/github_com_yourusername_vectorchat_pkg_models.APIResponse"
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: "#/definitions/github_com_yourusername_vectorchat_pkg_models.APIResponse"
+  /knowledge-bases/{id}:
+    get:
+      security:
+        - BearerAuth: []
+      description: Fetch a shared knowledge base by ID for the authenticated user
+      consumes:
+        - application/json
+      produces:
+        - application/json
+      tags:
+        - sharedKnowledgeBase
+      summary: Get shared knowledge base
+      parameters:
+        - type: string
+          description: Knowledge base ID (UUID)
+          name: id
+          in: path
+          required: true
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: "#/definitions/github_com_yourusername_vectorchat_pkg_models.SharedKnowle\
+              dgeBaseResponse"
+        "400":
+          description: Bad Request
+          schema:
+            $ref: "#/definitions/github_com_yourusername_vectorchat_pkg_models.APIResponse"
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: "#/definitions/github_com_yourusername_vectorchat_pkg_models.APIResponse"
+        "403":
+          description: Forbidden
+          schema:
+            $ref: "#/definitions/github_com_yourusername_vectorchat_pkg_models.APIResponse"
+        "404":
+          description: Not Found
+          schema:
+            $ref: "#/definitions/github_com_yourusername_vectorchat_pkg_models.APIResponse"
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: "#/definitions/github_com_yourusername_vectorchat_pkg_models.APIResponse"
+    put:
+      security:
+        - BearerAuth: []
+      description: Update the details of a shared knowledge base owned by the
+        authenticated user
+      consumes:
+        - application/json
+      produces:
+        - application/json
+      tags:
+        - sharedKnowledgeBase
+      summary: Update shared knowledge base
+      parameters:
+        - type: string
+          description: Knowledge base ID (UUID)
+          name: id
+          in: path
+          required: true
+        - description: Knowledge base updates
+          name: body
+          in: body
+          required: true
+          schema:
+            $ref: "#/definitions/github_com_yourusername_vectorchat_pkg_models.SharedKnowle\
+              dgeBaseUpdateRequest"
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: "#/definitions/github_com_yourusername_vectorchat_pkg_models.SharedKnowle\
+              dgeBaseResponse"
+        "400":
+          description: Bad Request
+          schema:
+            $ref: "#/definitions/github_com_yourusername_vectorchat_pkg_models.APIResponse"
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: "#/definitions/github_com_yourusername_vectorchat_pkg_models.APIResponse"
+        "404":
+          description: Not Found
+          schema:
+            $ref: "#/definitions/github_com_yourusername_vectorchat_pkg_models.APIResponse"
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: "#/definitions/github_com_yourusername_vectorchat_pkg_models.APIResponse"
+    delete:
+      security:
+        - BearerAuth: []
+      description: Delete a shared knowledge base owned by the authenticated user
+      consumes:
+        - application/json
+      produces:
+        - application/json
+      tags:
+        - sharedKnowledgeBase
+      summary: Delete shared knowledge base
+      parameters:
+        - type: string
+          description: Knowledge base ID (UUID)
+          name: id
+          in: path
+          required: true
+      responses:
+        "204":
+          description: No Content
+          schema:
+            type: string
+        "400":
+          description: Bad Request
+          schema:
+            $ref: "#/definitions/github_com_yourusername_vectorchat_pkg_models.APIResponse"
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: "#/definitions/github_com_yourusername_vectorchat_pkg_models.APIResponse"
+        "403":
+          description: Forbidden
+          schema:
+            $ref: "#/definitions/github_com_yourusername_vectorchat_pkg_models.APIResponse"
+        "404":
+          description: Not Found
+          schema:
+            $ref: "#/definitions/github_com_yourusername_vectorchat_pkg_models.APIResponse"
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: "#/definitions/github_com_yourusername_vectorchat_pkg_models.APIResponse"
+  /knowledge-bases/{id}/crawl:
+    post:
+      security:
+        - BearerAuth: []
+      description: Unified endpoint to crawl a website once or create a recurring schedule.
+      consumes:
+        - application/json
+      produces:
+        - application/json
+      tags:
+        - sharedKnowledgeBase
+      summary: Crawl website
+      parameters:
+        - type: string
+          description: Knowledge base ID (UUID)
+          name: id
+          in: path
+          required: true
+        - description: Crawl request with URL and frequency
+          name: body
+          in: body
+          required: true
+          schema:
+            $ref: "#/definitions/github_com_yourusername_vectorchat_pkg_models.CrawlRequest"
+      responses:
+        "202":
+          description: Accepted
+          schema:
+            $ref: "#/definitions/github_com_yourusername_vectorchat_pkg_models.CrawlSchedul\
+              eResponse"
+        "400":
+          description: Bad Request
+          schema:
+            $ref: "#/definitions/github_com_yourusername_vectorchat_pkg_models.APIResponse"
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: "#/definitions/github_com_yourusername_vectorchat_pkg_models.APIResponse"
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: "#/definitions/github_com_yourusername_vectorchat_pkg_models.APIResponse"
+  /knowledge-bases/{id}/crawl-now:
+    post:
+      security:
+        - BearerAuth: []
+      description: Enqueue a single crawl job for this shared knowledge base.
+      consumes:
+        - application/json
+      produces:
+        - application/json
+      tags:
+        - sharedKnowledgeBase
+      summary: Crawl once now
+      parameters:
+        - type: string
+          description: Knowledge base ID (UUID)
+          name: id
+          in: path
+          required: true
+        - description: Website URL
+          name: body
+          in: body
+          required: true
+          schema:
+            $ref: "#/definitions/github_com_yourusername_vectorchat_pkg_models.WebsiteUploa\
+              dRequest"
+      responses:
+        "202":
+          description: Accepted
+          schema:
+            $ref: "#/definitions/github_com_yourusername_vectorchat_pkg_models.MessageRespo\
+              nse"
+        "400":
+          description: Bad Request
+          schema:
+            $ref: "#/definitions/github_com_yourusername_vectorchat_pkg_models.APIResponse"
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: "#/definitions/github_com_yourusername_vectorchat_pkg_models.APIResponse"
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: "#/definitions/github_com_yourusername_vectorchat_pkg_models.APIResponse"
+  /knowledge-bases/{id}/crawl-schedules:
+    get:
+      security:
+        - BearerAuth: []
+      description: List crawl schedules for a shared knowledge base
+      consumes:
+        - application/json
+      produces:
+        - application/json
+      tags:
+        - sharedKnowledgeBase
+      summary: List crawl schedules
+      parameters:
+        - type: string
+          description: Knowledge base ID (UUID)
+          name: id
+          in: path
+          required: true
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: "#/definitions/github_com_yourusername_vectorchat_pkg_models.CrawlSchedul\
+              eListResponse"
+        "400":
+          description: Bad Request
+          schema:
+            $ref: "#/definitions/github_com_yourusername_vectorchat_pkg_models.APIResponse"
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: "#/definitions/github_com_yourusername_vectorchat_pkg_models.APIResponse"
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: "#/definitions/github_com_yourusername_vectorchat_pkg_models.APIResponse"
+    put:
+      security:
+        - BearerAuth: []
+      description: Create or update a crawl schedule for a shared knowledge base
+      consumes:
+        - application/json
+      produces:
+        - application/json
+      tags:
+        - sharedKnowledgeBase
+      summary: Upsert crawl schedule
+      parameters:
+        - type: string
+          description: Knowledge base ID (UUID)
+          name: id
+          in: path
+          required: true
+        - description: Schedule payload
+          name: body
+          in: body
+          required: true
+          schema:
+            $ref: "#/definitions/github_com_yourusername_vectorchat_pkg_models.CrawlSchedul\
+              eRequest"
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: "#/definitions/github_com_yourusername_vectorchat_pkg_models.CrawlSchedul\
+              eResponse"
+        "400":
+          description: Bad Request
+          schema:
+            $ref: "#/definitions/github_com_yourusername_vectorchat_pkg_models.APIResponse"
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: "#/definitions/github_com_yourusername_vectorchat_pkg_models.APIResponse"
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: "#/definitions/github_com_yourusername_vectorchat_pkg_models.APIResponse"
+  /knowledge-bases/{id}/crawl-schedules/{scheduleID}:
+    delete:
+      security:
+        - BearerAuth: []
+      description: Delete a crawl schedule for a shared knowledge base
+      consumes:
+        - application/json
+      produces:
+        - application/json
+      tags:
+        - sharedKnowledgeBase
+      summary: Delete crawl schedule
+      parameters:
+        - type: string
+          description: Knowledge base ID (UUID)
+          name: id
+          in: path
+          required: true
+        - type: string
+          description: Schedule ID (UUID)
+          name: scheduleID
+          in: path
+          required: true
+      responses:
+        "204":
+          description: No Content
+          schema:
+            type: string
+        "400":
+          description: Bad Request
+          schema:
+            $ref: "#/definitions/github_com_yourusername_vectorchat_pkg_models.APIResponse"
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: "#/definitions/github_com_yourusername_vectorchat_pkg_models.APIResponse"
+        "404":
+          description: Not Found
+          schema:
+            $ref: "#/definitions/github_com_yourusername_vectorchat_pkg_models.APIResponse"
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: "#/definitions/github_com_yourusername_vectorchat_pkg_models.APIResponse"
+  /knowledge-bases/{id}/files:
+    get:
+      security:
+        - BearerAuth: []
+      description: List non-text files associated with the shared knowledge base
+      consumes:
+        - application/json
+      produces:
+        - application/json
+      tags:
+        - sharedKnowledgeBase
+      summary: List files in shared knowledge base
+      parameters:
+        - type: string
+          description: Knowledge base ID (UUID)
+          name: id
+          in: path
+          required: true
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: "#/definitions/github_com_yourusername_vectorchat_pkg_models.SharedKnowle\
+              dgeBaseFilesResponse"
+        "400":
+          description: Bad Request
+          schema:
+            $ref: "#/definitions/github_com_yourusername_vectorchat_pkg_models.APIResponse"
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: "#/definitions/github_com_yourusername_vectorchat_pkg_models.APIResponse"
+        "403":
+          description: Forbidden
+          schema:
+            $ref: "#/definitions/github_com_yourusername_vectorchat_pkg_models.APIResponse"
+        "404":
+          description: Not Found
+          schema:
+            $ref: "#/definitions/github_com_yourusername_vectorchat_pkg_models.APIResponse"
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: "#/definitions/github_com_yourusername_vectorchat_pkg_models.APIResponse"
+  /knowledge-bases/{id}/files/{filename}:
+    delete:
+      security:
+        - BearerAuth: []
+      description: Delete a specific file associated with the shared knowledge base
+      consumes:
+        - application/json
+      produces:
+        - application/json
+      tags:
+        - sharedKnowledgeBase
+      summary: Delete file from shared knowledge base
+      parameters:
+        - type: string
+          description: Knowledge base ID (UUID)
+          name: id
+          in: path
+          required: true
+        - type: string
+          description: Filename
+          name: filename
+          in: path
+          required: true
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: "#/definitions/github_com_yourusername_vectorchat_pkg_models.MessageRespo\
+              nse"
+        "400":
+          description: Bad Request
+          schema:
+            $ref: "#/definitions/github_com_yourusername_vectorchat_pkg_models.APIResponse"
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: "#/definitions/github_com_yourusername_vectorchat_pkg_models.APIResponse"
+        "403":
+          description: Forbidden
+          schema:
+            $ref: "#/definitions/github_com_yourusername_vectorchat_pkg_models.APIResponse"
+        "404":
+          description: Not Found
+          schema:
+            $ref: "#/definitions/github_com_yourusername_vectorchat_pkg_models.APIResponse"
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: "#/definitions/github_com_yourusername_vectorchat_pkg_models.APIResponse"
+  /knowledge-bases/{id}/text:
+    get:
+      security:
+        - BearerAuth: []
+      description: List indexed text sources associated with the shared knowledge base
+      consumes:
+        - application/json
+      produces:
+        - application/json
+      tags:
+        - sharedKnowledgeBase
+      summary: List text sources in shared knowledge base
+      parameters:
+        - type: string
+          description: Knowledge base ID (UUID)
+          name: id
+          in: path
+          required: true
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: "#/definitions/github_com_yourusername_vectorchat_pkg_models.SharedKnowle\
+              dgeBaseTextSourcesResponse"
+        "400":
+          description: Bad Request
+          schema:
+            $ref: "#/definitions/github_com_yourusername_vectorchat_pkg_models.APIResponse"
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: "#/definitions/github_com_yourusername_vectorchat_pkg_models.APIResponse"
+        "403":
+          description: Forbidden
+          schema:
+            $ref: "#/definitions/github_com_yourusername_vectorchat_pkg_models.APIResponse"
+        "404":
+          description: Not Found
+          schema:
+            $ref: "#/definitions/github_com_yourusername_vectorchat_pkg_models.APIResponse"
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: "#/definitions/github_com_yourusername_vectorchat_pkg_models.APIResponse"
+    post:
+      security:
+        - BearerAuth: []
+      description: Upload plain text content to be indexed for the shared knowledge base
+      consumes:
+        - application/json
+      produces:
+        - application/json
+      tags:
+        - sharedKnowledgeBase
+      summary: Upload text to shared knowledge base
+      parameters:
+        - type: string
+          description: Knowledge base ID (UUID)
+          name: id
+          in: path
+          required: true
+        - description: Text payload
+          name: body
+          in: body
+          required: true
+          schema:
+            $ref: "#/definitions/github_com_yourusername_vectorchat_pkg_models.TextUploadRe\
+              quest"
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: "#/definitions/github_com_yourusername_vectorchat_pkg_models.MessageRespo\
+              nse"
+        "400":
+          description: Bad Request
+          schema:
+            $ref: "#/definitions/github_com_yourusername_vectorchat_pkg_models.APIResponse"
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: "#/definitions/github_com_yourusername_vectorchat_pkg_models.APIResponse"
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: "#/definitions/github_com_yourusername_vectorchat_pkg_models.APIResponse"
+  /knowledge-bases/{id}/text/{sourceId}:
+    delete:
+      security:
+        - BearerAuth: []
+      description: Delete a text source previously indexed for the shared knowledge base
+      consumes:
+        - application/json
+      produces:
+        - application/json
+      tags:
+        - sharedKnowledgeBase
+      summary: Delete text source from shared knowledge base
+      parameters:
+        - type: string
+          description: Knowledge base ID (UUID)
+          name: id
+          in: path
+          required: true
+        - type: string
+          description: Text source ID (UUID)
+          name: sourceId
+          in: path
+          required: true
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: "#/definitions/github_com_yourusername_vectorchat_pkg_models.MessageRespo\
+              nse"
+        "400":
+          description: Bad Request
+          schema:
+            $ref: "#/definitions/github_com_yourusername_vectorchat_pkg_models.APIResponse"
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: "#/definitions/github_com_yourusername_vectorchat_pkg_models.APIResponse"
+        "403":
+          description: Forbidden
+          schema:
+            $ref: "#/definitions/github_com_yourusername_vectorchat_pkg_models.APIResponse"
+        "404":
+          description: Not Found
+          schema:
+            $ref: "#/definitions/github_com_yourusername_vectorchat_pkg_models.APIResponse"
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: "#/definitions/github_com_yourusername_vectorchat_pkg_models.APIResponse"
+  /knowledge-bases/{id}/upload:
+    post:
+      security:
+        - BearerAuth: []
+      description: Upload a file to be processed into the shared knowledge base
+      consumes:
+        - multipart/form-data
+      produces:
+        - application/json
+      tags:
+        - sharedKnowledgeBase
+      summary: Upload file to shared knowledge base
+      parameters:
+        - type: string
+          description: Knowledge base ID (UUID)
+          name: id
+          in: path
+          required: true
+        - type: file
+          description: File to upload
+          name: file
+          in: formData
+          required: true
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: "#/definitions/github_com_yourusername_vectorchat_pkg_models.SharedKnowle\
+              dgeBaseFileUploadResponse"
+        "400":
+          description: Bad Request
+          schema:
+            $ref: "#/definitions/github_com_yourusername_vectorchat_pkg_models.APIResponse"
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: "#/definitions/github_com_yourusername_vectorchat_pkg_models.APIResponse"
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: "#/definitions/github_com_yourusername_vectorchat_pkg_models.APIResponse"
+  /knowledge-bases/{id}/website:
+    post:
+      security:
+        - BearerAuth: []
+      description: Crawl and index a website into the shared knowledge base starting
+        from the provided URL
+      consumes:
+        - application/json
+      produces:
+        - application/json
+      tags:
+        - sharedKnowledgeBase
+      summary: Upload website to shared knowledge base
+      parameters:
+        - type: string
+          description: Knowledge base ID (UUID)
+          name: id
+          in: path
+          required: true
+        - description: Website payload
+          name: body
+          in: body
+          required: true
+          schema:
+            $ref: "#/definitions/github_com_yourusername_vectorchat_pkg_models.WebsiteUploa\
+              dRequest"
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: "#/definitions/github_com_yourusername_vectorchat_pkg_models.MessageRespo\
+              nse"
+        "400":
+          description: Bad Request
+          schema:
+            $ref: "#/definitions/github_com_yourusername_vectorchat_pkg_models.APIResponse"
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: "#/definitions/github_com_yourusername_vectorchat_pkg_models.APIResponse"
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: "#/definitions/github_com_yourusername_vectorchat_pkg_models.APIResponse"
+  /llm/models:
+    get:
+      security:
+        - BearerAuth: []
+      description: Returns models exposed by the LLM proxy, filtered by subscription plan
+      produces:
+        - application/json
+      tags:
+        - llm
+      summary: List available LLM models
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: "#/definitions/github_com_yourusername_vectorchat_pkg_models.LLMModelsRes\
+              ponse"
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: "#/definitions/github_com_yourusername_vectorchat_pkg_models.APIResponse"
+        "502":
+          description: Bad Gateway
+          schema:
+            $ref: "#/definitions/github_com_yourusername_vectorchat_pkg_models.APIResponse"
+  /models:
+    get:
+      security:
+        - BearerAuth: []
+      description: Get the list of available LLM models with their capabilities
+      produces:
+        - application/json
+      tags:
+        - models
+      summary: List available models
+      responses:
+        "200":
+          description: OK
+          schema:
+            type: array
+            items:
+              $ref: "#/definitions/github_com_yourusername_vectorchat_pkg_models.LLMModel"
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: "#/definitions/github_com_yourusername_vectorchat_pkg_models.APIResponse"
+  /public/oauth/token:
+    post:
+      description: Exchanges client credentials for an access token issued by Ory Hydra
+      consumes:
+        - application/json
+      produces:
+        - application/json
+      tags:
+        - apiKey
+      summary: Generate access token
+      parameters:
+        - description: Client credentials request
+          name: token
+          in: body
+          required: true
+          schema:
+            $ref: "#/definitions/github_com_yourusername_vectorchat_pkg_models.TokenRequest"
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: "#/definitions/github_com_yourusername_vectorchat_pkg_models.TokenRespons\
+              e"
+        "400":
+          description: Bad Request
+          schema:
+            $ref: "#/definitions/github_com_yourusername_vectorchat_pkg_models.APIResponse"
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: "#/definitions/github_com_yourusername_vectorchat_pkg_models.APIResponse"
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: "#/definitions/github_com_yourusername_vectorchat_pkg_models.APIResponse"
+  /schedules:
+    get:
+      security:
+        - BearerAuth: []
+      description: List all schedules for the current user
+      produces:
+        - application/json
+      tags:
+        - schedules
+      summary: List schedules
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: "#/definitions/github_com_yourusername_vectorchat_pkg_models.ScheduleList\
+              Response"
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: "#/definitions/github_com_yourusername_vectorchat_pkg_models.APIResponse"
+    post:
+      security:
+        - BearerAuth: []
+      description: Create a new chatbot schedule
+      consumes:
+        - application/json
+      produces:
+        - application/json
+      tags:
+        - schedules
+      summary: Create a schedule
+      parameters:
+        - description: Schedule creation request
+          name: request
+          in: body
+          required: true
+          schema:
+            $ref: "#/definitions/github_com_yourusername_vectorchat_pkg_models.CreateSchedu\
+              leRequest"
+      responses:
+        "201":
+          description: Created
+          schema:
+            $ref: "#/definitions/github_com_yourusername_vectorchat_pkg_models.ScheduleResp\
+              onse"
+        "400":
+          description: Bad Request
+          schema:
+            $ref: "#/definitions/github_com_yourusername_vectorchat_pkg_models.APIResponse"
+        "403":
+          description: Forbidden
+          schema:
+            $ref: "#/definitions/github_com_yourusername_vectorchat_pkg_models.APIResponse"
+  /schedules/pending:
+    get:
+      security:
+        - BearerAuth: []
+      description: Get all executions pending approval for the current user
+      produces:
+        - application/json
+      tags:
+        - schedules
+      summary: Get pending approvals
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: "#/definitions/github_com_yourusername_vectorchat_pkg_models.PendingAppro\
+              valsResponse"
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: "#/definitions/github_com_yourusername_vectorchat_pkg_models.APIResponse"
+  /schedules/{id}:
+    get:
+      security:
+        - BearerAuth: []
+      description: Get a schedule by ID
+      produces:
+        - application/json
+      tags:
+        - schedules
+      summary: Get a schedule
+      parameters:
+        - type: string
+          description: Schedule ID
+          name: id
+          in: path
+          required: true
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: "#/definitions/github_com_yourusername_vectorchat_pkg_models.ScheduleResp\
+              onse"
+        "403":
+          description: Forbidden
+          schema:
+            $ref: "#/definitions/github_com_yourusername_vectorchat_pkg_models.APIResponse"
+        "404":
+          description: Not Found
+          schema:
+            $ref: "#/definitions/github_com_yourusername_vectorchat_pkg_models.APIResponse"
+    put:
+      security:
+        - BearerAuth: []
+      description: Update an existing schedule
+      consumes:
+        - application/json
+      produces:
+        - application/json
+      tags:
+        - schedules
+      summary: Update a schedule
+      parameters:
+        - type: string
+          description: Schedule ID
+          name: id
+          in: path
+          required: true
+        - description: Schedule update request
+          name: request
+          in: body
+          required: true
+          schema:
+            $ref: "#/definitions/github_com_yourusername_vectorchat_pkg_models.UpdateSchedu\
+              leRequest"
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: "#/definitions/github_com_yourusername_vectorchat_pkg_models.ScheduleResp\
+              onse"
+        "400":
+          description: Bad Request
+          schema:
+            $ref: "#/definitions/github_com_yourusername_vectorchat_pkg_models.APIResponse"
+        "403":
+          description: Forbidden
+          schema:
+            $ref: "#/definitions/github_com_yourusername_vectorchat_pkg_models.APIResponse"
+        "404":
+          description: Not Found
+          schema:
+            $ref: "#/definitions/github_com_yourusername_vectorchat_pkg_models.APIResponse"
+    delete:
+      security:
+        - BearerAuth: []
+      description: Delete a schedule
+      tags:
+        - schedules
+      summary: Delete a schedule
+      parameters:
+        - type: string
+          description: Schedule ID
+          name: id
+          in: path
+          required: true
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: "#/definitions/github_com_yourusername_vectorchat_pkg_models.APIResponse"
+        "403":
+          description: Forbidden
+          schema:
+            $ref: "#/definitions/github_com_yourusername_vectorchat_pkg_models.APIResponse"
+        "404":
+          description: Not Found
+          schema:
+            $ref: "#/definitions/github_com_yourusername_vectorchat_pkg_models.APIResponse"
+  /schedules/{id}/executions:
+    get:
+      security:
+        - BearerAuth: []
+      description: Get execution history for a schedule
+      produces:
+        - application/json
+      tags:
+        - schedules
+      summary: Get execution history
+      parameters:
+        - type: string
+          description: Schedule ID
+          name: id
+          in: path
+          required: true
+        - type: integer
+          default: 50
+          description: Maximum number of executions to return
+          name: limit
+          in: query
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: "#/definitions/github_com_yourusername_vectorchat_pkg_models.ExecutionLis\
+              tResponse"
+        "403":
+          description: Forbidden
+          schema:
+            $ref: "#/definitions/github_com_yourusername_vectorchat_pkg_models.APIResponse"
+        "404":
+          description: Not Found
+          schema:
+            $ref: "#/definitions/github_com_yourusername_vectorchat_pkg_models.APIResponse"
+  /schedules/{id}/pause:
+    post:
+      security:
+        - BearerAuth: []
+      description: Deactivate a schedule
+      tags:
+        - schedules
+      summary: Pause a schedule
+      parameters:
+        - type: string
+          description: Schedule ID
+          name: id
+          in: path
+          required: true
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: "#/definitions/github_com_yourusername_vectorchat_pkg_models.APIResponse"
+        "403":
+          description: Forbidden
+          schema:
+            $ref: "#/definitions/github_com_yourusername_vectorchat_pkg_models.APIResponse"
+        "404":
+          description: Not Found
+          schema:
+            $ref: "#/definitions/github_com_yourusername_vectorchat_pkg_models.APIResponse"
+  /schedules/{id}/resume:
+    post:
+      security:
+        - BearerAuth: []
+      description: Reactivate a schedule
+      tags:
+        - schedules
+      summary: Resume a schedule
+      parameters:
+        - type: string
+          description: Schedule ID
+          name: id
+          in: path
+          required: true
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: "#/definitions/github_com_yourusername_vectorchat_pkg_models.APIResponse"
+        "403":
+          description: Forbidden
+          schema:
+            $ref: "#/definitions/github_com_yourusername_vectorchat_pkg_models.APIResponse"
+        "404":
+          description: Not Found
+          schema:
+            $ref: "#/definitions/github_com_yourusername_vectorchat_pkg_models.APIResponse"
+  /schedules/{id}/trigger:
+    post:
+      security:
+        - BearerAuth: []
+      description: Manually trigger a schedule execution
+      produces:
+        - application/json
+      tags:
+        - schedules
+      summary: Trigger a schedule
+      parameters:
+        - type: string
+          description: Schedule ID
+          name: id
+          in: path
+          required: true
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: "#/definitions/github_com_yourusername_vectorchat_pkg_models.ExecutionRes\
+              ponse"
+        "403":
+          description: Forbidden
+          schema:
+            $ref: "#/definitions/github_com_yourusername_vectorchat_pkg_models.APIResponse"
+        "404":
+          description: Not Found
+          schema:
+            $ref: "#/definitions/github_com_yourusername_vectorchat_pkg_models.APIResponse"
+  /users/me:
+    delete:
+      description: Permanently deletes the authenticated user's account and all
+        associated data
+      consumes:
+        - application/json
+      produces:
+        - application/json
+      tags:
+        - users
+      summary: Delete account
+      parameters:
+        - description: Confirmation text
+          name: request
+          in: body
+          required: true
+          schema:
+            $ref: "#/definitions/internal_api.DeleteAccountRequest"
+      responses:
+        "204":
+          description: Account deleted
+        "400":
+          description: Invalid confirmation or user is sole org owner
+          schema:
+            $ref: "#/definitions/github_com_yourusername_vectorchat_pkg_models.APIResponse"
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: "#/definitions/github_com_yourusername_vectorchat_pkg_models.APIResponse"
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: "#/definitions/github_com_yourusername_vectorchat_pkg_models.APIResponse"
+  /users/me/export:
+    get:
+      description: Downloads all user data in JSON format
+      produces:
+        - application/json
+      tags:
+        - users
+      summary: Export user data
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: "#/definitions/github_com_yourusername_vectorchat_internal_services.UserE\
+              xport"
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: "#/definitions/github_com_yourusername_vectorchat_pkg_models.APIResponse"
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: "#/definitions/github_com_yourusername_vectorchat_pkg_models.APIResponse"
+  /users/me/export/preview:
+    get:
+      description: Returns counts and metadata about what will be exported
+      produces:
+        - application/json
+      tags:
+        - users
+      summary: Export preview
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: "#/definitions/github_com_yourusername_vectorchat_internal_services.Expor\
+              tPreview"
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: "#/definitions/github_com_yourusername_vectorchat_pkg_models.APIResponse"
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: "#/definitions/github_com_yourusername_vectorchat_pkg_models.APIResponse"
+  /widgets/chats/{chatID}/info:
+    get:
+      description: Returns a lightweight chatbot payload for embedded widgets (no
+        authentication required)
+      consumes:
+        - application/json
+      produces:
+        - application/json
+      tags:
+        - widget
+      summary: Get chatbot info for widget
+      parameters:
+        - type: string
+          description: Chat/Chatbot ID
+          name: chatID
+          in: path
+          required: true
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: "#/definitions/github_com_yourusername_vectorchat_pkg_models.WidgetChatbo\
+              tResponse"
+        "400":
+          description: Bad Request
+          schema:
+            $ref: "#/definitions/github_com_yourusername_vectorchat_pkg_models.APIResponse"
+        "404":
+          description: Not Found
+          schema:
+            $ref: "#/definitions/github_com_yourusername_vectorchat_pkg_models.APIResponse"
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: "#/definitions/github_com_yourusername_vectorchat_pkg_models.APIResponse"
+  /widgets/chats/{chatID}/message:
+    post:
+      description: Public chat endpoint reserved for embedded widgets; no login required.
+      consumes:
+        - application/json
+      produces:
+        - application/json
+      tags:
+        - widget
+      summary: Send chat message via widget
+      parameters:
+        - type: string
+          description: Chat/Chatbot ID
+          name: chatID
+          in: path
+          required: true
+        - description: Chat message
+          name: message
+          in: body
+          required: true
+          schema:
+            $ref: "#/definitions/github_com_yourusername_vectorchat_pkg_models.ChatMessageR\
+              equest"
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: "#/definitions/github_com_yourusername_vectorchat_pkg_models.ChatResponse"
+        "400":
+          description: Bad Request
+          schema:
+            $ref: "#/definitions/github_com_yourusername_vectorchat_pkg_models.APIResponse"
+        "403":
+          description: Forbidden
+          schema:
+            $ref: "#/definitions/github_com_yourusername_vectorchat_pkg_models.APIResponse"
+        "404":
+          description: Not Found
+          schema:
+            $ref: "#/definitions/github_com_yourusername_vectorchat_pkg_models.APIResponse"
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: "#/definitions/github_com_yourusername_vectorchat_pkg_models.APIResponse"
+  /widgets/chats/{chatID}/{widget}:
+    get:
+      description: Serves the JavaScript widget file for embedding in external applications
+      consumes:
+        - application/json
+      produces:
+        - application/javascript
+      tags:
+        - widget
+      summary: Get widget JavaScript file
+      parameters:
+        - type: string
+          description: Chat/Chatbot ID
+          name: chatID
+          in: path
+          required: true
+        - type: string
+          description: Widget filename (e.g., vectorchat-plex-widget.js)
+          name: widget
+          in: path
+          required: true
+      responses:
+        "200":
+          description: JavaScript widget content
+          schema:
+            type: string
+        "400":
+          description: Bad Request
+          schema:
+            $ref: "#/definitions/github_com_yourusername_vectorchat_pkg_models.APIResponse"
+        "404":
+          description: Not Found
+          schema:
+            $ref: "#/definitions/github_com_yourusername_vectorchat_pkg_models.APIResponse"
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: "#/definitions/github_com_yourusername_vectorchat_pkg_models.APIResponse"
+definitions:
+  github_com_yourusername_vectorchat_internal_db.Collection:
+    type: object
+    properties:
+      created_at:
+        type: string
+      description:
+        type: string
+      id:
+        type: string
+      name:
+        type: string
+      owner_id:
+        type: string
+      owner_type:
+        description: '"skill" or "chatbot"'
+        type: string
+      record_count:
+        type: integer
+      schema:
+        type: array
+        items:
+          type: integer
+      updated_at:
+        type: string
+  github_com_yourusername_vectorchat_internal_services.APIKeyExportData:
+    type: object
+    properties:
+      created_at:
+        type: string
+      expires_at:
+        type: string
+      id:
+        type: string
+      name:
+        type: string
+  github_com_yourusername_vectorchat_internal_services.AgentExportData:
+    type: object
+    properties:
+      conversations:
+        type: array
+        items:
+          $ref: "#/definitions/github_com_yourusername_vectorchat_internal_services.Conve\
+            rsationExportData"
+      created_at:
+        type: string
+      description:
+        type: string
+      documents:
+        type: array
+        items:
+          $ref: "#/definitions/github_com_yourusername_vectorchat_internal_services.Docum\
+            entExportData"
+      id:
+        type: string
+      model_name:
+        type: string
+      name:
+        type: string
+      system_instructions:
+        type: string
+  github_com_yourusername_vectorchat_internal_services.ConnectedAccountData:
+    type: object
+    properties:
+      connected_at:
+        type: string
+      email:
+        type: string
+      provider:
+        type: string
+  github_com_yourusername_vectorchat_internal_services.ConversationExportData:
+    type: object
+    properties:
+      messages:
+        type: array
+        items:
+          $ref: "#/definitions/github_com_yourusername_vectorchat_internal_services.Messa\
+            geExportData"
+      session_id:
+        type: string
+  github_com_yourusername_vectorchat_internal_services.DocumentExportData:
+    type: object
+    properties:
+      filename:
+        type: string
+      size_bytes:
+        type: integer
+      uploaded_at:
+        type: string
+  github_com_yourusername_vectorchat_internal_services.ExportPreview:
+    type: object
+    properties:
+      agent_count:
+        type: integer
+      api_key_count:
+        type: integer
+      connected_account_count:
+        type: integer
+      conversation_count:
+        type: integer
+      document_count:
+        type: integer
+      estimated_size_bytes:
+        type: integer
+      member_since:
+        type: string
+  github_com_yourusername_vectorchat_internal_services.MessageExportData:
+    type: object
+    properties:
+      content:
+        type: string
+      created_at:
+        type: string
+      role:
+        type: string
+  github_com_yourusername_vectorchat_internal_services.UserExport:
+    type: object
+    properties:
+      agents:
+        type: array
+        items:
+          $ref: "#/definitions/github_com_yourusername_vectorchat_internal_services.Agent\
+            ExportData"
+      api_keys:
+        type: array
+        items:
+          $ref: "#/definitions/github_com_yourusername_vectorchat_internal_services.APIKe\
+            yExportData"
+      connected_accounts:
+        type: array
+        items:
+          $ref: "#/definitions/github_com_yourusername_vectorchat_internal_services.Conne\
+            ctedAccountData"
+      export_date:
+        type: string
+      user:
+        $ref: "#/definitions/github_com_yourusername_vectorchat_internal_services.UserE\
+          xportData"
+  github_com_yourusername_vectorchat_internal_services.UserExportData:
+    type: object
+    properties:
+      created_at:
+        type: string
+      email:
+        type: string
+      id:
+        type: string
+      name:
+        type: string
+      provider:
+        type: string
+  github_com_yourusername_vectorchat_pkg_models.APIKeyCreateRequest:
+    type: object
+    required:
+      - name
+    properties:
+      expires_at:
+        type: string
+        example: 2024-12-31T23:59:59Z
+      name:
+        type: string
+        example: My API Key
+  github_com_yourusername_vectorchat_pkg_models.APIKeyCreateResponse:
+    type: object
+    properties:
+      client_id:
+        type: string
+        example: vc-client-123
+      client_secret:
+        type: string
+        example: client-secret-value
+      expires_at:
+        type: string
+        example: 2024-12-31T23:59:59Z
+      message:
+        type: string
+        example: OAuth client created successfully. Save the secret as it won't be shown
+          again.
+      name:
+        type: string
+        example: My integration
+  github_com_yourusername_vectorchat_pkg_models.APIKeyResponse:
+    type: object
+    properties:
+      client_id:
+        type: string
+        example: vc-client-123
+      created_at:
+        type: string
+        example: 2023-01-01T00:00:00Z
+      expires_at:
+        type: string
+        example: 2024-12-31T23:59:59Z
+      id:
+        type: string
+        example: api_key_123
+      name:
+        type: string
+        example: My API Key
+      user_id:
+        type: string
+        example: user_123
+  github_com_yourusername_vectorchat_pkg_models.APIKeysListResponse:
+    type: object
+    properties:
+      api_keys:
+        type: array
+        items:
+          $ref: "#/definitions/github_com_yourusername_vectorchat_pkg_models.APIKeyRespon\
+            se"
+      pagination:
+        $ref: "#/definitions/github_com_yourusername_vectorchat_pkg_models.PaginationMe\
+          tadata"
+  github_com_yourusername_vectorchat_pkg_models.APIResponse:
+    type: object
+    properties:
+      data:
+        type: object
+      error:
+        type: string
+        example: validation failed
+      message:
+        type: string
+        example: Operation completed successfully
+  github_com_yourusername_vectorchat_pkg_models.AgentApprovalDecisionRequest:
+    type: object
+    required:
+      - decision
+    properties:
+      arguments:
+        type: string
+      decision:
+        type: string
+        example: approve|deny
+  github_com_yourusername_vectorchat_pkg_models.AgentExport:
+    type: object
+    properties:
+      agent:
+        $ref: "#/definitions/github_com_yourusername_vectorchat_pkg_models.AgentExportD\
+          ata"
+      skills:
+        type: array
+        items:
+          $ref: "#/definitions/github_com_yourusername_vectorchat_pkg_models.SkillExportD\
+            ata"
+  github_com_yourusername_vectorchat_pkg_models.AgentExportData:
+    type: object
+    properties:
+      description:
+        type: string
+      max_agent_turns:
+        type: integer
+      max_tokens:
+        type: integer
+      max_tool_calls:
+        type: integer
+      model:
+        type: string
+      name:
+        type: string
+      save_messages:
+        type: boolean
+      system_prompt:
+        type: string
+      temperature:
+        type: number
+      use_max_tokens:
+        type: boolean
+  github_com_yourusername_vectorchat_pkg_models.AgentImportRequest:
+    type: object
+    required:
+      - agent
+    properties:
+      agent:
+        $ref: "#/definitions/github_com_yourusername_vectorchat_pkg_models.AgentExportD\
+          ata"
+      skills:
+        type: array
+        items:
+          $ref: "#/definitions/github_com_yourusername_vectorchat_pkg_models.SkillExportD\
+            ata"
+  github_com_yourusername_vectorchat_pkg_models.AgentImportResponse:
+    type: object
+    properties:
+      id:
+        type: string
+      name:
+        type: string
+      skills_imported:
+        type: integer
+  github_com_yourusername_vectorchat_pkg_models.AgentStartRequest:
+    type: object
+    required:
+      - query
+    properties:
+      query:
+        type: string
+      session_id:
+        type: string
+  github_com_yourusername_vectorchat_pkg_models.AgentStartResponse:
+    type: object
+    properties:
+      session_id:
+        type: string
+  github_com_yourusername_vectorchat_pkg_models.Attachment:
+    type: object
+    properties:
+      data:
+        type: string
+        example: base64-encoded-content
+      filename:
+        type: string
+        example: document.pdf
+      mime_type:
+        type: string
+        example: image/jpeg
+      type:
+        type: string
+        example: image
+  github_com_yourusername_vectorchat_pkg_models.ChatFilesResponse:
+    type: object
+    properties:
+      chat_id:
+        type: string
+        example: 550e8400-e29b-41d4-a716-446655440000
+      crawl_jobs:
+        type: array
+        items:
+          $ref: "#/definitions/github_com_yourusername_vectorchat_pkg_models.CrawlJobResp\
+            onse"
+      files:
+        type: array
+        items:
+          $ref: "#/definitions/github_com_yourusername_vectorchat_pkg_models.FileInfo"
+      schedules:
+        type: array
+        items:
+          $ref: "#/definitions/github_com_yourusername_vectorchat_pkg_models.CrawlSchedul\
+            eResponse"
+  github_com_yourusername_vectorchat_pkg_models.ChatMessage:
+    type: object
+    properties:
+      content:
+        type: string
+      content_parts:
+        type: array
+        items:
+          $ref: "#/definitions/github_com_yourusername_vectorchat_pkg_models.ContentPart"
+      created_at:
+        type: string
+      id:
+        type: string
+      role:
+        type: string
+      session_id:
+        type: string
+  github_com_yourusername_vectorchat_pkg_models.ChatMessageRequest:
+    type: object
+    properties:
+      attachments:
+        type: array
+        items:
+          $ref: "#/definitions/github_com_yourusername_vectorchat_pkg_models.Attachment"
+      model_override:
+        type: string
+        example: gpt-4-turbo
+      query:
+        type: string
+        example: Hello, how can you help me?
+      session_id:
+        type: string
+        example: 550e8400-e29b-41d4-a716-446655440000
+      voice_mode:
+        type: boolean
+        example: false
+  github_com_yourusername_vectorchat_pkg_models.ChatResponse:
+    type: object
+    properties:
+      chat_id:
+        type: string
+        example: chat_123
+      context:
+        type: string
+        example: Previous conversation context
+      message:
+        type: string
+        example: Hello! I'm here to help you with any questions you might have.
+  github_com_yourusername_vectorchat_pkg_models.ChatbotCreateRequest:
+    type: object
+    required:
+      - description
+      - max_tokens
+      - model_name
+      - name
+      - system_instructions
+      - temperature_param
+    properties:
+      agent_enabled:
+        description: Agent Intelligence Settings
+        type: boolean
+        example: true
+      allow_public_access:
+        type: boolean
+        example: false
+      autonomy_level:
+        type: string
+        example: ask_sensitive
+      description:
+        type: string
+        example: AI assistant for customer support
+      history_token_limit:
+        type: integer
+        example: 8000
+      is_enabled:
+        type: boolean
+        example: false
+      max_agent_turns:
+        type: integer
+        example: 12
+      max_reflections_per_session:
+        type: integer
+        example: 8
+      max_reflections_per_turn:
+        type: integer
+        example: 3
+      max_tokens:
+        type: integer
+        minimum: 1
+        example: 1000
+      max_tokens_per_turn:
+        description: Agent Reliability Settings
+        type: integer
+        example: 100000
+      max_tool_calls:
+        type: integer
+        example: 50
+      memory_enabled:
+        type: boolean
+        example: false
+      model_name:
+        type: string
+        example: gpt-3.5-turbo
+      name:
+        type: string
+        example: Customer Support Bot
+      reasoning_visible:
+        type: boolean
+        example: true
+      request_timeout_seconds:
+        type: integer
+        example: 300
+      save_messages:
+        type: boolean
+        example: true
+      shared_knowledge_base_ids:
+        type: array
+        items:
+          type: string
+      skill_ids:
+        type: array
+        items:
+          type: string
+      system_instructions:
+        type: string
+        example: You are a helpful customer support assistant
+      temperature_param:
+        type: number
+        maximum: 2
+        minimum: 0
+        example: 0.7
+      think_tool_enabled:
+        type: boolean
+        example: true
+      tools:
+        type: array
+        items:
+          $ref: "#/definitions/github_com_yourusername_vectorchat_pkg_models.SkillToolInp\
+            ut"
+      use_max_tokens:
+        type: boolean
+        example: true
+  github_com_yourusername_vectorchat_pkg_models.ChatbotResponse:
+    type: object
+    properties:
+      agent_enabled:
+        description: Agent Intelligence Settings
+        type: boolean
+        example: true
+      ai_messages_amount:
+        type: integer
+        example: 42
+      allow_public_access:
+        type: boolean
+        example: false
+      autonomy_level:
+        type: string
+        example: ask_sensitive
+      created_at:
+        type: string
+        example: 2023-01-01T00:00:00Z
+      description:
+        type: string
+        example: AI assistant for customer support
+      history_token_limit:
+        type: integer
+        example: 8000
+      id:
+        type: string
+        example: 550e8400-e29b-41d4-a716-446655440000
+      is_enabled:
+        type: boolean
+        example: true
+      max_agent_turns:
+        type: integer
+        example: 12
+      max_reflections_per_session:
+        type: integer
+        example: 8
+      max_reflections_per_turn:
+        type: integer
+        example: 3
+      max_tokens:
+        type: integer
+        example: 1000
+      max_tokens_per_turn:
+        description: Agent Reliability Settings
+        type: integer
+        example: 100000
+      max_tool_calls:
+        type: integer
+        example: 50
+      memory_enabled:
+        type: boolean
+        example: false
+      model_name:
+        type: string
+        example: gpt-3.5-turbo
+      name:
+        type: string
+        example: Customer Support Bot
+      organization_id:
+        type: string
+        example: 3f5f5f4e-1234-5678-a9ab-0123456789ab
+      reasoning_visible:
+        type: boolean
+        example: true
+      request_timeout_seconds:
+        type: integer
+        example: 300
+      save_messages:
+        type: boolean
+        example: true
+      shared_knowledge_base_ids:
+        type: array
+        items:
+          type: string
+      skill_ids:
+        type: array
+        items:
+          type: string
+      system_instructions:
+        type: string
+        example: You are a helpful customer support assistant
+      temperature_param:
+        type: number
+        example: 0.7
+      think_tool_enabled:
+        type: boolean
+        example: true
+      tools:
+        type: array
+        items:
+          $ref: "#/definitions/github_com_yourusername_vectorchat_pkg_models.ChatbotToolR\
+            esponse"
+      updated_at:
+        type: string
+        example: 2023-01-01T00:00:00Z
+      use_max_tokens:
+        type: boolean
+        example: true
+      user_id:
+        type: string
+        example: user_123
+  github_com_yourusername_vectorchat_pkg_models.ChatbotSkillsResponse:
+    type: object
+    properties:
+      skills:
+        type: array
+        items:
+          $ref: "#/definitions/github_com_yourusername_vectorchat_pkg_models.SkillSummary"
+  github_com_yourusername_vectorchat_pkg_models.ChatbotToggleRequest:
+    type: object
+    required:
+      - is_enabled
+    properties:
+      is_enabled:
+        type: boolean
+        example: false
+  github_com_yourusername_vectorchat_pkg_models.ChatbotToolResponse:
+    type: object
+    properties:
+      connection_mode:
+        description: '"shared" or "personal"'
+        type: string
+        example: shared
+      created_at:
+        type: string
+        example: 2023-01-01T00:00:00Z
+      id:
+        type: string
+        example: 550e8400-e29b-41d4-a716-446655440000
+      tool_config:
+        type: object
+      tool_name:
+        type: string
+        example: gmail
+  github_com_yourusername_vectorchat_pkg_models.ChatbotUpdateRequest:
+    type: object
+    properties:
+      agent_enabled:
+        description: Agent Intelligence Settings
+        type: boolean
+        example: true
+      allow_public_access:
+        type: boolean
+        example: true
+      autonomy_level:
+        type: string
+        example: ask_sensitive
+      description:
+        type: string
+        example: Updated description
+      history_token_limit:
+        type: integer
+        example: 8000
+      max_agent_turns:
+        type: integer
+        example: 15
+      max_reflections_per_session:
+        type: integer
+        example: 8
+      max_reflections_per_turn:
+        type: integer
+        example: 3
+      max_tokens:
+        type: integer
+        example: 1500
+      max_tokens_per_turn:
+        description: Agent Reliability Settings
+        type: integer
+        example: 100000
+      max_tool_calls:
+        type: integer
+        example: 100
+      memory_enabled:
+        type: boolean
+        example: false
+      model_name:
+        type: string
+        example: gpt-4
+      name:
+        type: string
+        example: Updated Bot Name
+      reasoning_visible:
+        type: boolean
+        example: true
+      request_timeout_seconds:
+        type: integer
+        example: 300
+      save_messages:
+        type: boolean
+        example: true
+      shared_knowledge_base_ids:
+        type: array
+        items:
+          type: string
+      skill_ids:
+        type: array
+        items:
+          type: string
+      system_instructions:
+        type: string
+        example: Updated system instructions
+      temperature_param:
+        type: number
+        example: 0.8
+      think_tool_enabled:
+        type: boolean
+        example: true
+      tools:
+        type: array
+        items:
+          $ref: "#/definitions/github_com_yourusername_vectorchat_pkg_models.SkillToolInp\
+            ut"
+      use_max_tokens:
+        type: boolean
+        example: true
+  github_com_yourusername_vectorchat_pkg_models.ChatbotsListResponse:
+    type: object
+    properties:
+      chatbots:
+        type: array
+        items:
+          $ref: "#/definitions/github_com_yourusername_vectorchat_pkg_models.ChatbotRespo\
+            nse"
+  github_com_yourusername_vectorchat_pkg_models.ContentPart:
+    type: object
+    properties:
+      data:
+        description: base64 or text
+        type: string
+      filename:
+        type: string
+      mime_type:
+        type: string
+      type:
+        description: text, image, audio, document
+        type: string
+  github_com_yourusername_vectorchat_pkg_models.Conversation:
+    type: object
+    properties:
+      chatbot_id:
+        type: string
+      chatbot_name:
+        type: string
+      created_at:
+        type: string
+      id:
+        type: string
+      last_message_at:
+        type: string
+      last_message_preview:
+        type: string
+      message_count:
+        type: integer
+      title:
+        type: string
+      updated_at:
+        type: string
+  github_com_yourusername_vectorchat_pkg_models.ConversationDetail:
+    type: object
+    properties:
+      chatbot_id:
+        type: string
+      chatbot_name:
+        type: string
+      created_at:
+        type: string
+      id:
+        type: string
+      last_message_at:
+        type: string
+      messages:
+        type: array
+        items:
+          $ref: "#/definitions/github_com_yourusername_vectorchat_pkg_models.ChatMessage"
+      title:
+        type: string
+  github_com_yourusername_vectorchat_pkg_models.ConversationListResponse:
+    type: object
+    properties:
+      conversations:
+        type: array
+        items:
+          $ref: "#/definitions/github_com_yourusername_vectorchat_pkg_models.Conversation"
+      has_more:
+        type: boolean
+      total:
+        type: integer
+  github_com_yourusername_vectorchat_pkg_models.ConversationUpdateResponse:
+    type: object
+    properties:
+      id:
+        type: string
+      title:
+        type: string
+      updated_at:
+        type: string
+  github_com_yourusername_vectorchat_pkg_models.CrawlJobResponse:
+    type: object
+    properties:
+      created_at:
+        type: string
+      error:
+        type: string
+      id:
+        type: string
+      options:
+        $ref: "#/definitions/github_com_yourusername_vectorchat_pkg_models.CrawlOptions"
+      started_at:
+        type: string
+      status:
+        type: string
+      url:
+        type: string
+  github_com_yourusername_vectorchat_pkg_models.CrawlOptions:
+    type: object
+    properties:
+      allow_patterns:
+        type: array
+        items:
+          type: string
+      concurrency:
+        type: integer
+      content_selector:
+        type: string
+      delay_ms:
+        type: integer
+      deny_patterns:
+        type: array
+        items:
+          type: string
+      exclude_selector:
+        type: string
+      follow_links:
+        type: boolean
+      max_depth:
+        type: integer
+      max_pages:
+        type: integer
+      respect_robots:
+        type: boolean
+      user_agent:
+        type: string
+  github_com_yourusername_vectorchat_pkg_models.CrawlRequest:
+    type: object
+    properties:
+      frequency:
+        type: string
+        example: daily
+      options:
+        $ref: "#/definitions/github_com_yourusername_vectorchat_pkg_models.CrawlOptions"
+      url:
+        type: string
+        example: https://docs.example.com
+  github_com_yourusername_vectorchat_pkg_models.CrawlScheduleListResponse:
+    type: object
+    properties:
+      schedules:
+        type: array
+        items:
+          $ref: "#/definitions/github_com_yourusername_vectorchat_pkg_models.CrawlSchedul\
+            eResponse"
+  github_com_yourusername_vectorchat_pkg_models.CrawlScheduleRequest:
+    type: object
+    properties:
+      cron_expr:
+        description: standard 5-field cron
+        type: string
+        example: 0 3 * * *
+      enabled:
+        description: whether the schedule is active
+        type: boolean
+        example: true
+      options:
+        $ref: "#/definitions/github_com_yourusername_vectorchat_pkg_models.CrawlOptions"
+      timezone:
+        description: IANA timezone
+        type: string
+        example: America/New_York
+      url:
+        type: string
+        example: https://docs.example.com
+  github_com_yourusername_vectorchat_pkg_models.CrawlScheduleResponse:
+    type: object
+    properties:
+      chatbot_id:
+        type: string
+      created_at:
+        type: string
+      cron_expr:
+        type: string
+      enabled:
+        type: boolean
+      id:
+        type: string
+      last_error:
+        type: string
+      last_run_at:
+        type: string
+      last_status:
+        type: string
+      next_run_at:
+        type: string
+      options:
+        $ref: "#/definitions/github_com_yourusername_vectorchat_pkg_models.CrawlOptions"
+      shared_knowledge_base_id:
+        type: string
+      timezone:
+        type: string
+      updated_at:
+        type: string
+      url:
+        type: string
+  github_com_yourusername_vectorchat_pkg_models.CreateConversationRequest:
+    type: object
+    properties:
+      initial_message:
+        type: string
+  github_com_yourusername_vectorchat_pkg_models.CreateMCPServerRequest:
+    type: object
+    required:
+      - alias
+      - url
+    properties:
+      alias:
+        type: string
+        maxLength: 50
+        minLength: 1
+      headers:
+        type: object
+        additionalProperties:
+          type: string
+      url:
+        type: string
+  github_com_yourusername_vectorchat_pkg_models.CreateScheduleRequest:
+    type: object
+    properties:
+      chatbot_id:
+        type: string
+      day_of_month:
+        type: integer
+      day_of_week:
+        type: integer
+      frequency:
+        description: hourly, daily, weekly, monthly
+        type: string
+      minute_of_hour:
+        type: integer
+      name:
+        type: string
+      prompt_template:
+        type: string
+      requires_approval:
+        type: boolean
+      time_of_day:
+        type: string
+      timezone:
+        type: string
+  github_com_yourusername_vectorchat_pkg_models.CreateSkillRequest:
+    type: object
+    required:
+      - prompt_md
+      - title
+    properties:
+      description:
+        type: string
+        example: Books meetings on user calendars
+      prompt_md:
+        type: string
+        example: |-
+          ---
+          name: appointment-booking
+          description: Books meetings when users ask to schedule time.
+          ---
+
+          # Appointment Booking
+
+          ## Purpose
+          ...
+      title:
+        type: string
+        example: Appointment Booking
+      tools:
+        type: array
+        items:
+          $ref: "#/definitions/github_com_yourusername_vectorchat_pkg_models.SkillToolInp\
+            ut"
+  github_com_yourusername_vectorchat_pkg_models.ExecutionListResponse:
+    type: object
+    properties:
+      executions:
+        type: array
+        items:
+          $ref: "#/definitions/github_com_yourusername_vectorchat_pkg_models.ExecutionRes\
+            ponse"
+  github_com_yourusername_vectorchat_pkg_models.ExecutionResponse:
+    type: object
+    properties:
+      approved_at:
+        type: string
+      completed_at:
+        type: string
+      error_message:
+        type: string
+      id:
+        type: string
+      pending_actions:
+        type: array
+        items:
+          $ref: "#/definitions/github_com_yourusername_vectorchat_pkg_models.PendingActio\
+            nResponse"
+      prompt_rendered:
+        type: string
+      result:
+        type: array
+        items:
+          type: integer
+      schedule:
+        $ref: "#/definitions/github_com_yourusername_vectorchat_pkg_models.ScheduleInfo"
+      started_at:
+        type: string
+      status:
+        type: string
+  github_com_yourusername_vectorchat_pkg_models.ExecutionSummary:
+    type: object
+    properties:
+      id:
+        type: string
+      started_at:
+        type: string
+      status:
+        type: string
+  github_com_yourusername_vectorchat_pkg_models.ExecutionWithScheduleResponse:
+    type: object
+    properties:
+      approved_at:
+        type: string
+      chatbot_id:
+        type: string
+      chatbot_name:
+        type: string
+      completed_at:
+        type: string
+      error_message:
+        type: string
+      id:
+        type: string
+      pending_actions:
+        type: array
+        items:
+          $ref: "#/definitions/github_com_yourusername_vectorchat_pkg_models.PendingActio\
+            nResponse"
+      prompt_rendered:
+        type: string
+      result:
+        type: array
+        items:
+          type: integer
+      schedule:
+        $ref: "#/definitions/github_com_yourusername_vectorchat_pkg_models.ScheduleInfo"
+      started_at:
+        type: string
+      status:
+        type: string
+  github_com_yourusername_vectorchat_pkg_models.FileInfo:
+    type: object
+    properties:
+      filename:
+        type: string
+        example: document.pdf
+      id:
+        type: string
+        example: 550e8400-e29b-41d4-a716-446655440000
+      size:
+        type: integer
+        example: 1024
+      uploaded_at:
+        type: string
+        example: 2023-01-01T00:00:00Z
+  github_com_yourusername_vectorchat_pkg_models.FileUploadResponse:
+    type: object
+    properties:
+      chat_id:
+        type: string
+        example: 550e8400-e29b-41d4-a716-446655440000
+      chatbot_id:
+        type: string
+        example: 550e8400-e29b-41d4-a716-446655440000
+      file:
+        type: string
+        example: document.pdf
+      filename:
+        type: string
+        example: document.pdf
+      message:
+        type: string
+        example: File uploaded successfully
+      size:
+        type: integer
+        example: 1024
+  github_com_yourusername_vectorchat_pkg_models.LLMModel:
+    type: object
+    properties:
+      advanced:
+        type: boolean
+        example: false
+      hint:
+        type: string
+        example: Flagship model for complex reasoning and coding
+      id:
+        type: string
+        example: chat-default
+      label:
+        type: string
+        example: GPT-5.2 (Default)
+      provider:
+        type: string
+        example: openai
+      supports_audio:
+        type: boolean
+        example: false
+      supports_vision:
+        type: boolean
+        example: true
+  github_com_yourusername_vectorchat_pkg_models.LLMModelsResponse:
+    type: object
+    properties:
+      models:
+        type: array
+        items:
+          $ref: "#/definitions/github_com_yourusername_vectorchat_pkg_models.LLMModel"
+  github_com_yourusername_vectorchat_pkg_models.MCPServerResponse:
+    type: object
+    properties:
+      alias:
+        type: string
+      created_at:
+        type: string
+      headers:
+        type: object
+        additionalProperties:
+          type: string
+      id:
+        type: string
+      skill_id:
+        type: string
+      updated_at:
+        type: string
+      url:
+        type: string
+  github_com_yourusername_vectorchat_pkg_models.MCPToolPreview:
+    type: object
+    properties:
+      description:
+        type: string
+      name:
+        type: string
+  github_com_yourusername_vectorchat_pkg_models.MessageResponse:
+    type: object
+    properties:
+      message:
+        type: string
+        example: Operation completed successfully
+  github_com_yourusername_vectorchat_pkg_models.PaginationMetadata:
+    type: object
+    properties:
+      has_next:
+        type: boolean
+        example: true
+      has_prev:
+        type: boolean
+        example: false
+      limit:
+        type: integer
+        example: 10
+      page:
+        type: integer
+        example: 1
+      total:
+        type: integer
+        example: 100
+      total_pages:
+        type: integer
+        example: 10
+  github_com_yourusername_vectorchat_pkg_models.PendingActionResponse:
+    type: object
+    properties:
+      details:
+        type: object
+        additionalProperties:
+          type: string
+      error:
+        type: string
+      executed_at:
+        type: string
+      id:
+        type: string
+      status:
+        type: string
+      summary:
+        type: string
+      tool_name:
+        type: string
+  github_com_yourusername_vectorchat_pkg_models.PendingApprovalsResponse:
+    type: object
+    properties:
+      executions:
+        type: array
+        items:
+          $ref: "#/definitions/github_com_yourusername_vectorchat_pkg_models.ExecutionWit\
+            hScheduleResponse"
+  github_com_yourusername_vectorchat_pkg_models.RenameConversationRequest:
+    type: object
+    required:
+      - title
+    properties:
+      title:
+        type: string
+        maxLength: 100
+        minLength: 3
+  github_com_yourusername_vectorchat_pkg_models.ScheduleChatbotInfo:
+    type: object
+    properties:
+      id:
+        type: string
+      name:
+        type: string
+  github_com_yourusername_vectorchat_pkg_models.ScheduleInfo:
+    type: object
+    properties:
+      id:
+        type: string
+      name:
+        type: string
+  github_com_yourusername_vectorchat_pkg_models.ScheduleListResponse:
+    type: object
+    properties:
+      schedules:
+        type: array
+        items:
+          $ref: "#/definitions/github_com_yourusername_vectorchat_pkg_models.ScheduleResp\
+            onse"
+  github_com_yourusername_vectorchat_pkg_models.ScheduleResponse:
+    type: object
+    properties:
+      chatbot:
+        $ref: "#/definitions/github_com_yourusername_vectorchat_pkg_models.ScheduleChat\
+          botInfo"
+      created_at:
+        type: string
+      day_of_month:
+        type: integer
+      day_of_week:
+        type: integer
+      frequency:
+        type: string
+      id:
+        type: string
+      is_active:
+        type: boolean
+      last_execution:
+        $ref: "#/definitions/github_com_yourusername_vectorchat_pkg_models.ExecutionSum\
+          mary"
+      minute_of_hour:
+        type: integer
+      name:
+        type: string
+      next_run_at:
+        type: string
+      prompt_template:
+        type: string
+      requires_approval:
+        type: boolean
+      time_of_day:
+        type: string
+      timezone:
+        type: string
+  github_com_yourusername_vectorchat_pkg_models.SessionResponse:
+    type: object
+    properties:
+      user:
+        $ref: "#/definitions/github_com_yourusername_vectorchat_pkg_models.User"
+  github_com_yourusername_vectorchat_pkg_models.SharedKnowledgeBaseCreateRequest:
+    type: object
+    required:
+      - name
+    properties:
+      description:
+        type: string
+        example: Central policies and guidelines
+      name:
+        type: string
+        example: Company Handbook
+  github_com_yourusername_vectorchat_pkg_models.SharedKnowledgeBaseFileUploadResponse:
+    type: object
+    properties:
+      file:
+        type: string
+        example: document.pdf
+      filename:
+        type: string
+        example: document.pdf
+      knowledge_base_id:
+        type: string
+      message:
+        type: string
+        example: File processed successfully
+      size:
+        type: integer
+        example: 1024
+  github_com_yourusername_vectorchat_pkg_models.SharedKnowledgeBaseFilesResponse:
+    type: object
+    properties:
+      crawl_jobs:
+        type: array
+        items:
+          $ref: "#/definitions/github_com_yourusername_vectorchat_pkg_models.CrawlJobResp\
+            onse"
+      files:
+        type: array
+        items:
+          $ref: "#/definitions/github_com_yourusername_vectorchat_pkg_models.FileInfo"
+      knowledge_base_id:
+        type: string
+      schedules:
+        type: array
+        items:
+          $ref: "#/definitions/github_com_yourusername_vectorchat_pkg_models.CrawlSchedul\
+            eResponse"
+  github_com_yourusername_vectorchat_pkg_models.SharedKnowledgeBaseListResponse:
+    type: object
+    properties:
+      knowledge_bases:
+        type: array
+        items:
+          $ref: "#/definitions/github_com_yourusername_vectorchat_pkg_models.SharedKnowle\
+            dgeBaseResponse"
+  github_com_yourusername_vectorchat_pkg_models.SharedKnowledgeBaseResponse:
+    type: object
+    properties:
+      created_at:
+        type: string
+        example: 2024-01-01T12:00:00Z
+      description:
+        type: string
+        example: Frequently asked questions for agents
+      id:
+        type: string
+        example: 3f5f5f4e-1234-5678-a9ab-0123456789ab
+      name:
+        type: string
+        example: Support FAQs
+      organization_id:
+        type: string
+        example: 3f5f5f4e-1234-5678-a9ab-0123456789ac
+      owner_id:
+        type: string
+        example: user_123
+      updated_at:
+        type: string
+        example: 2024-01-02T12:00:00Z
+  github_com_yourusername_vectorchat_pkg_models.SharedKnowledgeBaseTextSourcesResponse:
+    type: object
+    properties:
+      knowledge_base_id:
+        type: string
+      sources:
+        type: array
+        items:
+          $ref: "#/definitions/github_com_yourusername_vectorchat_pkg_models.TextSourceIn\
+            fo"
+  github_com_yourusername_vectorchat_pkg_models.SharedKnowledgeBaseUpdateRequest:
+    type: object
+    properties:
+      description:
+        type: string
+        example: Additional onboarding details
+      name:
+        type: string
+        example: Updated Handbook
+  github_com_yourusername_vectorchat_pkg_models.Skill:
+    type: object
+    properties:
+      created_at:
+        type: string
+      description:
+        type: string
+      id:
+        type: string
+      last_embedded_at:
+        type: string
+      organization_id:
+        type: string
+      owner_id:
+        type: string
+      prompt_md:
+        type: string
+      title:
+        type: string
+      tools:
+        type: array
+        items:
+          $ref: "#/definitions/github_com_yourusername_vectorchat_pkg_models.SkillTool"
+      updated_at:
+        type: string
+  github_com_yourusername_vectorchat_pkg_models.SkillDraft:
+    type: object
+    properties:
+      description:
+        type: string
+      prompt_md:
+        type: string
+      title:
+        type: string
+  github_com_yourusername_vectorchat_pkg_models.SkillExportData:
+    type: object
+    properties:
+      description:
+        type: string
+      prompt_md:
+        type: string
+      title:
+        type: string
+      tools:
+        type: array
+        items:
+          $ref: "#/definitions/github_com_yourusername_vectorchat_pkg_models.SkillToolExp\
+            ortData"
+  github_com_yourusername_vectorchat_pkg_models.SkillSummary:
+    type: object
+    properties:
+      description:
+        type: string
+      has_tools:
+        type: boolean
+      id:
+        type: string
+      organization_id:
+        type: string
+      owner_id:
+        type: string
+      title:
+        type: string
+      updated_at:
+        type: string
+  github_com_yourusername_vectorchat_pkg_models.SkillTool:
+    type: object
+    properties:
+      created_at:
+        type: string
+      id:
+        type: string
+      skill_id:
+        type: string
+      tool_config:
+        type: object
+      tool_name:
+        type: string
+  github_com_yourusername_vectorchat_pkg_models.SkillToolExportData:
+    type: object
+    properties:
+      tool_config:
+        type: object
+      tool_name:
+        type: string
+  github_com_yourusername_vectorchat_pkg_models.SkillToolInput:
+    type: object
+    required:
+      - tool_name
+    properties:
+      connection_mode:
+        description: '"shared" (default) or "personal"'
+        type: string
+      metadata:
+        description: optional display metadata
+        type: object
+        additionalProperties:
+          type: string
+      provider:
+        description: reserved for future provider routing
+        type: string
+      tool_config:
+        type: object
+        additionalProperties: {}
+      tool_name:
+        type: string
+  github_com_yourusername_vectorchat_pkg_models.SystemPromptGenerateRequest:
+    type: object
+    required:
+      - purpose
+    properties:
+      purpose:
+        type: string
+        example: Customer support chatbot for shipping questions
+      tone:
+        type: string
+        example: concise and friendly
+  github_com_yourusername_vectorchat_pkg_models.SystemPromptGenerateResponse:
+    type: object
+    properties:
+      prompt:
+        type: string
+        example: You are an AI assistant...
+  github_com_yourusername_vectorchat_pkg_models.TestMCPServerRequest:
+    type: object
+    required:
+      - url
+    properties:
+      headers:
+        type: object
+        additionalProperties:
+          type: string
+      url:
+        type: string
+  github_com_yourusername_vectorchat_pkg_models.TestMCPServerResponse:
+    type: object
+    properties:
+      error:
+        type: string
+      success:
+        type: boolean
+      tools:
+        type: array
+        items:
+          $ref: "#/definitions/github_com_yourusername_vectorchat_pkg_models.MCPToolPrevi\
+            ew"
+  github_com_yourusername_vectorchat_pkg_models.TextSourceInfo:
+    type: object
+    properties:
+      id:
+        type: string
+        example: 550e8400-e29b-41d4-a716-446655440000
+      size:
+        type: integer
+        example: 2048
+      title:
+        type: string
+        example: text-20240101-120000.txt
+      uploaded_at:
+        type: string
+        example: 2023-01-01T00:00:00Z
+  github_com_yourusername_vectorchat_pkg_models.TextSourcesResponse:
+    type: object
+    properties:
+      chat_id:
+        type: string
+        example: 550e8400-e29b-41d4-a716-446655440000
+      sources:
+        type: array
+        items:
+          $ref: "#/definitions/github_com_yourusername_vectorchat_pkg_models.TextSourceIn\
+            fo"
+  github_com_yourusername_vectorchat_pkg_models.TextUploadRequest:
+    type: object
+    required:
+      - text
+    properties:
+      text:
+        type: string
+        example: Paste your knowledge base text here.
+  github_com_yourusername_vectorchat_pkg_models.TokenRequest:
+    type: object
+    properties:
+      client_id:
+        type: string
+        example: public-vectorchat-client
+      client_secret:
+        type: string
+        example: super-secret-value
+  github_com_yourusername_vectorchat_pkg_models.TokenResponse:
+    type: object
+    properties:
+      access_token:
+        type: string
+        example: eyJhbGciOiJSUzI1NiIsInR5cCI6IkpXVCJ9...
+      expires_in:
+        type: integer
+        example: 3599
+      scope:
+        type: string
+        example: chat:read chat:write
+      token_type:
+        type: string
+        example: bearer
+  github_com_yourusername_vectorchat_pkg_models.ToolCatalogEntry:
+    type: object
+    properties:
+      category:
+        type: string
+      description:
+        type: string
+      docs_link:
+        type: string
+      id:
+        type: string
+      name:
+        type: string
+      oauth:
+        type: boolean
+      path:
+        type: string
+      tools:
+        type: array
+        items:
+          type: string
+  github_com_yourusername_vectorchat_pkg_models.UpdateMCPServerRequest:
+    type: object
+    required:
+      - alias
+      - url
+    properties:
+      alias:
+        type: string
+        maxLength: 50
+        minLength: 1
+      headers:
+        type: object
+        additionalProperties:
+          type: string
+      url:
+        type: string
+  github_com_yourusername_vectorchat_pkg_models.UpdateScheduleRequest:
+    type: object
+    properties:
+      day_of_month:
+        type: integer
+      day_of_week:
+        type: integer
+      frequency:
+        type: string
+      minute_of_hour:
+        type: integer
+      name:
+        type: string
+      prompt_template:
+        type: string
+      requires_approval:
+        type: boolean
+      time_of_day:
+        type: string
+      timezone:
+        type: string
+  github_com_yourusername_vectorchat_pkg_models.UpdateSkillRequest:
+    type: object
+    properties:
+      description:
+        type: string
+      prompt_md:
+        type: string
+      reembed:
+        type: boolean
+      title:
+        type: string
+      tools:
+        type: array
+        items:
+          $ref: "#/definitions/github_com_yourusername_vectorchat_pkg_models.SkillToolInp\
+            ut"
+  github_com_yourusername_vectorchat_pkg_models.User:
+    type: object
+    properties:
+      created_at:
+        type: string
+        example: 2023-01-01T00:00:00Z
+      email:
+        type: string
+        example: user@example.com
+      id:
+        type: string
+        example: user_123
+      name:
+        type: string
+        example: John Doe
+      provider:
+        type: string
+        example: google
+      updated_at:
+        type: string
+        example: 2023-01-01T00:00:00Z
+  github_com_yourusername_vectorchat_pkg_models.UserMemoriesListResponse:
+    type: object
+    properties:
+      memories:
+        type: array
+        items:
+          $ref: "#/definitions/github_com_yourusername_vectorchat_pkg_models.UserMemoryRe\
+            sponse"
+      total:
+        type: integer
+        example: 5
+  github_com_yourusername_vectorchat_pkg_models.UserMemoryCreateRequest:
+    type: object
+    required:
+      - category
+      - content
+    properties:
+      category:
+        type: string
+        example: preference
+      content:
+        type: string
+        maxLength: 500
+        minLength: 10
+        example: Prefers concise responses
+  github_com_yourusername_vectorchat_pkg_models.UserMemoryResponse:
+    type: object
+    properties:
+      category:
+        type: string
+        example: preference
+      chatbot_id:
+        type: string
+        example: 660e8400-e29b-41d4-a716-446655440001
+      content:
+        type: string
+        example: Prefers concise responses
+      created_at:
+        type: string
+        example: 2023-01-01T00:00:00Z
+      id:
+        type: string
+        example: 550e8400-e29b-41d4-a716-446655440000
+      updated_at:
+        type: string
+        example: 2023-01-01T00:00:00Z
+  github_com_yourusername_vectorchat_pkg_models.UserMemoryUpdateRequest:
+    type: object
+    properties:
+      category:
+        type: string
+        example: fact
+      content:
+        type: string
+        example: Updated memory content
+  github_com_yourusername_vectorchat_pkg_models.WebsiteUploadRequest:
+    type: object
+    required:
+      - url
+    properties:
+      options:
+        $ref: "#/definitions/github_com_yourusername_vectorchat_pkg_models.CrawlOptions"
+      url:
+        type: string
+        example: https://docs.example.com
+  github_com_yourusername_vectorchat_pkg_models.WidgetChatbotResponse:
+    type: object
+    properties:
+      allow_public_access:
+        type: boolean
+        example: true
+      description:
+        type: string
+        example: AI assistant for customer support
+      id:
+        type: string
+        example: 550e8400-e29b-41d4-a716-446655440000
+      is_enabled:
+        type: boolean
+        example: true
+      name:
+        type: string
+        example: Customer Support Bot
+  github_com_yourusername_vectorchat_pkg_models.WidgetSettingsResponse:
+    type: object
+    properties:
+      chatbot_id:
+        type: string
+      created_at:
+        type: string
+      id:
+        type: string
+      theme:
+        type: object
+        additionalProperties: {}
+      updated_at:
+        type: string
+  github_com_yourusername_vectorchat_pkg_models.WidgetSettingsUpdateRequest:
+    type: object
+    properties:
+      theme:
+        type: object
+        additionalProperties: {}
+  internal_api.CreateCollectionRequest:
+    type: object
+    properties:
+      description:
+        type: string
+      name:
+        type: string
+      owner_id:
+        type: string
+      owner_type:
+        description: '"skill" or "chatbot"'
+        type: string
+      schema:
+        type: object
+        additionalProperties: {}
+  internal_api.DeleteAccountRequest:
+    type: object
+    properties:
+      confirmation:
+        type: string
+  internal_api.ImportRecordsRequest:
+    type: object
+    properties:
+      records:
+        type: array
+        items:
+          type: object
+          additionalProperties: {}
+  internal_api.UpdateCollectionRequest:
+    type: object
+    properties:
+      description:
+        type: string
+      name:
+        type: string
+      schema:
+        type: object
+        additionalProperties: {}
+securityDefinitions:
+  BearerAuth:
+    description: Provide your token as `Bearer {token}` after generating it via
+      /public/oauth/token.
+    type: apiKey
+    name: Authorization
+    in: header

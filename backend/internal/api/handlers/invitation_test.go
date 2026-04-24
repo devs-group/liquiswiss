@@ -23,7 +23,7 @@ func setupInvitationDependencies(t *testing.T) (*sql.DB, api_service.IAPIService
 	dbAdapter := db_adapter.NewDatabaseAdapter(conn)
 	// Use empty string for SendGrid API key - emails won't actually be sent
 	sendgridService := sendgrid_adapter.NewSendgridAdapter("")
-	apiService := api_service.NewAPIService(dbAdapter, sendgridService)
+	apiService := api_service.NewAPIService(dbAdapter, sendgridService, nil)
 
 	_, err := CreateCurrency(apiService, "CHF", "Swiss Franc", "de-CH")
 	require.NoError(t, err)

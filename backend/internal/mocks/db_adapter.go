@@ -308,6 +308,20 @@ func (mr *MockIDatabaseAdapterMockRecorder) CreateOrganisation(name any) *gomock
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CreateOrganisation", reflect.TypeOf((*MockIDatabaseAdapter)(nil).CreateOrganisation), name)
 }
 
+// CreateOrganisationChatbot mocks base method.
+func (m *MockIDatabaseAdapter) CreateOrganisationChatbot(organisationID int64, chatbotID string, skillID *string) error {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "CreateOrganisationChatbot", organisationID, chatbotID, skillID)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// CreateOrganisationChatbot indicates an expected call of CreateOrganisationChatbot.
+func (mr *MockIDatabaseAdapterMockRecorder) CreateOrganisationChatbot(organisationID, chatbotID, skillID any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CreateOrganisationChatbot", reflect.TypeOf((*MockIDatabaseAdapter)(nil).CreateOrganisationChatbot), organisationID, chatbotID, skillID)
+}
+
 // CreateRegistration mocks base method.
 func (m *MockIDatabaseAdapter) CreateRegistration(email, code string) (int64, error) {
 	m.ctrl.T.Helper()
@@ -572,6 +586,20 @@ func (m *MockIDatabaseAdapter) DeleteMemberPermissions(userID, organisationID in
 func (mr *MockIDatabaseAdapterMockRecorder) DeleteMemberPermissions(userID, organisationID any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "DeleteMemberPermissions", reflect.TypeOf((*MockIDatabaseAdapter)(nil).DeleteMemberPermissions), userID, organisationID)
+}
+
+// DeleteOrganisationChatbots mocks base method.
+func (m *MockIDatabaseAdapter) DeleteOrganisationChatbots(organisationID int64) error {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "DeleteOrganisationChatbots", organisationID)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// DeleteOrganisationChatbots indicates an expected call of DeleteOrganisationChatbots.
+func (mr *MockIDatabaseAdapterMockRecorder) DeleteOrganisationChatbots(organisationID any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "DeleteOrganisationChatbots", reflect.TypeOf((*MockIDatabaseAdapter)(nil).DeleteOrganisationChatbots), organisationID)
 }
 
 // DeleteRefreshToken mocks base method.
@@ -866,6 +894,36 @@ func (mr *MockIDatabaseAdapterMockRecorder) GetOrganisation(userID, organisation
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetOrganisation", reflect.TypeOf((*MockIDatabaseAdapter)(nil).GetOrganisation), userID, organisationID)
 }
 
+// GetOrganisationByID mocks base method.
+func (m *MockIDatabaseAdapter) GetOrganisationByID(orgID int64) (*models.Organisation, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "GetOrganisationByID", orgID)
+	ret0, _ := ret[0].(*models.Organisation)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// GetOrganisationByID indicates an expected call of GetOrganisationByID.
+func (mr *MockIDatabaseAdapterMockRecorder) GetOrganisationByID(orgID any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetOrganisationByID", reflect.TypeOf((*MockIDatabaseAdapter)(nil).GetOrganisationByID), orgID)
+}
+
+// GetOrganisationChatbot mocks base method.
+func (m *MockIDatabaseAdapter) GetOrganisationChatbot(organisationID int64) (string, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "GetOrganisationChatbot", organisationID)
+	ret0, _ := ret[0].(string)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// GetOrganisationChatbot indicates an expected call of GetOrganisationChatbot.
+func (mr *MockIDatabaseAdapterMockRecorder) GetOrganisationChatbot(organisationID any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetOrganisationChatbot", reflect.TypeOf((*MockIDatabaseAdapter)(nil).GetOrganisationChatbot), organisationID)
+}
+
 // GetOrganisationName mocks base method.
 func (m *MockIDatabaseAdapter) GetOrganisationName(organisationID int64) (string, error) {
 	m.ctrl.T.Helper()
@@ -1046,6 +1104,21 @@ func (mr *MockIDatabaseAdapterMockRecorder) GetVatSetting(userID any) *gomock.Ca
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetVatSetting", reflect.TypeOf((*MockIDatabaseAdapter)(nil).GetVatSetting), userID)
 }
 
+// HasOrganisationChatbots mocks base method.
+func (m *MockIDatabaseAdapter) HasOrganisationChatbots(organisationID int64) (bool, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "HasOrganisationChatbots", organisationID)
+	ret0, _ := ret[0].(bool)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// HasOrganisationChatbots indicates an expected call of HasOrganisationChatbots.
+func (mr *MockIDatabaseAdapterMockRecorder) HasOrganisationChatbots(organisationID any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "HasOrganisationChatbots", reflect.TypeOf((*MockIDatabaseAdapter)(nil).HasOrganisationChatbots), organisationID)
+}
+
 // ListBankAccounts mocks base method.
 func (m *MockIDatabaseAdapter) ListBankAccounts(userID, page, limit int64, sortBy, sortOrder, search string) ([]models.BankAccount, int64, error) {
 	m.ctrl.T.Helper()
@@ -1060,6 +1133,21 @@ func (m *MockIDatabaseAdapter) ListBankAccounts(userID, page, limit int64, sortB
 func (mr *MockIDatabaseAdapterMockRecorder) ListBankAccounts(userID, page, limit, sortBy, sortOrder, search any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ListBankAccounts", reflect.TypeOf((*MockIDatabaseAdapter)(nil).ListBankAccounts), userID, page, limit, sortBy, sortOrder, search)
+}
+
+// ListBankAccountsByOrganisation mocks base method.
+func (m *MockIDatabaseAdapter) ListBankAccountsByOrganisation(orgID int64) ([]models.BankAccount, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "ListBankAccountsByOrganisation", orgID)
+	ret0, _ := ret[0].([]models.BankAccount)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// ListBankAccountsByOrganisation indicates an expected call of ListBankAccountsByOrganisation.
+func (mr *MockIDatabaseAdapterMockRecorder) ListBankAccountsByOrganisation(orgID any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ListBankAccountsByOrganisation", reflect.TypeOf((*MockIDatabaseAdapter)(nil).ListBankAccountsByOrganisation), orgID)
 }
 
 // ListCategories mocks base method.
@@ -1107,6 +1195,21 @@ func (m *MockIDatabaseAdapter) ListEmployees(userID, page, limit int64, sortBy, 
 func (mr *MockIDatabaseAdapterMockRecorder) ListEmployees(userID, page, limit, sortBy, sortOrder, search, hideTerminated any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ListEmployees", reflect.TypeOf((*MockIDatabaseAdapter)(nil).ListEmployees), userID, page, limit, sortBy, sortOrder, search, hideTerminated)
+}
+
+// ListEmployeesByOrganisation mocks base method.
+func (m *MockIDatabaseAdapter) ListEmployeesByOrganisation(orgID int64) ([]models.Employee, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "ListEmployeesByOrganisation", orgID)
+	ret0, _ := ret[0].([]models.Employee)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// ListEmployeesByOrganisation indicates an expected call of ListEmployeesByOrganisation.
+func (mr *MockIDatabaseAdapterMockRecorder) ListEmployeesByOrganisation(orgID any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ListEmployeesByOrganisation", reflect.TypeOf((*MockIDatabaseAdapter)(nil).ListEmployeesByOrganisation), orgID)
 }
 
 // ListFiatRates mocks base method.
@@ -1197,6 +1300,21 @@ func (m *MockIDatabaseAdapter) ListMembers(organisationID int64) ([]models.Organ
 func (mr *MockIDatabaseAdapterMockRecorder) ListMembers(organisationID any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ListMembers", reflect.TypeOf((*MockIDatabaseAdapter)(nil).ListMembers), organisationID)
+}
+
+// ListOrganisationChatbots mocks base method.
+func (m *MockIDatabaseAdapter) ListOrganisationChatbots(organisationID int64) ([]models.OrganisationChatbot, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "ListOrganisationChatbots", organisationID)
+	ret0, _ := ret[0].([]models.OrganisationChatbot)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// ListOrganisationChatbots indicates an expected call of ListOrganisationChatbots.
+func (mr *MockIDatabaseAdapterMockRecorder) ListOrganisationChatbots(organisationID any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ListOrganisationChatbots", reflect.TypeOf((*MockIDatabaseAdapter)(nil).ListOrganisationChatbots), organisationID)
 }
 
 // ListOrganisations mocks base method.
@@ -1307,6 +1425,21 @@ func (m *MockIDatabaseAdapter) ListTransactions(userID, page, limit int64, sortB
 func (mr *MockIDatabaseAdapterMockRecorder) ListTransactions(userID, page, limit, sortBy, sortOrder, search, hideDisabled any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ListTransactions", reflect.TypeOf((*MockIDatabaseAdapter)(nil).ListTransactions), userID, page, limit, sortBy, sortOrder, search, hideDisabled)
+}
+
+// ListTransactionsByOrganisation mocks base method.
+func (m *MockIDatabaseAdapter) ListTransactionsByOrganisation(orgID int64) ([]models.Transaction, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "ListTransactionsByOrganisation", orgID)
+	ret0, _ := ret[0].([]models.Transaction)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// ListTransactionsByOrganisation indicates an expected call of ListTransactionsByOrganisation.
+func (mr *MockIDatabaseAdapterMockRecorder) ListTransactionsByOrganisation(orgID any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ListTransactionsByOrganisation", reflect.TypeOf((*MockIDatabaseAdapter)(nil).ListTransactionsByOrganisation), orgID)
 }
 
 // ListVats mocks base method.

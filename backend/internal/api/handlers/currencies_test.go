@@ -15,7 +15,7 @@ func TestCurrencyOrderAndOrganisationDependency(t *testing.T) {
 
 	dbAdapter := db_adapter.NewDatabaseAdapter(conn)
 	sendgridService := sendgrid_adapter.NewSendgridAdapter("")
-	apiService := api_service.NewAPIService(dbAdapter, sendgridService)
+	apiService := api_service.NewAPIService(dbAdapter, sendgridService, nil)
 
 	// Preparations
 	currencyCHF, err := CreateCurrency(apiService, "CHF", "Swiss Franc", "de-CH")

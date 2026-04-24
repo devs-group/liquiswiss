@@ -44,6 +44,7 @@
     :close-on-escape="false"
     :breakpoints="confirmBreakpoints"
   />
+  <ChatPanel v-if="isAuthenticated" />
   <Toast position="bottom-center" />
   <NuxtLoadingIndicator
     :height="4"

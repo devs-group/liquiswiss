@@ -150,6 +150,18 @@ type IDatabaseAdapter interface {
 	GetMemberPermission(userID int64, organisationID int64) (*models.MemberPermission, error)
 	UpsertMemberPermission(userID int64, organisationID int64, canView bool, canEdit bool, canDelete bool) error
 	DeleteMemberPermissions(userID int64, organisationID int64) error
+
+	CreateOrganisationChatbot(organisationID int64, chatbotID string, skillID *string) error
+	GetOrganisationChatbot(organisationID int64) (string, error)
+	HasOrganisationChatbots(organisationID int64) (bool, error)
+	ListOrganisationChatbots(organisationID int64) ([]models.OrganisationChatbot, error)
+	DeleteOrganisationChatbots(organisationID int64) error
+
+	// Org-scoped queries for MCP tools
+	ListBankAccountsByOrganisation(orgID int64) ([]models.BankAccount, error)
+	ListEmployeesByOrganisation(orgID int64) ([]models.Employee, error)
+	ListTransactionsByOrganisation(orgID int64) ([]models.Transaction, error)
+	GetOrganisationByID(orgID int64) (*models.Organisation, error)
 }
 
 type DatabaseAdapter struct {

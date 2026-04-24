@@ -16,6 +16,12 @@ type Config struct {
 	SendgridTemplateID string
 	FixerIOURl         string
 	FixerIOKey         string
+
+	AigentAPIURL       string
+	AigentClientID     string
+	AigentClientSecret string
+
+	BackendPublicURL string
 }
 
 func GetConfig() Config {
@@ -35,6 +41,12 @@ func GetConfig() Config {
 
 		FixerIOURl: getEnv("FIXER_IO_URL", ""),
 		FixerIOKey: getEnv("FIXER_IO_KEY", ""),
+
+		AigentAPIURL:       getEnv("AIGENT_API_URL", ""),
+		AigentClientID:     getEnv("AIGENT_CLIENT_ID", ""),
+		AigentClientSecret: getEnv("AIGENT_CLIENT_SECRET", ""),
+
+		BackendPublicURL: getEnv("BACKEND_PUBLIC_URL", ""),
 	}
 }
 

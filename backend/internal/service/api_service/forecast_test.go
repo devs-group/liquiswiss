@@ -46,7 +46,7 @@ func TestCalculateForecast_SkipsDisabledTransactions(t *testing.T) {
 	defer ctrl.Finish()
 
 	mockDB := mocks.NewMockIDatabaseAdapter(ctrl)
-	service := api_service.NewAPIService(mockDB, nil)
+	service := api_service.NewAPIService(mockDB, nil, nil)
 
 	baseCode := "CHF"
 	localeCode := "de-CH"
@@ -181,7 +181,7 @@ func TestCalculateForecast_SkipsDisabledSalariesOnly(t *testing.T) {
 	defer ctrl.Finish()
 
 	mockDB := mocks.NewMockIDatabaseAdapter(ctrl)
-	service := api_service.NewAPIService(mockDB, nil)
+	service := api_service.NewAPIService(mockDB, nil, nil)
 
 	baseCode := "CHF"
 	localeCode := "de-CH"
@@ -341,7 +341,7 @@ func TestCalculateForecast_CountsBothSalaryCostsTwice(t *testing.T) {
 	defer ctrl.Finish()
 
 	mockDB := mocks.NewMockIDatabaseAdapter(ctrl)
-	service := api_service.NewAPIService(mockDB, nil)
+	service := api_service.NewAPIService(mockDB, nil, nil)
 
 	userID := int64(303)
 	baseCode := "CHF"
@@ -510,7 +510,7 @@ func TestUpdateForecastExclusions_Success(t *testing.T) {
 	defer ctrl.Finish()
 
 	mockDB := mocks.NewMockIDatabaseAdapter(ctrl)
-	service := api_service.NewAPIService(mockDB, nil)
+	service := api_service.NewAPIService(mockDB, nil, nil)
 
 	userID := int64(42)
 	payload := models.UpdateForecastExclusions{
@@ -558,7 +558,7 @@ func TestUpdateForecastExclusions_PropagatesError(t *testing.T) {
 	defer ctrl.Finish()
 
 	mockDB := mocks.NewMockIDatabaseAdapter(ctrl)
-	service := api_service.NewAPIService(mockDB, nil)
+	service := api_service.NewAPIService(mockDB, nil, nil)
 
 	userID := int64(7)
 	payload := models.UpdateForecastExclusions{

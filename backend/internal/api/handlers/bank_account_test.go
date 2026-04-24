@@ -86,7 +86,7 @@ func setupBankAccountDependencies(t *testing.T) (*sql.DB, api_service.IAPIServic
 
 	dbAdapter := db_adapter.NewDatabaseAdapter(conn)
 	sendgridService := sendgrid_adapter.NewSendgridAdapter("")
-	apiService := api_service.NewAPIService(dbAdapter, sendgridService)
+	apiService := api_service.NewAPIService(dbAdapter, sendgridService, nil)
 
 	currency, err := CreateCurrency(apiService, "CHF", "Swiss Franc", "de-CH")
 	require.NoError(t, err)

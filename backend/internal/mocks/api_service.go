@@ -431,6 +431,20 @@ func (mr *MockIAPIServiceMockRecorder) DeleteForecastExclusion(payload, userID a
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "DeleteForecastExclusion", reflect.TypeOf((*MockIAPIService)(nil).DeleteForecastExclusion), payload, userID)
 }
 
+// DeleteOrganisationChatbots mocks base method.
+func (m *MockIAPIService) DeleteOrganisationChatbots(userID, organisationID int64) error {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "DeleteOrganisationChatbots", userID, organisationID)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// DeleteOrganisationChatbots indicates an expected call of DeleteOrganisationChatbots.
+func (mr *MockIAPIServiceMockRecorder) DeleteOrganisationChatbots(userID, organisationID any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "DeleteOrganisationChatbots", reflect.TypeOf((*MockIAPIService)(nil).DeleteOrganisationChatbots), userID, organisationID)
+}
+
 // DeleteOrganisationInvitation mocks base method.
 func (m *MockIAPIService) DeleteOrganisationInvitation(userID, organisationID, invitationID int64) error {
 	m.ctrl.T.Helper()
@@ -681,6 +695,21 @@ func (mr *MockIAPIServiceMockRecorder) GetOrganisation(userID, organisationID an
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetOrganisation", reflect.TypeOf((*MockIAPIService)(nil).GetOrganisation), userID, organisationID)
 }
 
+// GetOrganisationChatbot mocks base method.
+func (m *MockIAPIService) GetOrganisationChatbot(userID int64) (string, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "GetOrganisationChatbot", userID)
+	ret0, _ := ret[0].(string)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// GetOrganisationChatbot indicates an expected call of GetOrganisationChatbot.
+func (mr *MockIAPIServiceMockRecorder) GetOrganisationChatbot(userID any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetOrganisationChatbot", reflect.TypeOf((*MockIAPIService)(nil).GetOrganisationChatbot), userID)
+}
+
 // GetProfile mocks base method.
 func (m *MockIAPIService) GetProfile(userID int64) (*models.User, error) {
 	m.ctrl.T.Helper()
@@ -814,6 +843,21 @@ func (m *MockIAPIService) GetVatSetting(userID int64) (*models.VatSetting, error
 func (mr *MockIAPIServiceMockRecorder) GetVatSetting(userID any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetVatSetting", reflect.TypeOf((*MockIAPIService)(nil).GetVatSetting), userID)
+}
+
+// HasOrganisationChatbots mocks base method.
+func (m *MockIAPIService) HasOrganisationChatbots(userID int64) (bool, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "HasOrganisationChatbots", userID)
+	ret0, _ := ret[0].(bool)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// HasOrganisationChatbots indicates an expected call of HasOrganisationChatbots.
+func (mr *MockIAPIServiceMockRecorder) HasOrganisationChatbots(userID any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "HasOrganisationChatbots", reflect.TypeOf((*MockIAPIService)(nil).HasOrganisationChatbots), userID)
 }
 
 // ListBankAccounts mocks base method.
@@ -1093,6 +1137,20 @@ func (m *MockIAPIService) Logout(existingRefreshToken string) {
 func (mr *MockIAPIServiceMockRecorder) Logout(existingRefreshToken any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Logout", reflect.TypeOf((*MockIAPIService)(nil).Logout), existingRefreshToken)
+}
+
+// ProvisionOrganisationChatbots mocks base method.
+func (m *MockIAPIService) ProvisionOrganisationChatbots(userID, organisationID int64) error {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "ProvisionOrganisationChatbots", userID, organisationID)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// ProvisionOrganisationChatbots indicates an expected call of ProvisionOrganisationChatbots.
+func (mr *MockIAPIServiceMockRecorder) ProvisionOrganisationChatbots(userID, organisationID any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ProvisionOrganisationChatbots", reflect.TypeOf((*MockIAPIService)(nil).ProvisionOrganisationChatbots), userID, organisationID)
 }
 
 // RemoveOrganisationMember mocks base method.

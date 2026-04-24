@@ -2,6 +2,7 @@ package api
 
 import (
 	"github.com/gin-gonic/gin"
+	"liquiswiss/internal/adapter/aigent_adapter"
 	"liquiswiss/internal/adapter/db_adapter"
 	"liquiswiss/internal/adapter/sendgrid_adapter"
 	"liquiswiss/internal/api/handlers"
@@ -14,12 +15,14 @@ type API struct {
 	DBService       db_adapter.IDatabaseAdapter
 	APIService      api_service.IAPIService
 	SendgridService sendgrid_adapter.ISendgridAdapter
+	AigentService   aigent_adapter.IAigentAdapter
 }
 
 func NewAPI(
 	dbService db_adapter.IDatabaseAdapter,
 	apiService api_service.IAPIService,
 	sendgridService sendgrid_adapter.ISendgridAdapter,
+	aigentService aigent_adapter.IAigentAdapter,
 ) *API {
 	gin.DebugPrintRouteFunc = func(httpMethod, absolutePath, handlerName string, nuHandlers int) {
 		// Suppress listing all available routes for less log spamming
@@ -29,6 +32,7 @@ func NewAPI(
 		DBService:       dbService,
 		APIService:      apiService,
 		SendgridService: sendgridService,
+		AigentService:   aigentService,
 	}
 	api.setupRouter()
 	return api
@@ -40,6 +44,11 @@ func (api *API) setupRouter() {
 		// Health check endpoint for monitoring and CI
 		group.GET("/health", func(ctx *gin.Context) {
 			ctx.JSON(200, gin.H{"status": "ok"})
+		})
+
+		// MCP endpoint (uses its own JWT auth, not AuthMiddleware)
+		group.POST("/mcp", func(ctx *gin.Context) {
+			handlers.HandleMCP(api.DBService, ctx)
 		})
 
 		public := group.Group("/auth")
@@ -115,6 +124,16 @@ func (api *API) setupRouter() {
 			})
 			protected.PATCH("/organisations/:organisationID", func(ctx *gin.Context) {
 				handlers.UpdateOrganisation(api.APIService, ctx)
+			})
+			// Organisation Chatbots
+			protected.GET("/organisations/chatbots/status", func(ctx *gin.Context) {
+				handlers.GetOrganisationChatbotStatus(api.APIService, ctx)
+			})
+			protected.POST("/organisations/:organisationID/chatbots/provision", func(ctx *gin.Context) {
+				handlers.ProvisionOrganisationChatbots(api.APIService, ctx)
+			})
+			protected.DELETE("/organisations/:organisationID/chatbots", func(ctx *gin.Context) {
+				handlers.DeleteOrganisationChatbots(api.APIService, ctx)
 			})
 			// TODO: Find a way to delete organisations by offering reassigning or transferring data
 
@@ -355,6 +374,11 @@ func (api *API) setupRouter() {
 			})
 			protected.GET("/fiat-rates/:base/:target", func(ctx *gin.Context) {
 				handlers.GetFiatRate(api.APIService, ctx)
+			})
+
+			// Chat
+			protected.POST("/chat", func(ctx *gin.Context) {
+				handlers.SendChatMessage(api.APIService, api.AigentService, ctx)
 			})
 		}
 	}

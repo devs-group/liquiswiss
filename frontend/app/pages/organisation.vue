@@ -108,6 +108,80 @@
         </form>
       </Panel>
 
+      <!-- AI Chatbot Section -->
+      <Panel
+        v-if="canInvite && chatbotStatusLoaded"
+        :pt="{ root: { class: 'shadow-md' } }"
+      >
+        <template #header>
+          <div class="flex items-center gap-2">
+            <i class="pi pi-bolt text-lg text-liqui-green" />
+            <span class="font-bold">KI-Assistent</span>
+          </div>
+        </template>
+        <div class="flex flex-col gap-3">
+          <p v-if="!chatbotsActive">
+            Aktivieren Sie den KI-Assistenten, um auf jeder Seite kontextbezogene Hilfe zu erhalten.
+          </p>
+          <p v-else>
+            Der KI-Assistent ist aktiv und steht auf allen Seiten zur Verfügung.
+          </p>
+          <div class="flex items-center gap-3">
+            <Button
+              v-if="!chatbotsActive"
+              label="Jetzt KI aktivieren"
+              icon="pi pi-bolt"
+              :loading="isProvisioningChatbots"
+              @click="onProvisionChatbots"
+            />
+            <Button
+              v-if="chatbotsActive"
+              label="KI Deaktivieren"
+              icon="pi pi-trash"
+              severity="danger"
+              :loading="isDeprovisioningChatbots"
+              @click="onDeprovisionChatbots"
+            />
+            <Message
+              v-if="chatbotProvisionSuccess"
+              severity="success"
+              :life="Config.MESSAGE_LIFE_TIME"
+              :sticky="false"
+              :closable="false"
+            >
+              KI-Assistent wurde aktiviert
+            </Message>
+            <Message
+              v-if="chatbotDeprovisionSuccess"
+              severity="success"
+              :life="Config.MESSAGE_LIFE_TIME"
+              :sticky="false"
+              :closable="false"
+            >
+              KI-Assistent wurde deaktiviert
+            </Message>
+            <Message
+              v-if="chatbotProvisionError"
+              severity="error"
+              :life="Config.MESSAGE_LIFE_TIME"
+              :sticky="false"
+              :closable="false"
+            >
+              Aktivierung fehlgeschlagen
+            </Message>
+            <Message
+              v-if="chatbotDeprovisionError"
+              severity="error"
+              :life="Config.MESSAGE_LIFE_TIME"
+              :sticky="false"
+              :closable="false"
+            >
+              Deaktivierung fehlgeschlagen
+            </Message>
+          </div>
+        </div>
+      </Panel>
+
       <!-- Members Section -->
       <Panel
         :pt="{ root: { class: 'shadow-md' } }"
@@ -207,6 +281,7 @@ import InviteMemberDialog from '~/components/dialogs/InviteMemberDialog.vue'
 import { Config } from '~/config/config'
 
 const { user, getOrganisationCurrencyID } = useAuth()
+const { chatbotActive } = useChat()
 const { updateOrganisation } = useOrganisations()
 const { currencies, getCurrencyLabel, showGlobalLoadingSpinner } = useGlobalData()
 const { calculateForecast } = useForecasts()
@@ -222,6 +297,15 @@ const organisationError = ref('')
 const organisationSubmitMessage = ref('')
 const organisationSubmitErrorMessage = ref('')
 const isSubmitting = ref(false)
+
+const chatbotsActive = ref(false)
+const chatbotStatusLoaded = ref(false)
+const isProvisioningChatbots = ref(false)
+const isDeprovisioningChatbots = ref(false)
+const chatbotProvisionSuccess = ref(false)
+const chatbotProvisionError = ref(false)
+const chatbotDeprovisionSuccess = ref(false)
+const chatbotDeprovisionError = ref(false)
 
 const organisationId = computed(() => user.value?.currentOrganisationID)
 
@@ -260,6 +344,14 @@ const { data: invitationsData, refresh: refreshInvitationsData } = await useFetc
 if (membersError.value) {
   organisationError.value = 'Fehler beim Laden der Mitglieder'
 }
+
+// Check chatbot status
+const { data: chatbotStatus } = await useFetch<{ active: boolean }>(
+  '/api/organisations/chatbots/status',
+  { method: 'GET' },
+)
+chatbotsActive.value = chatbotStatus.value?.active ?? false
+chatbotStatusLoaded.value = true
 
 // Sync data to composable state
 watchEffect(() => {
@@ -332,6 +424,50 @@ const onSubmit = handleSubmit((values) => {
       isSubmitting.value = false
     })
 })
+
+// Chatbot provisioning
+const onProvisionChatbots = async () => {
+  if (!organisation.value) return
+  isProvisioningChatbots.value = true
+  chatbotProvisionSuccess.value = false
+  chatbotProvisionError.value = false
+  try {
+    await $fetch(`/api/organisations/${organisation.value.id}/chatbots/provision`, {
+      method: 'POST',
+    })
+    chatbotsActive.value = true
+    chatbotActive.value = true
+    chatbotProvisionSuccess.value = true
+  }
+  catch {
+    chatbotProvisionError.value = true
+  }
+  finally {
+    isProvisioningChatbots.value = false
+  }
+}
+
+// Chatbot deprovisioning
+const onDeprovisionChatbots = async () => {
+  if (!organisation.value) return
+  isDeprovisioningChatbots.value = true
+  chatbotDeprovisionSuccess.value = false
+  chatbotDeprovisionError.value = false
+  try {
+    await $fetch(`/api/organisations/${organisation.value.id}/chatbots`, {
+      method: 'DELETE',
+    })
+    chatbotsActive.value = false
+    chatbotActive.value = false
+    chatbotDeprovisionSuccess.value = true
+  }
+  catch {
+    chatbotDeprovisionError.value = true
+  }
+  finally {
+    isDeprovisioningChatbots.value = false
+  }
+}
 
 // Member/Invitation handlers
 const onOpenInviteDialog = () => {

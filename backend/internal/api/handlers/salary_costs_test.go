@@ -18,7 +18,7 @@ func TestMonthlySalaryAtTheEndOfMonthWithoutToDate(t *testing.T) {
 
 	dbAdapter := db_adapter.NewDatabaseAdapter(conn)
 	sendgridService := sendgrid_adapter.NewSendgridAdapter("")
-	apiService := api_service.NewAPIService(dbAdapter, sendgridService)
+	apiService := api_service.NewAPIService(dbAdapter, sendgridService, nil)
 
 	// Preparations
 	currency, err := CreateCurrency(apiService, "CHF", "Swiss Franc", "de-CH")
@@ -601,7 +601,7 @@ func TestPercentageSalaryCostBasedOnOtherCost(t *testing.T) {
 
 	dbAdapter := db_adapter.NewDatabaseAdapter(conn)
 	sendgridService := sendgrid_adapter.NewSendgridAdapter("")
-	apiService := api_service.NewAPIService(dbAdapter, sendgridService)
+	apiService := api_service.NewAPIService(dbAdapter, sendgridService, nil)
 
 	currency, err := CreateCurrency(apiService, "CHF", "Swiss Franc", "de-CH")
 	assert.NoError(t, err)
@@ -690,7 +690,7 @@ func TestPercentageSalaryCostBasedOnBothDistribution(t *testing.T) {
 
 	dbAdapter := db_adapter.NewDatabaseAdapter(conn)
 	sendgridService := sendgrid_adapter.NewSendgridAdapter("")
-	apiService := api_service.NewAPIService(dbAdapter, sendgridService)
+	apiService := api_service.NewAPIService(dbAdapter, sendgridService, nil)
 
 	currency, err := CreateCurrency(apiService, "CHF", "Swiss Franc", "de-CH")
 	assert.NoError(t, err)
@@ -753,7 +753,7 @@ func TestSalaryCostBaseRequiresPercentageAmountType(t *testing.T) {
 
 	dbAdapter := db_adapter.NewDatabaseAdapter(conn)
 	sendgridService := sendgrid_adapter.NewSendgridAdapter("")
-	apiService := api_service.NewAPIService(dbAdapter, sendgridService)
+	apiService := api_service.NewAPIService(dbAdapter, sendgridService, nil)
 
 	currency, err := CreateCurrency(apiService, "CHF", "Swiss Franc", "de-CH")
 	assert.NoError(t, err)
@@ -811,7 +811,7 @@ func TestMonthlySalaryAtTheEndOfMonthWithToDate(t *testing.T) {
 
 	dbAdapter := db_adapter.NewDatabaseAdapter(conn)
 	sendgridService := sendgrid_adapter.NewSendgridAdapter("")
-	apiService := api_service.NewAPIService(dbAdapter, sendgridService)
+	apiService := api_service.NewAPIService(dbAdapter, sendgridService, nil)
 
 	// Preparations
 	currency, err := CreateCurrency(apiService, "CHF", "Swiss Franc", "de-CH")
@@ -1162,7 +1162,7 @@ func TestMultipleSalaryAtTheEndOfMonthCases(t *testing.T) {
 
 	dbAdapter := db_adapter.NewDatabaseAdapter(conn)
 	sendgridService := sendgrid_adapter.NewSendgridAdapter("")
-	apiService := api_service.NewAPIService(dbAdapter, sendgridService)
+	apiService := api_service.NewAPIService(dbAdapter, sendgridService, nil)
 
 	// Preparations
 	currency, err := CreateCurrency(apiService, "CHF", "Swiss Franc", "de-CH")
@@ -1354,7 +1354,7 @@ func TestLongOffsetScenariosAtTheEndOfMonth(t *testing.T) {
 
 	dbAdapter := db_adapter.NewDatabaseAdapter(conn)
 	sendgridService := sendgrid_adapter.NewSendgridAdapter("")
-	apiService := api_service.NewAPIService(dbAdapter, sendgridService)
+	apiService := api_service.NewAPIService(dbAdapter, sendgridService, nil)
 
 	// Preparations
 	currency, err := CreateCurrency(apiService, "CHF", "Swiss Franc", "de-CH")
@@ -1498,7 +1498,7 @@ func TestSalaryCostWithPastPaymentsRelativeOffset(t *testing.T) {
 
 	dbAdapter := db_adapter.NewDatabaseAdapter(conn)
 	sendgridService := sendgrid_adapter.NewSendgridAdapter("")
-	apiService := api_service.NewAPIService(dbAdapter, sendgridService)
+	apiService := api_service.NewAPIService(dbAdapter, sendgridService, nil)
 
 	currency, err := CreateCurrency(apiService, "CHF", "Swiss Franc", "de-CH")
 	assert.NoError(t, err)
@@ -1587,7 +1587,7 @@ func TestSalaryCostWithPastPaymentsAndTargetDate(t *testing.T) {
 
 	dbAdapter := db_adapter.NewDatabaseAdapter(conn)
 	sendgridService := sendgrid_adapter.NewSendgridAdapter("")
-	apiService := api_service.NewAPIService(dbAdapter, sendgridService)
+	apiService := api_service.NewAPIService(dbAdapter, sendgridService, nil)
 
 	currency, err := CreateCurrency(apiService, "CHF", "Swiss Franc", "de-CH")
 	assert.NoError(t, err)
@@ -1667,7 +1667,7 @@ func TestSalaryCostTargetDateLeapYearMonthly(t *testing.T) {
 
 	dbAdapter := db_adapter.NewDatabaseAdapter(conn)
 	sendgridService := sendgrid_adapter.NewSendgridAdapter("")
-	apiService := api_service.NewAPIService(dbAdapter, sendgridService)
+	apiService := api_service.NewAPIService(dbAdapter, sendgridService, nil)
 
 	currency, err := CreateCurrency(apiService, "CHF", "Swiss Franc", "de-CH")
 	assert.NoError(t, err)
@@ -1756,7 +1756,7 @@ func TestSalaryCostTargetDateLeapYearAnnualOffset(t *testing.T) {
 
 	dbAdapter := db_adapter.NewDatabaseAdapter(conn)
 	sendgridService := sendgrid_adapter.NewSendgridAdapter("")
-	apiService := api_service.NewAPIService(dbAdapter, sendgridService)
+	apiService := api_service.NewAPIService(dbAdapter, sendgridService, nil)
 
 	currency, err := CreateCurrency(apiService, "CHF", "Swiss Franc", "de-CH")
 	assert.NoError(t, err)
@@ -1839,7 +1839,7 @@ func TestSalaryCostPersistsAfterSalaryTransition(t *testing.T) {
 
 	dbAdapter := db_adapter.NewDatabaseAdapter(conn)
 	sendgridService := sendgrid_adapter.NewSendgridAdapter("")
-	apiService := api_service.NewAPIService(dbAdapter, sendgridService)
+	apiService := api_service.NewAPIService(dbAdapter, sendgridService, nil)
 
 	currency, err := CreateCurrency(apiService, "CHF", "Swiss Franc", "de-CH")
 	assert.NoError(t, err)
@@ -1951,7 +1951,7 @@ func TestCopySalaryCostsAcrossEmployees(t *testing.T) {
 
 	dbAdapter := db_adapter.NewDatabaseAdapter(conn)
 	sendgridService := sendgrid_adapter.NewSendgridAdapter("")
-	apiService := api_service.NewAPIService(dbAdapter, sendgridService)
+	apiService := api_service.NewAPIService(dbAdapter, sendgridService, nil)
 
 	currency, err := CreateCurrency(apiService, "CHF", "Swiss Franc", "de-CH")
 	assert.NoError(t, err)
@@ -2034,7 +2034,7 @@ func TestMonthlySalaryInBetweenMonthWithoutToDate(t *testing.T) {
 
 	dbAdapter := db_adapter.NewDatabaseAdapter(conn)
 	sendgridService := sendgrid_adapter.NewSendgridAdapter("")
-	apiService := api_service.NewAPIService(dbAdapter, sendgridService)
+	apiService := api_service.NewAPIService(dbAdapter, sendgridService, nil)
 
 	// Preparations
 	currency, err := CreateCurrency(apiService, "CHF", "Swiss Franc", "de-CH")
@@ -2617,7 +2617,7 @@ func TestMonthlySalaryInBetweenMonthWithToDate(t *testing.T) {
 
 	dbAdapter := db_adapter.NewDatabaseAdapter(conn)
 	sendgridService := sendgrid_adapter.NewSendgridAdapter("")
-	apiService := api_service.NewAPIService(dbAdapter, sendgridService)
+	apiService := api_service.NewAPIService(dbAdapter, sendgridService, nil)
 
 	// Preparations
 	currency, err := CreateCurrency(apiService, "CHF", "Swiss Franc", "de-CH")
@@ -2968,7 +2968,7 @@ func TestMultipleSalaryInBetweenMonthCases(t *testing.T) {
 
 	dbAdapter := db_adapter.NewDatabaseAdapter(conn)
 	sendgridService := sendgrid_adapter.NewSendgridAdapter("")
-	apiService := api_service.NewAPIService(dbAdapter, sendgridService)
+	apiService := api_service.NewAPIService(dbAdapter, sendgridService, nil)
 
 	// Preparations
 	currency, err := CreateCurrency(apiService, "CHF", "Swiss Franc", "de-CH")
@@ -3160,7 +3160,7 @@ func TestLongOffsetScenariosInBetweenMonth(t *testing.T) {
 
 	dbAdapter := db_adapter.NewDatabaseAdapter(conn)
 	sendgridService := sendgrid_adapter.NewSendgridAdapter("")
-	apiService := api_service.NewAPIService(dbAdapter, sendgridService)
+	apiService := api_service.NewAPIService(dbAdapter, sendgridService, nil)
 
 	// Preparations
 	currency, err := CreateCurrency(apiService, "CHF", "Swiss Franc", "de-CH")

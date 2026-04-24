@@ -108,6 +108,44 @@ func GenerateDeleteCookie(name string) http.Cookie {
 	}
 }
 
+// MCP JWT — org-scoped, no expiry (lifecycle-tied to chatbot)
+
+type MCPClaims struct {
+	OrganisationID int64  `json:"organisationId"`
+	ChatbotID      string `json:"chatbotId"`
+	jwt.RegisteredClaims
+}
+
+func GenerateMCPToken(organisationID int64, chatbotID string) (string, error) {
+	claims := &MCPClaims{
+		OrganisationID: organisationID,
+		ChatbotID:      chatbotID,
+		RegisteredClaims: jwt.RegisteredClaims{
+			IssuedAt: jwt.NewNumericDate(time.Now()),
+		},
+	}
+
+	cfg := config.GetConfig()
+	token := jwt.NewWithClaims(jwt.SigningMethodHS256, claims)
+	return token.SignedString(cfg.JWTKey)
+}
+
+func VerifyMCPToken(tokenString string) (*MCPClaims, error) {
+	claims := &MCPClaims{}
+
+	cfg := config.GetConfig()
+	token, err := jwt.ParseWithClaims(tokenString, claims, func(token *jwt.Token) (any, error) {
+		return cfg.JWTKey, nil
+	})
+	if err != nil {
+		return nil, err
+	}
+	if !token.Valid {
+		return nil, fmt.Errorf("invalid token")
+	}
+	return claims, nil
+}
+
 func ClearAuthCookies(c *gin.Context) {
 	accessCookie := GenerateDeleteCookie(utils.AccessTokenName)
 	refreshCookie := GenerateDeleteCookie(utils.RefreshTokenName)

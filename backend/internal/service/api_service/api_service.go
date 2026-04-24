@@ -2,6 +2,7 @@
 package api_service
 
 import (
+	"liquiswiss/internal/adapter/aigent_adapter"
 	"liquiswiss/internal/adapter/db_adapter"
 	"liquiswiss/internal/adapter/sendgrid_adapter"
 	"liquiswiss/pkg/models"
@@ -124,16 +125,23 @@ type IAPIService interface {
 	ListOrganisationMembers(userID int64, organisationID int64) ([]models.OrganisationMember, error)
 	UpdateOrganisationMember(payload models.UpdateMember, userID int64, organisationID int64, memberUserID int64) error
 	RemoveOrganisationMember(userID int64, organisationID int64, memberUserID int64) error
+
+	GetOrganisationChatbot(userID int64) (string, error)
+	HasOrganisationChatbots(userID int64) (bool, error)
+	ProvisionOrganisationChatbots(userID int64, organisationID int64) error
+	DeleteOrganisationChatbots(userID int64, organisationID int64) error
 }
 
 type APIService struct {
 	dbService       db_adapter.IDatabaseAdapter
 	sendgridAdapter sendgrid_adapter.ISendgridAdapter
+	aigentAdapter   aigent_adapter.IAigentAdapter
 }
 
-func NewAPIService(dbService db_adapter.IDatabaseAdapter, sendgridAdapter sendgrid_adapter.ISendgridAdapter) IAPIService {
+func NewAPIService(dbService db_adapter.IDatabaseAdapter, sendgridAdapter sendgrid_adapter.ISendgridAdapter, aigentAdapter aigent_adapter.IAigentAdapter) IAPIService {
 	return &APIService{
 		dbService:       dbService,
 		sendgridAdapter: sendgridAdapter,
+		aigentAdapter:   aigentAdapter,
 	}
 }

@@ -19,7 +19,7 @@ func TestCreateAndUpdateEmployee(t *testing.T) {
 
 	dbAdapter := db_adapter.NewDatabaseAdapter(conn)
 	sendgridService := sendgrid_adapter.NewSendgridAdapter("")
-	apiService := api_service.NewAPIService(dbAdapter, sendgridService)
+	apiService := api_service.NewAPIService(dbAdapter, sendgridService, nil)
 
 	// Preparations
 	_, err := CreateCurrency(apiService, "CHF", "Swiss Franc", "de-CH")
@@ -128,7 +128,7 @@ func setupEmployeeDependencies(t *testing.T) (*sql.DB, api_service.IAPIService, 
 
 	dbAdapter := db_adapter.NewDatabaseAdapter(conn)
 	sendgridService := sendgrid_adapter.NewSendgridAdapter("")
-	apiService := api_service.NewAPIService(dbAdapter, sendgridService)
+	apiService := api_service.NewAPIService(dbAdapter, sendgridService, nil)
 
 	_, err := CreateCurrency(apiService, "CHF", "Swiss Franc", "de-CH")
 	require.NoError(t, err)
@@ -148,7 +148,7 @@ func setupEmployeeDependenciesWithCurrency(t *testing.T) (*sql.DB, api_service.I
 
 	dbAdapter := db_adapter.NewDatabaseAdapter(conn)
 	sendgridService := sendgrid_adapter.NewSendgridAdapter("")
-	apiService := api_service.NewAPIService(dbAdapter, sendgridService)
+	apiService := api_service.NewAPIService(dbAdapter, sendgridService, nil)
 
 	currency, err := CreateCurrency(apiService, "CHF", "Swiss Franc", "de-CH")
 	require.NoError(t, err)

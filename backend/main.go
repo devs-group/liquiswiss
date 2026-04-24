@@ -11,6 +11,7 @@ import (
 	"github.com/robfig/cron/v3"
 	"liquiswiss/config"
 	"liquiswiss/internal/adapter/db_adapter"
+	"liquiswiss/internal/adapter/aigent_adapter"
 	"liquiswiss/internal/adapter/sendgrid_adapter"
 	"liquiswiss/internal/api"
 	"liquiswiss/internal/db"
@@ -87,10 +88,12 @@ func runApp() {
 	sendgridService := sendgrid_adapter.NewSendgridAdapter(cfg.SendgridToken)
 	dbService := db_adapter.NewDatabaseAdapter(conn)
 
-	apiService := api_service.NewAPIService(dbService, sendgridService)
+	aigentService := aigent_adapter.NewAigentAdapter(cfg)
+
+	apiService := api_service.NewAPIService(dbService, sendgridService, aigentService)
 	fixerIOService := fixer_io_service.NewFixerIOService(&apiService)
 	middleware.InjectUserService(dbService)
-	apiHandler := api.NewAPI(dbService, apiService, sendgridService)
+	apiHandler := api.NewAPI(dbService, apiService, sendgridService, aigentService)
 
 	// Cronjob
 	c := cron.New()
