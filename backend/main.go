@@ -65,6 +65,9 @@ func runApp() {
 	// Dynamic migrations (functions, views) always run as they're idempotent
 	if *noMigrate {
 		logger.Logger.Info("Skipping static migrations (--no-migrate flag set)")
+		if err := warnPendingStaticMigrations(); err != nil {
+			logger.Logger.Warnf("Could not check pending static migrations: %v", err)
+		}
 	} else {
 		err = runStaticMigrations()
 		if err != nil {
@@ -142,6 +145,51 @@ func runStaticMigrations() error {
 	if err != nil {
 		return errors.Wrapf(err, "failed to close temporary Goose DB connection")
 	}
+	return nil
+}
+
+func warnPendingStaticMigrations() error {
+	goose.SetBaseFS(staticMigrations)
+
+	if err := goose.SetDialect(string(goose.DialectMySQL)); err != nil {
+		return errors.Wrapf(err, `failed to set goose dialect to "%s"`, goose.DialectMySQL)
+	}
+
+	gooseConn, err := db.Connect()
+	if err != nil {
+		return errors.Wrap(err, "failed to connect to database as SQL for Goose")
+	}
+	defer gooseConn.Close()
+
+	goose.SetLogger(goose.NopLogger())
+	migrations, err := goose.CollectMigrations("internal/db/migrations/static", 0, goose.MaxVersion)
+	goose.SetLogger(logger.StdLogger{})
+	if err != nil {
+		return errors.Wrap(err, "failed to collect static migrations")
+	}
+
+	currentVersion, err := goose.GetDBVersion(gooseConn)
+	if err != nil {
+		return errors.Wrap(err, "failed to get current DB migration version")
+	}
+
+	pending := make([]string, 0)
+	for _, m := range migrations {
+		if m.Version > currentVersion {
+			pending = append(pending, m.Source)
+		}
+	}
+
+	if len(pending) > 0 {
+		logger.Logger.Warnf(
+			"⚠️  %d pending static migration(s) detected (DB version: %d). Apply with `make goose-static-up` from backend/ before running without --no-migrate:",
+			len(pending), currentVersion,
+		)
+		for _, src := range pending {
+			logger.Logger.Warnf("  - %s", src)
+		}
+	}
+
 	return nil
 }
 
