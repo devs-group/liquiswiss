@@ -1,7 +1,7 @@
 <template>
   <Card>
     <template #title>
-      <div class="flex items-center justify-between">
+      <div class="flex items-center justify-between min-h-[42px] gap-2">
         <p class="truncate text-base">
           {{ member.name || member.email }}
         </p>
