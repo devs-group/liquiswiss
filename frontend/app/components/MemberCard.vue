@@ -32,12 +32,12 @@
     <template #content>
       <div class="flex flex-col gap-2 text-sm">
         <p><strong>E-Mail:</strong> {{ member.email }}</p>
-        <p><strong>Rolle:</strong> {{ getRoleLabel(member.role) }}</p>
-        <Tag
-          v-if="member.role === 'owner'"
-          severity="warn"
-          value="Eigentümer"
-        />
+        <div>
+          <Tag
+            :severity="getRoleSeverity(member.role)"
+            :value="getRoleLabel(member.role)"
+          />
+        </div>
       </div>
     </template>
   </Card>
@@ -70,5 +70,15 @@ const getRoleLabel = (role: string) => {
     'read-only': 'Nur Lesen',
   }
   return labels[role] ?? role
+}
+
+const getRoleSeverity = (role: string) => {
+  const severities: Record<string, string> = {
+    'owner': 'warn',
+    'admin': 'info',
+    'editor': 'success',
+    'read-only': 'secondary',
+  }
+  return severities[role] ?? 'secondary'
 }
 </script>
