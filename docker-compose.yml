@@ -1,47 +1,85 @@
 services:
-#  nuxt:
-#    build:
-#      dockerfile: .deploy/nuxt/Dockerfile
-#      context: .
-#      target: dev
-#    restart: always
-#    ports:
-#      - '3000:3000'
-#    environment:
-#      # This is great for testing with different timezones. Leave empty for UTC
-#      - TZ=Europe/Berlin
-#    volumes:
-#      - ./frontend:/app
-#      - /app/node_modules
-#
-#  backend:
-#    image: golang:1.25.3-alpine
-#    restart: always
-#    depends_on:
-#      - database
-#    ports:
-#      - '8080:8080'
-#    working_dir: /app
-#    environment:
-#      # This is great for testing with different timezones. Leave empty for UTC
-#      - TZ=Europe/Berlin
-#    volumes:
-#      - ./backend:/app
+  nuxt:
+    build:
+      dockerfile: _deployment/nuxt/Dockerfile
+      context: .
+      target: dev
+    restart: always
+    ports:
+      - '3007:3007'
+    depends_on:
+      - backend
+    environment:
+      TZ: ${TZ:-Europe/Berlin}
+      NUXT_API_HOST: ${NUXT_API_HOST:-http://backend:8080}
+    volumes:
+      - ./frontend:/app
+      - nuxt_node_modules:/app/node_modules
+
+  backend:
+    build:
+      dockerfile: _deployment/backend/Dockerfile
+      context: .
+      target: dev
+    restart: always
+    depends_on:
+      database:
+        condition: service_healthy
+    ports:
+      - '8087:8080'
+    working_dir: /app
+    environment:
+      TZ: ${TZ:-Europe/Berlin}
+      GIN_MODE: ${GIN_MODE:-debug}
+      WEB_HOST: ${WEB_HOST:-http://localhost:3007}
+      BACKEND_PUBLIC_URL: ${BACKEND_PUBLIC_URL:-http://localhost:8087}
+      DB_USER: ${APP_DB_USER}
+      DB_PASSWORD: ${APP_DB_PASSWORD}
+      DB_HOST: ${APP_DB_HOST:-database}
+      DB_PORT: ${APP_DB_PORT:-3306}
+      DB_NAME: ${APP_DB_NAME:-liquiswiss}
+      SEND_GRID_TOKEN: ${SEND_GRID_TOKEN}
+      SEND_GRID_TEMPLATE_ID: ${SEND_GRID_TEMPLATE_ID}
+      FIXER_IO_URL: ${FIXER_IO_URL:-https://data.fixer.io/api/latest}
+      FIXER_IO_KEY: ${FIXER_IO_KEY}
+      JWT_KEY: ${JWT_KEY}
+      FAKE_DATE_TIME: ${FAKE_DATE_TIME:-}
+      AIGENT_API_URL: ${AIGENT_API_URL}
+      AIGENT_CLIENT_ID: ${AIGENT_CLIENT_ID}
+      AIGENT_CLIENT_SECRET: ${AIGENT_CLIENT_SECRET}
+      AIGENT_CHAT_ID_FORECAST: ${AIGENT_CHAT_ID_FORECAST}
+      AIGENT_CHAT_ID_EMPLOYEES: ${AIGENT_CHAT_ID_EMPLOYEES}
+      AIGENT_CHAT_ID_TRANSACTIONS: ${AIGENT_CHAT_ID_TRANSACTIONS}
+      AIGENT_CHAT_ID_BANK_ACCOUNTS: ${AIGENT_CHAT_ID_BANK_ACCOUNTS}
+      AIGENT_CHAT_ID_SETTINGS: ${AIGENT_CHAT_ID_SETTINGS}
+    volumes:
+      - ./backend:/app
+      - backend_go_cache:/go/pkg/mod
+      - backend_build_cache:/root/.cache/go-build
 
   database:
     image: mariadb:10.6.16
     restart: always
     ports:
-      - '3306:3306'
-    env_file: .env
+      - '3317:3306'
+    environment:
+      MARIADB_USER: ${APP_DB_USER}
+      MARIADB_PASSWORD: ${APP_DB_PASSWORD}
+      MARIADB_DATABASE: ${APP_DB_NAME:-liquiswiss}
+      MARIADB_ROOT_PASSWORD: ${APP_DB_ROOT_PASSWORD}
     volumes:
       - ./db_data:/var/lib/mysql
+    healthcheck:
+      test: ["CMD", "healthcheck.sh", "--su-mysql", "--connect", "--innodb_initialized"]
+      interval: 5s
+      timeout: 5s
+      retries: 30
 
   database-testing:
     image: mariadb:10.6.16
     restart: always
     ports:
-      - '3307:3306'
+      - '3318:3306'
     environment:
       MARIADB_USER: "test"
       MARIADB_PASSWORD: "test"
@@ -52,5 +90,16 @@ services:
     image: phpmyadmin:5.2.1-apache
     restart: always
     ports:
-      - '8082:80'
-    env_file: .env
+      - '8097:80'
+    environment:
+      PMA_ARBITRARY: ${PMA_ARBITRARY:-1}
+      PMA_HOST: ${PMA_HOST:-database}
+      PMA_PORT: ${PMA_PORT:-3306}
+      PMA_PMADB: ${PMA_PMADB:-phpmyadmin}
+      PMA_USER: ${PMA_USER:-}
+      PMA_PASSWORD: ${PMA_PASSWORD:-}
+
+volumes:
+  nuxt_node_modules:
+  backend_go_cache:
+  backend_build_cache:

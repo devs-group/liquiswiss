@@ -1,0 +1,19 @@
+[Unit]
+Description=adnanh/webhook (custom) - local deployment trigger
+Documentation=https://github.com/adnanh/webhook/
+After=network.target docker.service
+Wants=docker.service
+
+[Service]
+User=<deploy-user>
+Group=<deploy-group>
+WorkingDirectory=<deploy-dir>
+ExecStart=/usr/bin/webhook -verbose -hooks <deploy-dir>/hooks.json -hotreload -ip 0.0.0.0 -port <webhook-port>
+Restart=always
+RestartSec=2
+
+StandardOutput=append:<deploy-dir>/webhook_output.log
+StandardError=append:<deploy-dir>/webhook_output.log
+
+[Install]
+WantedBy=multi-user.target

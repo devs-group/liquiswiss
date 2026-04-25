@@ -79,6 +79,13 @@ source ~/.nvm/nvm.sh && nvm use && npm run dev
 
 **Note**: During hot-reloading, refreshing, or in-between states, you may see transient errors in the logs until the code changes are complete or fixed.
 
+### Docker Compose Setup
+
+- **Root `docker-compose.yml`**: local dev (nuxt, backend, database, database-testing, phpmyadmin). Backend uses `target: dev` with `air` hot-reload. Nuxt runs `npm run dev`.
+- **`_deployment/docker-compose.yml`**: mirrors prod (nuxt, backend, landing/wordpress, database-app, database-wordpress, phpmyadmin) with Traefik labels and resource limits. Use for prod-parity local testing: `docker compose -f _deployment/docker-compose.yml --env-file .env up`.
+- **Single `.env` at root**: flat namespace (`APP_DB_*`, `WP_DB_*`, etc.) mirrors future Bitwarden Secrets Manager injection. Both compose files load from it. Once BWSM wired: `bws run -- docker compose up` replaces `.env`.
+- **Named volumes** (`nuxt_node_modules`, `backend_go_cache`, `backend_build_cache`): cache for fast rebuilds. `nuxt_node_modules` is critical on macOS/Docker Desktop — bind-mounting node_modules across VM boundary is slow. Tradeoff: host IDE won't see container's node_modules; if running nuxt natively (`nvm use && npm run dev`), host has its own copy. After changing `package.json`, run `docker compose build nuxt` or `docker compose run --rm nuxt npm install`.
+
 ## Documentation
 
 Detailed documentation is in [docs/ai/](docs/ai/):

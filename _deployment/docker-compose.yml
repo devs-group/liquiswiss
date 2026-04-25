@@ -1,0 +1,225 @@
+networks:
+  traefik:
+    external: true
+  default:
+    driver: bridge
+    external: false
+
+services:
+  nuxt:
+    image: ghcr.io/devs-group/liquiswiss/nuxt:latest
+    restart: always
+    ports:
+      - "3000"
+    networks:
+      - default
+      - traefik
+    deploy:
+      resources:
+        limits:
+          cpus: "8"
+          memory: 4G
+    environment:
+      NUXT_API_HOST: ${NUXT_API_HOST:-https://api.liquiswiss.ch}
+      NODE_ENV: ${NODE_ENV:-production}
+      TZ: ${TZ:-Europe/Zurich}
+    depends_on:
+      database-app:
+        condition: service_healthy
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.liquiswiss-nuxt.rule=Host(`app.liquiswiss.ch`)"
+      - "traefik.http.routers.liquiswiss-nuxt.entrypoints=https"
+      - "traefik.http.routers.liquiswiss-nuxt.tls=true"
+      - "traefik.http.routers.liquiswiss-nuxt.tls.certresolver=le"
+      - "traefik.http.services.liquiswiss-nuxt.loadbalancer.server.port=3000"
+      - "traefik.http.routers.liquiswiss-nuxt-www.rule=Host(`www.app.liquiswiss.ch`)"
+      - "traefik.http.routers.liquiswiss-nuxt-www.entrypoints=https"
+      - "traefik.http.routers.liquiswiss-nuxt-www.tls.certresolver=le"
+      - "traefik.http.routers.liquiswiss-nuxt-www.service=noop@internal"
+      - "traefik.http.routers.liquiswiss-nuxt-www.middlewares=redirect-to-nonwww@file"
+
+  backend:
+    image: ghcr.io/devs-group/liquiswiss/backend:latest
+    restart: always
+    ports:
+      - "8080"
+    networks:
+      - default
+      - traefik
+    deploy:
+      resources:
+        limits:
+          cpus: "8"
+          memory: 8G
+    environment:
+      GIN_MODE: ${GIN_MODE:-release}
+      WEB_HOST: ${WEB_HOST:-https://app.liquiswiss.ch}
+      DB_USER: ${APP_DB_USER}
+      DB_PASSWORD: ${APP_DB_PASSWORD}
+      DB_HOST: ${APP_DB_HOST:-database-app}
+      DB_PORT: ${APP_DB_PORT:-3306}
+      DB_NAME: ${APP_DB_NAME:-liquiswiss}
+      SEND_GRID_TOKEN: ${SEND_GRID_TOKEN}
+      SEND_GRID_TEMPLATE_ID: ${SEND_GRID_TEMPLATE_ID}
+      FIXER_IO_URL: ${FIXER_IO_URL:-https://data.fixer.io/api/latest}
+      FIXER_IO_KEY: ${FIXER_IO_KEY}
+      JWT_KEY: ${JWT_KEY}
+    depends_on:
+      database-app:
+        condition: service_healthy
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.liquiswiss-backend.rule=Host(`api.liquiswiss.ch`)"
+      - "traefik.http.routers.liquiswiss-backend.entrypoints=https"
+      - "traefik.http.routers.liquiswiss-backend.tls=true"
+      - "traefik.http.routers.liquiswiss-backend.tls.certresolver=le"
+      - "traefik.http.services.liquiswiss-backend.loadbalancer.server.port=8080"
+      - "traefik.http.routers.liquiswiss-backend-www.rule=Host(`www.api.liquiswiss.ch`)"
+      - "traefik.http.routers.liquiswiss-backend-www.entrypoints=https"
+      - "traefik.http.routers.liquiswiss-backend-www.tls.certresolver=le"
+      - "traefik.http.routers.liquiswiss-backend-www.service=noop@internal"
+      - "traefik.http.routers.liquiswiss-backend-www.middlewares=redirect-to-nonwww@file"
+
+  landing:
+    image: wordpress:php8.3-apache
+    restart: always
+    ports:
+      - "80"
+    networks:
+      - default
+      - traefik
+    deploy:
+      resources:
+        limits:
+          cpus: "1"
+          memory: 1G
+    environment:
+      WORDPRESS_DB_HOST: ${WORDPRESS_DB_HOST:-database-wordpress}
+      WORDPRESS_DB_USER: ${WP_DB_USER}
+      WORDPRESS_DB_PASSWORD: ${WP_DB_PASSWORD}
+      WORDPRESS_DB_NAME: ${WP_DB_NAME:-wordpress}
+      WORDPRESS_DEBUG: ${WORDPRESS_DEBUG:-0}
+    depends_on:
+      database-wordpress:
+        condition: service_healthy
+    volumes:
+      - ./landing-data:/var/www/html
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.liquiswiss-landing.rule=Host(`liquiswiss.ch`)"
+      - "traefik.http.routers.liquiswiss-landing.entrypoints=https"
+      - "traefik.http.routers.liquiswiss-landing.tls=true"
+      - "traefik.http.routers.liquiswiss-landing.tls.certresolver=le"
+      - "traefik.http.services.liquiswiss-landing.loadbalancer.server.port=80"
+      - "traefik.http.routers.liquiswiss-landing-www.rule=Host(`www.liquiswiss.ch`)"
+      - "traefik.http.routers.liquiswiss-landing-www.entrypoints=https"
+      - "traefik.http.routers.liquiswiss-landing-www.tls.certresolver=le"
+      - "traefik.http.routers.liquiswiss-landing-www.service=noop@internal"
+      - "traefik.http.routers.liquiswiss-landing-www.middlewares=redirect-to-nonwww@file"
+
+  database-app:
+    image: mariadb:10.6.16
+    restart: always
+    ports:
+      - "3306"
+    networks:
+      - default
+      - traefik
+    deploy:
+      resources:
+        limits:
+          cpus: "8"
+          memory: 8G
+    environment:
+      MARIADB_USER: ${APP_DB_USER}
+      MARIADB_PASSWORD: ${APP_DB_PASSWORD}
+      MARIADB_DATABASE: ${APP_DB_NAME:-liquiswiss}
+      MARIADB_ROOT_PASSWORD: ${APP_DB_ROOT_PASSWORD}
+    volumes:
+      - ./db-app-data:/var/lib/mysql
+    healthcheck:
+      test:
+        [
+          "CMD",
+          "healthcheck.sh",
+          "--su-mysql",
+          "--connect",
+          "--innodb_initialized",
+        ]
+      interval: 1s
+      retries: 30
+    labels:
+      - "traefik.enable=false"
+      - "traefik.tcp.routers.liquiswiss-database-app.rule=HostSNI(`*`)"
+      - "traefik.tcp.routers.liquiswiss-databas-app.entrypoints=mariadb"
+      - "traefik.tcp.services.liquiswiss-database-app.loadbalancer.server.port=3306"
+
+  database-wordpress:
+    image: mariadb:10.6.16
+    restart: always
+    ports:
+      - "3306"
+    networks:
+      - default
+      - traefik
+    deploy:
+      resources:
+        limits:
+          cpus: "2"
+          memory: 2G
+    environment:
+      MARIADB_USER: ${WP_DB_USER}
+      MARIADB_PASSWORD: ${WP_DB_PASSWORD}
+      MARIADB_DATABASE: ${WP_DB_NAME:-wordpress}
+      MARIADB_ROOT_PASSWORD: ${WP_DB_ROOT_PASSWORD}
+    volumes:
+      - ./db-wordpress-data:/var/lib/mysql
+    healthcheck:
+      test:
+        [
+          "CMD",
+          "healthcheck.sh",
+          "--su-mysql",
+          "--connect",
+          "--innodb_initialized",
+        ]
+      interval: 1s
+      retries: 30
+
+  phpmyadmin:
+    image: phpmyadmin:5.2.1-apache
+    restart: always
+    ports:
+      - '80'
+    networks:
+      - default
+      - traefik
+    deploy:
+      resources:
+        limits:
+          cpus: "1"
+          memory: 1G
+    environment:
+      PMA_ARBITRARY: ${PMA_ARBITRARY:-1}
+      PMA_HOST: ${PMA_HOST:-database-app}
+      PMA_PORT: ${PMA_PORT:-3306}
+      PMA_PMADB: ${PMA_PMADB:-phpmyadmin}
+    depends_on:
+      database-app:
+        condition: service_healthy
+      database-wordpress:
+        condition: service_healthy
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.liquiswiss-phpmyadmin.rule=Host(`config.liquiswiss.ch`)"
+      - "traefik.http.routers.liquiswiss-phpmyadmin.entrypoints=https"
+      - "traefik.http.routers.liquiswiss-phpmyadmin.tls=true"
+      - "traefik.http.routers.liquiswiss-phpmyadmin.tls.certresolver=le"
+      - "traefik.http.routers.liquiswiss-phpmyadmin.middlewares=auth-admin"
+      - "traefik.http.services.liquiswiss-phpmyadmin.loadbalancer.server.port=80"
+      - "traefik.http.routers.liquiswiss-phpmyadmin-www.rule=Host(`www.config.liquiswiss.ch`)"
+      - "traefik.http.routers.liquiswiss-phpmyadmin-www.entrypoints=https"
+      - "traefik.http.routers.liquiswiss-phpmyadmin-www.tls.certresolver=le"
+      - "traefik.http.routers.liquiswiss-phpmyadmin-www.service=noop@internal"
+      - "traefik.http.routers.liquiswiss-phpmyadmin-www.middlewares=redirect-to-nonwww@file"

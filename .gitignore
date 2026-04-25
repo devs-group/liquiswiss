@@ -16,6 +16,12 @@ logs
 !.env.*.testing
 
 db_data/
+_deployment/db-app-data/
+_deployment/db-wordpress-data/
+_deployment/landing-data/
+
+# Deploy host credentials
+_deployment/.credentials
 
 # Claude Code conversation exports
 claude_chat_history.txt

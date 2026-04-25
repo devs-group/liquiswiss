@@ -89,7 +89,7 @@ jobs:
           MARIADB_ROOT_PASSWORD: "test"
     #    if: github.ref != 'refs/heads/main'
     container:
-      image: golang:1.25.3-alpine
+      image: golang:1.26.2-alpine
     env:
       TESTING_ENVIRONMENT: "github"
     steps:
@@ -142,7 +142,7 @@ jobs:
       - name: Setup Go
         uses: actions/setup-go@v5
         with:
-          go-version: '1.25.3'
+          go-version: '1.26.2'
           cache-dependency-path: backend/go.sum
 
       - name: Install frontend dependencies
@@ -223,7 +223,7 @@ jobs:
         run: echo "${{ secrets.GITHUB_TOKEN }}" | docker login ghcr.io -u ${{ github.actor }} --password-stdin
 
       - name: Build and Tag Docker Image
-        run: docker build -f ./.deploy/nuxt/Dockerfile -t ${{ env.NUXT_IMAGE }} ./
+        run: docker build -f ./_deployment/nuxt/Dockerfile -t ${{ env.NUXT_IMAGE }} ./
 
       - name: Save Nuxt Image as Tarball
         run: docker save ${{ env.NUXT_IMAGE }} | gzip > ${{ env.NUXT_IMAGE_ZIP_FILE }}
@@ -251,7 +251,7 @@ jobs:
         run: echo "${{ secrets.GITHUB_TOKEN }}" | docker login ghcr.io -u ${{ github.actor }} --password-stdin
 
       - name: Build and Tag Docker Image
-        run: docker build -f ./.deploy/backend/Dockerfile -t ${{ env.BACKEND_IMAGE }} ./
+        run: docker build -f ./_deployment/backend/Dockerfile -t ${{ env.BACKEND_IMAGE }} ./
 
       - name: Save Nuxt Image as Tarball
         run: docker save ${{ env.BACKEND_IMAGE }} | gzip > ${{ env.BACKEND_IMAGE_ZIP_FILE }}
@@ -327,4 +327,4 @@ jobs:
         run: apk add --no-cache curl
 
       - name: Deploy Application
-        run: sh ./.deploy/deploy.sh
+        run: sh ./_deployment/deploy.sh

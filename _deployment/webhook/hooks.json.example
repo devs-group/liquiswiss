@@ -1,0 +1,18 @@
+[
+  {
+    "id": "<hook-id>",
+    "execute-command": "<deploy-dir>/webhook.sh",
+    "command-working-directory": "<deploy-dir>",
+    "response-message": "OK",
+    "trigger-rule": {
+      "match": {
+        "type": "value",
+        "value": "<replace-with-deploy-token>",
+        "parameter": {
+          "source": "header",
+          "name": "X-Access-Token"
+        }
+      }
+    }
+  }
+]
