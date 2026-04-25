@@ -49,9 +49,14 @@ func (f *FixerIOService) FetchFiatRates() {
 		}
 	}
 
+	cfg := config.GetConfig()
+	if cfg.FixerIOKey == "" {
+		logger.Logger.Warn("Fixer.io API key not configured — skipping fiat rates fetch")
+		return
+	}
+
 	logger.Logger.Infof("Running Fixer.io Cronjob")
 
-	cfg := config.GetConfig()
 	currencies, err := f.apiService.ListCurrencies(0)
 	if err != nil {
 		logger.Logger.Errorf("Failed to load currencies: %v", err)

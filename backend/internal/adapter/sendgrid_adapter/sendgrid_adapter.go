@@ -31,6 +31,12 @@ func NewSendgridAdapter(apiKey string) ISendgridAdapter {
 }
 
 func (s SendgridAdapter) SendMail(from *mail.Email, to *mail.Email, templateId string, templateData any) error {
+	if s.apiKey == "" {
+		logger.Logger.Warnw("SendGrid API key not configured — skipping email send",
+			"to", to.Address, "template", templateId, "data", templateData)
+		return nil
+	}
+
 	m := mail.NewV3Mail()
 	m.SetFrom(from)
 	m.SetTemplateID(templateId)
