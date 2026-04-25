@@ -29,8 +29,8 @@ fi
   fi
   echo "✅ Docker login succeeded"
 
-  if ! docker compose pull --policy "always"; then
-    echo "❌ ERROR pulling images"
+  if ! bws run --project-id "$BWS_PROJECT_ID" -- docker compose pull --policy "always"; then
+    echo "❌ ERROR pulling images (BWSM token expired or secret missing? Check vault.)"
     exit
   fi
   echo "✅ Pulled new images"
