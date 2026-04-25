@@ -10,10 +10,12 @@ set -o pipefail
 #   REGISTRY_HOST      - container registry hostname
 #   SLACK_HOOK_URL     - Slack incoming webhook URL
 #   APP_URL            - URL announced in the Slack notification
+#   BWS_ACCESS_TOKEN   - Bitwarden Secrets Manager access token (liquiswiss-prod project)
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 if [ -f "${SCRIPT_DIR}/.credentials" ]; then
   # shellcheck disable=SC1091
   . "${SCRIPT_DIR}/.credentials"
+  export BWS_ACCESS_TOKEN
 else
   echo "❌ Missing ${SCRIPT_DIR}/.credentials (see .credentials.example)"
   exit 1
@@ -33,8 +35,8 @@ fi
   echo "✅ Pulled new images"
 
   # Only recreate containers whose image or config changed; leave the rest running.
-  if ! docker compose up -d --remove-orphans; then
-    echo "❌ ERROR recreating containers"
+  if ! bws run -- docker compose up -d --remove-orphans; then
+    echo "❌ ERROR recreating containers (BWSM token expired? Rotate in web vault.)"
     exit
   fi
   echo "✅ Recreated changed containers"
