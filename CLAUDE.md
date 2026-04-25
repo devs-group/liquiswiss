@@ -71,7 +71,7 @@ make build           # up -d --build
 make dc CMD="logs -f backend"   # any compose passthrough
 ```
 
-**Required BWSM secrets** (no compose fallback — must come from BWSM): `SEND_GRID_TOKEN`, `SEND_GRID_TEMPLATE_ID`, `FIXER_IO_KEY`. All other env vars have dev fallbacks in compose. The Makefile pre-flight reports ALL missing secrets at once before invoking compose.
+**No required BWSM secrets locally**: all env vars have dev fallbacks in compose. Without a BWSM token, `make` falls through to bare `docker compose` and starts the stack with empty values for `SEND_GRID_TOKEN`, `SEND_GRID_TEMPLATE_ID`, `FIXER_IO_KEY` — email + currency-rate features are disabled at runtime, everything else works. With a BWSM token, the Makefile auto-injects real values via `bws run`.
 
 **Bitwarden Secrets Manager (BWSM) project**: `liquiswiss-dev` (id `81c6783f-41ae-4e28-b688-b437016bfa13`).
 

@@ -38,10 +38,10 @@ services:
       DB_HOST: ${APP_DB_HOST:-database}
       DB_PORT: ${APP_DB_PORT:-3306}
       DB_NAME: ${APP_DB_NAME:-liquiswiss}
-      SEND_GRID_TOKEN: ${SEND_GRID_TOKEN:?BWSM secret SEND_GRID_TOKEN required}
-      SEND_GRID_TEMPLATE_ID: ${SEND_GRID_TEMPLATE_ID:?BWSM secret SEND_GRID_TEMPLATE_ID required}
+      SEND_GRID_TOKEN: ${SEND_GRID_TOKEN:-}
+      SEND_GRID_TEMPLATE_ID: ${SEND_GRID_TEMPLATE_ID:-}
       FIXER_IO_URL: ${FIXER_IO_URL:-https://data.fixer.io/api/latest}
-      FIXER_IO_KEY: ${FIXER_IO_KEY:?BWSM secret FIXER_IO_KEY required}
+      FIXER_IO_KEY: ${FIXER_IO_KEY:-}
       JWT_KEY: ${JWT_KEY:-dev_jwt_key}
       FAKE_DATE_TIME: ${FAKE_DATE_TIME:-}
       AIGENT_API_URL: ${AIGENT_API_URL:-}

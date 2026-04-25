@@ -1,44 +1,36 @@
-.PHONY: up down restart logs ps build dc _check
+.PHONY: up down restart logs ps build dc
 
-# Pull token from macOS keychain (set via: security add-generic-password -a "$USER" -s "bws-liquiswiss-dev" -w)
+# Optional: pull access token from macOS keychain. If absent, compose runs with
+# its in-file defaults (external integrations like email and currency disabled).
+# Setup (team members with vault access):
+#   security add-generic-password -a "$USER" -s "bws-liquiswiss-dev" -w
 BWS_ACCESS_TOKEN := $(shell security find-generic-password -a "$$USER" -s "bws-liquiswiss-dev" -w 2>/dev/null)
 
-# Required BWSM secrets (no compose fallback). Reports ALL missing at once.
-REQUIRED_SECRETS := SEND_GRID_TOKEN SEND_GRID_TEMPLATE_ID FIXER_IO_KEY
-
-define PREFLIGHT
-missing=""; \
-for var in $(REQUIRED_SECRETS); do \
-  if [ -z "$$(printenv $$var)" ]; then missing="$$missing $$var"; fi; \
-done; \
-if [ -n "$$missing" ]; then \
-  echo "ERROR: missing required BWSM secrets:" >&2; \
-  for v in $$missing; do echo "  - $$v" >&2; done; \
-  exit 1; \
-fi
-endef
-
-_check:
-	@BWS_ACCESS_TOKEN="$(BWS_ACCESS_TOKEN)" bws run -- sh -c '$(PREFLIGHT)'
+# Use bws when token available, otherwise fall through to bare docker compose.
+ifeq ($(strip $(BWS_ACCESS_TOKEN)),)
+  RUN := docker compose
+else
+  RUN := BWS_ACCESS_TOKEN="$(BWS_ACCESS_TOKEN)" bws run -- docker compose
+endif
 
 # Generic compose passthrough: `make dc CMD="logs -f backend"`
-dc: _check
-	@BWS_ACCESS_TOKEN="$(BWS_ACCESS_TOKEN)" bws run -- docker compose $(CMD)
+dc:
+	@$(RUN) $(CMD)
 
-up: _check
-	@BWS_ACCESS_TOKEN="$(BWS_ACCESS_TOKEN)" bws run -- docker compose up -d
+up:
+	@$(RUN) up -d
 
 down:
-	@BWS_ACCESS_TOKEN="$(BWS_ACCESS_TOKEN)" bws run -- docker compose down
+	@$(RUN) down
 
-restart: _check
-	@BWS_ACCESS_TOKEN="$(BWS_ACCESS_TOKEN)" bws run -- docker compose restart
+restart:
+	@$(RUN) restart
 
 logs:
-	@BWS_ACCESS_TOKEN="$(BWS_ACCESS_TOKEN)" bws run -- docker compose logs -f
+	@$(RUN) logs -f
 
 ps:
-	@BWS_ACCESS_TOKEN="$(BWS_ACCESS_TOKEN)" bws run -- docker compose ps
+	@$(RUN) ps
 
-build: _check
-	@BWS_ACCESS_TOKEN="$(BWS_ACCESS_TOKEN)" bws run -- docker compose up -d --build
+build:
+	@$(RUN) up -d --build
