@@ -55,30 +55,13 @@ goose-down-to-and-up:
 dump-db:
 	@$(WRAP) run --rm database-app sh -c 'mysqldump -h database-app -u $$APP_DB_USER -p$$APP_DB_PASSWORD $$APP_DB_NAME' > dumpfile.sql
 
-# Interactive password rotation. Prompts hide input.
+# Interactive password rotation. Prompts hide input. Pipes SQL via stdin to avoid
+# quoting issues through bws run / docker compose exec.
 # After running, update matching BWSM secrets in web vault, then `make deploy`.
+MAKEFILE_DIR := $(dir $(abspath $(lastword $(MAKEFILE_LIST))))
+
 rotate-db-app:
-	@stty -echo; \
-	printf "Old APP root password: "; read OLD_ROOT; printf "\n"; \
-	printf "New APP user (liquiswiss) password: "; read NEW_USER; printf "\n"; \
-	printf "New APP root password: "; read NEW_ROOT; printf "\n"; \
-	stty echo; \
-	$(WRAP) exec -T database-app mariadb -u root -p"$$OLD_ROOT" -e "\
-ALTER USER 'liquiswiss'@'%' IDENTIFIED BY '$$NEW_USER'; \
-ALTER USER 'root'@'%' IDENTIFIED BY '$$NEW_ROOT'; \
-ALTER USER 'root'@'localhost' IDENTIFIED BY '$$NEW_ROOT'; \
-FLUSH PRIVILEGES;" && \
-	echo "✅ App DB rotated. Now update BWSM: APP_DB_PASSWORD, APP_DB_ROOT_PASSWORD, then run: make deploy"
+	@bash $(MAKEFILE_DIR)rotate-db.sh app
 
 rotate-db-wp:
-	@stty -echo; \
-	printf "Old WP root password: "; read OLD_ROOT; printf "\n"; \
-	printf "New WP user (liquiswiss-wp) password: "; read NEW_USER; printf "\n"; \
-	printf "New WP root password: "; read NEW_ROOT; printf "\n"; \
-	stty echo; \
-	$(WRAP) exec -T database-wordpress mariadb -u root -p"$$OLD_ROOT" -e "\
-ALTER USER 'liquiswiss-wp'@'%' IDENTIFIED BY '$$NEW_USER'; \
-ALTER USER 'root'@'%' IDENTIFIED BY '$$NEW_ROOT'; \
-ALTER USER 'root'@'localhost' IDENTIFIED BY '$$NEW_ROOT'; \
-FLUSH PRIVILEGES;" && \
-	echo "✅ WP DB rotated. Now update BWSM: WP_DB_PASSWORD, WP_DB_ROOT_PASSWORD, then run: make deploy"
+	@bash $(MAKEFILE_DIR)rotate-db.sh wp
