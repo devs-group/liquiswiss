@@ -57,24 +57,45 @@ make goose-static-create <name>   # Create schema migration (from backend/)
 make goose-dynamic-create <name>  # Create function/view migration (from backend/)
 ```
 
-### Running Both Servers (Docker Compose)
+### Running Both Servers (Docker Compose via Make)
 
-**IMPORTANT**: All services run via `docker compose` (no more native `air` or `npm run dev`). At the start of each session, start the stack in the background:
+**IMPORTANT**: All services run via `docker compose` wrapped by `make` targets. The Makefile pulls the BWSM access token from macOS keychain and runs `bws run -- docker compose ...`. No native `air`/`npm run dev`.
 
 ```bash
-docker compose up -d
+make up              # docker compose up -d
+make down
+make restart
+make logs            # follow all logs
+make ps
+make build           # up -d --build
+make dc CMD="logs -f backend"   # any compose passthrough
 ```
 
-To follow logs:
+**Required BWSM secrets** (no compose fallback — must come from BWSM): `SEND_GRID_TOKEN`, `SEND_GRID_TEMPLATE_ID`, `FIXER_IO_KEY`. All other env vars have dev fallbacks in compose. The Makefile pre-flight reports ALL missing secrets at once before invoking compose.
+
+**Bitwarden Secrets Manager (BWSM) project**: `liquiswiss-dev` (id `81c6783f-41ae-4e28-b688-b437016bfa13`).
+
+**Keychain access token setup** (token = `0.<uuid>...:<key>` from BWSM machine account):
 
 ```bash
-docker compose logs -f backend nuxt
+# Set / first time:
+security add-generic-password -a "$USER" -s "bws-liquiswiss-dev" -w
+#   -> prompts twice for password, paste token
+
+# Update (rotate token):
+security delete-generic-password -a "$USER" -s "bws-liquiswiss-dev"
+security add-generic-password -a "$USER" -s "bws-liquiswiss-dev" -w
+
+# Delete:
+security delete-generic-password -a "$USER" -s "bws-liquiswiss-dev"
 ```
 
-To restart a single service after code changes that require image rebuild (rare — `air` and Vite hot-reload most changes):
+**Token expiry**: BWSM access tokens expire 60 days after creation. Current token created 2026-04-25, expires **2026-06-24**. Rotate before then via web vault → Secrets Manager → Machine accounts → access tokens, then re-run keychain `delete` + `add` above.
+
+To follow logs of specific services:
 
 ```bash
-docker compose up -d --build <service>
+make dc CMD="logs -f backend nuxt"
 ```
 
 **Note**: During hot-reloading, refreshing, or in-between states, you may see transient errors in the logs until the code changes are complete or fixed.

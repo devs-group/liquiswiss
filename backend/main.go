@@ -37,10 +37,9 @@ func main() {
 	// Init global logger
 	logger.NewZapLogger(utils.IsProduction())
 
-	// Environment for DEV
+	// Environment for DEV: load .env if present, otherwise rely on injected env vars
 	if !utils.IsProduction() {
-		err := godotenv.Load()
-		if err != nil {
+		if err := godotenv.Load(); err != nil && !os.IsNotExist(err) {
 			logger.Logger.Errorf("Error loading .env file: %v", err)
 			os.Exit(1)
 		}

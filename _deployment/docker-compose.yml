@@ -55,16 +55,16 @@ services:
     environment:
       GIN_MODE: ${GIN_MODE:-release}
       WEB_HOST: ${WEB_HOST:-https://app.liquiswiss.ch}
-      DB_USER: ${APP_DB_USER}
-      DB_PASSWORD: ${APP_DB_PASSWORD}
+      DB_USER: ${APP_DB_USER:?BWSM secret APP_DB_USER required}
+      DB_PASSWORD: ${APP_DB_PASSWORD:?BWSM secret APP_DB_PASSWORD required}
       DB_HOST: ${APP_DB_HOST:-database-app}
       DB_PORT: ${APP_DB_PORT:-3306}
       DB_NAME: ${APP_DB_NAME:-liquiswiss}
-      SEND_GRID_TOKEN: ${SEND_GRID_TOKEN}
-      SEND_GRID_TEMPLATE_ID: ${SEND_GRID_TEMPLATE_ID}
+      SEND_GRID_TOKEN: ${SEND_GRID_TOKEN:?BWSM secret SEND_GRID_TOKEN required}
+      SEND_GRID_TEMPLATE_ID: ${SEND_GRID_TEMPLATE_ID:?BWSM secret SEND_GRID_TEMPLATE_ID required}
       FIXER_IO_URL: ${FIXER_IO_URL:-https://data.fixer.io/api/latest}
-      FIXER_IO_KEY: ${FIXER_IO_KEY}
-      JWT_KEY: ${JWT_KEY}
+      FIXER_IO_KEY: ${FIXER_IO_KEY:?BWSM secret FIXER_IO_KEY required}
+      JWT_KEY: ${JWT_KEY:?BWSM secret JWT_KEY required}
     depends_on:
       database-app:
         condition: service_healthy
@@ -96,8 +96,8 @@ services:
           memory: 1G
     environment:
       WORDPRESS_DB_HOST: ${WORDPRESS_DB_HOST:-database-wordpress}
-      WORDPRESS_DB_USER: ${WP_DB_USER}
-      WORDPRESS_DB_PASSWORD: ${WP_DB_PASSWORD}
+      WORDPRESS_DB_USER: ${WP_DB_USER:?BWSM secret WP_DB_USER required}
+      WORDPRESS_DB_PASSWORD: ${WP_DB_PASSWORD:?BWSM secret WP_DB_PASSWORD required}
       WORDPRESS_DB_NAME: ${WP_DB_NAME:-wordpress}
       WORDPRESS_DEBUG: ${WORDPRESS_DEBUG:-0}
     depends_on:
@@ -132,10 +132,10 @@ services:
           cpus: "8"
           memory: 8G
     environment:
-      MARIADB_USER: ${APP_DB_USER}
-      MARIADB_PASSWORD: ${APP_DB_PASSWORD}
+      MARIADB_USER: ${APP_DB_USER:?BWSM secret APP_DB_USER required}
+      MARIADB_PASSWORD: ${APP_DB_PASSWORD:?BWSM secret APP_DB_PASSWORD required}
       MARIADB_DATABASE: ${APP_DB_NAME:-liquiswiss}
-      MARIADB_ROOT_PASSWORD: ${APP_DB_ROOT_PASSWORD}
+      MARIADB_ROOT_PASSWORD: ${APP_DB_ROOT_PASSWORD:?BWSM secret APP_DB_ROOT_PASSWORD required}
     volumes:
       - ./db-app-data:/var/lib/mysql
     healthcheck:
@@ -169,10 +169,10 @@ services:
           cpus: "2"
           memory: 2G
     environment:
-      MARIADB_USER: ${WP_DB_USER}
-      MARIADB_PASSWORD: ${WP_DB_PASSWORD}
+      MARIADB_USER: ${WP_DB_USER:?BWSM secret WP_DB_USER required}
+      MARIADB_PASSWORD: ${WP_DB_PASSWORD:?BWSM secret WP_DB_PASSWORD required}
       MARIADB_DATABASE: ${WP_DB_NAME:-wordpress}
-      MARIADB_ROOT_PASSWORD: ${WP_DB_ROOT_PASSWORD}
+      MARIADB_ROOT_PASSWORD: ${WP_DB_ROOT_PASSWORD:?BWSM secret WP_DB_ROOT_PASSWORD required}
     volumes:
       - ./db-wordpress-data:/var/lib/mysql
     healthcheck:
