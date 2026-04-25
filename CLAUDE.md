@@ -57,34 +57,37 @@ make goose-static-create <name>   # Create schema migration (from backend/)
 make goose-dynamic-create <name>  # Create function/view migration (from backend/)
 ```
 
-### Running Both Servers in Background
+### Running Both Servers (Docker Compose)
 
-**IMPORTANT**: At the start of each session, always start both servers in the background using `run_in_background: true`. First kill any existing processes:
+**IMPORTANT**: All services run via `docker compose` (no more native `air` or `npm run dev`). At the start of each session, start the stack in the background:
 
 ```bash
-# Kill existing processes
-pkill -f "tmp/main" 2>/dev/null; pkill -f "^air$" 2>/dev/null
-pkill -f "nuxt" 2>/dev/null
+docker compose up -d
 ```
 
-Then run these commands in background from their respective directories (use `run_in_background: true` parameter, NOT shell `&`):
+To follow logs:
 
 ```bash
-# Backend (from backend/)
-air
+docker compose logs -f backend nuxt
+```
 
-# Frontend (from frontend/, requires nvm)
-source ~/.nvm/nvm.sh && nvm use && npm run dev
+To restart a single service after code changes that require image rebuild (rare — `air` and Vite hot-reload most changes):
+
+```bash
+docker compose up -d --build <service>
 ```
 
 **Note**: During hot-reloading, refreshing, or in-between states, you may see transient errors in the logs until the code changes are complete or fixed.
 
 ### Docker Compose Setup
 
-- **Root `docker-compose.yml`**: local dev (nuxt, backend, database, database-testing, phpmyadmin). Backend uses `target: dev` with `air` hot-reload. Nuxt runs `npm run dev`.
+- **Root `docker-compose.yml`**: local dev (nuxt, backend, database, database-testing, phpmyadmin). Backend uses `target: dev` with `air` hot-reload. Nuxt runs `npm run dev-host`.
+- Local ports: nuxt `3007`, backend `8087`, database `3317`, database-testing `3318`, phpmyadmin `8097`.
+- Inside compose network, services reach each other by service name (e.g. `backend:8080`, `database:3306`).
 - **`_deployment/docker-compose.yml`**: mirrors prod (nuxt, backend, landing/wordpress, database-app, database-wordpress, phpmyadmin) with Traefik labels and resource limits. Use for prod-parity local testing: `docker compose -f _deployment/docker-compose.yml --env-file .env up`.
-- **Single `.env` at root**: flat namespace (`APP_DB_*`, `WP_DB_*`, etc.) mirrors future Bitwarden Secrets Manager injection. Both compose files load from it. Once BWSM wired: `bws run -- docker compose up` replaces `.env`.
-- **Named volumes** (`nuxt_node_modules`, `backend_go_cache`, `backend_build_cache`): cache for fast rebuilds. `nuxt_node_modules` is critical on macOS/Docker Desktop — bind-mounting node_modules across VM boundary is slow. Tradeoff: host IDE won't see container's node_modules; if running nuxt natively (`nvm use && npm run dev`), host has its own copy. After changing `package.json`, run `docker compose build nuxt` or `docker compose run --rm nuxt npm install`.
+- **Single `.env` at root** (transitional): flat namespace (`APP_DB_*`, `WP_DB_*`, etc.) mirrors future Bitwarden Secrets Manager injection. Both compose files load from it. Once BWSM wired: `bws run -- docker compose up` replaces `.env`.
+- **Native run is deprecated**: `backend/.env` and `frontend/.env*` removed. `backend/.env.local.testing` + `backend/.env.github.testing` retained only for `go test` (not picked up by compose).
+- **Named volumes** (`nuxt_node_modules`, `backend_go_cache`, `backend_build_cache`): cache for fast rebuilds. `nuxt_node_modules` is critical on macOS/Docker Desktop — bind-mounting node_modules across VM boundary is slow. Tradeoff: host IDE won't see container's node_modules. After changing `package.json`, run `docker compose build nuxt` or `docker compose run --rm nuxt npm install`.
 
 ## Documentation
 
