@@ -1,45 +1,726 @@
 {
   "snapshot_date": "2026-04-26",
-  "source": "Hand-curated approximate rates for local development. Refresh manually if drift becomes problematic.",
+  "source": "Snapshot from production fiat_rates table on 2026-04-26 (originally from Fixer.io). Refresh manually if drift becomes problematic.",
   "rates": [
-    {"base": "CHF", "target": "EUR", "rate": 1.04},
-    {"base": "CHF", "target": "USD", "rate": 1.12},
-    {"base": "CHF", "target": "GBP", "rate": 0.88},
-    {"base": "CHF", "target": "JPY", "rate": 169.50},
-    {"base": "CHF", "target": "CAD", "rate": 1.55},
-    {"base": "CHF", "target": "AUD", "rate": 1.71},
-    {"base": "CHF", "target": "NOK", "rate": 12.10},
-    {"base": "CHF", "target": "SEK", "rate": 11.80},
-    {"base": "CHF", "target": "DKK", "rate": 7.75},
-    {"base": "CHF", "target": "PLN", "rate": 4.45},
-    {"base": "CHF", "target": "CZK", "rate": 25.80},
-    {"base": "CHF", "target": "CHF", "rate": 1.0},
-
-    {"base": "EUR", "target": "CHF", "rate": 0.96},
-    {"base": "EUR", "target": "USD", "rate": 1.08},
-    {"base": "EUR", "target": "GBP", "rate": 0.85},
-    {"base": "EUR", "target": "JPY", "rate": 163.00},
-    {"base": "EUR", "target": "CAD", "rate": 1.49},
-    {"base": "EUR", "target": "AUD", "rate": 1.64},
-    {"base": "EUR", "target": "NOK", "rate": 11.65},
-    {"base": "EUR", "target": "SEK", "rate": 11.35},
-    {"base": "EUR", "target": "DKK", "rate": 7.46},
-    {"base": "EUR", "target": "PLN", "rate": 4.28},
-    {"base": "EUR", "target": "CZK", "rate": 24.80},
-    {"base": "EUR", "target": "EUR", "rate": 1.0},
-
-    {"base": "USD", "target": "CHF", "rate": 0.89},
-    {"base": "USD", "target": "EUR", "rate": 0.93},
-    {"base": "USD", "target": "GBP", "rate": 0.79},
-    {"base": "USD", "target": "JPY", "rate": 151.30},
-    {"base": "USD", "target": "CAD", "rate": 1.38},
-    {"base": "USD", "target": "AUD", "rate": 1.52},
-    {"base": "USD", "target": "USD", "rate": 1.0},
-
-    {"base": "GBP", "target": "CHF", "rate": 1.14},
-    {"base": "GBP", "target": "EUR", "rate": 1.18},
-    {"base": "GBP", "target": "USD", "rate": 1.27},
-    {"base": "GBP", "target": "JPY", "rate": 192.40},
-    {"base": "GBP", "target": "GBP", "rate": 1.0}
+    {
+      "base": "AUD",
+      "target": "AUD",
+      "rate": 1.0
+    },
+    {
+      "base": "AUD",
+      "target": "CAD",
+      "rate": 0.975961
+    },
+    {
+      "base": "AUD",
+      "target": "CHF",
+      "rate": 0.561632
+    },
+    {
+      "base": "AUD",
+      "target": "CZK",
+      "rate": 14.824748
+    },
+    {
+      "base": "AUD",
+      "target": "DKK",
+      "rate": 4.548636
+    },
+    {
+      "base": "AUD",
+      "target": "EUR",
+      "rate": 0.608644
+    },
+    {
+      "base": "AUD",
+      "target": "GBP",
+      "rate": 0.528695
+    },
+    {
+      "base": "AUD",
+      "target": "JPY",
+      "rate": 113.714082
+    },
+    {
+      "base": "AUD",
+      "target": "NOK",
+      "rate": 6.647707
+    },
+    {
+      "base": "AUD",
+      "target": "PLN",
+      "rate": 2.582834
+    },
+    {
+      "base": "AUD",
+      "target": "SEK",
+      "rate": 6.578719
+    },
+    {
+      "base": "AUD",
+      "target": "USD",
+      "rate": 0.7135
+    },
+    {
+      "base": "CAD",
+      "target": "AUD",
+      "rate": 1.024631
+    },
+    {
+      "base": "CAD",
+      "target": "CAD",
+      "rate": 1.0
+    },
+    {
+      "base": "CAD",
+      "target": "CHF",
+      "rate": 0.575466
+    },
+    {
+      "base": "CAD",
+      "target": "CZK",
+      "rate": 15.189895
+    },
+    {
+      "base": "CAD",
+      "target": "DKK",
+      "rate": 4.660673
+    },
+    {
+      "base": "CAD",
+      "target": "EUR",
+      "rate": 0.623636
+    },
+    {
+      "base": "CAD",
+      "target": "GBP",
+      "rate": 0.541717
+    },
+    {
+      "base": "CAD",
+      "target": "JPY",
+      "rate": 116.514962
+    },
+    {
+      "base": "CAD",
+      "target": "NOK",
+      "rate": 6.811446
+    },
+    {
+      "base": "CAD",
+      "target": "PLN",
+      "rate": 2.646452
+    },
+    {
+      "base": "CAD",
+      "target": "SEK",
+      "rate": 6.740759
+    },
+    {
+      "base": "CAD",
+      "target": "USD",
+      "rate": 0.731074
+    },
+    {
+      "base": "CHF",
+      "target": "AUD",
+      "rate": 1.780524
+    },
+    {
+      "base": "CHF",
+      "target": "CAD",
+      "rate": 1.737722
+    },
+    {
+      "base": "CHF",
+      "target": "CHF",
+      "rate": 1.0
+    },
+    {
+      "base": "CHF",
+      "target": "CZK",
+      "rate": 26.395821
+    },
+    {
+      "base": "CHF",
+      "target": "DKK",
+      "rate": 8.098957
+    },
+    {
+      "base": "CHF",
+      "target": "EUR",
+      "rate": 1.083706
+    },
+    {
+      "base": "CHF",
+      "target": "GBP",
+      "rate": 0.941354
+    },
+    {
+      "base": "CHF",
+      "target": "JPY",
+      "rate": 202.470662
+    },
+    {
+      "base": "CHF",
+      "target": "NOK",
+      "rate": 11.836402
+    },
+    {
+      "base": "CHF",
+      "target": "PLN",
+      "rate": 4.598799
+    },
+    {
+      "base": "CHF",
+      "target": "SEK",
+      "rate": 11.713569
+    },
+    {
+      "base": "CHF",
+      "target": "USD",
+      "rate": 1.270404
+    },
+    {
+      "base": "CZK",
+      "target": "AUD",
+      "rate": 0.067455
+    },
+    {
+      "base": "CZK",
+      "target": "CAD",
+      "rate": 0.065833
+    },
+    {
+      "base": "CZK",
+      "target": "CHF",
+      "rate": 0.037885
+    },
+    {
+      "base": "CZK",
+      "target": "CZK",
+      "rate": 1.0
+    },
+    {
+      "base": "CZK",
+      "target": "DKK",
+      "rate": 0.306827
+    },
+    {
+      "base": "CZK",
+      "target": "EUR",
+      "rate": 0.041056
+    },
+    {
+      "base": "CZK",
+      "target": "GBP",
+      "rate": 0.035663
+    },
+    {
+      "base": "CZK",
+      "target": "JPY",
+      "rate": 7.670557
+    },
+    {
+      "base": "CZK",
+      "target": "NOK",
+      "rate": 0.44842
+    },
+    {
+      "base": "CZK",
+      "target": "PLN",
+      "rate": 0.174225
+    },
+    {
+      "base": "CZK",
+      "target": "SEK",
+      "rate": 0.443766
+    },
+    {
+      "base": "CZK",
+      "target": "USD",
+      "rate": 0.048129
+    },
+    {
+      "base": "DKK",
+      "target": "AUD",
+      "rate": 0.219846
+    },
+    {
+      "base": "DKK",
+      "target": "CAD",
+      "rate": 0.214561
+    },
+    {
+      "base": "DKK",
+      "target": "CHF",
+      "rate": 0.123473
+    },
+    {
+      "base": "DKK",
+      "target": "CZK",
+      "rate": 3.259163
+    },
+    {
+      "base": "DKK",
+      "target": "DKK",
+      "rate": 1.0
+    },
+    {
+      "base": "DKK",
+      "target": "EUR",
+      "rate": 0.133808
+    },
+    {
+      "base": "DKK",
+      "target": "GBP",
+      "rate": 0.116231
+    },
+    {
+      "base": "DKK",
+      "target": "JPY",
+      "rate": 24.999598
+    },
+    {
+      "base": "DKK",
+      "target": "NOK",
+      "rate": 1.461472
+    },
+    {
+      "base": "DKK",
+      "target": "PLN",
+      "rate": 0.567826
+    },
+    {
+      "base": "DKK",
+      "target": "SEK",
+      "rate": 1.446306
+    },
+    {
+      "base": "DKK",
+      "target": "USD",
+      "rate": 0.15686
+    },
+    {
+      "base": "EUR",
+      "target": "AUD",
+      "rate": 1.642996
+    },
+    {
+      "base": "EUR",
+      "target": "CAD",
+      "rate": 1.6035
+    },
+    {
+      "base": "EUR",
+      "target": "CHF",
+      "rate": 0.92276
+    },
+    {
+      "base": "EUR",
+      "target": "CZK",
+      "rate": 24.357004
+    },
+    {
+      "base": "EUR",
+      "target": "DKK",
+      "rate": 7.473392
+    },
+    {
+      "base": "EUR",
+      "target": "EUR",
+      "rate": 1.0
+    },
+    {
+      "base": "EUR",
+      "target": "GBP",
+      "rate": 0.868643
+    },
+    {
+      "base": "EUR",
+      "target": "JPY",
+      "rate": 186.831798
+    },
+    {
+      "base": "EUR",
+      "target": "NOK",
+      "rate": 10.922156
+    },
+    {
+      "base": "EUR",
+      "target": "PLN",
+      "rate": 4.243587
+    },
+    {
+      "base": "EUR",
+      "target": "SEK",
+      "rate": 10.808811
+    },
+    {
+      "base": "EUR",
+      "target": "USD",
+      "rate": 1.172278
+    },
+    {
+      "base": "GBP",
+      "target": "AUD",
+      "rate": 1.891451
+    },
+    {
+      "base": "GBP",
+      "target": "CAD",
+      "rate": 1.845983
+    },
+    {
+      "base": "GBP",
+      "target": "CHF",
+      "rate": 1.0623
+    },
+    {
+      "base": "GBP",
+      "target": "CZK",
+      "rate": 28.04028
+    },
+    {
+      "base": "GBP",
+      "target": "DKK",
+      "rate": 8.603522
+    },
+    {
+      "base": "GBP",
+      "target": "EUR",
+      "rate": 1.15122
+    },
+    {
+      "base": "GBP",
+      "target": "GBP",
+      "rate": 1.0
+    },
+    {
+      "base": "GBP",
+      "target": "JPY",
+      "rate": 215.084582
+    },
+    {
+      "base": "GBP",
+      "target": "NOK",
+      "rate": 12.573809
+    },
+    {
+      "base": "GBP",
+      "target": "PLN",
+      "rate": 4.885304
+    },
+    {
+      "base": "GBP",
+      "target": "SEK",
+      "rate": 12.443324
+    },
+    {
+      "base": "GBP",
+      "target": "USD",
+      "rate": 1.34955
+    },
+    {
+      "base": "JPY",
+      "target": "AUD",
+      "rate": 0.008794
+    },
+    {
+      "base": "JPY",
+      "target": "CAD",
+      "rate": 0.008583
+    },
+    {
+      "base": "JPY",
+      "target": "CHF",
+      "rate": 0.004939
+    },
+    {
+      "base": "JPY",
+      "target": "CZK",
+      "rate": 0.130369
+    },
+    {
+      "base": "JPY",
+      "target": "DKK",
+      "rate": 0.040001
+    },
+    {
+      "base": "JPY",
+      "target": "EUR",
+      "rate": 0.005352
+    },
+    {
+      "base": "JPY",
+      "target": "GBP",
+      "rate": 0.004649
+    },
+    {
+      "base": "JPY",
+      "target": "JPY",
+      "rate": 1.0
+    },
+    {
+      "base": "JPY",
+      "target": "NOK",
+      "rate": 0.05846
+    },
+    {
+      "base": "JPY",
+      "target": "PLN",
+      "rate": 0.022713
+    },
+    {
+      "base": "JPY",
+      "target": "SEK",
+      "rate": 0.057853
+    },
+    {
+      "base": "JPY",
+      "target": "USD",
+      "rate": 0.006275
+    },
+    {
+      "base": "NOK",
+      "target": "AUD",
+      "rate": 0.150428
+    },
+    {
+      "base": "NOK",
+      "target": "CAD",
+      "rate": 0.146812
+    },
+    {
+      "base": "NOK",
+      "target": "CHF",
+      "rate": 0.084485
+    },
+    {
+      "base": "NOK",
+      "target": "CZK",
+      "rate": 2.230055
+    },
+    {
+      "base": "NOK",
+      "target": "DKK",
+      "rate": 0.684241
+    },
+    {
+      "base": "NOK",
+      "target": "EUR",
+      "rate": 0.091557
+    },
+    {
+      "base": "NOK",
+      "target": "GBP",
+      "rate": 0.07953
+    },
+    {
+      "base": "NOK",
+      "target": "JPY",
+      "rate": 17.105761
+    },
+    {
+      "base": "NOK",
+      "target": "NOK",
+      "rate": 1.0
+    },
+    {
+      "base": "NOK",
+      "target": "PLN",
+      "rate": 0.38853
+    },
+    {
+      "base": "NOK",
+      "target": "SEK",
+      "rate": 0.989622
+    },
+    {
+      "base": "NOK",
+      "target": "USD",
+      "rate": 0.10733
+    },
+    {
+      "base": "PLN",
+      "target": "AUD",
+      "rate": 0.387172
+    },
+    {
+      "base": "PLN",
+      "target": "CAD",
+      "rate": 0.377864
+    },
+    {
+      "base": "PLN",
+      "target": "CHF",
+      "rate": 0.217448
+    },
+    {
+      "base": "PLN",
+      "target": "CZK",
+      "rate": 5.739721
+    },
+    {
+      "base": "PLN",
+      "target": "DKK",
+      "rate": 1.761103
+    },
+    {
+      "base": "PLN",
+      "target": "EUR",
+      "rate": 0.23565
+    },
+    {
+      "base": "PLN",
+      "target": "GBP",
+      "rate": 0.204696
+    },
+    {
+      "base": "PLN",
+      "target": "JPY",
+      "rate": 44.026857
+    },
+    {
+      "base": "PLN",
+      "target": "NOK",
+      "rate": 2.573803
+    },
+    {
+      "base": "PLN",
+      "target": "PLN",
+      "rate": 1.0
+    },
+    {
+      "base": "PLN",
+      "target": "SEK",
+      "rate": 2.547093
+    },
+    {
+      "base": "PLN",
+      "target": "USD",
+      "rate": 0.276247
+    },
+    {
+      "base": "SEK",
+      "target": "AUD",
+      "rate": 0.152005
+    },
+    {
+      "base": "SEK",
+      "target": "CAD",
+      "rate": 0.148351
+    },
+    {
+      "base": "SEK",
+      "target": "CHF",
+      "rate": 0.085371
+    },
+    {
+      "base": "SEK",
+      "target": "CZK",
+      "rate": 2.25344
+    },
+    {
+      "base": "SEK",
+      "target": "DKK",
+      "rate": 0.691417
+    },
+    {
+      "base": "SEK",
+      "target": "EUR",
+      "rate": 0.092517
+    },
+    {
+      "base": "SEK",
+      "target": "GBP",
+      "rate": 0.080364
+    },
+    {
+      "base": "SEK",
+      "target": "JPY",
+      "rate": 17.285139
+    },
+    {
+      "base": "SEK",
+      "target": "NOK",
+      "rate": 1.010486
+    },
+    {
+      "base": "SEK",
+      "target": "PLN",
+      "rate": 0.392604
+    },
+    {
+      "base": "SEK",
+      "target": "SEK",
+      "rate": 1.0
+    },
+    {
+      "base": "SEK",
+      "target": "USD",
+      "rate": 0.108456
+    },
+    {
+      "base": "USD",
+      "target": "AUD",
+      "rate": 1.401542
+    },
+    {
+      "base": "USD",
+      "target": "CAD",
+      "rate": 1.36785
+    },
+    {
+      "base": "USD",
+      "target": "CHF",
+      "rate": 0.787151
+    },
+    {
+      "base": "USD",
+      "target": "CZK",
+      "rate": 20.777504
+    },
+    {
+      "base": "USD",
+      "target": "DKK",
+      "rate": 6.375104
+    },
+    {
+      "base": "USD",
+      "target": "EUR",
+      "rate": 0.85304
+    },
+    {
+      "base": "USD",
+      "target": "GBP",
+      "rate": 0.740988
+    },
+    {
+      "base": "USD",
+      "target": "JPY",
+      "rate": 159.37504
+    },
+    {
+      "base": "USD",
+      "target": "NOK",
+      "rate": 9.317039
+    },
+    {
+      "base": "USD",
+      "target": "PLN",
+      "rate": 3.61995
+    },
+    {
+      "base": "USD",
+      "target": "SEK",
+      "rate": 9.22035
+    },
+    {
+      "base": "USD",
+      "target": "USD",
+      "rate": 1.0
+    }
   ]
 }

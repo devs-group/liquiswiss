@@ -15,8 +15,12 @@
     :show-close-icon="true"
     header="Menü"
     position="right"
+    :pt="{ content: { class: 'flex flex-col' } }"
   >
-    <Navigation @click="showDrawer = false" />
+    <Navigation
+      class="flex-1 min-h-0"
+      @click="showDrawer = false"
+    />
   </Drawer>
 </template>
 

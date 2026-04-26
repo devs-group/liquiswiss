@@ -8,6 +8,7 @@ import (
 	"liquiswiss/pkg/models"
 	"liquiswiss/pkg/utils"
 	"net/url"
+	"time"
 
 	"github.com/wneessen/go-mail"
 )
@@ -15,6 +16,36 @@ import (
 type smtpAdapter struct {
 	cfg      config.Config
 	renderer *templateRenderer
+}
+
+// formatValidityWindow renders a duration as "X Tag(e)", "X Stunde(n)", or "X Minute(n)"
+// picking the largest unit that divides cleanly, falling back to minutes.
+func formatValidityWindow(d time.Duration) string {
+	minutes := int(d.Minutes())
+	if minutes <= 0 {
+		minutes = 1
+	}
+	if minutes%1440 == 0 {
+		return fmt.Sprintf("%d Tag(e)", minutes/1440)
+	}
+	if minutes%60 == 0 {
+		return fmt.Sprintf("%d Stunde(n)", minutes/60)
+	}
+	return fmt.Sprintf("%d Minute(n)", minutes)
+}
+
+func resolveTLSMode(explicit string, port int) string {
+	if explicit != "" {
+		return explicit
+	}
+	switch port {
+	case 465:
+		return "implicit"
+	case 587:
+		return "starttls"
+	default:
+		return "off"
+	}
 }
 
 func newSMTPAdapter(cfg config.Config) IEmailAdapter {
@@ -48,7 +79,8 @@ func (s *smtpAdapter) sendHTML(toAddress, templateName string, content models.Em
 		mail.WithPort(s.cfg.SMTPPort),
 	}
 
-	switch s.cfg.SMTPTLS {
+	tlsMode := resolveTLSMode(s.cfg.SMTPTLS, s.cfg.SMTPPort)
+	switch tlsMode {
 	case "implicit":
 		clientOpts = append(clientOpts, mail.WithSSLPort(false), mail.WithTLSPolicy(mail.TLSMandatory))
 	case "starttls":
@@ -65,7 +97,7 @@ func (s *smtpAdapter) sendHTML(toAddress, templateName string, content models.Em
 		)
 	}
 
-	if s.cfg.SMTPTLS != "off" {
+	if tlsMode != "off" {
 		clientOpts = append(clientOpts, mail.WithTLSConfig(&tls.Config{ServerName: s.cfg.SMTPHost}))
 	}
 
@@ -92,8 +124,8 @@ func (s *smtpAdapter) SendRegistrationMail(email, code string) error {
 		PreHeader: "Nur noch ein kleiner Schritt bevor Sie LiquiSwiss nutzen können ...",
 		Hello:     "Willkommen bei LiquiSwiss 🇨🇭",
 		Content: fmt.Sprintf(
-			"Danke für Ihr Interesse an Liquiswiss. Um Ihre Anmeldung abzuschliessen müssen Sie nur noch Ihre E-Mail bestätigen. Bitte beachten Sie, dass dieser Link für maximal %.0f Stunde(n) gültig ist",
-			utils.RegistrationCodeValidity.Hours(),
+			"Danke für Ihr Interesse an Liquiswiss. Um Ihre Anmeldung abzuschliessen müssen Sie nur noch Ihre E-Mail bestätigen. Bitte beachten Sie, dass dieser Link für maximal %s gültig ist",
+			formatValidityWindow(utils.RegistrationCodeValidity),
 		),
 		ButtonText: "E-Mail bestätigen",
 		ButtonUrl:  fmt.Sprintf("%s/auth/validate?%s", s.cfg.WebHost, params.Encode()),
@@ -112,8 +144,8 @@ func (s *smtpAdapter) SendPasswordResetMail(email, code string) error {
 		PreHeader: "",
 		Hello:     "Guten Tag! 👋",
 		Content: fmt.Sprintf(
-			"Sie haben angefordert Ihr Passwort zurückzusetzen. Bitte beachten Sie, dass dieser Link für maximal %.0f Minute(n) gültig ist",
-			utils.ResetPasswordDelay.Minutes(),
+			"Sie haben angefordert Ihr Passwort zurückzusetzen. Bitte beachten Sie, dass dieser Link für maximal %s gültig ist",
+			formatValidityWindow(s.cfg.ResetPasswordValidity),
 		),
 		ButtonText: "Passwort zurücksetzen",
 		ButtonUrl:  fmt.Sprintf("%s/auth/reset-password?%s", s.cfg.WebHost, params.Encode()),
@@ -131,10 +163,10 @@ func (s *smtpAdapter) SendInvitationMail(email, token, organisationName, invited
 		PreHeader: fmt.Sprintf("%s hat Sie eingeladen ...", invitedByName),
 		Hello:     "Guten Tag! 👋",
 		Content: fmt.Sprintf(
-			"%s hat Sie eingeladen, der Organisation <strong>%s</strong> auf LiquiSwiss beizutreten. Klicken Sie auf den Button unten, um die Einladung anzunehmen. Bitte beachten Sie, dass dieser Link für maximal %.0f Tag(e) gültig ist.",
+			"%s hat Sie eingeladen, der Organisation <strong>%s</strong> auf LiquiSwiss beizutreten. Klicken Sie auf den Button unten, um die Einladung anzunehmen. Bitte beachten Sie, dass dieser Link für maximal %s gültig ist.",
 			invitedByName,
 			organisationName,
-			utils.InvitationValidity.Hours()/24,
+			formatValidityWindow(s.cfg.InvitationValidity),
 		),
 		ButtonText: "Einladung annehmen",
 		ButtonUrl:  fmt.Sprintf("%s/auth/invitation?%s", s.cfg.WebHost, params.Encode()),

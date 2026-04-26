@@ -3,6 +3,7 @@ package email_adapter
 import (
 	"strings"
 	"testing"
+	"time"
 
 	"github.com/stretchr/testify/require"
 
@@ -65,4 +66,43 @@ func TestRenderUnknownTemplateErrors(t *testing.T) {
 	a := newAdapterForTest(t, config.Config{})
 	_, err := a.renderer.render("missing.tmpl", models.EmailContent{})
 	require.Error(t, err)
+}
+
+func TestFormatValidityWindow(t *testing.T) {
+	cases := []struct {
+		d    time.Duration
+		want string
+	}{
+		{7 * 24 * time.Hour, "7 Tag(e)"},
+		{1 * 24 * time.Hour, "1 Tag(e)"},
+		{2 * time.Hour, "2 Stunde(n)"},
+		{1 * time.Hour, "1 Stunde(n)"},
+		{45 * time.Minute, "45 Minute(n)"},
+		{1 * time.Minute, "1 Minute(n)"},
+		{0, "1 Minute(n)"}, // floor to 1 — never display "0 Minute(n)"
+	}
+	for _, c := range cases {
+		require.Equal(t, c.want, formatValidityWindow(c.d), "duration=%s", c.d)
+	}
+}
+
+func TestResolveTLSMode(t *testing.T) {
+	cases := []struct {
+		explicit string
+		port     int
+		want     string
+	}{
+		{"starttls", 465, "starttls"},
+		{"implicit", 587, "implicit"},
+		{"off", 25, "off"},
+		{"", 465, "implicit"},
+		{"", 587, "starttls"},
+		{"", 25, "off"},
+		{"", 1025, "off"},
+		{"", 0, "off"},
+	}
+	for _, c := range cases {
+		require.Equal(t, c.want, resolveTLSMode(c.explicit, c.port),
+			"explicit=%q port=%d", c.explicit, c.port)
+	}
 }

@@ -107,7 +107,7 @@ func runApp() {
 			return
 		}
 		if requiresInitialFetch {
-			logger.Logger.Info("Count of fiat rate currencies doesn't match currencies, fetching from fixer.io")
+			logger.Logger.Info("Count of fiat rate currencies doesn't match currencies, triggering initial fiat rates fetch")
 			fixerIOService.FetchFiatRates()
 		} else {
 			logger.Logger.Info("No initial fetch required for fiat rates")

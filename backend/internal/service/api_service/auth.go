@@ -2,10 +2,10 @@ package api_service
 
 import (
 	"golang.org/x/crypto/bcrypt"
+	"liquiswiss/config"
 	"liquiswiss/pkg/auth"
 	"liquiswiss/pkg/logger"
 	"liquiswiss/pkg/models"
-	"liquiswiss/pkg/utils"
 	"time"
 )
 
@@ -58,7 +58,7 @@ func (a *APIService) Logout(existingRefreshToken string) {
 }
 
 func (a *APIService) ForgotPassword(payload models.ForgotPassword, code string) error {
-	hasCreated, err := a.dbService.CreateResetPassword(payload.Email, code, utils.ResetPasswordDelay)
+	hasCreated, err := a.dbService.CreateResetPassword(payload.Email, code, config.GetConfig().ResetPasswordDelay)
 	if err != nil {
 		logger.Logger.Error(err)
 		return err
@@ -81,7 +81,7 @@ func (a *APIService) ForgotPassword(payload models.ForgotPassword, code string) 
 }
 
 func (a *APIService) ResetPassword(payload models.ResetPassword) error {
-	_, err := a.dbService.ValidateResetPassword(payload.Email, payload.Code, utils.ResetPasswordDelay)
+	_, err := a.dbService.ValidateResetPassword(payload.Email, payload.Code, config.GetConfig().ResetPasswordValidity)
 	if err != nil {
 		logger.Logger.Error(err)
 		return err
@@ -109,7 +109,7 @@ func (a *APIService) ResetPassword(payload models.ResetPassword) error {
 }
 
 func (a *APIService) CheckResetPasswordCode(payload models.CheckResetPasswordCode) error {
-	_, err := a.dbService.ValidateResetPassword(payload.Email, payload.Code, utils.ResetPasswordDelay)
+	_, err := a.dbService.ValidateResetPassword(payload.Email, payload.Code, config.GetConfig().ResetPasswordValidity)
 	if err != nil {
 		logger.Logger.Error(err)
 		return err

@@ -28,20 +28,6 @@
           >Nicht nachfragen beim Wechseln der Organisation</label>
         </div>
       </div>
-
-      <div class="flex flex-col justify-center h-full col-span-full md:col-span-1 bg-zinc-100 dark:bg-zinc-800 p-2">
-        <div class="flex items-center gap-2 col-span-full md:col-span-1">
-          <label for="dark-mode">Farbmodus:</label>
-          <ClientOnly>
-            <SelectButton
-              v-model="colorMode.preference"
-              :options="darkModeOptions"
-              option-label="label"
-              option-value="value"
-            />
-          </ClientOnly>
-        </div>
-      </div>
     </div>
   </div>
 </template>
@@ -56,7 +42,6 @@ useHead({
 
 const toast = useToast()
 
-const colorMode = useColorMode()
 const { skipOrganisationSwitchQuestion, settingsTab, setSkipOrganisationSwitchQuestion } = useSettings()
 
 onMounted(() => {
@@ -72,24 +57,4 @@ const onSkipOrganisationSwitchQuestionChange = (value: boolean) => {
     life: Config.TOAST_LIFE_TIME_SHORT,
   })
 }
-
-const darkModeOptions = computed(() => {
-  return DarkModeOptions.map((value) => {
-    let label
-    switch (value) {
-      case 'dark':
-        label = 'Dunkel'
-        break
-      case 'light':
-        label = 'Hell'
-        break
-      default:
-        label = 'System'
-    }
-    return {
-      label: label,
-      value: value,
-    }
-  })
-})
 </script>

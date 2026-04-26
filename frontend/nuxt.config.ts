@@ -25,7 +25,7 @@ export default defineNuxtConfig({
   css: ['@/assets/css/tailwind.css', 'primeicons/primeicons.css'],
   colorMode: {
     classSuffix: '',
-    storage: 'localStorage',
+    storage: 'cookie',
     storageKey: 'dark-mode-preference',
   },
   runtimeConfig: {

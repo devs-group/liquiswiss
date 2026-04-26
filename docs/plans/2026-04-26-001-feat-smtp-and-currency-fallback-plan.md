@@ -56,7 +56,7 @@ This plan supersedes two earlier sketches: `docs/plans/smtp-email-adapter.md` an
 - `docker-compose.yml` — root local compose; add `mailpit` service.
 - `_deployment/docker-compose.yml` — prod-mirror compose; add SMTP env vars to backend, do **not** add Mailpit.
 - No `.env.example` exists — env vars come from compose defaults + BWSM. Document new vars in CLAUDE.md instead.
-- BWSM project `liquiswiss-dev` (id `81c6783f-41ae-4e28-b688-b437016bfa13`) — local injection. Currently empty for `SEND_GRID_*` and `FIXER_IO_KEY` per CLAUDE.md.
+- BWSM project `liquiswiss-dev` — local injection. Currently empty for `SEND_GRID_*` and `FIXER_IO_KEY` per CLAUDE.md.
 
 ### Institutional Learnings
 

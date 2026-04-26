@@ -85,7 +85,7 @@ make dc CMD="logs -f backend"   # any compose passthrough
 | `SMTP_PASS` | `""` | API key / password |
 | `SMTP_FROM_ADDRESS` | `no-reply@liquiswiss.local` | sender address |
 | `SMTP_FROM_NAME` | `LiquiSwiss` | sender display name |
-| `SMTP_TLS` | `off` | `off` \| `starttls` \| `implicit` |
+| `SMTP_TLS` | _(auto)_ | `off` \| `starttls` \| `implicit`. Empty → derived from port (465→implicit, 587→starttls, else→off). |
 
 **Local currency rates fallback**: when `FIXER_IO_KEY` is empty, `FetchFiatRates()` upserts pairs from `backend/internal/service/fixer_io_service/fallback_rates.json` instead of calling Fixer.io. Refresh the JSON manually if drift becomes problematic (one-off `curl` against Fixer.io with a real key, paste in).
 

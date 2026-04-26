@@ -41,6 +41,11 @@ func (f *FixerIOService) RequiresInitialFetch() (bool, error) {
 }
 
 func (f *FixerIOService) fetchFromFallback() {
+	if existing, err := f.apiService.ListFiatRates("CHF"); err == nil && len(existing) > 0 {
+		logger.Logger.Debug("Fixer.io API key not configured — fallback rates already loaded, skipping")
+		return
+	}
+
 	logger.Logger.Info("Fixer.io API key not configured — loading fiat rates from local fallback")
 
 	data, err := loadFallbackRates()
@@ -64,18 +69,18 @@ func (f *FixerIOService) fetchFromFallback() {
 }
 
 func (f *FixerIOService) FetchFiatRates() {
-	if !utils.IsProduction() {
-		fiatRates, err := f.apiService.ListFiatRates("CHF")
-		if err == nil && len(fiatRates) > 0 {
-			logger.Logger.Debug("Skipping Fiat Rates because we are not on Production and already have some Fiat Rates")
-			return
-		}
-	}
-
 	cfg := config.GetConfig()
 	if cfg.FixerIOKey == "" {
 		f.fetchFromFallback()
 		return
+	}
+
+	if !utils.IsProduction() {
+		fiatRates, err := f.apiService.ListFiatRates("CHF")
+		if err == nil && len(fiatRates) > 0 {
+			logger.Logger.Debug("Skipping Fixer.io fetch because we are not on Production and already have some Fiat Rates")
+			return
+		}
 	}
 
 	logger.Logger.Infof("Running Fixer.io Cronjob")

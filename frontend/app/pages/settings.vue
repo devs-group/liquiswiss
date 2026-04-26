@@ -2,8 +2,25 @@
   <div class="flex flex-col gap-4">
     <Menubar
       :model="items"
-      class="justify-end sm:justify-start"
+      breakpoint="640px"
+      class="justify-between sm:justify-start"
     >
+      <template #start>
+        <div class="sm:hidden flex items-center gap-2 px-2 text-base font-medium">
+          <span :class="activeItem?.icon" />
+          <span>{{ activeItem?.label ?? '' }}</span>
+        </div>
+      </template>
+      <template #button="{ toggleCallback }">
+        <button
+          type="button"
+          class="p-menubar-button"
+          aria-label="Menü"
+          @click="toggleCallback"
+        >
+          <i class="pi pi-chevron-down" />
+        </button>
+      </template>
       <template #item="{ item, props }">
         <router-link
           v-if="item.routeName"
@@ -52,6 +69,8 @@ import { RouteNames } from '~/config/routes'
 
 const { myPendingInvitations } = useInvitations()
 
+const route = useRoute()
+
 const items = computed<MenuItem[]>(() => [
   { label: 'Profil', icon: 'pi pi-user', routeName: RouteNames.SETTINGS_PROFILE },
   {
@@ -63,6 +82,8 @@ const items = computed<MenuItem[]>(() => [
   { label: 'Automatisierung', icon: 'pi pi-sync', routeName: RouteNames.SETTINGS_AUTOMATION },
   { label: 'App', icon: 'pi pi-mobile', routeName: RouteNames.SETTINGS_APP },
 ])
+
+const activeItem = computed(() => items.value.find(i => i.routeName === route.name))
 
 definePageMeta({
   redirect: () => {
