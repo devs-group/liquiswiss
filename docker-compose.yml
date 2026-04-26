@@ -79,7 +79,7 @@ services:
       MARIADB_DATABASE: ${APP_DB_NAME:-liquiswiss}
       MARIADB_ROOT_PASSWORD: ${APP_DB_ROOT_PASSWORD:-password}
     volumes:
-      - ./db_data:/var/lib/mysql
+      - db_data:/var/lib/mysql
     healthcheck:
       test: ["CMD", "healthcheck.sh", "--su-mysql", "--connect", "--innodb_initialized"]
       interval: 5s
@@ -125,3 +125,4 @@ volumes:
   nuxt_node_modules:
   backend_go_cache:
   backend_build_cache:
+  db_data:
