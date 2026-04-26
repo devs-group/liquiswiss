@@ -1,6 +1,6 @@
 package models
 
-type SendgridMail struct {
+type EmailContent struct {
 	Subject    string `json:"subject"`
 	PreHeader  string `json:"preHeader"`
 	Hello      string `json:"hello"`

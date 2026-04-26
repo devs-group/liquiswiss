@@ -12,6 +12,7 @@ type Invitation struct {
 	InvitedByName  string    `db:"invited_by_name" json:"invitedByName"`
 	ExpiresAt      time.Time `db:"expires_at" json:"expiresAt"`
 	CreatedAt      time.Time `db:"created_at" json:"createdAt"`
+	LastSentAt     time.Time `db:"last_sent_at" json:"lastSentAt"`
 }
 
 type CreateInvitation struct {

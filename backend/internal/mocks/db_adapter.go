@@ -1480,6 +1480,20 @@ func (mr *MockIDatabaseAdapterMockRecorder) UpdateEmployee(payload, userID, empl
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "UpdateEmployee", reflect.TypeOf((*MockIDatabaseAdapter)(nil).UpdateEmployee), payload, userID, employeeID)
 }
 
+// UpdateInvitationLastSentAt mocks base method.
+func (m *MockIDatabaseAdapter) UpdateInvitationLastSentAt(organisationID, invitationID int64) error {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "UpdateInvitationLastSentAt", organisationID, invitationID)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// UpdateInvitationLastSentAt indicates an expected call of UpdateInvitationLastSentAt.
+func (mr *MockIDatabaseAdapterMockRecorder) UpdateInvitationLastSentAt(organisationID, invitationID any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "UpdateInvitationLastSentAt", reflect.TypeOf((*MockIDatabaseAdapter)(nil).UpdateInvitationLastSentAt), organisationID, invitationID)
+}
+
 // UpdateMemberRole mocks base method.
 func (m *MockIDatabaseAdapter) UpdateMemberRole(organisationID, userID int64, role string) error {
 	m.ctrl.T.Helper()

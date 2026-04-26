@@ -3,7 +3,7 @@ package api
 import (
 	"github.com/gin-gonic/gin"
 	"liquiswiss/internal/adapter/db_adapter"
-	"liquiswiss/internal/adapter/sendgrid_adapter"
+	"liquiswiss/internal/adapter/email_adapter"
 	"liquiswiss/internal/api/handlers"
 	"liquiswiss/internal/middleware"
 	"liquiswiss/internal/service/api_service"
@@ -13,13 +13,13 @@ type API struct {
 	Router          *gin.Engine
 	DBService       db_adapter.IDatabaseAdapter
 	APIService      api_service.IAPIService
-	SendgridService sendgrid_adapter.ISendgridAdapter
+	EmailService email_adapter.IEmailAdapter
 }
 
 func NewAPI(
 	dbService db_adapter.IDatabaseAdapter,
 	apiService api_service.IAPIService,
-	sendgridService sendgrid_adapter.ISendgridAdapter,
+	emailService email_adapter.IEmailAdapter,
 ) *API {
 	gin.DebugPrintRouteFunc = func(httpMethod, absolutePath, handlerName string, nuHandlers int) {
 		// Suppress listing all available routes for less log spamming
@@ -28,7 +28,7 @@ func NewAPI(
 		Router:          gin.Default(),
 		DBService:       dbService,
 		APIService:      apiService,
-		SendgridService: sendgridService,
+		EmailService: emailService,
 	}
 	api.setupRouter()
 	return api

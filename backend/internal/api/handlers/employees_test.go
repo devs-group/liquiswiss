@@ -8,7 +8,8 @@ import (
 	"github.com/stretchr/testify/require"
 
 	"liquiswiss/internal/adapter/db_adapter"
-	"liquiswiss/internal/adapter/sendgrid_adapter"
+	"liquiswiss/config"
+	"liquiswiss/internal/adapter/email_adapter"
 	"liquiswiss/internal/service/api_service"
 	"liquiswiss/pkg/models"
 )
@@ -18,8 +19,8 @@ func TestCreateAndUpdateEmployee(t *testing.T) {
 	defer conn.Close()
 
 	dbAdapter := db_adapter.NewDatabaseAdapter(conn)
-	sendgridService := sendgrid_adapter.NewSendgridAdapter("")
-	apiService := api_service.NewAPIService(dbAdapter, sendgridService)
+	emailService := email_adapter.NewEmailAdapter(config.Config{})
+	apiService := api_service.NewAPIService(dbAdapter, emailService)
 
 	// Preparations
 	_, err := CreateCurrency(apiService, "CHF", "Swiss Franc", "de-CH")
@@ -127,8 +128,8 @@ func setupEmployeeDependencies(t *testing.T) (*sql.DB, api_service.IAPIService, 
 	conn := SetupTestEnvironment(t)
 
 	dbAdapter := db_adapter.NewDatabaseAdapter(conn)
-	sendgridService := sendgrid_adapter.NewSendgridAdapter("")
-	apiService := api_service.NewAPIService(dbAdapter, sendgridService)
+	emailService := email_adapter.NewEmailAdapter(config.Config{})
+	apiService := api_service.NewAPIService(dbAdapter, emailService)
 
 	_, err := CreateCurrency(apiService, "CHF", "Swiss Franc", "de-CH")
 	require.NoError(t, err)
@@ -147,8 +148,8 @@ func setupEmployeeDependenciesWithCurrency(t *testing.T) (*sql.DB, api_service.I
 	conn := SetupTestEnvironment(t)
 
 	dbAdapter := db_adapter.NewDatabaseAdapter(conn)
-	sendgridService := sendgrid_adapter.NewSendgridAdapter("")
-	apiService := api_service.NewAPIService(dbAdapter, sendgridService)
+	emailService := email_adapter.NewEmailAdapter(config.Config{})
+	apiService := api_service.NewAPIService(dbAdapter, emailService)
 
 	currency, err := CreateCurrency(apiService, "CHF", "Swiss Franc", "de-CH")
 	require.NoError(t, err)

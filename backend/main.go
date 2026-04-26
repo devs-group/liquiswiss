@@ -11,7 +11,7 @@ import (
 	"github.com/robfig/cron/v3"
 	"liquiswiss/config"
 	"liquiswiss/internal/adapter/db_adapter"
-	"liquiswiss/internal/adapter/sendgrid_adapter"
+	"liquiswiss/internal/adapter/email_adapter"
 	"liquiswiss/internal/api"
 	"liquiswiss/internal/db"
 	"liquiswiss/internal/middleware"
@@ -83,13 +83,13 @@ func runApp() {
 	}
 
 	cfg := config.GetConfig()
-	sendgridService := sendgrid_adapter.NewSendgridAdapter(cfg.SendgridToken)
+	emailService := email_adapter.NewEmailAdapter(cfg)
 	dbService := db_adapter.NewDatabaseAdapter(conn)
 
-	apiService := api_service.NewAPIService(dbService, sendgridService)
+	apiService := api_service.NewAPIService(dbService, emailService)
 	fixerIOService := fixer_io_service.NewFixerIOService(&apiService)
 	middleware.InjectUserService(dbService)
-	apiHandler := api.NewAPI(dbService, apiService, sendgridService)
+	apiHandler := api.NewAPI(dbService, apiService, emailService)
 
 	// Cronjob
 	c := cron.New()
@@ -107,7 +107,7 @@ func runApp() {
 			return
 		}
 		if requiresInitialFetch {
-			logger.Logger.Info("Count of fiat rate currencies doesn't match currencies, fetching from fixer.io")
+			logger.Logger.Info("Count of fiat rate currencies doesn't match currencies, triggering initial fiat rates fetch")
 			fixerIOService.FetchFiatRates()
 		} else {
 			logger.Logger.Info("No initial fetch required for fiat rates")

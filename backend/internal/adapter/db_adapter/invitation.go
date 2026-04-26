@@ -97,6 +97,7 @@ func (d *DatabaseAdapter) ListInvitations(organisationID int64) ([]models.Invita
 			&invitation.InvitedByName,
 			&invitation.ExpiresAt,
 			&invitation.CreatedAt,
+			&invitation.LastSentAt,
 		)
 		if err != nil {
 			return nil, err
@@ -126,6 +127,7 @@ func (d *DatabaseAdapter) GetInvitationByID(organisationID int64, invitationID i
 		&invitation.InvitedByName,
 		&invitation.ExpiresAt,
 		&invitation.CreatedAt,
+		&invitation.LastSentAt,
 	)
 	if err != nil {
 		return nil, err
@@ -152,6 +154,7 @@ func (d *DatabaseAdapter) GetInvitationByToken(token string) (*models.Invitation
 		&invitation.InvitedByName,
 		&invitation.ExpiresAt,
 		&invitation.CreatedAt,
+		&invitation.LastSentAt,
 	)
 	if err != nil {
 		return nil, err
@@ -193,6 +196,26 @@ func (d *DatabaseAdapter) DeleteInvitationByToken(token string) error {
 	defer stmt.Close()
 
 	_, err = stmt.Exec(token)
+	if err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (d *DatabaseAdapter) UpdateInvitationLastSentAt(organisationID int64, invitationID int64) error {
+	query, err := sqlQueries.ReadFile("queries/update_invitation_last_sent_at.sql")
+	if err != nil {
+		return err
+	}
+
+	stmt, err := d.db.Prepare(string(query))
+	if err != nil {
+		return err
+	}
+	defer stmt.Close()
+
+	_, err = stmt.Exec(invitationID, organisationID)
 	if err != nil {
 		return err
 	}

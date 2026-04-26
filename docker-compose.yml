@@ -25,6 +25,8 @@ services:
     depends_on:
       database:
         condition: service_healthy
+      mailpit:
+        condition: service_started
     ports:
       - '8087:8080'
     working_dir: /app
@@ -38,10 +40,19 @@ services:
       DB_HOST: ${APP_DB_HOST:-database}
       DB_PORT: ${APP_DB_PORT:-3306}
       DB_NAME: ${APP_DB_NAME:-liquiswiss}
-      SEND_GRID_TOKEN: ${SEND_GRID_TOKEN:-}
-      SEND_GRID_TEMPLATE_ID: ${SEND_GRID_TEMPLATE_ID:-}
+      SMTP_HOST: ${SMTP_HOST:-mailpit}
+      SMTP_PORT: ${SMTP_PORT:-1025}
+      SMTP_USER: ${SMTP_USER:-}
+      SMTP_PASS: ${SMTP_PASS:-}
+      SMTP_FROM_ADDRESS: ${SMTP_FROM_ADDRESS:-no-reply@liquiswiss.local}
+      SMTP_FROM_NAME: ${SMTP_FROM_NAME:-LiquiSwiss}
+      SMTP_TLS: ${SMTP_TLS:-}
       FIXER_IO_URL: ${FIXER_IO_URL:-https://data.fixer.io/api/latest}
       FIXER_IO_KEY: ${FIXER_IO_KEY:-}
+      RESET_PASSWORD_DELAY_MINUTES: ${RESET_PASSWORD_DELAY_MINUTES:-1}
+      RESET_PASSWORD_VALIDITY_MINUTES: ${RESET_PASSWORD_VALIDITY_MINUTES:-10}
+      INVITATION_RESEND_DELAY_MINUTES: ${INVITATION_RESEND_DELAY_MINUTES:-1}
+      INVITATION_VALIDITY_MINUTES: ${INVITATION_VALIDITY_MINUTES:-10080}
       JWT_KEY: ${JWT_KEY:-dev_jwt_key}
       FAKE_DATE_TIME: ${FAKE_DATE_TIME:-}
       AIGENT_API_URL: ${AIGENT_API_URL:-}
@@ -85,6 +96,17 @@ services:
       MARIADB_PASSWORD: "test"
       MARIADB_DATABASE: "test"
       MARIADB_ROOT_PASSWORD: "test"
+
+  mailpit:
+    image: axllent/mailpit:v1.29
+    restart: unless-stopped
+    ports:
+      - '1025:1025'
+      - '8025:8025'
+    environment:
+      MP_MAX_MESSAGES: 500
+      MP_SMTP_AUTH_ACCEPT_ANY: 1
+      MP_SMTP_AUTH_ALLOW_INSECURE: 1
 
   phpmyadmin:
     image: phpmyadmin:5.2.1-apache

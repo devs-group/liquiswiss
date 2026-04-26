@@ -2,15 +2,15 @@ package handlers_test
 
 import (
 	"database/sql"
-	"strings"
 	"testing"
 	"time"
 
 	"github.com/stretchr/testify/require"
 	"golang.org/x/crypto/bcrypt"
 
+	"liquiswiss/config"
 	"liquiswiss/internal/adapter/db_adapter"
-	"liquiswiss/internal/adapter/sendgrid_adapter"
+	"liquiswiss/internal/adapter/email_adapter"
 	"liquiswiss/internal/service/api_service"
 	"liquiswiss/pkg/models"
 	"liquiswiss/pkg/utils"
@@ -22,9 +22,9 @@ func setupInvitationDependencies(t *testing.T) (*sql.DB, api_service.IAPIService
 	conn := SetupTestEnvironment(t)
 
 	dbAdapter := db_adapter.NewDatabaseAdapter(conn)
-	// Use empty string for SendGrid API key - emails won't actually be sent
-	sendgridService := sendgrid_adapter.NewSendgridAdapter("")
-	apiService := api_service.NewAPIService(dbAdapter, sendgridService)
+	// SMTP host empty -> Send methods log warn and return nil; emails not actually delivered
+	emailService := email_adapter.NewEmailAdapter(config.Config{})
+	apiService := api_service.NewAPIService(dbAdapter, emailService)
 
 	_, err := CreateCurrency(apiService, "CHF", "Swiss Franc", "de-CH")
 	require.NoError(t, err)
@@ -46,19 +46,12 @@ func TestCreateInvitation_Success(t *testing.T) {
 		Role:  "editor",
 	}, user.ID, org.ID)
 
-	// Note: This will fail at the email-sending step without valid SendGrid API key
-	// In real tests we'd mock the SendGrid adapter
-	// For now, we accept either success or email-sending error (permission denied from SendGrid)
-	if err != nil {
-		// SendGrid returns "Permission denied" when no valid API key
-		require.True(t, strings.Contains(err.Error(), "Permission denied") || strings.Contains(err.Error(), "sendgrid"),
-			"Expected SendGrid error, got: %v", err)
-	} else {
-		require.NotNil(t, invitation)
-		require.Equal(t, "newuser@test.com", invitation.Email)
-		require.Equal(t, "editor", invitation.Role)
-		require.Equal(t, org.ID, invitation.OrganisationID)
-	}
+	// Empty SMTP host -> Send returns nil, invitation succeeds
+	require.NoError(t, err)
+	require.NotNil(t, invitation)
+	require.Equal(t, "newuser@test.com", invitation.Email)
+	require.Equal(t, "editor", invitation.Role)
+	require.Equal(t, org.ID, invitation.OrganisationID)
 }
 
 func TestCreateInvitation_AlreadyMember(t *testing.T) {
@@ -120,17 +113,12 @@ func TestCreateInvitation_AdminCanInvite(t *testing.T) {
 	err = dbAdapter.SetUserCurrentOrganisation(adminID, org.ID)
 	require.NoError(t, err)
 
-	// Admin should be able to invite (will fail at email step without valid SendGrid key)
+	// Admin should be able to invite; empty SMTP host -> no email send, no error
 	_, err = apiService.CreateOrganisationInvitation(models.CreateInvitation{
 		Email: "newuser@test.com",
 		Role:  "editor",
 	}, adminID, org.ID)
-
-	// Accept either success or SendGrid error (permission denied from SendGrid)
-	if err != nil {
-		require.True(t, strings.Contains(err.Error(), "Permission denied") || strings.Contains(err.Error(), "sendgrid"),
-			"Expected SendGrid error, got: %v", err)
-	}
+	require.NoError(t, err)
 }
 
 func TestListInvitations_OwnerCanList(t *testing.T) {
@@ -246,6 +234,62 @@ func TestDeleteInvitation_NonOwnerCannotDelete(t *testing.T) {
 	require.Contains(t, err.Error(), "permission denied")
 }
 
+func TestResendOrganisationInvitation_AntiSpamWindow(t *testing.T) {
+	// Force a long delay so any immediate resend hits the anti-spam guard.
+	t.Setenv("INVITATION_RESEND_DELAY_MINUTES", "60")
+
+	conn, apiService, dbAdapter, user, org := setupInvitationDependencies(t)
+	defer conn.Close()
+
+	// Create invitation. last_sent_at defaults to NOW() on insert.
+	token := "resend-spam-token"
+	expiresAt := time.Now().Add(utils.InvitationValidity)
+	invitationID, err := dbAdapter.CreateInvitation(org.ID, "spam@test.com", "editor", token, user.ID, expiresAt)
+	require.NoError(t, err)
+
+	beforeSent, err := dbAdapter.GetInvitationByID(org.ID, invitationID)
+	require.NoError(t, err)
+
+	// Resend immediately should be blocked by the anti-spam window.
+	err = apiService.ResendOrganisationInvitation(user.ID, org.ID, invitationID)
+	require.Error(t, err)
+	require.Contains(t, err.Error(), "warten", "expected German anti-spam message containing 'warten'")
+
+	// last_sent_at must NOT have advanced when resend was blocked.
+	afterBlocked, err := dbAdapter.GetInvitationByID(org.ID, invitationID)
+	require.NoError(t, err)
+	require.Equal(t, beforeSent.LastSentAt.Unix(), afterBlocked.LastSentAt.Unix(),
+		"last_sent_at must not advance when resend is rate-limited")
+}
+
+func TestResendOrganisationInvitation_UpdatesLastSentAtAfterDelay(t *testing.T) {
+	// 0 falls back to default; use a number that would normally block, then manually
+	// rewind last_sent_at to simulate the delay having elapsed.
+	t.Setenv("INVITATION_RESEND_DELAY_MINUTES", "10")
+
+	conn, apiService, dbAdapter, user, org := setupInvitationDependencies(t)
+	defer conn.Close()
+
+	token := "resend-allowed-token"
+	expiresAt := time.Now().Add(utils.InvitationValidity)
+	invitationID, err := dbAdapter.CreateInvitation(org.ID, "allowed@test.com", "editor", token, user.ID, expiresAt)
+	require.NoError(t, err)
+
+	// Simulate that the last send was 30 minutes ago — past the 10-minute window.
+	pastTime := time.Now().Add(-30 * time.Minute).UTC().Format("2006-01-02 15:04:05")
+	_, err = conn.Exec("UPDATE organisation_invitations SET last_sent_at = ? WHERE id = ?", pastTime, invitationID)
+	require.NoError(t, err)
+
+	// Resend should succeed and advance last_sent_at to "now".
+	err = apiService.ResendOrganisationInvitation(user.ID, org.ID, invitationID)
+	require.NoError(t, err)
+
+	after, err := dbAdapter.GetInvitationByID(org.ID, invitationID)
+	require.NoError(t, err)
+	require.WithinDuration(t, time.Now(), after.LastSentAt, 10*time.Second,
+		"last_sent_at should advance to ~now after a successful resend")
+}
+
 func TestCheckInvitation_ValidToken(t *testing.T) {
 	conn, apiService, dbAdapter, user, org := setupInvitationDependencies(t)
 	defer conn.Close()
@@ -346,6 +390,21 @@ func TestAcceptInvitation_NewUser(t *testing.T) {
 		}
 	}
 	require.True(t, found, "New user should be a member of the organisation")
+
+	// Verify new user also got a personal default organisation, mirroring FinishRegistration.
+	orgs, _, err := apiService.ListOrganisations(acceptedUser.ID, 1, 50)
+	require.NoError(t, err)
+
+	var defaultOrg *models.Organisation
+	for i, o := range orgs {
+		if o.IsDefault {
+			defaultOrg = &orgs[i]
+			break
+		}
+	}
+	require.NotNil(t, defaultOrg, "Accepted new user should own a personal default organisation")
+	require.NotEqual(t, org.ID, defaultOrg.ID, "Default org must not be the invited org")
+	require.Equal(t, "Meine Organisation", defaultOrg.Name)
 }
 
 func TestAcceptInvitation_ExistingUser(t *testing.T) {

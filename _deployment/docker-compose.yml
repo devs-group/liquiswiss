@@ -60,10 +60,19 @@ services:
       DB_HOST: ${APP_DB_HOST:-database-app}
       DB_PORT: ${APP_DB_PORT:-3306}
       DB_NAME: ${APP_DB_NAME:-liquiswiss}
-      SEND_GRID_TOKEN: ${SEND_GRID_TOKEN:?BWSM secret SEND_GRID_TOKEN required}
-      SEND_GRID_TEMPLATE_ID: ${SEND_GRID_TEMPLATE_ID:?BWSM secret SEND_GRID_TEMPLATE_ID required}
+      SMTP_HOST: ${SMTP_HOST:?BWSM secret SMTP_HOST required}
+      SMTP_PORT: ${SMTP_PORT:?BWSM secret SMTP_PORT required}
+      SMTP_USER: ${SMTP_USER:?BWSM secret SMTP_USER required}
+      SMTP_PASS: ${SMTP_PASS:?BWSM secret SMTP_PASS required}
+      SMTP_FROM_ADDRESS: ${SMTP_FROM_ADDRESS:-no-reply@liquiswiss.ch}
+      SMTP_FROM_NAME: ${SMTP_FROM_NAME:-LiquiSwiss}
+      SMTP_TLS: ${SMTP_TLS:-}
       FIXER_IO_URL: ${FIXER_IO_URL:-https://data.fixer.io/api/latest}
       FIXER_IO_KEY: ${FIXER_IO_KEY:?BWSM secret FIXER_IO_KEY required}
+      RESET_PASSWORD_DELAY_MINUTES: ${RESET_PASSWORD_DELAY_MINUTES:-10}
+      RESET_PASSWORD_VALIDITY_MINUTES: ${RESET_PASSWORD_VALIDITY_MINUTES:-60}
+      INVITATION_RESEND_DELAY_MINUTES: ${INVITATION_RESEND_DELAY_MINUTES:-10}
+      INVITATION_VALIDITY_MINUTES: ${INVITATION_VALIDITY_MINUTES:-10080}
       JWT_KEY: ${JWT_KEY:?BWSM secret JWT_KEY required}
     depends_on:
       database-app:

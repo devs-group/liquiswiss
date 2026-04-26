@@ -25,7 +25,7 @@ All major components use interfaces for testability:
 |-----------|---------|----------|
 | `IAPIService` | Business logic layer | [backend/internal/service/api_service/api_service.go](../../backend/internal/service/api_service/api_service.go) |
 | `IDatabaseAdapter` | Database operations | [backend/internal/adapter/db_adapter/db_adapter.go](../../backend/internal/adapter/db_adapter/db_adapter.go) |
-| `ISendgridAdapter` | Email service | [backend/internal/adapter/sendgrid_adapter/sendgrid_adapter.go](../../backend/internal/adapter/sendgrid_adapter/sendgrid_adapter.go) |
+| `IEmailAdapter` | Email service (SMTP) | [backend/internal/adapter/email_adapter/email_adapter.go](../../backend/internal/adapter/email_adapter/email_adapter.go) |
 
 ## Multi-Tenancy
 
@@ -33,5 +33,5 @@ Users can belong to multiple organizations via the `users_2_organisations` join 
 
 ## External Services
 
-- **Fixer.io**: Currency exchange rates (synced every 12 hours via cronjob in `main.go`)
-- **SendGrid**: Transactional emails
+- **Fixer.io**: Currency exchange rates (synced every 12 hours via cronjob in `main.go`); falls back to bundled `fallback_rates.json` when `FIXER_IO_KEY` is unset
+- **SMTP relay**: Transactional emails via any provider (SendGrid SMTP, Brevo, SES, Mailgun, etc.); locally captured by Mailpit at <http://localhost:8025>

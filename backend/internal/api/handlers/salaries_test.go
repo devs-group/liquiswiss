@@ -3,7 +3,8 @@ package handlers_test
 import (
 	"github.com/stretchr/testify/assert"
 	"liquiswiss/internal/adapter/db_adapter"
-	"liquiswiss/internal/adapter/sendgrid_adapter"
+	"liquiswiss/config"
+	"liquiswiss/internal/adapter/email_adapter"
 	"liquiswiss/internal/service/api_service"
 	"liquiswiss/pkg/models"
 	"liquiswiss/pkg/utils"
@@ -16,8 +17,8 @@ func TestSalaryExecutionDates(t *testing.T) {
 	defer conn.Close()
 
 	dbAdapter := db_adapter.NewDatabaseAdapter(conn)
-	sendgridService := sendgrid_adapter.NewSendgridAdapter("")
-	apiService := api_service.NewAPIService(dbAdapter, sendgridService)
+	emailService := email_adapter.NewEmailAdapter(config.Config{})
+	apiService := api_service.NewAPIService(dbAdapter, emailService)
 
 	// Preparations
 	currency, err := CreateCurrency(apiService, "CHF", "Swiss Franc", "de-CH")
@@ -228,8 +229,8 @@ func TestTerminationSalaryResetsFinancialData(t *testing.T) {
 	defer conn.Close()
 
 	dbAdapter := db_adapter.NewDatabaseAdapter(conn)
-	sendgridService := sendgrid_adapter.NewSendgridAdapter("")
-	apiService := api_service.NewAPIService(dbAdapter, sendgridService)
+	emailService := email_adapter.NewEmailAdapter(config.Config{})
+	apiService := api_service.NewAPIService(dbAdapter, emailService)
 
 	currency, err := CreateCurrency(apiService, "CHF", "Swiss Franc", "de-CH")
 	assert.NoError(t, err)
@@ -293,8 +294,8 @@ func TestSalaryHasSeparateCostsDefined(t *testing.T) {
 	defer conn.Close()
 
 	dbAdapter := db_adapter.NewDatabaseAdapter(conn)
-	sendgridService := sendgrid_adapter.NewSendgridAdapter("")
-	apiService := api_service.NewAPIService(dbAdapter, sendgridService)
+	emailService := email_adapter.NewEmailAdapter(config.Config{})
+	apiService := api_service.NewAPIService(dbAdapter, emailService)
 
 	currency, err := CreateCurrency(apiService, "CHF", "Swiss Franc", "de-CH")
 	assert.NoError(t, err)
@@ -341,8 +342,8 @@ func TestListEmployeesIncludesEmployerCosts(t *testing.T) {
 	defer conn.Close()
 
 	dbAdapter := db_adapter.NewDatabaseAdapter(conn)
-	sendgridService := sendgrid_adapter.NewSendgridAdapter("")
-	apiService := api_service.NewAPIService(dbAdapter, sendgridService)
+	emailService := email_adapter.NewEmailAdapter(config.Config{})
+	apiService := api_service.NewAPIService(dbAdapter, emailService)
 
 	currency, err := CreateCurrency(apiService, "CHF", "Swiss Franc", "de-CH")
 	assert.NoError(t, err)

@@ -1,0 +1,170 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml" xmlns:v="urn:schemas-microsoft-com:vml" xmlns:o="urn:schemas-microsoft-com:office:office" lang="de">
+<head>
+  <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="x-apple-disable-message-reformatting">
+  <meta name="color-scheme" content="light dark">
+  <meta name="supported-color-schemes" content="light dark">
+  <title>{{.Subject}}</title>
+  <!--[if mso]>
+  <xml>
+    <o:OfficeDocumentSettings>
+      <o:AllowPNG/>
+      <o:PixelsPerInch>96</o:PixelsPerInch>
+    </o:OfficeDocumentSettings>
+  </xml>
+  <![endif]-->
+  <style type="text/css">
+    /* Resets — kept minimal to maximize compatibility */
+    html, body { margin:0; padding:0; }
+    table, td { border-collapse:collapse; }
+    img { border:0; height:auto; line-height:100%; outline:none; text-decoration:none; }
+    a { text-decoration:none; }
+
+    /* Mobile */
+    @media screen and (max-width: 600px) {
+      .container { width:100% !important; max-width:100% !important; }
+      .px-content { padding-left:24px !important; padding-right:24px !important; }
+      .h1 { font-size:24px !important; line-height:32px !important; }
+      .btn a { display:block !important; padding:14px 20px !important; }
+    }
+
+    /* Dark mode — matches app palette (zinc surfaces, emerald primary) */
+    @media (prefers-color-scheme: dark) {
+      .bg-page { background-color:#09090b !important; }
+      .bg-card { background-color:#18181b !important; }
+      .text-heading { color:#fafafa !important; }
+      .text-body { color:#d4d4d8 !important; }
+      .text-muted { color:#a1a1aa !important; }
+      .divider { border-color:#27272a !important; }
+      .wordmark { color:#fafafa !important; }
+      .link { color:#34d399 !important; }
+    }
+    /* Outlook.com / Gmail dark fallback */
+    [data-ogsc] .bg-page { background-color:#09090b !important; }
+    [data-ogsc] .bg-card { background-color:#18181b !important; }
+    [data-ogsc] .text-heading { color:#fafafa !important; }
+    [data-ogsc] .text-body { color:#d4d4d8 !important; }
+    [data-ogsc] .text-muted { color:#a1a1aa !important; }
+    [data-ogsc] .divider { border-color:#27272a !important; }
+    [data-ogsc] .wordmark { color:#fafafa !important; }
+    [data-ogsc] .link { color:#34d399 !important; }
+  </style>
+</head>
+<body class="bg-page" style="margin:0; padding:0; background-color:#ffffff; font-family:'Manrope','Helvetica Neue',Helvetica,Arial,sans-serif; color:#18181b;">
+
+  <!-- Preheader (hidden preview text) -->
+  <div style="display:none; font-size:1px; color:#f4f5f7; line-height:1px; max-height:0; max-width:0; opacity:0; overflow:hidden; mso-hide:all;">
+    {{.PreHeader}}&nbsp;&#847;&zwnj;&nbsp;&#847;&zwnj;&nbsp;&#847;&zwnj;&nbsp;&#847;&zwnj;&nbsp;&#847;&zwnj;&nbsp;&#847;&zwnj;&nbsp;&#847;&zwnj;&nbsp;&#847;&zwnj;
+  </div>
+
+  <!-- Page wrapper -->
+  <table role="presentation" class="bg-page" width="100%" cellpadding="0" cellspacing="0" border="0" style="background-color:#ffffff;">
+    <tr>
+      <td align="center" style="padding:32px 16px;">
+
+        <!-- Card -->
+        <table role="presentation" class="container bg-card" width="600" cellpadding="0" cellspacing="0" border="0" style="width:600px; max-width:600px; background-color:#f4f4f5; border-radius:12px;">
+
+          <!-- Header / wordmark -->
+          <tr>
+            <td class="px-content wordmark" align="center" style="padding:32px 40px 8px; font-family:'Manrope','Helvetica Neue',Helvetica,Arial,sans-serif; font-weight:700; font-size:26px; letter-spacing:0.5px; color:#18181b;">
+              LIQUI<span style="color:#dc2626;">SWISS</span>
+            </td>
+          </tr>
+
+          <!-- Divider -->
+          <tr>
+            <td class="px-content" style="padding:16px 40px 0;">
+              <table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0">
+                <tr><td class="divider" style="border-top:1px solid #e4e4e7; line-height:0; font-size:0;">&nbsp;</td></tr>
+              </table>
+            </td>
+          </tr>
+
+          <!-- Greeting -->
+          <tr>
+            <td class="px-content" style="padding:24px 40px 0;">
+              <h1 class="h1 text-heading" style="margin:0; font-family:'Manrope','Helvetica Neue',Helvetica,Arial,sans-serif; font-weight:700; font-size:26px; line-height:34px; color:#18181b;">
+                {{.Hello}}
+              </h1>
+            </td>
+          </tr>
+
+          <!-- Body -->
+          <tr>
+            <td class="px-content text-body" style="padding:16px 40px 0; font-family:'Manrope','Helvetica Neue',Helvetica,Arial,sans-serif; font-size:16px; line-height:26px; color:#3f3f46;">
+              {{.Content}}
+            </td>
+          </tr>
+
+          {{if .ButtonUrl}}
+          <!-- Button (bulletproof, VML fallback for Outlook) -->
+          <tr>
+            <td class="px-content" align="center" style="padding:32px 40px 8px;">
+              <!--[if mso]>
+              <v:roundrect xmlns:v="urn:schemas-microsoft-com:vml" xmlns:w="urn:schemas-microsoft-com:office:word" href="{{.ButtonUrl}}" style="height:48px; v-text-anchor:middle; width:240px;" arcsize="14%" stroke="f" fillcolor="#10b981">
+                <w:anchorlock/>
+                <center style="color:#ffffff; font-family:'Helvetica Neue',Helvetica,Arial,sans-serif; font-size:16px; font-weight:700; letter-spacing:0.2px;">
+                  {{.ButtonText}}
+                </center>
+              </v:roundrect>
+              <![endif]-->
+              <!--[if !mso]><!-- -->
+              <table role="presentation" class="btn" cellpadding="0" cellspacing="0" border="0">
+                <tr>
+                  <td align="center" style="background-color:#10b981; border-radius:8px;">
+                    <a href="{{.ButtonUrl}}" target="_blank" rel="noopener" style="display:inline-block; padding:14px 28px; font-family:'Manrope','Helvetica Neue',Helvetica,Arial,sans-serif; font-size:16px; font-weight:700; line-height:20px; color:#ffffff; background-color:#10b981; border-radius:8px; text-decoration:none; letter-spacing:0.2px;">
+                      {{.ButtonText}}
+                    </a>
+                  </td>
+                </tr>
+              </table>
+              <!--<![endif]-->
+            </td>
+          </tr>
+
+          <!-- Fallback link -->
+          <tr>
+            <td class="px-content text-muted" style="padding:12px 40px 0; font-family:'Manrope','Helvetica Neue',Helvetica,Arial,sans-serif; font-size:13px; line-height:20px; color:#71717a; text-align:center;">
+              Falls der Button nicht funktioniert, kopieren Sie diesen Link:<br>
+              <a href="{{.ButtonUrl}}" class="link" style="color:#10b981; text-decoration:underline;">{{.ButtonUrl}}</a>
+            </td>
+          </tr>
+          {{end}}
+
+          <!-- Greetings / signoff -->
+          <tr>
+            <td class="px-content text-body" style="padding:32px 40px 0; font-family:'Manrope','Helvetica Neue',Helvetica,Arial,sans-serif; font-size:16px; line-height:26px; color:#3f3f46;">
+              {{.Greetings}}
+            </td>
+          </tr>
+
+          <!-- Footer divider -->
+          <tr>
+            <td class="px-content" style="padding:24px 40px 0;">
+              <table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0">
+                <tr><td class="divider" style="border-top:1px solid #e4e4e7; line-height:0; font-size:0;">&nbsp;</td></tr>
+              </table>
+            </td>
+          </tr>
+
+          <!-- Footer -->
+          <tr>
+            <td class="px-content text-muted" align="center" style="padding:20px 40px 32px; font-family:'Manrope','Helvetica Neue',Helvetica,Arial,sans-serif; font-size:12px; line-height:18px; color:#a1a1aa;">
+              &copy; LiquiSwiss &middot; <a href="https://liquiswiss.ch" style="color:#a1a1aa; text-decoration:underline;">liquiswiss.ch</a><br>
+              Diese E-Mail wurde automatisch generiert. Bitte antworten Sie nicht auf diese Nachricht.
+            </td>
+          </tr>
+
+        </table>
+        <!-- /Card -->
+
+      </td>
+    </tr>
+  </table>
+
+</body>
+</html>

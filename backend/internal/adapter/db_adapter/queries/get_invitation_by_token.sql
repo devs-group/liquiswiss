@@ -7,7 +7,8 @@ SELECT
     i.invited_by,
     u.name AS invited_by_name,
     i.expires_at,
-    i.created_at
+    i.created_at,
+    i.last_sent_at
 FROM organisation_invitations i
 INNER JOIN users u ON u.id = i.invited_by
 WHERE i.token = ?

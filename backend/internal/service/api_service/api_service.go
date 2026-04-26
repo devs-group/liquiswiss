@@ -3,7 +3,7 @@ package api_service
 
 import (
 	"liquiswiss/internal/adapter/db_adapter"
-	"liquiswiss/internal/adapter/sendgrid_adapter"
+	"liquiswiss/internal/adapter/email_adapter"
 	"liquiswiss/pkg/models"
 	"time"
 )
@@ -129,13 +129,13 @@ type IAPIService interface {
 }
 
 type APIService struct {
-	dbService       db_adapter.IDatabaseAdapter
-	sendgridAdapter sendgrid_adapter.ISendgridAdapter
+	dbService    db_adapter.IDatabaseAdapter
+	emailAdapter email_adapter.IEmailAdapter
 }
 
-func NewAPIService(dbService db_adapter.IDatabaseAdapter, sendgridAdapter sendgrid_adapter.ISendgridAdapter) IAPIService {
+func NewAPIService(dbService db_adapter.IDatabaseAdapter, emailAdapter email_adapter.IEmailAdapter) IAPIService {
 	return &APIService{
-		dbService:       dbService,
-		sendgridAdapter: sendgridAdapter,
+		dbService:    dbService,
+		emailAdapter: emailAdapter,
 	}
 }

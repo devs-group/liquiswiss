@@ -3,10 +3,11 @@ package api_service
 import (
 	"database/sql"
 	"errors"
+	"fmt"
+	"liquiswiss/config"
 	"liquiswiss/pkg/auth"
 	"liquiswiss/pkg/logger"
 	"liquiswiss/pkg/models"
-	"liquiswiss/pkg/utils"
 	"time"
 
 	"github.com/google/uuid"
@@ -73,7 +74,7 @@ func (a *APIService) CreateOrganisationInvitation(payload models.CreateInvitatio
 
 	// Generate token
 	token := uuid.New().String()
-	expiresAt := time.Now().Add(utils.InvitationValidity)
+	expiresAt := time.Now().Add(config.GetConfig().InvitationValidity)
 
 	// Create invitation
 	invitationID, err := a.dbService.CreateInvitation(organisationID, payload.Email, payload.Role, token, userID, expiresAt)
@@ -95,7 +96,7 @@ func (a *APIService) CreateOrganisationInvitation(payload models.CreateInvitatio
 	}
 
 	// Send invitation email
-	err = a.sendgridAdapter.SendInvitationMail(payload.Email, token, organisation.Name, inviterName)
+	err = a.emailAdapter.SendInvitationMail(payload.Email, token, organisation.Name, inviterName)
 	if err != nil {
 		logger.Logger.Error(err)
 		// Delete the invitation if email fails
@@ -160,6 +161,17 @@ func (a *APIService) ResendOrganisationInvitation(userID int64, organisationID i
 		return err
 	}
 
+	// Anti-spam: block resend within configured window
+	delay := config.GetConfig().InvitationResendDelay
+	if elapsed := time.Since(invitation.LastSentAt); elapsed < delay {
+		remaining := delay - elapsed
+		minutes := int(remaining.Minutes())
+		if minutes < 1 {
+			minutes = 1
+		}
+		return fmt.Errorf("Bitte warten Sie noch %d Minute(n) bevor Sie diese Einladung erneut senden", minutes)
+	}
+
 	// Get inviter name for email
 	inviter, err := a.dbService.GetProfile(userID)
 	if err != nil {
@@ -173,10 +185,14 @@ func (a *APIService) ResendOrganisationInvitation(userID int64, organisationID i
 	}
 
 	// Resend email
-	err = a.sendgridAdapter.SendInvitationMail(invitation.Email, invitation.Token, organisation.Name, inviterName)
+	err = a.emailAdapter.SendInvitationMail(invitation.Email, invitation.Token, organisation.Name, inviterName)
 	if err != nil {
 		logger.Logger.Error(err)
 		return err
+	}
+
+	if err := a.dbService.UpdateInvitationLastSentAt(organisationID, invitationID); err != nil {
+		logger.Logger.Error(err)
 	}
 
 	return nil
@@ -330,6 +346,19 @@ func (a *APIService) AcceptInvitation(payload models.AcceptInvitation, deviceNam
 
 		// Create user settings
 		_, err = a.dbService.CreateUserSetting(userID)
+		if err != nil {
+			logger.Logger.Error(err)
+			return nil, nil, nil, nil, nil, err
+		}
+
+		// Every new user gets a personal default organisation, mirroring FinishRegistration.
+		// The invited organisation is assigned afterwards and set as the current one.
+		defaultOrgID, err := a.dbService.CreateOrganisation("Meine Organisation")
+		if err != nil {
+			logger.Logger.Error(err)
+			return nil, nil, nil, nil, nil, err
+		}
+		err = a.dbService.AssignUserToOrganisation(userID, defaultOrgID, "owner", true)
 		if err != nil {
 			logger.Logger.Error(err)
 			return nil, nil, nil, nil, nil, err

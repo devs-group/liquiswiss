@@ -27,13 +27,10 @@
     </template>
     <template #content>
       <div class="flex flex-col gap-2 text-sm">
-        <p><strong>E-Mail:</strong> {{ invitation.email }}</p>
         <p><strong>Eingeladen von:</strong> {{ invitation.invitedByName }}</p>
         <p>
           <strong>Läuft ab:</strong>
-          <span :class="{ 'text-red-500': isExpired }">
-            {{ formatDate(invitation.expiresAt) }}
-          </span>
+          <span :class="{ 'text-red-500': isExpired }">{{ formatDate(invitation.expiresAt) }}</span>
         </p>
         <div class="flex flex-wrap gap-2">
           <Tag

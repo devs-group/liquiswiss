@@ -1,7 +1,11 @@
 <template>
   <Menu
-    class="sm:!rounded-none sm:!border-t-0 sm:!border-b-0"
+    class="nav-menu"
     :model="items"
+    :pt="{
+      root: { class: '!flex !flex-col !h-full !bg-transparent !border-0 !rounded-none !shadow-none' },
+      list: { class: '!flex-1' },
+    }"
   >
     <template #start>
       <div class="flex flex-col gap-2 p-4">
@@ -16,6 +20,22 @@
           empty-message="Keine Organisationen gefunden"
           @click.stop
           @change="onChangeOrganisation"
+        />
+      </div>
+    </template>
+
+    <template #end>
+      <div class="flex justify-end p-3 mt-auto">
+        <Button
+          v-tooltip.top="`Farbmodus: ${currentDarkModeOption.title} (klicken zum Wechseln)`"
+          :icon="currentDarkModeOption.icon"
+          :aria-label="`Farbmodus: ${currentDarkModeOption.title}`"
+          severity="secondary"
+          text
+          rounded
+          data-testid="color-mode-toggle"
+          @click.stop.prevent="cycleColorMode"
+          @mousedown.stop
         />
       </div>
     </template>
@@ -78,6 +98,25 @@ const { skipOrganisationSwitchQuestion } = useSettings()
 const { myPendingInvitations } = useInvitations()
 const confirm = useConfirm()
 const toast = useToast()
+const colorMode = useColorMode()
+
+const darkModeMeta: Record<DarkModeType, { icon: string, title: string }> = {
+  system: { icon: 'pi pi-desktop', title: 'System' },
+  dark: { icon: 'pi pi-moon', title: 'Dunkel' },
+  light: { icon: 'pi pi-sun', title: 'Hell' },
+}
+
+const currentDarkModeOption = computed(() => {
+  const pref = (colorMode.preference as DarkModeType) ?? 'system'
+  return darkModeMeta[pref] ?? darkModeMeta.system
+})
+
+const cycleColorMode = () => {
+  const order: DarkModeType[] = ['system', 'dark', 'light']
+  const current = (colorMode.preference as DarkModeType) ?? 'system'
+  const idx = order.indexOf(current)
+  colorMode.preference = order[(idx + 1) % order.length]!
+}
 
 const selectedOrganisationID = ref<number | null>(user.value?.currentOrganisationID ?? null)
 

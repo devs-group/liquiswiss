@@ -140,6 +140,7 @@ type IDatabaseAdapter interface {
 	GetInvitationByToken(token string) (*models.Invitation, error)
 	DeleteInvitation(organisationID int64, invitationID int64) error
 	DeleteInvitationByToken(token string) error
+	UpdateInvitationLastSentAt(organisationID int64, invitationID int64) error
 	GetOrganisationName(organisationID int64) (string, error)
 	GetUserIDByEmail(email string) (int64, error)
 	CheckUserInOrganisation(userID int64, organisationID int64) (bool, error)
