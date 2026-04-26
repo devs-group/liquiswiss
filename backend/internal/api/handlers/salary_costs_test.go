@@ -3,7 +3,8 @@ package handlers_test
 import (
 	"github.com/stretchr/testify/assert"
 	"liquiswiss/internal/adapter/db_adapter"
-	"liquiswiss/internal/adapter/sendgrid_adapter"
+	"liquiswiss/config"
+	"liquiswiss/internal/adapter/email_adapter"
 	"liquiswiss/internal/service/api_service"
 	"liquiswiss/pkg/models"
 	"liquiswiss/pkg/utils"
@@ -17,8 +18,8 @@ func TestMonthlySalaryAtTheEndOfMonthWithoutToDate(t *testing.T) {
 	defer conn.Close()
 
 	dbAdapter := db_adapter.NewDatabaseAdapter(conn)
-	sendgridService := sendgrid_adapter.NewSendgridAdapter("")
-	apiService := api_service.NewAPIService(dbAdapter, sendgridService)
+	emailService := email_adapter.NewEmailAdapter(config.Config{})
+	apiService := api_service.NewAPIService(dbAdapter, emailService)
 
 	// Preparations
 	currency, err := CreateCurrency(apiService, "CHF", "Swiss Franc", "de-CH")
@@ -600,8 +601,8 @@ func TestPercentageSalaryCostBasedOnOtherCost(t *testing.T) {
 	defer conn.Close()
 
 	dbAdapter := db_adapter.NewDatabaseAdapter(conn)
-	sendgridService := sendgrid_adapter.NewSendgridAdapter("")
-	apiService := api_service.NewAPIService(dbAdapter, sendgridService)
+	emailService := email_adapter.NewEmailAdapter(config.Config{})
+	apiService := api_service.NewAPIService(dbAdapter, emailService)
 
 	currency, err := CreateCurrency(apiService, "CHF", "Swiss Franc", "de-CH")
 	assert.NoError(t, err)
@@ -689,8 +690,8 @@ func TestPercentageSalaryCostBasedOnBothDistribution(t *testing.T) {
 	defer conn.Close()
 
 	dbAdapter := db_adapter.NewDatabaseAdapter(conn)
-	sendgridService := sendgrid_adapter.NewSendgridAdapter("")
-	apiService := api_service.NewAPIService(dbAdapter, sendgridService)
+	emailService := email_adapter.NewEmailAdapter(config.Config{})
+	apiService := api_service.NewAPIService(dbAdapter, emailService)
 
 	currency, err := CreateCurrency(apiService, "CHF", "Swiss Franc", "de-CH")
 	assert.NoError(t, err)
@@ -752,8 +753,8 @@ func TestSalaryCostBaseRequiresPercentageAmountType(t *testing.T) {
 	defer conn.Close()
 
 	dbAdapter := db_adapter.NewDatabaseAdapter(conn)
-	sendgridService := sendgrid_adapter.NewSendgridAdapter("")
-	apiService := api_service.NewAPIService(dbAdapter, sendgridService)
+	emailService := email_adapter.NewEmailAdapter(config.Config{})
+	apiService := api_service.NewAPIService(dbAdapter, emailService)
 
 	currency, err := CreateCurrency(apiService, "CHF", "Swiss Franc", "de-CH")
 	assert.NoError(t, err)
@@ -810,8 +811,8 @@ func TestMonthlySalaryAtTheEndOfMonthWithToDate(t *testing.T) {
 	defer conn.Close()
 
 	dbAdapter := db_adapter.NewDatabaseAdapter(conn)
-	sendgridService := sendgrid_adapter.NewSendgridAdapter("")
-	apiService := api_service.NewAPIService(dbAdapter, sendgridService)
+	emailService := email_adapter.NewEmailAdapter(config.Config{})
+	apiService := api_service.NewAPIService(dbAdapter, emailService)
 
 	// Preparations
 	currency, err := CreateCurrency(apiService, "CHF", "Swiss Franc", "de-CH")
@@ -1161,8 +1162,8 @@ func TestMultipleSalaryAtTheEndOfMonthCases(t *testing.T) {
 	defer conn.Close()
 
 	dbAdapter := db_adapter.NewDatabaseAdapter(conn)
-	sendgridService := sendgrid_adapter.NewSendgridAdapter("")
-	apiService := api_service.NewAPIService(dbAdapter, sendgridService)
+	emailService := email_adapter.NewEmailAdapter(config.Config{})
+	apiService := api_service.NewAPIService(dbAdapter, emailService)
 
 	// Preparations
 	currency, err := CreateCurrency(apiService, "CHF", "Swiss Franc", "de-CH")
@@ -1353,8 +1354,8 @@ func TestLongOffsetScenariosAtTheEndOfMonth(t *testing.T) {
 	defer conn.Close()
 
 	dbAdapter := db_adapter.NewDatabaseAdapter(conn)
-	sendgridService := sendgrid_adapter.NewSendgridAdapter("")
-	apiService := api_service.NewAPIService(dbAdapter, sendgridService)
+	emailService := email_adapter.NewEmailAdapter(config.Config{})
+	apiService := api_service.NewAPIService(dbAdapter, emailService)
 
 	// Preparations
 	currency, err := CreateCurrency(apiService, "CHF", "Swiss Franc", "de-CH")
@@ -1497,8 +1498,8 @@ func TestSalaryCostWithPastPaymentsRelativeOffset(t *testing.T) {
 	defer conn.Close()
 
 	dbAdapter := db_adapter.NewDatabaseAdapter(conn)
-	sendgridService := sendgrid_adapter.NewSendgridAdapter("")
-	apiService := api_service.NewAPIService(dbAdapter, sendgridService)
+	emailService := email_adapter.NewEmailAdapter(config.Config{})
+	apiService := api_service.NewAPIService(dbAdapter, emailService)
 
 	currency, err := CreateCurrency(apiService, "CHF", "Swiss Franc", "de-CH")
 	assert.NoError(t, err)
@@ -1586,8 +1587,8 @@ func TestSalaryCostWithPastPaymentsAndTargetDate(t *testing.T) {
 	defer conn.Close()
 
 	dbAdapter := db_adapter.NewDatabaseAdapter(conn)
-	sendgridService := sendgrid_adapter.NewSendgridAdapter("")
-	apiService := api_service.NewAPIService(dbAdapter, sendgridService)
+	emailService := email_adapter.NewEmailAdapter(config.Config{})
+	apiService := api_service.NewAPIService(dbAdapter, emailService)
 
 	currency, err := CreateCurrency(apiService, "CHF", "Swiss Franc", "de-CH")
 	assert.NoError(t, err)
@@ -1666,8 +1667,8 @@ func TestSalaryCostTargetDateLeapYearMonthly(t *testing.T) {
 	defer conn.Close()
 
 	dbAdapter := db_adapter.NewDatabaseAdapter(conn)
-	sendgridService := sendgrid_adapter.NewSendgridAdapter("")
-	apiService := api_service.NewAPIService(dbAdapter, sendgridService)
+	emailService := email_adapter.NewEmailAdapter(config.Config{})
+	apiService := api_service.NewAPIService(dbAdapter, emailService)
 
 	currency, err := CreateCurrency(apiService, "CHF", "Swiss Franc", "de-CH")
 	assert.NoError(t, err)
@@ -1755,8 +1756,8 @@ func TestSalaryCostTargetDateLeapYearAnnualOffset(t *testing.T) {
 	defer conn.Close()
 
 	dbAdapter := db_adapter.NewDatabaseAdapter(conn)
-	sendgridService := sendgrid_adapter.NewSendgridAdapter("")
-	apiService := api_service.NewAPIService(dbAdapter, sendgridService)
+	emailService := email_adapter.NewEmailAdapter(config.Config{})
+	apiService := api_service.NewAPIService(dbAdapter, emailService)
 
 	currency, err := CreateCurrency(apiService, "CHF", "Swiss Franc", "de-CH")
 	assert.NoError(t, err)
@@ -1838,8 +1839,8 @@ func TestSalaryCostPersistsAfterSalaryTransition(t *testing.T) {
 	defer conn.Close()
 
 	dbAdapter := db_adapter.NewDatabaseAdapter(conn)
-	sendgridService := sendgrid_adapter.NewSendgridAdapter("")
-	apiService := api_service.NewAPIService(dbAdapter, sendgridService)
+	emailService := email_adapter.NewEmailAdapter(config.Config{})
+	apiService := api_service.NewAPIService(dbAdapter, emailService)
 
 	currency, err := CreateCurrency(apiService, "CHF", "Swiss Franc", "de-CH")
 	assert.NoError(t, err)
@@ -1950,8 +1951,8 @@ func TestCopySalaryCostsAcrossEmployees(t *testing.T) {
 	defer conn.Close()
 
 	dbAdapter := db_adapter.NewDatabaseAdapter(conn)
-	sendgridService := sendgrid_adapter.NewSendgridAdapter("")
-	apiService := api_service.NewAPIService(dbAdapter, sendgridService)
+	emailService := email_adapter.NewEmailAdapter(config.Config{})
+	apiService := api_service.NewAPIService(dbAdapter, emailService)
 
 	currency, err := CreateCurrency(apiService, "CHF", "Swiss Franc", "de-CH")
 	assert.NoError(t, err)
@@ -2033,8 +2034,8 @@ func TestMonthlySalaryInBetweenMonthWithoutToDate(t *testing.T) {
 	defer conn.Close()
 
 	dbAdapter := db_adapter.NewDatabaseAdapter(conn)
-	sendgridService := sendgrid_adapter.NewSendgridAdapter("")
-	apiService := api_service.NewAPIService(dbAdapter, sendgridService)
+	emailService := email_adapter.NewEmailAdapter(config.Config{})
+	apiService := api_service.NewAPIService(dbAdapter, emailService)
 
 	// Preparations
 	currency, err := CreateCurrency(apiService, "CHF", "Swiss Franc", "de-CH")
@@ -2616,8 +2617,8 @@ func TestMonthlySalaryInBetweenMonthWithToDate(t *testing.T) {
 	defer conn.Close()
 
 	dbAdapter := db_adapter.NewDatabaseAdapter(conn)
-	sendgridService := sendgrid_adapter.NewSendgridAdapter("")
-	apiService := api_service.NewAPIService(dbAdapter, sendgridService)
+	emailService := email_adapter.NewEmailAdapter(config.Config{})
+	apiService := api_service.NewAPIService(dbAdapter, emailService)
 
 	// Preparations
 	currency, err := CreateCurrency(apiService, "CHF", "Swiss Franc", "de-CH")
@@ -2967,8 +2968,8 @@ func TestMultipleSalaryInBetweenMonthCases(t *testing.T) {
 	defer conn.Close()
 
 	dbAdapter := db_adapter.NewDatabaseAdapter(conn)
-	sendgridService := sendgrid_adapter.NewSendgridAdapter("")
-	apiService := api_service.NewAPIService(dbAdapter, sendgridService)
+	emailService := email_adapter.NewEmailAdapter(config.Config{})
+	apiService := api_service.NewAPIService(dbAdapter, emailService)
 
 	// Preparations
 	currency, err := CreateCurrency(apiService, "CHF", "Swiss Franc", "de-CH")
@@ -3159,8 +3160,8 @@ func TestLongOffsetScenariosInBetweenMonth(t *testing.T) {
 	defer conn.Close()
 
 	dbAdapter := db_adapter.NewDatabaseAdapter(conn)
-	sendgridService := sendgrid_adapter.NewSendgridAdapter("")
-	apiService := api_service.NewAPIService(dbAdapter, sendgridService)
+	emailService := email_adapter.NewEmailAdapter(config.Config{})
+	apiService := api_service.NewAPIService(dbAdapter, emailService)
 
 	// Preparations
 	currency, err := CreateCurrency(apiService, "CHF", "Swiss Franc", "de-CH")

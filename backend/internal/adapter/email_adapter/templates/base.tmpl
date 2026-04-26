@@ -1,0 +1,58 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>{{.Subject}}</title>
+  <!--[if mso]>
+  <style type="text/css">
+    table { border-collapse: collapse; }
+    .button { padding: 12px 24px !important; }
+  </style>
+  <![endif]-->
+</head>
+<body style="margin:0; padding:0; background-color:#f4f4f4; font-family:Arial,Helvetica,sans-serif;">
+  <div style="display:none; max-height:0; overflow:hidden;">{{.PreHeader}}</div>
+  <table role="presentation" width="100%" cellspacing="0" cellpadding="0" style="background-color:#f4f4f4;">
+    <tr>
+      <td align="center" style="padding:20px 0;">
+        <table role="presentation" width="600" cellspacing="0" cellpadding="0" style="background-color:#ffffff; border-radius:8px;">
+          <tr>
+            <td align="center" style="padding:30px 40px 20px;">
+              <h1 style="margin:0; color:#1a1a1a; font-size:24px;">LiquiSwiss</h1>
+            </td>
+          </tr>
+          <tr>
+            <td style="padding:0 40px 10px;">
+              <h2 style="margin:0; color:#1a1a1a; font-size:20px;">{{.Hello}}</h2>
+            </td>
+          </tr>
+          <tr>
+            <td style="padding:0 40px 20px; color:#555555; font-size:16px; line-height:24px;">
+              {{.Content}}
+            </td>
+          </tr>
+          {{if .ButtonUrl}}
+          <tr>
+            <td align="center" style="padding:10px 40px 30px;">
+              <table role="presentation" cellspacing="0" cellpadding="0">
+                <tr>
+                  <td style="background-color:#0066cc; border-radius:4px;">
+                    <a href="{{.ButtonUrl}}" target="_blank" style="display:inline-block; padding:14px 28px; color:#ffffff; text-decoration:none; font-size:16px; font-weight:bold;">{{.ButtonText}}</a>
+                  </td>
+                </tr>
+              </table>
+            </td>
+          </tr>
+          {{end}}
+          <tr>
+            <td style="padding:0 40px 30px; color:#555555; font-size:16px; line-height:24px;">
+              {{.Greetings}}
+            </td>
+          </tr>
+        </table>
+      </td>
+    </tr>
+  </table>
+</body>
+</html>

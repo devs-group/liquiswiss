@@ -1,0 +1,45 @@
+{
+  "snapshot_date": "2026-04-26",
+  "source": "Hand-curated approximate rates for local development. Refresh manually if drift becomes problematic.",
+  "rates": [
+    {"base": "CHF", "target": "EUR", "rate": 1.04},
+    {"base": "CHF", "target": "USD", "rate": 1.12},
+    {"base": "CHF", "target": "GBP", "rate": 0.88},
+    {"base": "CHF", "target": "JPY", "rate": 169.50},
+    {"base": "CHF", "target": "CAD", "rate": 1.55},
+    {"base": "CHF", "target": "AUD", "rate": 1.71},
+    {"base": "CHF", "target": "NOK", "rate": 12.10},
+    {"base": "CHF", "target": "SEK", "rate": 11.80},
+    {"base": "CHF", "target": "DKK", "rate": 7.75},
+    {"base": "CHF", "target": "PLN", "rate": 4.45},
+    {"base": "CHF", "target": "CZK", "rate": 25.80},
+    {"base": "CHF", "target": "CHF", "rate": 1.0},
+
+    {"base": "EUR", "target": "CHF", "rate": 0.96},
+    {"base": "EUR", "target": "USD", "rate": 1.08},
+    {"base": "EUR", "target": "GBP", "rate": 0.85},
+    {"base": "EUR", "target": "JPY", "rate": 163.00},
+    {"base": "EUR", "target": "CAD", "rate": 1.49},
+    {"base": "EUR", "target": "AUD", "rate": 1.64},
+    {"base": "EUR", "target": "NOK", "rate": 11.65},
+    {"base": "EUR", "target": "SEK", "rate": 11.35},
+    {"base": "EUR", "target": "DKK", "rate": 7.46},
+    {"base": "EUR", "target": "PLN", "rate": 4.28},
+    {"base": "EUR", "target": "CZK", "rate": 24.80},
+    {"base": "EUR", "target": "EUR", "rate": 1.0},
+
+    {"base": "USD", "target": "CHF", "rate": 0.89},
+    {"base": "USD", "target": "EUR", "rate": 0.93},
+    {"base": "USD", "target": "GBP", "rate": 0.79},
+    {"base": "USD", "target": "JPY", "rate": 151.30},
+    {"base": "USD", "target": "CAD", "rate": 1.38},
+    {"base": "USD", "target": "AUD", "rate": 1.52},
+    {"base": "USD", "target": "USD", "rate": 1.0},
+
+    {"base": "GBP", "target": "CHF", "rate": 1.14},
+    {"base": "GBP", "target": "EUR", "rate": 1.18},
+    {"base": "GBP", "target": "USD", "rate": 1.27},
+    {"base": "GBP", "target": "JPY", "rate": 192.40},
+    {"base": "GBP", "target": "GBP", "rate": 1.0}
+  ]
+}

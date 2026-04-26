@@ -71,7 +71,23 @@ make build           # up -d --build
 make dc CMD="logs -f backend"   # any compose passthrough
 ```
 
-**No required BWSM secrets locally**: all env vars have dev fallbacks in compose. Without a BWSM token, `make` falls through to bare `docker compose` and starts the stack with empty values for `SEND_GRID_TOKEN`, `SEND_GRID_TEMPLATE_ID`, `FIXER_IO_KEY` — email + currency-rate features are disabled at runtime, everything else works. With a BWSM token, the Makefile auto-injects real values via `bws run`.
+**No required BWSM secrets locally**: all env vars have dev fallbacks in compose. Without a BWSM token, `make` falls through to bare `docker compose` and starts the stack with `SMTP_HOST=mailpit` (mail captured locally — see below) and `FIXER_IO_KEY=""` (rates load from `backend/internal/service/fixer_io_service/fallback_rates.json`). Everything works without external accounts. With a BWSM token, the Makefile auto-injects real values via `bws run`.
+
+**Local mail capture (Mailpit)**: outbound emails are routed to the `mailpit` compose service. Inspect them at <http://localhost:8025>. SMTP listener is `mailpit:1025` (no auth, no TLS). Production uses any SMTP relay (SendGrid SMTP, Brevo, AWS SES, Mailgun, Postmark, etc.) via the same `SMTP_*` env vars.
+
+**Mail env vars** (all default sensibly; override only for prod or non-Mailpit local relay):
+
+| Var | Local default | Notes |
+|---|---|---|
+| `SMTP_HOST` | `mailpit` | `""` disables mail send entirely (graceful skip) |
+| `SMTP_PORT` | `1025` | `587` (STARTTLS) or `465` (implicit TLS) for most relays |
+| `SMTP_USER` | `""` | e.g. `apikey` for SendGrid SMTP |
+| `SMTP_PASS` | `""` | API key / password |
+| `SMTP_FROM_ADDRESS` | `no-reply@liquiswiss.local` | sender address |
+| `SMTP_FROM_NAME` | `LiquiSwiss` | sender display name |
+| `SMTP_TLS` | `off` | `off` \| `starttls` \| `implicit` |
+
+**Local currency rates fallback**: when `FIXER_IO_KEY` is empty, `FetchFiatRates()` upserts pairs from `backend/internal/service/fixer_io_service/fallback_rates.json` instead of calling Fixer.io. Refresh the JSON manually if drift becomes problematic (one-off `curl` against Fixer.io with a real key, paste in).
 
 **Bitwarden Secrets Manager (BWSM) project**: `liquiswiss-dev` (id `81c6783f-41ae-4e28-b688-b437016bfa13`).
 
@@ -102,8 +118,8 @@ make dc CMD="logs -f backend nuxt"
 
 ### Docker Compose Setup
 
-- **Root `docker-compose.yml`**: local dev (nuxt, backend, database, database-testing, phpmyadmin). Backend uses `target: dev` with `air` hot-reload. Nuxt runs `npm run dev-host`.
-- Local ports: nuxt `3007`, backend `8087`, database `3317`, database-testing `3318`, phpmyadmin `8097`.
+- **Root `docker-compose.yml`**: local dev (nuxt, backend, database, database-testing, mailpit, phpmyadmin). Backend uses `target: dev` with `air` hot-reload. Nuxt runs `npm run dev-host`.
+- Local ports: nuxt `3007`, backend `8087`, database `3317`, database-testing `3318`, mailpit SMTP `1025`, mailpit UI `8025`, phpmyadmin `8097`.
 - Inside compose network, services reach each other by service name (e.g. `backend:8080`, `database:3306`).
 - **`_deployment/docker-compose.yml`**: mirrors prod (nuxt, backend, landing/wordpress, database-app, database-wordpress, phpmyadmin) with Traefik labels and resource limits. Use for prod-parity local testing: `docker compose -f _deployment/docker-compose.yml --env-file .env up`.
 - **Single `.env` at root** (transitional): flat namespace (`APP_DB_*`, `WP_DB_*`, etc.) mirrors future Bitwarden Secrets Manager injection. Both compose files load from it. Once BWSM wired: `bws run -- docker compose up` replaces `.env`.
@@ -141,7 +157,7 @@ See `.env.example`, `backend/.env.example`, and `frontend/.env.example` for requ
 ## External Services
 
 - **Fixer.io**: Currency exchange rates (synced every 12 hours)
-- **SendGrid**: Transactional emails (requires API key and dynamic template)
+- **SMTP relay** (production): transactional emails via any provider — SendGrid SMTP, Brevo, AWS SES, Mailgun, Postmark, etc. Configured via `SMTP_*` env vars. Locally: Mailpit captures everything.
 
 ## Plans
 

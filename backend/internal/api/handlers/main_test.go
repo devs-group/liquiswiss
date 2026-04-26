@@ -12,7 +12,8 @@ import (
 	"github.com/pressly/goose/v3"
 
 	"liquiswiss/internal/adapter/db_adapter"
-	"liquiswiss/internal/adapter/sendgrid_adapter"
+	"liquiswiss/config"
+	"liquiswiss/internal/adapter/email_adapter"
 	"liquiswiss/internal/db"
 	"liquiswiss/internal/service/api_service"
 	"liquiswiss/pkg/logger"
@@ -184,8 +185,8 @@ func SetupCrossOrgTestEnvironment(t *testing.T) *CrossOrgTestEnv {
 	conn := SetupTestEnvironment(t)
 
 	dbAdapter := db_adapter.NewDatabaseAdapter(conn)
-	sendgridService := sendgrid_adapter.NewSendgridAdapter("")
-	apiService := api_service.NewAPIService(dbAdapter, sendgridService)
+	emailService := email_adapter.NewEmailAdapter(config.Config{})
+	apiService := api_service.NewAPIService(dbAdapter, emailService)
 
 	currency, err := CreateCurrency(apiService, "CHF", "Swiss Franc", "de-CH")
 	if err != nil {

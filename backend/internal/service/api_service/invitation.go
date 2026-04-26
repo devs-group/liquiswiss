@@ -95,7 +95,7 @@ func (a *APIService) CreateOrganisationInvitation(payload models.CreateInvitatio
 	}
 
 	// Send invitation email
-	err = a.sendgridAdapter.SendInvitationMail(payload.Email, token, organisation.Name, inviterName)
+	err = a.emailAdapter.SendInvitationMail(payload.Email, token, organisation.Name, inviterName)
 	if err != nil {
 		logger.Logger.Error(err)
 		// Delete the invitation if email fails
@@ -173,7 +173,7 @@ func (a *APIService) ResendOrganisationInvitation(userID int64, organisationID i
 	}
 
 	// Resend email
-	err = a.sendgridAdapter.SendInvitationMail(invitation.Email, invitation.Token, organisation.Name, inviterName)
+	err = a.emailAdapter.SendInvitationMail(invitation.Email, invitation.Token, organisation.Name, inviterName)
 	if err != nil {
 		logger.Logger.Error(err)
 		return err

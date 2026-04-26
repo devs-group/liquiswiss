@@ -64,7 +64,7 @@ func (a *APIService) ForgotPassword(payload models.ForgotPassword, code string) 
 		return err
 	}
 	if hasCreated {
-		err := a.sendgridAdapter.SendPasswordResetMail(payload.Email, code)
+		err := a.emailAdapter.SendPasswordResetMail(payload.Email, code)
 		if err != nil {
 			logger.Logger.Error(err)
 
@@ -129,7 +129,7 @@ func (a *APIService) CreateRegistration(payload models.CreateRegistration, code 
 		return 0, nil
 	}
 
-	err = a.sendgridAdapter.SendRegistrationMail(payload.Email, code)
+	err = a.emailAdapter.SendRegistrationMail(payload.Email, code)
 	if err != nil {
 		logger.Logger.Error(err)
 

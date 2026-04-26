@@ -25,6 +25,8 @@ services:
     depends_on:
       database:
         condition: service_healthy
+      mailpit:
+        condition: service_started
     ports:
       - '8087:8080'
     working_dir: /app
@@ -38,8 +40,13 @@ services:
       DB_HOST: ${APP_DB_HOST:-database}
       DB_PORT: ${APP_DB_PORT:-3306}
       DB_NAME: ${APP_DB_NAME:-liquiswiss}
-      SEND_GRID_TOKEN: ${SEND_GRID_TOKEN:-}
-      SEND_GRID_TEMPLATE_ID: ${SEND_GRID_TEMPLATE_ID:-}
+      SMTP_HOST: ${SMTP_HOST:-mailpit}
+      SMTP_PORT: ${SMTP_PORT:-1025}
+      SMTP_USER: ${SMTP_USER:-}
+      SMTP_PASS: ${SMTP_PASS:-}
+      SMTP_FROM_ADDRESS: ${SMTP_FROM_ADDRESS:-no-reply@liquiswiss.local}
+      SMTP_FROM_NAME: ${SMTP_FROM_NAME:-LiquiSwiss}
+      SMTP_TLS: ${SMTP_TLS:-off}
       FIXER_IO_URL: ${FIXER_IO_URL:-https://data.fixer.io/api/latest}
       FIXER_IO_KEY: ${FIXER_IO_KEY:-}
       JWT_KEY: ${JWT_KEY:-dev_jwt_key}
@@ -85,6 +92,17 @@ services:
       MARIADB_PASSWORD: "test"
       MARIADB_DATABASE: "test"
       MARIADB_ROOT_PASSWORD: "test"
+
+  mailpit:
+    image: axllent/mailpit:v1.29
+    restart: unless-stopped
+    ports:
+      - '1025:1025'
+      - '8025:8025'
+    environment:
+      MP_MAX_MESSAGES: 500
+      MP_SMTP_AUTH_ACCEPT_ANY: 1
+      MP_SMTP_AUTH_ALLOW_INSECURE: 1
 
   phpmyadmin:
     image: phpmyadmin:5.2.1-apache

@@ -40,6 +40,29 @@ func (f *FixerIOService) RequiresInitialFetch() (bool, error) {
 	return totalCurrenciesInRates < totalCurrencies, nil
 }
 
+func (f *FixerIOService) fetchFromFallback() {
+	logger.Logger.Info("Fixer.io API key not configured — loading fiat rates from local fallback")
+
+	data, err := loadFallbackRates()
+	if err != nil {
+		logger.Logger.Errorf("Failed to load fallback rates: %v", err)
+		return
+	}
+
+	for _, r := range data.Rates {
+		err := f.apiService.UpsertFiatRate(models.CreateFiatRate{
+			Base:   r.Base,
+			Target: r.Target,
+			Rate:   r.Rate,
+		})
+		if err != nil {
+			logger.Logger.Errorf("Failed to upsert fallback rate %s->%s: %v", r.Base, r.Target, err)
+			continue
+		}
+	}
+	logger.Logger.Infof("Loaded %d fallback fiat rates (snapshot %s)", len(data.Rates), data.SnapshotDate)
+}
+
 func (f *FixerIOService) FetchFiatRates() {
 	if !utils.IsProduction() {
 		fiatRates, err := f.apiService.ListFiatRates("CHF")
@@ -51,7 +74,7 @@ func (f *FixerIOService) FetchFiatRates() {
 
 	cfg := config.GetConfig()
 	if cfg.FixerIOKey == "" {
-		logger.Logger.Warn("Fixer.io API key not configured — skipping fiat rates fetch")
+		f.fetchFromFallback()
 		return
 	}
 

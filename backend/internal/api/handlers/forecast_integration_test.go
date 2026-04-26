@@ -7,7 +7,8 @@ import (
 	"github.com/stretchr/testify/require"
 
 	"liquiswiss/internal/adapter/db_adapter"
-	"liquiswiss/internal/adapter/sendgrid_adapter"
+	"liquiswiss/config"
+	"liquiswiss/internal/adapter/email_adapter"
 	"liquiswiss/internal/service/api_service"
 	"liquiswiss/pkg/models"
 	"liquiswiss/pkg/utils"
@@ -40,8 +41,8 @@ func TestCalculateForecast_VATSettlement_DBIntegration(t *testing.T) {
 	}()
 
 	dbAdapter := db_adapter.NewDatabaseAdapter(conn)
-	sendgridService := sendgrid_adapter.NewSendgridAdapter("")
-	apiService := api_service.NewAPIService(dbAdapter, sendgridService)
+	emailService := email_adapter.NewEmailAdapter(config.Config{})
+	apiService := api_service.NewAPIService(dbAdapter, emailService)
 
 	currencyCHF, err := CreateCurrency(apiService, "CHF", "Swiss Franc", "de-CH")
 	require.NoError(t, err)
@@ -195,8 +196,8 @@ func TestCalculateForecast_VATSettlement_MonthEndDates(t *testing.T) {
 	}()
 
 	dbAdapter := db_adapter.NewDatabaseAdapter(conn)
-	sendgridService := sendgrid_adapter.NewSendgridAdapter("")
-	apiService := api_service.NewAPIService(dbAdapter, sendgridService)
+	emailService := email_adapter.NewEmailAdapter(config.Config{})
+	apiService := api_service.NewAPIService(dbAdapter, emailService)
 
 	currencyCHF, err := CreateCurrency(apiService, "CHF", "Swiss Franc", "de-CH")
 	require.NoError(t, err)
@@ -308,7 +309,7 @@ func TestCalculateForecast_VATSettlement_MonthEndDates(t *testing.T) {
 // 	defer func() { utils.DefaultClock = orig }()
 //
 // 	dbAdapter := db_adapter.NewDatabaseAdapter(conn)
-// 	apiService := api_service.NewAPIService(dbAdapter, sendgrid_adapter.NewSendgridAdapter(""))
+// 	apiService := api_service.NewAPIService(dbAdapter, email_adapter.NewEmailAdapter(config.Config{}))
 //
 // 	currencyCHF, err := CreateCurrency(apiService, "CHF", "Swiss Franc", "de-CH")
 // 	require.NoError(t, err)
