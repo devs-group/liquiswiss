@@ -79,7 +79,6 @@ const items = computed<MenuItem[]>(() => [
     routeName: RouteNames.SETTINGS_ORGANISATIONS,
     badge: myPendingInvitations.value.length > 0 ? myPendingInvitations.value.length.toString() : undefined,
   },
-  { label: 'Automatisierung', icon: 'pi pi-sync', routeName: RouteNames.SETTINGS_AUTOMATION },
   { label: 'App', icon: 'pi pi-mobile', routeName: RouteNames.SETTINGS_APP },
 ])
 

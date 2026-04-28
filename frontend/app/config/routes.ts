@@ -10,7 +10,6 @@ export const RouteNames = {
   SETTINGS_PROFILE: 'settings-profile',
   SETTINGS_ORGANISATIONS: 'settings-organisations',
   SETTINGS_APP: 'settings-app',
-  SETTINGS_AUTOMATION: 'settings-automation',
   AUTH_LOGIN: 'auth',
   AUTH_REGISTRATION: 'auth-registration',
   AUTH_FORGOT_PASSWORD: 'auth-forgot-password',
