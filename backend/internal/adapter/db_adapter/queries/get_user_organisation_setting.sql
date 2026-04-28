@@ -15,6 +15,7 @@ SELECT
     uos.transaction_sort_by,
     uos.transaction_sort_order,
     uos.transaction_hide_disabled,
+    uos.transaction_hide_expired,
     uos.bank_account_display,
     uos.bank_account_sort_by,
     uos.bank_account_sort_order,

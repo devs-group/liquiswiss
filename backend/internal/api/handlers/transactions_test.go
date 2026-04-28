@@ -32,7 +32,7 @@ func TestListTransactions_NoSearch(t *testing.T) {
 	})
 
 	// List without search
-	transactions, total, err := apiService.ListTransactions(user.ID, 1, 100, "name", "ASC", "", false)
+	transactions, total, err := apiService.ListTransactions(user.ID, 1, 100, "name", "ASC", "", false, false)
 	require.NoError(t, err)
 	require.Equal(t, int64(3), total)
 	require.Len(t, transactions, 3)
@@ -54,7 +54,7 @@ func TestListTransactions_WithSearch(t *testing.T) {
 	})
 
 	// Search for "Office"
-	transactions, total, err := apiService.ListTransactions(user.ID, 1, 100, "name", "ASC", "Office", false)
+	transactions, total, err := apiService.ListTransactions(user.ID, 1, 100, "name", "ASC", "Office", false, false)
 	require.NoError(t, err)
 	require.Equal(t, int64(1), total)
 	require.Len(t, transactions, 1)
@@ -71,14 +71,14 @@ func TestListTransactions_SearchCaseInsensitive(t *testing.T) {
 	})
 
 	// Search with lowercase
-	transactions, total, err := apiService.ListTransactions(user.ID, 1, 100, "name", "ASC", "office", false)
+	transactions, total, err := apiService.ListTransactions(user.ID, 1, 100, "name", "ASC", "office", false, false)
 	require.NoError(t, err)
 	require.Equal(t, int64(1), total)
 	require.Len(t, transactions, 1)
 	require.Equal(t, "Office Rent", transactions[0].Name)
 
 	// Search with uppercase
-	transactions, total, err = apiService.ListTransactions(user.ID, 1, 100, "name", "ASC", "OFFICE", false)
+	transactions, total, err = apiService.ListTransactions(user.ID, 1, 100, "name", "ASC", "OFFICE", false, false)
 	require.NoError(t, err)
 	require.Equal(t, int64(1), total)
 	require.Len(t, transactions, 1)
@@ -93,7 +93,7 @@ func TestListTransactions_SearchNoResults(t *testing.T) {
 	})
 
 	// Search for non-existent term
-	transactions, total, err := apiService.ListTransactions(user.ID, 1, 100, "name", "ASC", "nonexistent", false)
+	transactions, total, err := apiService.ListTransactions(user.ID, 1, 100, "name", "ASC", "nonexistent", false, false)
 	require.NoError(t, err)
 	require.Equal(t, int64(0), total)
 	require.Len(t, transactions, 0)
@@ -124,13 +124,13 @@ func TestListTransactions_HideDisabled(t *testing.T) {
 	require.NoError(t, err)
 
 	// With hideDisabled=false, should see all 3 transactions
-	transactions, total, err := apiService.ListTransactions(user.ID, 1, 100, "name", "ASC", "", false)
+	transactions, total, err := apiService.ListTransactions(user.ID, 1, 100, "name", "ASC", "", false, false)
 	require.NoError(t, err)
 	require.Equal(t, int64(3), total)
 	require.Len(t, transactions, 3)
 
 	// With hideDisabled=true, should only see 2 active transactions
-	transactions, total, err = apiService.ListTransactions(user.ID, 1, 100, "name", "ASC", "", true)
+	transactions, total, err = apiService.ListTransactions(user.ID, 1, 100, "name", "ASC", "", true, false)
 	require.NoError(t, err)
 	require.Equal(t, int64(2), total)
 	require.Len(t, transactions, 2)
@@ -163,17 +163,74 @@ func TestListTransactions_HideDisabledWithSearch(t *testing.T) {
 	require.NoError(t, err)
 
 	// Search for "Rent" with hideDisabled=false - should find 2
-	transactions, total, err := apiService.ListTransactions(user.ID, 1, 100, "name", "ASC", "Rent", false)
+	transactions, total, err := apiService.ListTransactions(user.ID, 1, 100, "name", "ASC", "Rent", false, false)
 	require.NoError(t, err)
 	require.Equal(t, int64(2), total)
 	require.Len(t, transactions, 2)
 
 	// Search for "Rent" with hideDisabled=true - should find only 1
-	transactions, total, err = apiService.ListTransactions(user.ID, 1, 100, "name", "ASC", "Rent", true)
+	transactions, total, err = apiService.ListTransactions(user.ID, 1, 100, "name", "ASC", "Rent", true, false)
 	require.NoError(t, err)
 	require.Equal(t, int64(1), total)
 	require.Len(t, transactions, 1)
 	require.Equal(t, "Rent Payment Active", transactions[0].Name)
+}
+
+func TestListTransactions_HideExpired(t *testing.T) {
+	conn, apiService, _, user, category, currency := setupTransactionDependencies(t)
+	defer conn.Close()
+
+	cycle := utils.CycleMonthly
+	pastEndDate := "2025-01-15"
+	futureEndDate := time.Now().AddDate(0, 6, 0).Format(utils.InternalDateFormat)
+	futureStart := time.Now().AddDate(0, 1, 0).Format(utils.InternalDateFormat)
+
+	// Active repeating tx without end date.
+	createTransaction(t, apiService, user.ID, category.ID, *currency.ID, nil, func(p *models.CreateTransaction) {
+		p.Name = "Active Repeating"
+		p.Type = "repeating"
+		p.Cycle = &cycle
+	})
+	// Active repeating tx with future end date.
+	createTransaction(t, apiService, user.ID, category.ID, *currency.ID, &futureEndDate, func(p *models.CreateTransaction) {
+		p.Name = "Active Repeating With End"
+		p.Type = "repeating"
+		p.Cycle = &cycle
+	})
+	// Active single tx in the future.
+	createTransaction(t, apiService, user.ID, category.ID, *currency.ID, nil, func(p *models.CreateTransaction) {
+		p.Name = "Active Single Future"
+		p.Type = "single"
+		p.StartDate = futureStart
+	})
+	// Expired repeating tx (end date in the past).
+	createTransaction(t, apiService, user.ID, category.ID, *currency.ID, &pastEndDate, func(p *models.CreateTransaction) {
+		p.Name = "Expired Repeating"
+		p.Type = "repeating"
+		p.Cycle = &cycle
+		p.StartDate = "2024-01-01"
+	})
+	// Expired single tx (start date in the past).
+	createTransaction(t, apiService, user.ID, category.ID, *currency.ID, nil, func(p *models.CreateTransaction) {
+		p.Name = "Expired Single"
+		p.Type = "single"
+		p.StartDate = "2025-01-15"
+	})
+
+	// hideExpired=false → all 5
+	transactions, total, err := apiService.ListTransactions(user.ID, 1, 100, "name", "ASC", "", false, false)
+	require.NoError(t, err)
+	require.Equal(t, int64(5), total)
+	require.Len(t, transactions, 5)
+
+	// hideExpired=true → only 3 active
+	transactions, total, err = apiService.ListTransactions(user.ID, 1, 100, "name", "ASC", "", false, true)
+	require.NoError(t, err)
+	require.Equal(t, int64(3), total)
+	require.Len(t, transactions, 3)
+	for _, tx := range transactions {
+		require.NotContains(t, tx.Name, "Expired")
+	}
 }
 
 func TestUpdateTransaction_SetEndDate(t *testing.T) {
@@ -210,6 +267,52 @@ func TestUpdateTransaction_RemoveEndDate(t *testing.T) {
 	stored, err := dbAdapter.GetTransaction(user.ID, transaction.ID)
 	require.NoError(t, err)
 	require.Nil(t, stored.EndDate)
+}
+
+func TestSingleTransaction_NextExecutionDate(t *testing.T) {
+	conn, apiService, dbAdapter, user, category, currency := setupTransactionDependencies(t)
+	defer conn.Close()
+
+	// Single tx with start date in the past → expired (nil → "Abgelaufen" in UI).
+	pastTx := createTransaction(t, apiService, user.ID, category.ID, *currency.ID, nil, func(p *models.CreateTransaction) {
+		p.Name = "Single Past"
+		p.Type = "single"
+		p.StartDate = "2025-01-15"
+	})
+
+	storedPast, err := dbAdapter.GetTransaction(user.ID, pastTx.ID)
+	require.NoError(t, err)
+	require.Equal(t, "single", storedPast.Type)
+	require.Nil(t, storedPast.NextExecutionDate, "single transaction with start date in the past should be expired")
+
+	// Single tx in the future → next execution = start date (no recurring projection).
+	futureStart := time.Now().AddDate(0, 1, 0).Format(utils.InternalDateFormat)
+	futureTx := createTransaction(t, apiService, user.ID, category.ID, *currency.ID, nil, func(p *models.CreateTransaction) {
+		p.Name = "Single Future"
+		p.Type = "single"
+		p.StartDate = futureStart
+	})
+
+	storedFuture, err := dbAdapter.GetTransaction(user.ID, futureTx.ID)
+	require.NoError(t, err)
+	require.Equal(t, "single", storedFuture.Type)
+	assertDateEquals(t, storedFuture.NextExecutionDate, futureStart)
+
+	// Single tx with cycle stored in DB (frontend dialog defaults cycle=monthly even
+	// when type=single). Must NOT project a future recurring date — start date wins.
+	cycle := utils.CycleMonthly
+	futureWithCycleStart := time.Now().AddDate(0, 0, 7).Format(utils.InternalDateFormat)
+	withCycleTx := createTransaction(t, apiService, user.ID, category.ID, *currency.ID, nil, func(p *models.CreateTransaction) {
+		p.Name = "Single With Cycle"
+		p.Type = "single"
+		p.Cycle = &cycle
+		p.StartDate = futureWithCycleStart
+	})
+
+	storedWithCycle, err := dbAdapter.GetTransaction(user.ID, withCycleTx.ID)
+	require.NoError(t, err)
+	require.Equal(t, "single", storedWithCycle.Type)
+	assertDateEquals(t, storedWithCycle.NextExecutionDate, futureWithCycleStart)
 }
 
 func TestUpdateTransaction_DisableKeepsExistingFields(t *testing.T) {
@@ -354,14 +457,14 @@ func TestListTransactions_SortByName(t *testing.T) {
 	})
 
 	// ASC
-	transactions, _, err := apiService.ListTransactions(user.ID, 1, 100, "name", "ASC", "", false)
+	transactions, _, err := apiService.ListTransactions(user.ID, 1, 100, "name", "ASC", "", false, false)
 	require.NoError(t, err)
 	require.Equal(t, "Alpha", transactions[0].Name)
 	require.Equal(t, "Bravo", transactions[1].Name)
 	require.Equal(t, "Charlie", transactions[2].Name)
 
 	// DESC
-	transactions, _, err = apiService.ListTransactions(user.ID, 1, 100, "name", "DESC", "", false)
+	transactions, _, err = apiService.ListTransactions(user.ID, 1, 100, "name", "DESC", "", false, false)
 	require.NoError(t, err)
 	require.Equal(t, "Charlie", transactions[0].Name)
 	require.Equal(t, "Bravo", transactions[1].Name)
@@ -386,14 +489,14 @@ func TestListTransactions_SortByStartDate(t *testing.T) {
 	})
 
 	// ASC
-	transactions, _, err := apiService.ListTransactions(user.ID, 1, 100, "startDate", "ASC", "", false)
+	transactions, _, err := apiService.ListTransactions(user.ID, 1, 100, "startDate", "ASC", "", false, false)
 	require.NoError(t, err)
 	require.Equal(t, "First", transactions[0].Name)
 	require.Equal(t, "Middle", transactions[1].Name)
 	require.Equal(t, "Last", transactions[2].Name)
 
 	// DESC
-	transactions, _, err = apiService.ListTransactions(user.ID, 1, 100, "startDate", "DESC", "", false)
+	transactions, _, err = apiService.ListTransactions(user.ID, 1, 100, "startDate", "DESC", "", false, false)
 	require.NoError(t, err)
 	require.Equal(t, "Last", transactions[0].Name)
 	require.Equal(t, "Middle", transactions[1].Name)
@@ -419,14 +522,14 @@ func TestListTransactions_SortByEndDate(t *testing.T) {
 	})
 
 	// ASC
-	transactions, _, err := apiService.ListTransactions(user.ID, 1, 100, "endDate", "ASC", "", false)
+	transactions, _, err := apiService.ListTransactions(user.ID, 1, 100, "endDate", "ASC", "", false, false)
 	require.NoError(t, err)
 	require.Equal(t, "First", transactions[0].Name)
 	require.Equal(t, "Middle", transactions[1].Name)
 	require.Equal(t, "Last", transactions[2].Name)
 
 	// DESC
-	transactions, _, err = apiService.ListTransactions(user.ID, 1, 100, "endDate", "DESC", "", false)
+	transactions, _, err = apiService.ListTransactions(user.ID, 1, 100, "endDate", "DESC", "", false, false)
 	require.NoError(t, err)
 	require.Equal(t, "Last", transactions[0].Name)
 	require.Equal(t, "Middle", transactions[1].Name)
@@ -451,14 +554,14 @@ func TestListTransactions_SortByAmount(t *testing.T) {
 	})
 
 	// ASC
-	transactions, _, err := apiService.ListTransactions(user.ID, 1, 100, "amount", "ASC", "", false)
+	transactions, _, err := apiService.ListTransactions(user.ID, 1, 100, "amount", "ASC", "", false, false)
 	require.NoError(t, err)
 	require.Equal(t, "Small", transactions[0].Name)
 	require.Equal(t, "Medium", transactions[1].Name)
 	require.Equal(t, "Large", transactions[2].Name)
 
 	// DESC
-	transactions, _, err = apiService.ListTransactions(user.ID, 1, 100, "amount", "DESC", "", false)
+	transactions, _, err = apiService.ListTransactions(user.ID, 1, 100, "amount", "DESC", "", false, false)
 	require.NoError(t, err)
 	require.Equal(t, "Large", transactions[0].Name)
 	require.Equal(t, "Medium", transactions[1].Name)
@@ -490,14 +593,14 @@ func TestListTransactions_SortByCycle(t *testing.T) {
 	})
 
 	// ASC - alphabetically: monthly, quarterly, yearly
-	transactions, _, err := apiService.ListTransactions(user.ID, 1, 100, "cycle", "ASC", "", false)
+	transactions, _, err := apiService.ListTransactions(user.ID, 1, 100, "cycle", "ASC", "", false, false)
 	require.NoError(t, err)
 	require.Equal(t, "Monthly", transactions[0].Name)
 	require.Equal(t, "Quarterly", transactions[1].Name)
 	require.Equal(t, "Yearly", transactions[2].Name)
 
 	// DESC
-	transactions, _, err = apiService.ListTransactions(user.ID, 1, 100, "cycle", "DESC", "", false)
+	transactions, _, err = apiService.ListTransactions(user.ID, 1, 100, "cycle", "DESC", "", false, false)
 	require.NoError(t, err)
 	require.Equal(t, "Yearly", transactions[0].Name)
 	require.Equal(t, "Quarterly", transactions[1].Name)
@@ -526,14 +629,14 @@ func TestListTransactions_SortByCategory(t *testing.T) {
 	})
 
 	// ASC
-	transactions, _, err := apiService.ListTransactions(user.ID, 1, 100, "category", "ASC", "", false)
+	transactions, _, err := apiService.ListTransactions(user.ID, 1, 100, "category", "ASC", "", false, false)
 	require.NoError(t, err)
 	require.Equal(t, "TxA", transactions[0].Name)
 	require.Equal(t, "TxB", transactions[1].Name)
 	require.Equal(t, "TxC", transactions[2].Name)
 
 	// DESC
-	transactions, _, err = apiService.ListTransactions(user.ID, 1, 100, "category", "DESC", "", false)
+	transactions, _, err = apiService.ListTransactions(user.ID, 1, 100, "category", "DESC", "", false, false)
 	require.NoError(t, err)
 	require.Equal(t, "TxC", transactions[0].Name)
 	require.Equal(t, "TxB", transactions[1].Name)
@@ -565,14 +668,14 @@ func TestListTransactions_SortByEmployee(t *testing.T) {
 	})
 
 	// ASC
-	transactions, _, err := apiService.ListTransactions(user.ID, 1, 100, "employee", "ASC", "", false)
+	transactions, _, err := apiService.ListTransactions(user.ID, 1, 100, "employee", "ASC", "", false, false)
 	require.NoError(t, err)
 	require.Equal(t, "TxA", transactions[0].Name)
 	require.Equal(t, "TxB", transactions[1].Name)
 	require.Equal(t, "TxC", transactions[2].Name)
 
 	// DESC
-	transactions, _, err = apiService.ListTransactions(user.ID, 1, 100, "employee", "DESC", "", false)
+	transactions, _, err = apiService.ListTransactions(user.ID, 1, 100, "employee", "DESC", "", false, false)
 	require.NoError(t, err)
 	require.Equal(t, "TxC", transactions[0].Name)
 	require.Equal(t, "TxB", transactions[1].Name)
@@ -585,7 +688,7 @@ func TestListTransactions_InvalidSortBy(t *testing.T) {
 
 	createTransaction(t, apiService, user.ID, category.ID, *currency.ID, nil)
 
-	_, _, err := apiService.ListTransactions(user.ID, 1, 100, "invalidField", "ASC", "", false)
+	_, _, err := apiService.ListTransactions(user.ID, 1, 100, "invalidField", "ASC", "", false, false)
 	require.Error(t, err)
 }
 
@@ -595,6 +698,6 @@ func TestListTransactions_InvalidSortOrder(t *testing.T) {
 
 	createTransaction(t, apiService, user.ID, category.ID, *currency.ID, nil)
 
-	_, _, err := apiService.ListTransactions(user.ID, 1, 100, "name", "INVALID", "", false)
+	_, _, err := apiService.ListTransactions(user.ID, 1, 100, "name", "INVALID", "", false, false)
 	require.Error(t, err)
 }

@@ -12,7 +12,7 @@ import (
 	"time"
 )
 
-func (d *DatabaseAdapter) ListTransactions(userID int64, page int64, limit int64, sortBy string, sortOrder string, search string, hideDisabled bool) ([]models.Transaction, int64, error) {
+func (d *DatabaseAdapter) ListTransactions(userID int64, page int64, limit int64, sortBy string, sortOrder string, search string, hideDisabled bool, hideExpired bool) ([]models.Transaction, int64, error) {
 	transactions := []models.Transaction{}
 	var totalCount int64
 	sortByMap := map[string]string{
@@ -37,6 +37,7 @@ func (d *DatabaseAdapter) ListTransactions(userID int64, page int64, limit int64
 		"sortOrder":    sortOrder,
 		"hasSearch":    search != "",
 		"hideDisabled": hideDisabled,
+		"hideExpired":  hideExpired,
 	})
 	if err != nil {
 		return nil, 0, err
@@ -146,10 +147,19 @@ func (d *DatabaseAdapter) GetTransaction(userID int64, transactionID int64) (*mo
 		}
 	}
 
-	nextExecutionDate := d.CalculateSalaryExecutionDate(transaction.StartDate, transaction.EndDate, transaction.Cycle, transaction.DBDate, 1, true)
-	if nextExecutionDate != nil {
-		nextExecutionDateAsDate := types.AsDate(*nextExecutionDate)
-		transaction.NextExecutionDate = &nextExecutionDateAsDate
+	if transaction.Type == "single" {
+		startDate := time.Time(transaction.StartDate)
+		currDate := time.Time(transaction.DBDate)
+		if !startDate.Before(currDate) {
+			nextExecutionDateAsDate := types.AsDate(startDate)
+			transaction.NextExecutionDate = &nextExecutionDateAsDate
+		}
+	} else {
+		nextExecutionDate := d.CalculateSalaryExecutionDate(transaction.StartDate, transaction.EndDate, transaction.Cycle, transaction.DBDate, 1, true)
+		if nextExecutionDate != nil {
+			nextExecutionDateAsDate := types.AsDate(*nextExecutionDate)
+			transaction.NextExecutionDate = &nextExecutionDateAsDate
+		}
 	}
 
 	return &transaction, nil

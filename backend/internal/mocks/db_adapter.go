@@ -1324,9 +1324,9 @@ func (mr *MockIDatabaseAdapterMockRecorder) ListSalaryCosts(userID, salaryID, pa
 }
 
 // ListTransactions mocks base method.
-func (m *MockIDatabaseAdapter) ListTransactions(userID, page, limit int64, sortBy, sortOrder, search string, hideDisabled bool) ([]models.Transaction, int64, error) {
+func (m *MockIDatabaseAdapter) ListTransactions(userID, page, limit int64, sortBy, sortOrder, search string, hideDisabled, hideExpired bool) ([]models.Transaction, int64, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "ListTransactions", userID, page, limit, sortBy, sortOrder, search, hideDisabled)
+	ret := m.ctrl.Call(m, "ListTransactions", userID, page, limit, sortBy, sortOrder, search, hideDisabled, hideExpired)
 	ret0, _ := ret[0].([]models.Transaction)
 	ret1, _ := ret[1].(int64)
 	ret2, _ := ret[2].(error)
@@ -1334,9 +1334,9 @@ func (m *MockIDatabaseAdapter) ListTransactions(userID, page, limit int64, sortB
 }
 
 // ListTransactions indicates an expected call of ListTransactions.
-func (mr *MockIDatabaseAdapterMockRecorder) ListTransactions(userID, page, limit, sortBy, sortOrder, search, hideDisabled any) *gomock.Call {
+func (mr *MockIDatabaseAdapterMockRecorder) ListTransactions(userID, page, limit, sortBy, sortOrder, search, hideDisabled, hideExpired any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ListTransactions", reflect.TypeOf((*MockIDatabaseAdapter)(nil).ListTransactions), userID, page, limit, sortBy, sortOrder, search, hideDisabled)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ListTransactions", reflect.TypeOf((*MockIDatabaseAdapter)(nil).ListTransactions), userID, page, limit, sortBy, sortOrder, search, hideDisabled, hideExpired)
 }
 
 // ListVats mocks base method.

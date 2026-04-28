@@ -22,6 +22,7 @@ type UserOrganisationSetting struct {
 	TransactionSortBy       string          `db:"transaction_sort_by" json:"transactionSortBy"`
 	TransactionSortOrder    string          `db:"transaction_sort_order" json:"transactionSortOrder"`
 	TransactionHideDisabled bool            `db:"transaction_hide_disabled" json:"transactionHideDisabled"`
+	TransactionHideExpired  bool            `db:"transaction_hide_expired" json:"transactionHideExpired"`
 	BankAccountDisplay      string          `db:"bank_account_display" json:"bankAccountDisplay"`
 	BankAccountSortBy       string          `db:"bank_account_sort_by" json:"bankAccountSortBy"`
 	BankAccountSortOrder    string          `db:"bank_account_sort_order" json:"bankAccountSortOrder"`
@@ -43,6 +44,7 @@ type UpdateUserOrganisationSetting struct {
 	TransactionSortBy       *string          `json:"transactionSortBy" validate:"omitempty"`
 	TransactionSortOrder    *string          `json:"transactionSortOrder" validate:"omitempty,oneof=ASC DESC"`
 	TransactionHideDisabled *bool            `json:"transactionHideDisabled" validate:"omitempty"`
+	TransactionHideExpired  *bool            `json:"transactionHideExpired" validate:"omitempty"`
 	BankAccountDisplay      *string          `json:"bankAccountDisplay" validate:"omitempty,oneof=grid list"`
 	BankAccountSortBy       *string          `json:"bankAccountSortBy" validate:"omitempty"`
 	BankAccountSortOrder    *string          `json:"bankAccountSortOrder" validate:"omitempty,oneof=ASC DESC"`

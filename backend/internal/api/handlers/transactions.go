@@ -31,9 +31,10 @@ func ListTransactions(apiService api_service.IAPIService, c *gin.Context) {
 	sortOrder := c.DefaultQuery("sortOrder", "ASC")
 	search := c.DefaultQuery("search", "")
 	hideDisabled := c.DefaultQuery("hideDisabled", "false") == "true"
+	hideExpired := c.DefaultQuery("hideExpired", "false") == "true"
 
 	// Actions
-	transactions, totalCount, err := apiService.ListTransactions(userID, page, limit, sortBy, sortOrder, search, hideDisabled)
+	transactions, totalCount, err := apiService.ListTransactions(userID, page, limit, sortBy, sortOrder, search, hideDisabled, hideExpired)
 	if err != nil {
 		c.Status(http.StatusInternalServerError)
 		return

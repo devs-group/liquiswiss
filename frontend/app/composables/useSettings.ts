@@ -37,6 +37,7 @@ export default function useSettings() {
   const transactionSortBy = useState<TransactionSortByType>('transactionSortBy', () => 'name')
   const transactionSortOrder = useState<SortOrderType>('transactionSortOrder', () => 'ASC')
   const transactionHideDisabled = useState<boolean>('transactionHideDisabled', () => true)
+  const transactionHideExpired = useState<boolean>('transactionHideExpired', () => false)
 
   const bankAccountDisplay = useState<DisplayType>('bankAccountDisplay', () => 'grid')
   const bankAccountSortBy = useState<BankAccountSortByType>('bankAccountSortBy', () => 'name')
@@ -150,6 +151,7 @@ export default function useSettings() {
       transactionSortBy: CreateSettingsCookie('transaction-sort-by'),
       transactionSortOrder: CreateSettingsCookie('transaction-sort-order'),
       transactionHideDisabled: CreateSettingsCookie('transaction-hide-disabled'),
+      transactionHideExpired: CreateSettingsCookie('transaction-hide-expired'),
       bankAccountDisplay: CreateSettingsCookie('bank-account-display'),
       bankAccountSortBy: CreateSettingsCookie('bank-account-sort-by'),
       bankAccountSortOrder: CreateSettingsCookie('bank-account-sort-order'),
@@ -239,6 +241,12 @@ export default function useSettings() {
       hasCookies = true
     }
 
+    if (cookies.transactionHideExpired.value !== undefined && cookies.transactionHideExpired.value !== null) {
+      const val = cookies.transactionHideExpired.value
+      payload.transactionHideExpired = typeof val === 'boolean' ? val : val === 'true'
+      hasCookies = true
+    }
+
     if (cookies.bankAccountDisplay.value && DisplayTypeOptions.includes(cookies.bankAccountDisplay.value as DisplayType)) {
       payload.bankAccountDisplay = cookies.bankAccountDisplay.value as DisplayType
       hasCookies = true
@@ -293,6 +301,7 @@ export default function useSettings() {
       transactionSortOrder.value = setting.transactionSortOrder
     }
     transactionHideDisabled.value = setting.transactionHideDisabled
+    transactionHideExpired.value = setting.transactionHideExpired ?? false
 
     if (DisplayTypeOptions.includes(setting.bankAccountDisplay)) {
       bankAccountDisplay.value = setting.bankAccountDisplay
@@ -383,6 +392,11 @@ export default function useSettings() {
   const toggleTransactionHideDisabled = () => {
     transactionHideDisabled.value = !transactionHideDisabled.value
     saveOrganisationSettingNow({ transactionHideDisabled: transactionHideDisabled.value })
+  }
+
+  const toggleTransactionHideExpired = () => {
+    transactionHideExpired.value = !transactionHideExpired.value
+    saveOrganisationSettingNow({ transactionHideExpired: transactionHideExpired.value })
   }
 
   const toggleEmployeeDisplayType = () => {
@@ -492,6 +506,7 @@ export default function useSettings() {
     transactionSortBy,
     transactionSortOrder,
     transactionHideDisabled,
+    transactionHideExpired,
     employeeHideTerminated,
     bankAccountDisplay,
     bankAccountSortBy,
@@ -514,6 +529,7 @@ export default function useSettings() {
     toggleEmployeeDisplayType,
     toggleTransactionDisplayType,
     toggleTransactionHideDisabled,
+    toggleTransactionHideExpired,
     toggleEmployeeHideTerminated,
     toggleBankAccountDisplayType,
     // Deprecated (kept for backward compatibility)

@@ -18,6 +18,7 @@ export interface UserOrganisationSettingResponse {
   transactionSortBy: string
   transactionSortOrder: SortOrderType
   transactionHideDisabled: boolean
+  transactionHideExpired: boolean
   bankAccountDisplay: DisplayType
   bankAccountSortBy: string
   bankAccountSortOrder: SortOrderType
@@ -39,6 +40,7 @@ export interface UpdateUserOrganisationSetting {
   transactionSortBy?: string
   transactionSortOrder?: SortOrderType
   transactionHideDisabled?: boolean
+  transactionHideExpired?: boolean
   bankAccountDisplay?: DisplayType
   bankAccountSortBy?: string
   bankAccountSortOrder?: SortOrderType

@@ -11,6 +11,10 @@ WHERE
     r.organisation_id = get_current_user_organisation_id(?)
     {{if .hasSearch}}AND LOWER(r.name) LIKE LOWER(?){{end}}
     {{if .hideDisabled}}AND r.is_disabled = false{{end}}
+    {{if .hideExpired}}AND (
+        (r.type = 'single' AND r.start_date >= CURDATE())
+        OR (r.type = 'repeating' AND (r.end_date IS NULL OR r.end_date >= CURDATE()))
+    ){{end}}
 ORDER BY
     {{.sortBy}} IS NULL,
     {{.sortBy}} {{.sortOrder}},

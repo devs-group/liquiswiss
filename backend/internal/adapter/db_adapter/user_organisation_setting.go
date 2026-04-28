@@ -31,6 +31,7 @@ func (d *DatabaseAdapter) GetUserOrganisationSetting(userID int64) (*models.User
 		&setting.TransactionSortBy,
 		&setting.TransactionSortOrder,
 		&setting.TransactionHideDisabled,
+		&setting.TransactionHideExpired,
 		&setting.BankAccountDisplay,
 		&setting.BankAccountSortBy,
 		&setting.BankAccountSortOrder,
@@ -138,6 +139,11 @@ func (d *DatabaseAdapter) UpdateUserOrganisationSetting(payload models.UpdateUse
 	if payload.TransactionHideDisabled != nil {
 		queryBuild = append(queryBuild, "transaction_hide_disabled = ?")
 		args = append(args, *payload.TransactionHideDisabled)
+	}
+
+	if payload.TransactionHideExpired != nil {
+		queryBuild = append(queryBuild, "transaction_hide_expired = ?")
+		args = append(args, *payload.TransactionHideExpired)
 	}
 
 	if payload.BankAccountDisplay != nil {

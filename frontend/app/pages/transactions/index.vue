@@ -17,6 +17,12 @@
           :severity="transactionHideDisabled ? 'secondary' : 'contrast'"
           @click="onToggleHideDisabled"
         />
+        <Button
+          v-tooltip.bottom="transactionHideExpired ? 'Abgelaufene Transaktionen anzeigen' : 'Abgelaufene Transaktionen ausblenden'"
+          :icon="transactionHideExpired ? 'pi pi-clock' : 'pi pi-history'"
+          :severity="transactionHideExpired ? 'secondary' : 'contrast'"
+          @click="onToggleHideExpired"
+        />
       </div>
       <Button
         class="self-end"
@@ -103,7 +109,7 @@ useHead({
 
 const dialog = useDialog()
 const { transactions, noMoreDataTransactions, pageTransactions, searchTransactions, useFetchListTransactions, listTransactions } = useTransactions()
-const { toggleTransactionDisplayType, transactionDisplay, transactionHideDisabled, toggleTransactionHideDisabled } = useSettings()
+const { toggleTransactionDisplayType, transactionDisplay, transactionHideDisabled, toggleTransactionHideDisabled, transactionHideExpired, toggleTransactionHideExpired } = useSettings()
 
 const isLoading = ref(false)
 const isLoadingMore = ref(false)
@@ -181,6 +187,21 @@ const onSort = () => {
 
 const onToggleHideDisabled = () => {
   toggleTransactionHideDisabled()
+  pageTransactions.value = 1
+  isLoading.value = true
+  listTransactions(false)
+    .catch((err) => {
+      if (err !== 'aborted') {
+        transactionsErrorMessage.value = err
+      }
+    })
+    .finally(() => {
+      isLoading.value = false
+    })
+}
+
+const onToggleHideExpired = () => {
+  toggleTransactionHideExpired()
   pageTransactions.value = 1
   isLoading.value = true
   listTransactions(false)
