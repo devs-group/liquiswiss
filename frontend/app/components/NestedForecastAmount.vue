@@ -7,7 +7,7 @@
       {{ amountFormatted(displayedCategoryAmount) }} {{ currencyCode }}
     </p>
     <i
-      v-if="relatedID"
+      v-if="relatedID && canEdit"
       class="pi !text-2xs cursor-pointer hover:scale-125 transition-transform"
       :class="[getExclusionIcon]"
       :title="getExclusionTooltip"
@@ -21,6 +21,7 @@ import type { ForecastDetailResponse, ForecastDetailRevenueExpenseResponse } fro
 
 const { getOrganisationCurrencyLocaleCode } = useAuth()
 const { toggleForecastExclusionChange, getForecastExclusionChange } = useForecasts()
+const { canEdit } = useOrganisations()
 
 const props = defineProps({
   category: {

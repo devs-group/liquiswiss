@@ -10,6 +10,7 @@
         @click="onGoBack"
       />
       <Button
+        v-if="canEdit"
         :loading="isSubmitting"
         label="Löschen"
         icon="pi pi-trash"
@@ -50,8 +51,9 @@
           v-bind="nameProps"
           id="name"
           v-model="name"
-          :class="{ 'p-invalid': errors['name']?.length }"
+          :class="[{ 'p-invalid': errors['name']?.length }, !canEdit ? '!opacity-100 !cursor-not-allowed [&_*]:!pointer-events-auto [&_*]:!cursor-not-allowed' : '']"
           type="text"
+          :disabled="!canEdit"
         />
         <small class="text-liqui-red">{{ errors["name"] || "&nbsp;" }}</small>
       </div>
@@ -77,7 +79,10 @@
         {{ employeeUpdateErrorMessage }}
       </Message>
 
-      <div class="flex justify-end gap-2 col-span-full">
+      <div
+        v-if="canEdit"
+        class="flex justify-end gap-2 col-span-full"
+      >
         <Button
           :disabled="!meta.valid || (meta.valid && !meta.dirty) || isSubmitting"
           :loading="isSubmitting"
@@ -96,7 +101,10 @@
       </p>
       <hr class="h-0.5 bg-black flex-1">
     </div>
-    <div class="flex justify-end gap-2">
+    <div
+      v-if="canEdit"
+      class="flex justify-end gap-2"
+    >
       <Button
         class="self-end"
         :loading="isSubmitting"
@@ -161,11 +169,16 @@
       v-else
       class="text-xs opacity-60"
     >
-      Mitarbeiter hat noch keinen Lohn. Erstelle den
-      <a
-        class="underline cursor-pointer font-bold"
-        @click="onCreateSalary"
-      >ersten Lohn</a>!
+      <template v-if="canEdit">
+        Mitarbeiter hat noch keinen Lohn. Erstelle den
+        <a
+          class="underline cursor-pointer font-bold"
+          @click="onCreateSalary"
+        >ersten Lohn</a>!
+      </template>
+      <template v-else>
+        Mitarbeiter hat noch keinen Lohn.
+      </template>
     </p>
   </div>
 
@@ -203,6 +216,7 @@ const {
   useFetchListSalaries,
   listSalaries,
 } = useSalaries()
+const { canEdit } = useOrganisations()
 const dialog = useDialog()
 const toast = useToast()
 const route = useRoute()

@@ -18,7 +18,10 @@
         >
           {{ transaction.name }}
         </p>
-        <div class="flex items-center gap-2 justify-end">
+        <div
+          v-if="canEdit"
+          class="flex items-center gap-2 justify-end"
+        >
           <Button
             severity="help"
             icon="pi pi-copy"
@@ -81,8 +84,9 @@
           <ToggleSwitch
             id="transaction-card-disabled"
             class="scale-[0.65] origin-left"
+            :class="!canEdit ? '!opacity-100 !cursor-not-allowed [&_*]:!pointer-events-auto [&_*]:!cursor-not-allowed' : ''"
             :model-value="!localIsDisabled"
-            :disabled="isUpdating"
+            :disabled="isUpdating || !canEdit"
             @update:model-value="onToggleDisabled"
           />
         </div>
@@ -110,6 +114,7 @@ defineEmits<{
 
 const toast = useToast()
 const { patchTransaction } = useTransactions()
+const { canEdit } = useOrganisations()
 const localIsDisabled = ref(props.transaction.isDisabled)
 const isUpdating = ref(false)
 

@@ -5,10 +5,12 @@
         {{ bankAccount.name }}
       </p>
       <span
+        v-if="canEdit"
         class="pi pi-copy cursor-pointer text-help"
         @click="$emit('onClone', bankAccount)"
       />
       <span
+        v-if="canEdit"
         class="pi pi-pencil cursor-pointer text-primary"
         @click="$emit('onEdit', bankAccount)"
       />
@@ -36,6 +38,8 @@ defineEmits<{
   onEdit: [bankAccount: BankAccountResponse]
   onClone: [bankAccount: BankAccountResponse]
 }>()
+
+const { canEdit } = useOrganisations()
 
 const isRevenue = computed(() => props.bankAccount.amount >= 0)
 const amountFormatted = computed(() => NumberToFormattedCurrency(AmountToFloat(props.bankAccount.amount), props.bankAccount.currency.localeCode))

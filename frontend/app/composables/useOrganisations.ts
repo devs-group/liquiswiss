@@ -112,6 +112,7 @@ export default function useOrganisations() {
     }
   }
   const canEdit = computed(() => roleRank(currentOrganisationRole.value) >= roleRank('editor'))
+  const isReadOnly = computed(() => currentOrganisationRole.value === 'read-only')
   const canInvite = computed(() => roleRank(currentOrganisationRole.value) >= roleRank('admin'))
   const canManageOrganisation = computed(() => roleRank(currentOrganisationRole.value) >= roleRank('admin'))
 
@@ -126,6 +127,7 @@ export default function useOrganisations() {
     organisations,
     currentOrganisationRole,
     canEdit,
+    isReadOnly,
     canInvite,
     canManageOrganisation,
   }

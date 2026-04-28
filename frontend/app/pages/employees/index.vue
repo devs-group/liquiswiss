@@ -19,6 +19,7 @@
         />
       </div>
       <Button
+        v-if="canEdit"
         class="self-end"
         label="Mitarbeiter hinzufügen"
         icon="pi pi-user"
@@ -99,6 +100,7 @@ useHead({
 
 const { employees, noMoreDataEmployees, pageEmployees, searchEmployees, useFetchListEmployees, listEmployees } = useEmployees()
 const { toggleEmployeeDisplayType, toggleEmployeeHideTerminated, employeeDisplay, employeeHideTerminated } = useSettings()
+const { canEdit } = useOrganisations()
 const dialog = useDialog()
 
 const isLoading = ref(false)

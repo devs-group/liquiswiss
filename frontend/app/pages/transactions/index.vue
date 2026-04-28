@@ -25,6 +25,7 @@
         />
       </div>
       <Button
+        v-if="canEdit"
         class="self-end"
         label="Transaktion hinzufügen"
         icon="pi pi-money-bill"
@@ -110,6 +111,7 @@ useHead({
 const dialog = useDialog()
 const { transactions, noMoreDataTransactions, pageTransactions, searchTransactions, useFetchListTransactions, listTransactions } = useTransactions()
 const { toggleTransactionDisplayType, transactionDisplay, transactionHideDisabled, toggleTransactionHideDisabled, transactionHideExpired, toggleTransactionHideExpired } = useSettings()
+const { canEdit } = useOrganisations()
 
 const isLoading = ref(false)
 const isLoadingMore = ref(false)

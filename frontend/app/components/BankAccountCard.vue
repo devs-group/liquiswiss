@@ -5,7 +5,10 @@
         <p class="truncate text-base">
           {{ bankAccount.name }}
         </p>
-        <div class="flex gap-2 justify-end">
+        <div
+          v-if="canEdit"
+          class="flex gap-2 justify-end"
+        >
           <Button
             severity="help"
             icon="pi pi-copy"
@@ -50,6 +53,7 @@ import type { BankAccountResponse } from '~/models/bank-account'
 
 const { getOrganisationCurrencyCode } = useAuth()
 const { convertAmountToRate } = useGlobalData()
+const { canEdit } = useOrganisations()
 
 const props = defineProps({
   bankAccount: {

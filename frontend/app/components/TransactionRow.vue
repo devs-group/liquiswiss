@@ -27,10 +27,12 @@
         class="text-xs uppercase tracking-wide text-orange-500"
       >Deaktiviert</span>
       <span
+        v-if="canEdit"
         class="pi pi-copy cursor-pointer text-help"
         @click="$emit('onClone', transaction)"
       />
       <span
+        v-if="canEdit"
         class="pi pi-pencil cursor-pointer text-primary"
         @click="$emit('onEdit', transaction)"
       />
@@ -38,8 +40,9 @@
     <div class="flex items-center justify-center">
       <ToggleSwitch
         class="scale-[0.65] origin-center"
+        :class="!canEdit ? '!opacity-100 !cursor-not-allowed [&_*]:!pointer-events-auto [&_*]:!cursor-not-allowed' : ''"
         :model-value="!localIsDisabled"
-        :disabled="isUpdating"
+        :disabled="isUpdating || !canEdit"
         @update:model-value="onToggleDisabled"
       />
     </div>
@@ -93,6 +96,7 @@ defineEmits<{
 
 const toast = useToast()
 const { patchTransaction } = useTransactions()
+const { canEdit } = useOrganisations()
 const localIsDisabled = ref(props.transaction.isDisabled)
 const isUpdating = ref(false)
 

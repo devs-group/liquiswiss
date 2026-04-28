@@ -43,6 +43,7 @@
         Noch keine Lohnkosten vorhanden
       </p>
       <div
+        v-if="canEdit"
         class="flex flex-wrap col-span-full justify-end gap-2"
       >
         <Button
@@ -92,6 +93,7 @@ import { EmployeeCostDistributionType, EmployeeCostOverviewType } from '~/config
 const dialogRef = inject<ISalaryCostOverviewDialog>('dialogRef')!
 
 const { deleteSalaryCost, listSalaryCosts } = useSalaryCosts()
+const { canEdit } = useOrganisations()
 const confirm = useConfirm()
 const toast = useToast()
 const dialog = useDialog()

@@ -13,6 +13,7 @@
         />
       </div>
       <Button
+        v-if="canEdit"
         class="self-end"
         label="Bankkonto hinzufügen"
         icon="pi pi-building"
@@ -102,6 +103,7 @@ const dialog = useDialog()
 const { getOrganisationCurrencyCode, getOrganisationCurrencyLocaleCode } = useAuth()
 const { bankAccounts, noMoreDataBankAccounts, pageBankAccounts, searchBankAccounts, totalBankSaldoInCHF, useFetchListBankAccounts, listBankAccounts } = useBankAccounts()
 const { toggleBankAccountDisplayType, bankAccountDisplay } = useSettings()
+const { canEdit } = useOrganisations()
 
 const isLoading = ref(false)
 const isLoadingMore = ref(false)

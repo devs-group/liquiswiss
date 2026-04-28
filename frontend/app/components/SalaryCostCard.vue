@@ -5,7 +5,10 @@
         <p class="truncate text-base">
           {{ SalaryCostUtils.title(salaryCost) }}
         </p>
-        <div class="flex items-center gap-2 justify-end">
+        <div
+          v-if="canEdit"
+          class="flex items-center gap-2 justify-end"
+        >
           <Button
             icon="pi pi-copy"
             severity="help"
@@ -103,6 +106,8 @@ defineEmits<{
   onEdit: [salaryCost: SalaryCostResponse]
   onDelete: [salaryCost: SalaryCostResponse]
 }>()
+
+const { canEdit } = useOrganisations()
 
 const isFixed = computed(
   () => SalaryCostUtils.isFixed(props.salaryCost),

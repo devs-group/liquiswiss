@@ -77,6 +77,7 @@
 
         <div class="flex flex-col items-end gap-1">
           <Button
+            v-if="canEdit"
             :disabled="isLoading"
             label="Neu berechnen"
             size="small"
@@ -290,6 +291,7 @@ const utcFormatter = new Intl.DateTimeFormat(Constants.BASE_LOCALE_CODE, { month
 const localFormatter = new Intl.DateTimeFormat(Constants.BASE_LOCALE_CODE, { month: 'long', year: 'numeric' })
 
 const { getOrganisationCurrencyCode, getOrganisationCurrencyLocaleCode } = useAuth()
+const { canEdit } = useOrganisations()
 const {
   useFetchListForecast,
   listForecasts,

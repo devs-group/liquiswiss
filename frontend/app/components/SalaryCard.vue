@@ -10,7 +10,10 @@
         <p class="truncate text-base">
           Von {{ fromDateFormatted }}
         </p>
-        <div class="flex gap-2 items-center justify-end">
+        <div
+          v-if="canEdit"
+          class="flex gap-2 items-center justify-end"
+        >
           <Button
             v-if="!isTermination"
             v-tooltip.top="'Lohnkosten kopieren'"
@@ -100,8 +103,9 @@
           <ToggleSwitch
             id="salary-card-active"
             class="scale-[0.65] origin-left"
+            :class="!canEdit ? '!opacity-100 !cursor-not-allowed [&_*]:!pointer-events-auto [&_*]:!cursor-not-allowed' : ''"
             :model-value="!isDisabled"
-            :disabled="isUpdatingDisabled"
+            :disabled="isUpdatingDisabled || !canEdit"
             @update:model-value="onToggleDisabled"
           />
         </div>
@@ -142,6 +146,7 @@ const confirm = useConfirm()
 const isDeletingSalary = ref(false)
 
 const { updateSalary, listSalaries, deleteSalary } = useSalaries()
+const { canEdit } = useOrganisations()
 
 const props = defineProps({
   salary: {

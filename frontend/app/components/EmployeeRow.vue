@@ -14,7 +14,7 @@
         class="text-xs uppercase tracking-wide text-orange-500"
       >Ausgetreten</span>
       <span
-        class="pi pi-pencil cursor-pointer text-primary"
+        class="pi pi-cog cursor-pointer text-primary"
         @click="$emit('onEdit', employee)"
       />
     </div>
