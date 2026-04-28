@@ -1,5 +1,10 @@
 <template>
-  <Card :class="{ 'opacity-60': isDisabled }">
+  <Card
+    :class="[
+      { 'opacity-60': isDisabled },
+      isActive && !isTermination && !isDisabled ? '!border-2 !border-green-500 dark:!border-green-400' : '',
+    ]"
+  >
     <template #title>
       <div class="relative flex items-center justify-between">
         <p class="truncate text-base">
@@ -32,7 +37,7 @@
         </div>
         <p
           v-if="isActive && !isTermination"
-          class="absolute -top-9 left-0 whitespace-nowrap text-sm bg-liqui-green p-2 rounded-xl font-bold text-center"
+          class="absolute -top-9 left-0 whitespace-nowrap text-sm bg-green-500 dark:bg-green-400 text-white dark:text-zinc-900 p-2 rounded-xl font-bold text-center"
         >
           Aktiver Lohn
         </p>
