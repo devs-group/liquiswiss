@@ -1,4 +1,4 @@
-.PHONY: up down restart logs ps build dc
+.PHONY: up down restart logs ps build dc migrate
 
 # Optional: pull access token from macOS keychain. If absent, compose runs with
 # its in-file defaults (external integrations like email and currency disabled).
@@ -14,23 +14,13 @@ else
 endif
 
 # Generic compose passthrough: `make dc CMD="logs -f backend"`
-dc:
-	@$(RUN) $(CMD)
+dc:      ; @$(RUN) $(CMD)
+up:      ; @$(RUN) up -d
+down:    ; @$(RUN) down
+restart: ; @$(RUN) restart
+logs:    ; @$(RUN) logs -f
+ps:      ; @$(RUN) ps
+build:   ; @$(RUN) up -d --build
 
-up:
-	@$(RUN) up -d
-
-down:
-	@$(RUN) down
-
-restart:
-	@$(RUN) restart
-
-logs:
-	@$(RUN) logs -f
-
-ps:
-	@$(RUN) ps
-
-build:
-	@$(RUN) up -d --build
+# Apply pending static schema migrations against the compose database.
+migrate: ; @$(MAKE) -C backend goose-static-up
