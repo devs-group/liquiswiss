@@ -87,10 +87,10 @@
         :class="[
           'transition-all',
           org.id === currentOrganisationID
-            ? 'ring-2 ring-liqui-green'
+            ? '!border-2 !border-green-500 dark:!border-green-400'
             : 'hover:shadow-lg',
         ]"
-        :pt="{ root: { class: '!bg-green-900/5 dark:!bg-green-900/10' }, body: { class: 'p-4' }, content: { class: 'p-0' } }"
+        :pt="{ body: { class: 'p-4' }, content: { class: 'p-0' } }"
         data-testid="organisation-card"
       >
         <template #content>
@@ -98,14 +98,14 @@
             <div class="flex items-center gap-3 min-w-0">
               <div
                 class="w-10 h-10 rounded-full flex items-center justify-center text-white font-bold text-lg shrink-0"
-                :class="org.id === currentOrganisationID ? 'bg-liqui-green' : 'bg-gray-400'"
+                :class="org.id === currentOrganisationID ? 'bg-green-500 dark:bg-green-400 dark:text-zinc-900' : 'bg-gray-400'"
               >
                 {{ org.name.charAt(0).toUpperCase() }}
               </div>
               <div class="min-w-0">
                 <p
                   class="font-semibold truncate"
-                  :class="{ 'text-liqui-green': org.id === currentOrganisationID }"
+                  :class="{ 'text-green-500 dark:text-green-400': org.id === currentOrganisationID }"
                 >
                   {{ org.name }}
                 </p>
@@ -119,6 +119,7 @@
                 v-if="org.id === currentOrganisationID"
                 value="Aktiv"
                 severity="success"
+                :pt="{ root: { class: 'bg-green-500 dark:bg-green-400 dark:text-zinc-900' } }"
               />
               <Button
                 v-else
