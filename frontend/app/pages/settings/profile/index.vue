@@ -148,6 +148,52 @@
         />
       </div>
     </form>
+
+    <div class="flex justify-between items-center gap-2">
+      <hr class="h-0.5 bg-black flex-1">
+      <p class="text-xl">
+        Verbundene Anwendungen
+      </p>
+      <hr class="h-0.5 bg-black flex-1">
+    </div>
+
+    <p class="text-sm">
+      Anwendungen (z.B. KI-Assistenten via MCP), denen Sie Zugriff auf Ihre LiquiSwiss-Daten gewährt haben.
+    </p>
+
+    <Message
+      v-if="connections.length"
+      severity="warn"
+    >
+      Verbundene KI-Anwendungen übertragen Ihre LiquiSwiss-Daten an das jeweils gewählte
+      KI-Modell (LLM) und dessen Anbieter gemäss deren Datenschutzrichtlinien.
+    </Message>
+
+    <p
+      v-if="!connections.length"
+      class="text-sm opacity-70"
+    >
+      Keine verbundenen Anwendungen.
+    </p>
+
+    <div
+      v-for="connection in connections"
+      :key="connection.clientId"
+      class="flex justify-between items-center gap-2 border rounded p-3"
+    >
+      <div class="flex flex-col">
+        <span class="font-bold">{{ connection.clientName }}</span>
+        <span class="text-sm opacity-70">Verbunden seit {{ formatDate(connection.createdAt) }}, zuletzt aktiv {{ formatDate(connection.lastUsedAt) }}</span>
+      </div>
+      <Button
+        label="Zugriff widerrufen"
+        icon="pi pi-trash"
+        severity="danger"
+        outlined
+        :loading="revokingClientId === connection.clientId"
+        @click="onRevokeConnection(connection.clientId)"
+      />
+    </div>
   </div>
 </template>
 
@@ -210,6 +256,42 @@ const [email, emailProps] = defineFieldProfile('email')
 
 const [password, passwordProps] = defineFieldPassword('password')
 const [passwordRepeat, passwordRepeatProps] = defineFieldPassword('passwordRepeat')
+
+interface OAuthConnection {
+  clientId: string
+  clientName: string
+  createdAt: string
+  lastUsedAt: string
+}
+
+const connections = ref<OAuthConnection[]>([])
+const revokingClientId = ref('')
+
+const formatDate = (value: string) => new Date(value).toLocaleDateString('de-CH')
+
+const loadConnections = async () => {
+  try {
+    connections.value = await $fetch<OAuthConnection[]>('/api/oauth/connections')
+  }
+  catch {
+    connections.value = []
+  }
+}
+
+const onRevokeConnection = async (clientId: string) => {
+  revokingClientId.value = clientId
+  try {
+    await $fetch(`/api/oauth/connections/${clientId}`, { method: 'DELETE' })
+    await loadConnections()
+  }
+  finally {
+    revokingClientId.value = ''
+  }
+}
+
+onMounted(() => {
+  loadConnections()
+})
 
 const onUpdateProfile = handleSubmitProfile((values) => {
   profileUpdateMessage.value = ''

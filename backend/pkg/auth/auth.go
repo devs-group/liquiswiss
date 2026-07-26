@@ -55,6 +55,27 @@ func GenerateRefreshToken(user models.User) (string, string, time.Time, error) {
 	return tokenString, tokenID, expirationTime, err
 }
 
+// GenerateAudienceAccessToken generates a JWT access token bound to a specific
+// audience (e.g. the MCP resource) and OAuth client
+func GenerateAudienceAccessToken(userID int64, clientID string, audience string) (string, time.Time, error) {
+	expirationTime := time.Now().Add(utils.AccessTokenValidity)
+	claims := &Claims{
+		UserID: userID,
+		RegisteredClaims: jwt.RegisteredClaims{
+			IssuedAt:  jwt.NewNumericDate(time.Now()),
+			ExpiresAt: jwt.NewNumericDate(expirationTime),
+			Audience:  jwt.ClaimStrings{audience},
+			Subject:   clientID,
+		},
+	}
+
+	cfg := config.GetConfig()
+	token := jwt.NewWithClaims(jwt.SigningMethodHS256, claims)
+	tokenString, err := token.SignedString(cfg.JWTKey)
+
+	return tokenString, expirationTime, err
+}
+
 // VerifyToken verifies the given token and returns the user ID
 func VerifyToken(tokenString string) (*Claims, error) {
 	claims := &Claims{}

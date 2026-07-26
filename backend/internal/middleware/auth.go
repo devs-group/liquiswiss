@@ -23,6 +23,10 @@ func AuthMiddleware(c *gin.Context) {
 		if err != nil {
 			accessClaims = nil
 		}
+		// Audience-bound tokens (e.g. MCP access tokens) are not valid as web sessions
+		if accessClaims != nil && len(accessClaims.Audience) > 0 {
+			accessClaims = nil
+		}
 	}
 
 	if accessClaims == nil {

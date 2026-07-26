@@ -293,6 +293,48 @@ func (mr *MockIDatabaseAdapterMockRecorder) CreateInvitation(organisationID, ema
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CreateInvitation", reflect.TypeOf((*MockIDatabaseAdapter)(nil).CreateInvitation), organisationID, email, role, token, invitedBy, expiresAt)
 }
 
+// CreateOAuthAuthCode mocks base method.
+func (m *MockIDatabaseAdapter) CreateOAuthAuthCode(code models.OAuthAuthCode) error {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "CreateOAuthAuthCode", code)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// CreateOAuthAuthCode indicates an expected call of CreateOAuthAuthCode.
+func (mr *MockIDatabaseAdapterMockRecorder) CreateOAuthAuthCode(code any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CreateOAuthAuthCode", reflect.TypeOf((*MockIDatabaseAdapter)(nil).CreateOAuthAuthCode), code)
+}
+
+// CreateOAuthClient mocks base method.
+func (m *MockIDatabaseAdapter) CreateOAuthClient(clientID, clientName string, redirectURIs []string) error {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "CreateOAuthClient", clientID, clientName, redirectURIs)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// CreateOAuthClient indicates an expected call of CreateOAuthClient.
+func (mr *MockIDatabaseAdapterMockRecorder) CreateOAuthClient(clientID, clientName, redirectURIs any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CreateOAuthClient", reflect.TypeOf((*MockIDatabaseAdapter)(nil).CreateOAuthClient), clientID, clientName, redirectURIs)
+}
+
+// CreateOAuthRefreshToken mocks base method.
+func (m *MockIDatabaseAdapter) CreateOAuthRefreshToken(token models.OAuthRefreshToken) error {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "CreateOAuthRefreshToken", token)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// CreateOAuthRefreshToken indicates an expected call of CreateOAuthRefreshToken.
+func (mr *MockIDatabaseAdapterMockRecorder) CreateOAuthRefreshToken(token any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CreateOAuthRefreshToken", reflect.TypeOf((*MockIDatabaseAdapter)(nil).CreateOAuthRefreshToken), token)
+}
+
 // CreateOrganisation mocks base method.
 func (m *MockIDatabaseAdapter) CreateOrganisation(name string) (int64, error) {
 	m.ctrl.T.Helper()
@@ -866,6 +908,51 @@ func (mr *MockIDatabaseAdapterMockRecorder) GetMemberPermission(userID, organisa
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetMemberPermission", reflect.TypeOf((*MockIDatabaseAdapter)(nil).GetMemberPermission), userID, organisationID)
 }
 
+// GetOAuthAuthCode mocks base method.
+func (m *MockIDatabaseAdapter) GetOAuthAuthCode(codeHash string) (*models.OAuthAuthCode, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "GetOAuthAuthCode", codeHash)
+	ret0, _ := ret[0].(*models.OAuthAuthCode)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// GetOAuthAuthCode indicates an expected call of GetOAuthAuthCode.
+func (mr *MockIDatabaseAdapterMockRecorder) GetOAuthAuthCode(codeHash any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetOAuthAuthCode", reflect.TypeOf((*MockIDatabaseAdapter)(nil).GetOAuthAuthCode), codeHash)
+}
+
+// GetOAuthClient mocks base method.
+func (m *MockIDatabaseAdapter) GetOAuthClient(clientID string) (*models.OAuthClient, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "GetOAuthClient", clientID)
+	ret0, _ := ret[0].(*models.OAuthClient)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// GetOAuthClient indicates an expected call of GetOAuthClient.
+func (mr *MockIDatabaseAdapterMockRecorder) GetOAuthClient(clientID any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetOAuthClient", reflect.TypeOf((*MockIDatabaseAdapter)(nil).GetOAuthClient), clientID)
+}
+
+// GetOAuthRefreshToken mocks base method.
+func (m *MockIDatabaseAdapter) GetOAuthRefreshToken(tokenHash string) (*models.OAuthRefreshToken, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "GetOAuthRefreshToken", tokenHash)
+	ret0, _ := ret[0].(*models.OAuthRefreshToken)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// GetOAuthRefreshToken indicates an expected call of GetOAuthRefreshToken.
+func (mr *MockIDatabaseAdapterMockRecorder) GetOAuthRefreshToken(tokenHash any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetOAuthRefreshToken", reflect.TypeOf((*MockIDatabaseAdapter)(nil).GetOAuthRefreshToken), tokenHash)
+}
+
 // GetOrganisation mocks base method.
 func (m *MockIDatabaseAdapter) GetOrganisation(userID, organisationID int64) (*models.Organisation, error) {
 	m.ctrl.T.Helper()
@@ -1214,6 +1301,21 @@ func (mr *MockIDatabaseAdapterMockRecorder) ListMembers(organisationID any) *gom
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ListMembers", reflect.TypeOf((*MockIDatabaseAdapter)(nil).ListMembers), organisationID)
 }
 
+// ListOAuthConnections mocks base method.
+func (m *MockIDatabaseAdapter) ListOAuthConnections(userID int64) ([]models.OAuthConnection, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "ListOAuthConnections", userID)
+	ret0, _ := ret[0].([]models.OAuthConnection)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// ListOAuthConnections indicates an expected call of ListOAuthConnections.
+func (mr *MockIDatabaseAdapterMockRecorder) ListOAuthConnections(userID any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ListOAuthConnections", reflect.TypeOf((*MockIDatabaseAdapter)(nil).ListOAuthConnections), userID)
+}
+
 // ListOrganisations mocks base method.
 func (m *MockIDatabaseAdapter) ListOrganisations(userID, page, limit int64) ([]models.Organisation, int64, error) {
 	m.ctrl.T.Helper()
@@ -1354,6 +1456,21 @@ func (mr *MockIDatabaseAdapterMockRecorder) ListVats(userID any) *gomock.Call {
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ListVats", reflect.TypeOf((*MockIDatabaseAdapter)(nil).ListVats), userID)
 }
 
+// MarkOAuthAuthCodeUsed mocks base method.
+func (m *MockIDatabaseAdapter) MarkOAuthAuthCodeUsed(codeHash string) (bool, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "MarkOAuthAuthCodeUsed", codeHash)
+	ret0, _ := ret[0].(bool)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// MarkOAuthAuthCodeUsed indicates an expected call of MarkOAuthAuthCodeUsed.
+func (mr *MockIDatabaseAdapterMockRecorder) MarkOAuthAuthCodeUsed(codeHash any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "MarkOAuthAuthCodeUsed", reflect.TypeOf((*MockIDatabaseAdapter)(nil).MarkOAuthAuthCodeUsed), codeHash)
+}
+
 // RefreshSalaryCostDetails mocks base method.
 func (m *MockIDatabaseAdapter) RefreshSalaryCostDetails(userID, salaryID int64) error {
 	m.ctrl.T.Helper()
@@ -1380,6 +1497,34 @@ func (m *MockIDatabaseAdapter) ResetPassword(password, email string) error {
 func (mr *MockIDatabaseAdapterMockRecorder) ResetPassword(password, email any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ResetPassword", reflect.TypeOf((*MockIDatabaseAdapter)(nil).ResetPassword), password, email)
+}
+
+// RevokeOAuthConnection mocks base method.
+func (m *MockIDatabaseAdapter) RevokeOAuthConnection(userID int64, clientID string) error {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "RevokeOAuthConnection", userID, clientID)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// RevokeOAuthConnection indicates an expected call of RevokeOAuthConnection.
+func (mr *MockIDatabaseAdapterMockRecorder) RevokeOAuthConnection(userID, clientID any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "RevokeOAuthConnection", reflect.TypeOf((*MockIDatabaseAdapter)(nil).RevokeOAuthConnection), userID, clientID)
+}
+
+// RevokeOAuthRefreshToken mocks base method.
+func (m *MockIDatabaseAdapter) RevokeOAuthRefreshToken(tokenHash string) error {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "RevokeOAuthRefreshToken", tokenHash)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// RevokeOAuthRefreshToken indicates an expected call of RevokeOAuthRefreshToken.
+func (mr *MockIDatabaseAdapterMockRecorder) RevokeOAuthRefreshToken(tokenHash any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "RevokeOAuthRefreshToken", reflect.TypeOf((*MockIDatabaseAdapter)(nil).RevokeOAuthRefreshToken), tokenHash)
 }
 
 // SetSalaryCostBaseLinks mocks base method.

@@ -128,6 +128,17 @@ type IDatabaseAdapter interface {
 	CheckRefreshToken(userID int64, tokenID string) (bool, error)
 	DeleteRefreshToken(userID int64, tokenID string) error
 
+	CreateOAuthClient(clientID, clientName string, redirectURIs []string) error
+	GetOAuthClient(clientID string) (*models.OAuthClient, error)
+	CreateOAuthAuthCode(code models.OAuthAuthCode) error
+	GetOAuthAuthCode(codeHash string) (*models.OAuthAuthCode, error)
+	MarkOAuthAuthCodeUsed(codeHash string) (bool, error)
+	CreateOAuthRefreshToken(token models.OAuthRefreshToken) error
+	GetOAuthRefreshToken(tokenHash string) (*models.OAuthRefreshToken, error)
+	RevokeOAuthRefreshToken(tokenHash string) error
+	RevokeOAuthConnection(userID int64, clientID string) error
+	ListOAuthConnections(userID int64) ([]models.OAuthConnection, error)
+
 	ListFiatRates(base string) ([]models.FiatRate, error)
 	CountUniqueCurrenciesInFiatRates() (int64, error)
 	GetFiatRate(base, target string) (*models.FiatRate, error)

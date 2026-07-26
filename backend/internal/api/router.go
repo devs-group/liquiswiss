@@ -5,7 +5,9 @@ import (
 	"liquiswiss/internal/adapter/db_adapter"
 	"liquiswiss/internal/adapter/email_adapter"
 	"liquiswiss/internal/api/handlers"
+	"liquiswiss/internal/mcp"
 	"liquiswiss/internal/middleware"
+	"liquiswiss/internal/oauth"
 	"liquiswiss/internal/service/api_service"
 )
 
@@ -35,8 +37,28 @@ func NewAPI(
 }
 
 func (api *API) setupRouter() {
+	oauthHandler := oauth.NewHandler(api.DBService)
+
+	// OAuth discovery endpoints must live at the root path per RFC 8414
+	api.Router.GET("/.well-known/oauth-protected-resource", oauthHandler.ProtectedResourceMetadata)
+	api.Router.GET("/.well-known/oauth-authorization-server", oauthHandler.AuthorizationServerMetadata)
+
 	group := api.Router.Group("/api")
 	{
+		// OAuth 2.1 authorization server (public endpoints)
+		oauthGroup := group.Group("/oauth")
+		{
+			oauthGroup.POST("/register", oauthHandler.Register)
+			oauthGroup.GET("/authorize", oauthHandler.Authorize)
+			oauthGroup.POST("/token", oauthHandler.Token)
+			oauthGroup.POST("/revoke", oauthHandler.Revoke)
+		}
+
+		// MCP endpoint protected by OAuth bearer tokens
+		mcpGroup := group.Group("/mcp")
+		mcpGroup.Use(middleware.OAuthBearerMiddleware)
+		mcpGroup.Any("", mcp.GinHandler(api.APIService, api.DBService))
+
 		// Health check endpoint for monitoring and CI
 		group.GET("/health", func(ctx *gin.Context) {
 			ctx.JSON(200, gin.H{"status": "ok"})
@@ -89,6 +111,11 @@ func (api *API) setupRouter() {
 		adminRoutes := protected.Group("/")
 		adminRoutes.Use(middleware.RequireMinRole(middleware.RoleAdmin))
 		{
+			// OAuth consent + connection management (cookie session)
+			protected.POST("/oauth/approve", oauthHandler.Approve)
+			protected.GET("/oauth/connections", oauthHandler.ListConnections)
+			protected.DELETE("/oauth/connections/:clientId", oauthHandler.RevokeConnection)
+
 			// Profile & Auth
 			protected.GET("/profile", func(ctx *gin.Context) {
 				handlers.GetProfile(api.APIService, ctx)

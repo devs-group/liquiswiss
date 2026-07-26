@@ -9,6 +9,7 @@ import (
 
 type Config struct {
 	WebHost               string
+	APIHost               string
 	DBUser                string
 	DBPassword            string
 	DBHost                string
@@ -33,6 +34,7 @@ type Config struct {
 func GetConfig() Config {
 	return Config{
 		WebHost: getEnv("WEB_HOST", "http://localhost:3000"),
+		APIHost: getEnv("BACKEND_PUBLIC_URL", "http://localhost:8087"),
 
 		DBUser:     getEnv("DB_USER", ""),
 		DBPassword: getEnv("DB_PASSWORD", ""),

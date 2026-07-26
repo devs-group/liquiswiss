@@ -160,3 +160,14 @@ For production make sure you define the proper values for your envs (no matter i
 - `WEB_HOST` - Reflects your Frontend URL (eg. https://yourdomain.com)
 - `JWT_KEY` - Should be a long and secure password
 - `NUXT_API_HOST` - Reflects your Backend URL (eg https://api.yourdomain.com)
+## MCP Server (AI Access)
+
+The backend exposes an MCP (Model Context Protocol) server at `/api/mcp` (Streamable HTTP), protected by an embedded OAuth 2.1 authorization server (dynamic client registration, PKCE, rotating refresh tokens). AI clients like Claude can manage bank accounts, transactions, employees, salaries and read liquidity forecasts on behalf of a user.
+
+Connect locally:
+
+```bash
+claude mcp add --transport http liquiswiss-local http://localhost:8087/api/mcp
+```
+
+Authentication runs through the browser: login, consent page (with an explicit notice that data flows to the chosen LLM provider), redirect back. Sessions match web logins (20 min access tokens, 90 day rotating refresh tokens). Users can revoke access anytime under Profile settings, "Verbundene Anwendungen". Public base URL of the backend is configured via `BACKEND_PUBLIC_URL`.
