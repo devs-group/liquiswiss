@@ -2,6 +2,7 @@ package mcp
 
 import (
 	"context"
+	"encoding/json"
 	"errors"
 	"fmt"
 	"net/http"
@@ -66,6 +67,29 @@ func (d *toolDeps) requireEditor(userID int64) error {
 
 func validate(payload any) error {
 	return utils.GetValidator().Struct(payload)
+}
+
+// toMapResult wraps toMap for direct use in tool returns
+func toMapResult(v any) (*sdk.CallToolResult, map[string]any, error) {
+	m, err := toMap(v)
+	if err != nil {
+		return nil, nil, err
+	}
+	return nil, m, nil
+}
+
+// toMap converts a model to a generic map so custom JSON types (e.g. types.AsDate,
+// which marshals as a string) do not clash with the SDK's inferred output schema
+func toMap(v any) (map[string]any, error) {
+	raw, err := json.Marshal(v)
+	if err != nil {
+		return nil, err
+	}
+	var result map[string]any
+	if err := json.Unmarshal(raw, &result); err != nil {
+		return nil, err
+	}
+	return result, nil
 }
 
 func newServer(apiService api_service.IAPIService, dbService db_adapter.IDatabaseAdapter) *sdk.Server {
@@ -173,6 +197,82 @@ func registerOrganisationTools(server *sdk.Server, deps *toolDeps) {
 			return nil, nil, err
 		}
 		return nil, map[string]any{"items": vats}, nil
+	})
+
+	sdk.AddTool(server, &sdk.Tool{
+		Name:        "create_vat",
+		Description: "Create a VAT rate for the organisation. Value in basis points of a percent: 810 = 8.1%. Requires editor role or higher.",
+	}, func(ctx context.Context, req *sdk.CallToolRequest, in models.CreateVat) (*sdk.CallToolResult, *models.Vat, error) {
+		userID, err := userIDFrom(ctx)
+		if err != nil {
+			return nil, nil, err
+		}
+		if err := deps.requireEditor(userID); err != nil {
+			return nil, nil, err
+		}
+		if err := validate(in); err != nil {
+			return nil, nil, err
+		}
+		vat, err := deps.apiService.CreateVat(in, userID)
+		if err != nil {
+			return nil, nil, err
+		}
+		return nil, vat, nil
+	})
+
+	sdk.AddTool(server, &sdk.Tool{
+		Name:        "update_vat",
+		Description: "Update a VAT rate's value (810 = 8.1%). Only organisation-owned rates can be edited (canEdit=true). Requires editor role or higher.",
+	}, func(ctx context.Context, req *sdk.CallToolRequest, in struct {
+		ID int64 `json:"id" jsonschema:"VAT ID"`
+		models.UpdateVat
+	}) (*sdk.CallToolResult, *models.Vat, error) {
+		userID, err := userIDFrom(ctx)
+		if err != nil {
+			return nil, nil, err
+		}
+		if err := deps.requireEditor(userID); err != nil {
+			return nil, nil, err
+		}
+		if err := validate(in.UpdateVat); err != nil {
+			return nil, nil, err
+		}
+		existing, err := deps.apiService.GetVat(userID, in.ID)
+		if err != nil {
+			return nil, nil, errors.New("vat not found")
+		}
+		if !existing.CanEdit {
+			return nil, nil, errors.New("this VAT rate is global and cannot be modified")
+		}
+		vat, err := deps.apiService.UpdateVat(in.UpdateVat, userID, in.ID)
+		if err != nil {
+			return nil, nil, err
+		}
+		return nil, vat, nil
+	})
+
+	sdk.AddTool(server, &sdk.Tool{
+		Name:        "delete_vat",
+		Description: "Delete an organisation-owned VAT rate permanently (canEdit=true only). Requires editor role or higher.",
+	}, func(ctx context.Context, req *sdk.CallToolRequest, in idInput) (*sdk.CallToolResult, *deleteOutput, error) {
+		userID, err := userIDFrom(ctx)
+		if err != nil {
+			return nil, nil, err
+		}
+		if err := deps.requireEditor(userID); err != nil {
+			return nil, nil, err
+		}
+		existing, err := deps.apiService.GetVat(userID, in.ID)
+		if err != nil {
+			return nil, nil, errors.New("vat not found")
+		}
+		if !existing.CanEdit {
+			return nil, nil, errors.New("this VAT rate is global and cannot be deleted")
+		}
+		if err := deps.apiService.DeleteVat(userID, in.ID); err != nil {
+			return nil, nil, err
+		}
+		return nil, &deleteOutput{Deleted: true, ID: in.ID}, nil
 	})
 }
 
@@ -286,7 +386,7 @@ func registerTransactionTools(server *sdk.Server, deps *toolDeps) {
 	sdk.AddTool(server, &sdk.Tool{
 		Name:        "get_transaction",
 		Description: "Get a single transaction by ID.",
-	}, func(ctx context.Context, req *sdk.CallToolRequest, in idInput) (*sdk.CallToolResult, *models.Transaction, error) {
+	}, func(ctx context.Context, req *sdk.CallToolRequest, in idInput) (*sdk.CallToolResult, map[string]any, error) {
 		userID, err := userIDFrom(ctx)
 		if err != nil {
 			return nil, nil, err
@@ -295,13 +395,13 @@ func registerTransactionTools(server *sdk.Server, deps *toolDeps) {
 		if err != nil {
 			return nil, nil, err
 		}
-		return nil, transaction, nil
+		return toMapResult(transaction)
 	})
 
 	sdk.AddTool(server, &sdk.Tool{
 		Name:        "create_transaction",
 		Description: "Create a transaction. Amount in Rappen/cents (negative = expense, positive = revenue). Type 'single' or 'repeating' (cycle required if repeating: monthly, quarterly, biannually, yearly). Dates as YYYY-MM-DD. Category and currency are IDs from list_categories / list_currencies. Requires editor role or higher.",
-	}, func(ctx context.Context, req *sdk.CallToolRequest, in models.CreateTransaction) (*sdk.CallToolResult, *models.Transaction, error) {
+	}, func(ctx context.Context, req *sdk.CallToolRequest, in models.CreateTransaction) (*sdk.CallToolResult, map[string]any, error) {
 		userID, err := userIDFrom(ctx)
 		if err != nil {
 			return nil, nil, err
@@ -316,7 +416,7 @@ func registerTransactionTools(server *sdk.Server, deps *toolDeps) {
 		if err != nil {
 			return nil, nil, err
 		}
-		return nil, transaction, nil
+		return toMapResult(transaction)
 	})
 
 	sdk.AddTool(server, &sdk.Tool{
@@ -325,7 +425,7 @@ func registerTransactionTools(server *sdk.Server, deps *toolDeps) {
 	}, func(ctx context.Context, req *sdk.CallToolRequest, in struct {
 		ID int64 `json:"id" jsonschema:"transaction ID"`
 		models.UpdateTransaction
-	}) (*sdk.CallToolResult, *models.Transaction, error) {
+	}) (*sdk.CallToolResult, map[string]any, error) {
 		userID, err := userIDFrom(ctx)
 		if err != nil {
 			return nil, nil, err
@@ -340,7 +440,7 @@ func registerTransactionTools(server *sdk.Server, deps *toolDeps) {
 		if err != nil {
 			return nil, nil, err
 		}
-		return nil, transaction, nil
+		return toMapResult(transaction)
 	})
 
 	sdk.AddTool(server, &sdk.Tool{
@@ -388,7 +488,7 @@ func registerEmployeeTools(server *sdk.Server, deps *toolDeps) {
 	sdk.AddTool(server, &sdk.Tool{
 		Name:        "get_employee",
 		Description: "Get a single employee by ID.",
-	}, func(ctx context.Context, req *sdk.CallToolRequest, in idInput) (*sdk.CallToolResult, *models.Employee, error) {
+	}, func(ctx context.Context, req *sdk.CallToolRequest, in idInput) (*sdk.CallToolResult, map[string]any, error) {
 		userID, err := userIDFrom(ctx)
 		if err != nil {
 			return nil, nil, err
@@ -397,13 +497,13 @@ func registerEmployeeTools(server *sdk.Server, deps *toolDeps) {
 		if err != nil {
 			return nil, nil, err
 		}
-		return nil, employee, nil
+		return toMapResult(employee)
 	})
 
 	sdk.AddTool(server, &sdk.Tool{
 		Name:        "create_employee",
 		Description: "Create an employee (name only; salaries are managed separately). Requires editor role or higher.",
-	}, func(ctx context.Context, req *sdk.CallToolRequest, in models.CreateEmployee) (*sdk.CallToolResult, *models.Employee, error) {
+	}, func(ctx context.Context, req *sdk.CallToolRequest, in models.CreateEmployee) (*sdk.CallToolResult, map[string]any, error) {
 		userID, err := userIDFrom(ctx)
 		if err != nil {
 			return nil, nil, err
@@ -418,7 +518,7 @@ func registerEmployeeTools(server *sdk.Server, deps *toolDeps) {
 		if err != nil {
 			return nil, nil, err
 		}
-		return nil, employee, nil
+		return toMapResult(employee)
 	})
 
 	sdk.AddTool(server, &sdk.Tool{
@@ -427,7 +527,7 @@ func registerEmployeeTools(server *sdk.Server, deps *toolDeps) {
 	}, func(ctx context.Context, req *sdk.CallToolRequest, in struct {
 		ID int64 `json:"id" jsonschema:"employee ID"`
 		models.UpdateEmployee
-	}) (*sdk.CallToolResult, *models.Employee, error) {
+	}) (*sdk.CallToolResult, map[string]any, error) {
 		userID, err := userIDFrom(ctx)
 		if err != nil {
 			return nil, nil, err
@@ -442,7 +542,7 @@ func registerEmployeeTools(server *sdk.Server, deps *toolDeps) {
 		if err != nil {
 			return nil, nil, err
 		}
-		return nil, employee, nil
+		return toMapResult(employee)
 	})
 
 	sdk.AddTool(server, &sdk.Tool{
