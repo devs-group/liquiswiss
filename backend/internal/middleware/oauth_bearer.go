@@ -48,6 +48,14 @@ func OAuthBearerMiddleware(c *gin.Context) {
 		return
 	}
 
+	// Access tokens are stateless JWTs; this check makes revoking a connection
+	// in the web UI take effect immediately instead of at token expiry
+	active, err := databaseService.HasActiveOAuthConnection(claims.UserID, claims.Subject)
+	if err != nil || !active {
+		unauthorized()
+		return
+	}
+
 	c.Set("userID", claims.UserID)
 	c.Next()
 }

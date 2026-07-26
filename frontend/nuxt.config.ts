@@ -30,6 +30,10 @@ export default defineNuxtConfig({
   },
   runtimeConfig: {
     apiHost: 'http://localhost:8080',
+    public: {
+      // Public backend URL shown to users for MCP connections (NUXT_PUBLIC_API_HOST overrides)
+      apiHost: 'https://api.liquiswiss.ch',
+    },
   },
   routeRules: {
     '/**': {

@@ -176,6 +176,43 @@
       Keine verbundenen Anwendungen.
     </p>
 
+    <div class="flex flex-col gap-2 border rounded p-3">
+      <p class="font-bold">
+        So verbinden Sie einen KI-Assistenten
+      </p>
+      <p class="text-sm">
+        Verwenden Sie diese MCP-Server-URL in Ihrer KI-Anwendung:
+      </p>
+      <div class="flex items-center gap-2">
+        <code class="text-sm bg-black/10 dark:bg-white/10 rounded px-2 py-1 select-all">{{ mcpUrl }}</code>
+        <Button
+          icon="pi pi-copy"
+          text
+          size="small"
+          aria-label="URL kopieren"
+          @click="copyMcpUrl"
+        />
+      </div>
+      <ul class="text-sm list-disc pl-5 flex flex-col gap-1">
+        <li>
+          <strong>Claude (Desktop / Web):</strong> Einstellungen → Connectors → "Custom Connector hinzufügen" → URL einfügen.
+        </li>
+        <li>
+          <strong>Claude Code (CLI):</strong> <code class="select-all">claude mcp add --transport http liquiswiss {{ mcpUrl }}</code>
+        </li>
+        <li>
+          <strong>ChatGPT:</strong> Einstellungen → Connectors → Erweitert → Entwicklermodus aktivieren → "Connector erstellen" → URL einfügen.
+        </li>
+        <li>
+          <strong>Gemini CLI:</strong> <code class="select-all">gemini mcp add --transport http liquiswiss {{ mcpUrl }}</code>
+        </li>
+      </ul>
+      <p class="text-sm opacity-70">
+        Nach dem Hinzufügen öffnet sich Ihr Browser: Bei LiquiSwiss anmelden, den Zugriff bestätigen, fertig.
+        Die Verbindung erscheint danach oben in der Liste und kann dort jederzeit widerrufen werden.
+      </p>
+    </div>
+
     <div
       v-for="connection in connections"
       :key="connection.clientId"
@@ -191,7 +228,7 @@
         severity="danger"
         outlined
         :loading="revokingClientId === connection.clientId"
-        @click="onRevokeConnection(connection.clientId)"
+        @click="confirmRevokeConnection(connection)"
       />
     </div>
   </div>
@@ -266,6 +303,29 @@ interface OAuthConnection {
 
 const connections = ref<OAuthConnection[]>([])
 const revokingClientId = ref('')
+const confirm = useConfirm()
+const toast = useToast()
+
+const runtimeConfig = useRuntimeConfig()
+const mcpUrl = computed(() => `${runtimeConfig.public.apiHost}/api/mcp`)
+
+const copyMcpUrl = async () => {
+  await navigator.clipboard.writeText(mcpUrl.value)
+  toast.add({ summary: 'Kopiert', detail: 'MCP-URL in die Zwischenablage kopiert', severity: 'success', life: Config.TOAST_LIFE_TIME })
+}
+
+const confirmRevokeConnection = (connection: OAuthConnection) => {
+  confirm.require({
+    header: 'Zugriff widerrufen',
+    message: `Zugriff von "${connection.clientName}" wirklich widerrufen? Die Anwendung verliert sofort den Zugriff auf Ihre LiquiSwiss-Daten.`,
+    icon: 'pi pi-exclamation-triangle',
+    rejectLabel: 'Nein',
+    acceptLabel: 'Ja',
+    accept: () => {
+      onRevokeConnection(connection.clientId)
+    },
+  })
+}
 
 const formatDate = (value: string) => new Date(value).toLocaleDateString('de-CH')
 

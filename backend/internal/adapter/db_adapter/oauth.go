@@ -179,3 +179,18 @@ func (d *DatabaseAdapter) ListOAuthConnections(userID int64) ([]models.OAuthConn
 
 	return connections, rows.Err()
 }
+
+// HasActiveOAuthConnection reports whether the user still has an unrevoked
+// refresh token for the client, making connection revocation immediate even
+// for outstanding access tokens
+func (d *DatabaseAdapter) HasActiveOAuthConnection(userID int64, clientID string) (bool, error) {
+	query, err := sqlQueries.ReadFile("queries/has_active_oauth_connection.sql")
+	if err != nil {
+		return false, err
+	}
+
+	var active bool
+	err = d.db.QueryRow(string(query), userID, clientID).Scan(&active)
+
+	return active, err
+}

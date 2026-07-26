@@ -1177,6 +1177,21 @@ func (mr *MockIDatabaseAdapterMockRecorder) GetVatSetting(userID any) *gomock.Ca
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetVatSetting", reflect.TypeOf((*MockIDatabaseAdapter)(nil).GetVatSetting), userID)
 }
 
+// HasActiveOAuthConnection mocks base method.
+func (m *MockIDatabaseAdapter) HasActiveOAuthConnection(userID int64, clientID string) (bool, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "HasActiveOAuthConnection", userID, clientID)
+	ret0, _ := ret[0].(bool)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// HasActiveOAuthConnection indicates an expected call of HasActiveOAuthConnection.
+func (mr *MockIDatabaseAdapterMockRecorder) HasActiveOAuthConnection(userID, clientID any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "HasActiveOAuthConnection", reflect.TypeOf((*MockIDatabaseAdapter)(nil).HasActiveOAuthConnection), userID, clientID)
+}
+
 // ListAllForecastExclusions mocks base method.
 func (m *MockIDatabaseAdapter) ListAllForecastExclusions(userID int64) ([]models.ForecastExclusionInfo, error) {
 	m.ctrl.T.Helper()

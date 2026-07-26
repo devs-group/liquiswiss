@@ -141,6 +141,7 @@ type IDatabaseAdapter interface {
 	RevokeOAuthRefreshToken(tokenHash string) error
 	RevokeOAuthConnection(userID int64, clientID string) error
 	ListOAuthConnections(userID int64) ([]models.OAuthConnection, error)
+	HasActiveOAuthConnection(userID int64, clientID string) (bool, error)
 
 	ListFiatRates(base string) ([]models.FiatRate, error)
 	CountUniqueCurrenciesInFiatRates() (int64, error)

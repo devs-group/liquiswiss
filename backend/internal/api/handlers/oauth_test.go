@@ -293,3 +293,27 @@ func TestOAuthConnectionsListAndRevoke(t *testing.T) {
 	})
 	require.Equal(t, http.StatusBadRequest, status)
 }
+
+func TestOAuthRevokedConnectionBlocksMCPImmediately(t *testing.T) {
+	env := setupOAuthTestEnvironment(t)
+	token := env.mcpAccessToken(t)
+
+	// Works while connected
+	result := env.mcpCall(t, token, "get_organisation", `{}`)
+	require.False(t, result.IsError, result.Text)
+
+	// Revoke the connection (as the web UI does)
+	connections, err := env.DBAdapter.ListOAuthConnections(env.User.ID)
+	require.NoError(t, err)
+	require.Len(t, connections, 1)
+	require.NoError(t, env.DBAdapter.RevokeOAuthConnection(env.User.ID, connections[0].ClientID))
+
+	// Same still-valid access token must now be rejected
+	req, _ := http.NewRequest(http.MethodPost, "/api/mcp", strings.NewReader(`{"jsonrpc":"2.0","id":1,"method":"tools/list"}`))
+	req.Header.Set("Content-Type", "application/json")
+	req.Header.Set("Accept", "application/json, text/event-stream")
+	req.Header.Set("Authorization", "Bearer "+token)
+	w := httptest.NewRecorder()
+	env.API.Router.ServeHTTP(w, req)
+	require.Equal(t, http.StatusUnauthorized, w.Code)
+}
