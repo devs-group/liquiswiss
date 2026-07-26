@@ -800,7 +800,7 @@ func registerEmployeeTools(server *sdk.Server, deps *toolDeps) {
 
 	sdk.AddTool(server, &sdk.Tool{
 		Name:        "list_salary_costs",
-		Description: "List the employer/employee cost entries (Lohnnebenkosten like AHV, BVG, insurances) attached to one salary. Each cost has a label, cycle (once, monthly, quarterly, biannually, yearly), amountType (fixed = Rappen/cents, percentage where 5300 = 5.3% of the salary), distributionType (employee deduction, employer cost, or both) and calculated amounts/execution dates.",
+		Description: "List the employer/employee cost entries (Lohnnebenkosten like AHV, BVG, insurances) attached to one salary. Each cost has a label, cycle (once, monthly, quarterly, biannually, yearly), amountType (fixed = Rappen/cents, percentage in thousandths of a percent, 3 decimals supported: 5325 = 5.325% of the salary), distributionType (employee deduction, employer cost, or both) and calculated amounts/execution dates.",
 	}, func(ctx context.Context, req *sdk.CallToolRequest, in struct {
 		SalaryID int64 `json:"salaryId" jsonschema:"salary ID"`
 	}) (*sdk.CallToolResult, map[string]any, error) {
@@ -825,7 +825,7 @@ func registerEmployeeTools(server *sdk.Server, deps *toolDeps) {
 
 	sdk.AddTool(server, &sdk.Tool{
 		Name:        "create_salary_cost",
-		Description: "Add a cost entry (Lohnnebenkosten) to a salary. amountType 'fixed' (amount in Rappen/cents) or 'percentage' (5300 = 5.3% of the salary). distributionType: 'employee' (deducted from gross), 'employer' (on top of gross) or 'both'. Cycle 'once' needs targetDate (YYYY-MM-DD); recurring cycles use relativeOffset (>=1, e.g. 1 = every cycle). Optionally labelID from list_salary_cost_labels and baseSalaryCostIDs to compute the percentage on top of other cost entries instead of the salary. Requires editor role or higher.",
+		Description: "Add a cost entry (Lohnnebenkosten) to a salary. amountType 'fixed' (amount in Rappen/cents) or 'percentage' in thousandths of a percent with 3 decimals supported (5325 = 5.325% of the salary). distributionType: 'employee' (deducted from gross), 'employer' (on top of gross) or 'both'. Cycle 'once' needs targetDate (YYYY-MM-DD); recurring cycles use relativeOffset (>=1, e.g. 1 = every cycle). Optionally labelID from list_salary_cost_labels and baseSalaryCostIDs to compute the percentage on top of other cost entries instead of the salary. Requires editor role or higher.",
 	}, func(ctx context.Context, req *sdk.CallToolRequest, in struct {
 		SalaryID int64 `json:"salaryId" jsonschema:"salary ID"`
 		models.CreateSalaryCost
