@@ -182,7 +182,7 @@
         currency-display="code"
         :locale="selectedLocalCode"
         fluid
-        :max-fraction-digits="2"
+        :max-fraction-digits="isFixedAmount ? 2 : 3"
         :disabled="isLoading"
         @paste="onParseAmount"
         @input="event => amount = event.value"
