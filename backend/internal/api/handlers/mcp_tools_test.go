@@ -578,10 +578,10 @@ func TestMCPFriendlyErrors(t *testing.T) {
 	require.True(t, onceMissing.IsError)
 	require.Contains(t, onceMissing.Text, "requires a targetDate")
 
+	// Recurring cycles may carry a targetDate as recurrence anchor
 	recurringWithDate := env.mcpCall(t, token, "create_salary_cost", fmt.Sprintf(
 		`{"salaryId":%d,"cycle":"monthly","amountType":"fixed","amount":50000,"distributionType":"employer","relativeOffset":1,"targetDate":"2026-08-01","labelID":null,"baseSalaryCostIDs":[]}`, salaryID))
-	require.True(t, recurringWithDate.IsError)
-	require.Contains(t, recurringWithDate.Text, "only allowed with cycle 'once'")
+	require.False(t, recurringWithDate.IsError, recurringWithDate.Text)
 
 	// unknown fiat base yields a clear error instead of an empty list
 	rates := env.mcpCall(t, token, "get_fiat_rates", `{"base":"XXX"}`)

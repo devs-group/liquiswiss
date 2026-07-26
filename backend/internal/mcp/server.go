@@ -70,14 +70,12 @@ func validate(payload any) error {
 	return utils.GetValidator().Struct(payload)
 }
 
-// validateCostTargetDate enforces the once-cycle/targetDate pairing before it
-// hits the DB check constraint (which would surface as a raw SQL error)
+// validateCostTargetDate enforces that once-cycle costs carry a targetDate
+// before the DB check constraint surfaces as a raw SQL error. Recurring cycles
+// may also set targetDate; it then acts as the recurrence anchor date.
 func validateCostTargetDate(payload models.CreateSalaryCost) error {
 	if payload.Cycle == "once" && (payload.TargetDate == nil || *payload.TargetDate == "") {
 		return errors.New("cycle 'once' requires a targetDate (YYYY-MM-DD)")
-	}
-	if payload.Cycle != "once" && payload.TargetDate != nil && *payload.TargetDate != "" {
-		return errors.New("targetDate is only allowed with cycle 'once'")
 	}
 	return nil
 }
