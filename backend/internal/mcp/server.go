@@ -490,7 +490,7 @@ func registerTransactionTools(server *sdk.Server, deps *toolDeps) {
 
 	sdk.AddTool(server, &sdk.Tool{
 		Name:        "update_transaction",
-		Description: "Update a transaction (partial: only provided fields change). Requires editor role or higher.",
+		Description: "Update a transaction. WARNING, special partial-update semantics: when isDisabled is provided (true/false), nullable fields sent as null are PRESERVED; when isDisabled is omitted/null, nullable fields sent as null (link, cycle, endDate, employee, vat) are CLEARED. To safely change single fields without wiping others, always pass isDisabled (e.g. its current value). Requires editor role or higher.",
 	}, func(ctx context.Context, req *sdk.CallToolRequest, in struct {
 		ID int64 `json:"id" jsonschema:"transaction ID"`
 		models.UpdateTransaction
