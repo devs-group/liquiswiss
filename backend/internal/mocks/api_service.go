@@ -844,6 +844,21 @@ func (mr *MockIAPIServiceMockRecorder) GetVatSetting(userID any) *gomock.Call {
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetVatSetting", reflect.TypeOf((*MockIAPIService)(nil).GetVatSetting), userID)
 }
 
+// ListAllForecastExclusions mocks base method.
+func (m *MockIAPIService) ListAllForecastExclusions(userID int64) ([]models.ForecastExclusionInfo, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "ListAllForecastExclusions", userID)
+	ret0, _ := ret[0].([]models.ForecastExclusionInfo)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// ListAllForecastExclusions indicates an expected call of ListAllForecastExclusions.
+func (mr *MockIAPIServiceMockRecorder) ListAllForecastExclusions(userID any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ListAllForecastExclusions", reflect.TypeOf((*MockIAPIService)(nil).ListAllForecastExclusions), userID)
+}
+
 // ListBankAccounts mocks base method.
 func (m *MockIAPIService) ListBankAccounts(userID, page, limit int64, sortBy, sortOrder, search string) ([]models.BankAccount, int64, error) {
 	m.ctrl.T.Helper()

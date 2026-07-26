@@ -81,3 +81,11 @@ type ForecastExclusionUpdate struct {
 type UpdateForecastExclusions struct {
 	Updates []ForecastExclusionUpdate `json:"updates" validate:"required,dive"`
 }
+
+type ForecastExclusionInfo struct {
+	Month        string `json:"month"`
+	RelatedTable string `json:"relatedTable"`
+	RelatedID    int64  `json:"relatedId"`
+	Name         string `json:"name"`
+	Amount       int64  `json:"amount"`
+}

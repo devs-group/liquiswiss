@@ -433,21 +433,23 @@ func TestMCPForecastExclusionsAndSettings(t *testing.T) {
 	require.False(t, set.IsError, set.Text)
 	require.Equal(t, float64(1), set.Structured["updated"])
 
-	listed := env.mcpCall(t, token, "list_forecast_exclusions", fmt.Sprintf(
-		`{"relatedId":%d,"relatedTable":"transactions"}`, transactionID))
+	listed := env.mcpCall(t, token, "list_forecast_exclusions", `{}`)
 	require.False(t, listed.IsError, listed.Text)
-	exclusions := listed.Structured["exclusions"].(map[string]any)
-	require.Equal(t, true, exclusions["2026-09"])
+	require.Equal(t, float64(1), listed.Structured["total"])
+	row := listed.Structured["items"].([]any)[0].(map[string]any)
+	require.Equal(t, "2026-09", row["month"])
+	require.Equal(t, "transactions", row["relatedTable"])
+	require.Equal(t, float64(transactionID), row["relatedId"])
+	require.Equal(t, "Ausschlusstest", row["name"])
+	require.Equal(t, float64(-30000), row["amount"])
 
 	// Re-include
 	unset := env.mcpCall(t, token, "set_forecast_exclusions", fmt.Sprintf(
 		`{"updates":[{"relatedID":%d,"relatedTable":"transactions","month":"2026-09","isExcluded":false}]}`, transactionID))
 	require.False(t, unset.IsError, unset.Text)
 
-	listed = env.mcpCall(t, token, "list_forecast_exclusions", fmt.Sprintf(
-		`{"relatedId":%d,"relatedTable":"transactions"}`, transactionID))
-	exclusions = listed.Structured["exclusions"].(map[string]any)
-	require.NotEqual(t, true, exclusions["2026-09"])
+	listed = env.mcpCall(t, token, "list_forecast_exclusions", `{}`)
+	require.Equal(t, float64(0), listed.Structured["total"])
 
 	// Forecast settings readable
 	settings := env.mcpCall(t, token, "get_forecast_settings", `{}`)

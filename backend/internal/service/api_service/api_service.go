@@ -70,6 +70,7 @@ type IAPIService interface {
 	ListForecasts(userID int64, limit int64) ([]models.Forecast, error)
 	ListForecastDetails(userID int64, limit int64) ([]models.ForecastDatabaseDetails, error)
 	ListForecastExclusions(userID int64, relatedID int64, relatedTable string) (map[string]bool, error)
+	ListAllForecastExclusions(userID int64) ([]models.ForecastExclusionInfo, error)
 	CreateForecastExclusion(payload models.CreateForecastExclusion, userID int64) (int64, error)
 	DeleteForecastExclusion(payload models.CreateForecastExclusion, userID int64) (int64, error)
 	UpdateForecastExclusions(payload models.UpdateForecastExclusions, userID int64) error

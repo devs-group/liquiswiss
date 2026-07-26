@@ -938,3 +938,12 @@ func addOffset(costCycle string, fromDate time.Time, current time.Time, relative
 	}
 	return current
 }
+
+func (a *APIService) ListAllForecastExclusions(userID int64) ([]models.ForecastExclusionInfo, error) {
+	exclusions, err := a.dbService.ListAllForecastExclusions(userID)
+	if err != nil {
+		logger.Logger.Error(err)
+		return nil, err
+	}
+	return exclusions, nil
+}

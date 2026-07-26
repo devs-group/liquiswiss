@@ -289,3 +289,27 @@ func (d *DatabaseAdapter) ClearForecasts(userID int64) (int64, error) {
 
 	return affected, nil
 }
+
+func (d *DatabaseAdapter) ListAllForecastExclusions(userID int64) ([]models.ForecastExclusionInfo, error) {
+	query, err := sqlQueries.ReadFile("queries/list_all_forecast_exclusions.sql")
+	if err != nil {
+		return nil, err
+	}
+
+	rows, err := d.db.Query(string(query), userID, userID, userID)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+
+	exclusions := []models.ForecastExclusionInfo{}
+	for rows.Next() {
+		var exclusion models.ForecastExclusionInfo
+		if err := rows.Scan(&exclusion.Month, &exclusion.RelatedTable, &exclusion.RelatedID, &exclusion.Name, &exclusion.Amount); err != nil {
+			return nil, err
+		}
+		exclusions = append(exclusions, exclusion)
+	}
+
+	return exclusions, rows.Err()
+}

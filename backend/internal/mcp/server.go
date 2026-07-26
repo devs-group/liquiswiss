@@ -864,20 +864,17 @@ func registerForecastTools(server *sdk.Server, deps *toolDeps) {
 
 	sdk.AddTool(server, &sdk.Tool{
 		Name:        "list_forecast_exclusions",
-		Description: "List the excluded months of one forecast entry, identified by relatedID + relatedTable (e.g. 'transactions', 'salaries'). Returns a map of YYYY-MM to exclusion status.",
-	}, func(ctx context.Context, req *sdk.CallToolRequest, in struct {
-		RelatedID    int64  `json:"relatedId" jsonschema:"ID of the related entity"`
-		RelatedTable string `json:"relatedTable" jsonschema:"table of the related entity, e.g. transactions or salaries"`
-	}) (*sdk.CallToolResult, map[string]any, error) {
+		Description: "List ALL active forecast exclusions of the current organisation: per row the month (YYYY-MM), the excluded entry's relatedTable/relatedId, its name and amount (Rappen/cents). Use these IDs with set_forecast_exclusions to re-include entries.",
+	}, func(ctx context.Context, req *sdk.CallToolRequest, in emptyInput) (*sdk.CallToolResult, map[string]any, error) {
 		userID, err := userIDFrom(ctx)
 		if err != nil {
 			return nil, nil, err
 		}
-		exclusions, err := deps.apiService.ListForecastExclusions(userID, in.RelatedID, in.RelatedTable)
+		exclusions, err := deps.apiService.ListAllForecastExclusions(userID)
 		if err != nil {
 			return nil, nil, err
 		}
-		return nil, map[string]any{"exclusions": exclusions}, nil
+		return nil, map[string]any{"items": exclusions, "total": len(exclusions)}, nil
 	})
 
 	sdk.AddTool(server, &sdk.Tool{
