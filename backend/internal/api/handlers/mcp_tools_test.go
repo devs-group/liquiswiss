@@ -417,3 +417,41 @@ func TestMCPCategoryCRUDAndGlobalProtection(t *testing.T) {
 	listedAfter := env.mcpCall(t, token, "list_categories", `{}`)
 	require.Equal(t, float64(1), listedAfter.Structured["total"], "only the global preset remains")
 }
+
+func TestMCPForecastExclusionsAndSettings(t *testing.T) {
+	env := setupOAuthTestEnvironment(t)
+	token := env.mcpAccessToken(t)
+
+	created := env.mcpCall(t, token, "create_transaction",
+		`{"name":"Ausschlusstest","link":null,"amount":-30000,"cycle":"monthly","type":"repeating","startDate":"2026-08-01","endDate":null,"category":1,"currency":1,"employee":null,"vat":null,"VatIncluded":false}`)
+	require.False(t, created.IsError, created.Text)
+	transactionID := int64(created.Structured["id"].(float64))
+
+	// Exclude one month, verify via list + forecast details
+	set := env.mcpCall(t, token, "set_forecast_exclusions", fmt.Sprintf(
+		`{"updates":[{"relatedID":%d,"relatedTable":"transactions","month":"2026-09","isExcluded":true}]}`, transactionID))
+	require.False(t, set.IsError, set.Text)
+	require.Equal(t, float64(1), set.Structured["updated"])
+
+	listed := env.mcpCall(t, token, "list_forecast_exclusions", fmt.Sprintf(
+		`{"relatedId":%d,"relatedTable":"transactions"}`, transactionID))
+	require.False(t, listed.IsError, listed.Text)
+	exclusions := listed.Structured["exclusions"].(map[string]any)
+	require.Equal(t, true, exclusions["2026-09"])
+
+	// Re-include
+	unset := env.mcpCall(t, token, "set_forecast_exclusions", fmt.Sprintf(
+		`{"updates":[{"relatedID":%d,"relatedTable":"transactions","month":"2026-09","isExcluded":false}]}`, transactionID))
+	require.False(t, unset.IsError, unset.Text)
+
+	listed = env.mcpCall(t, token, "list_forecast_exclusions", fmt.Sprintf(
+		`{"relatedId":%d,"relatedTable":"transactions"}`, transactionID))
+	exclusions = listed.Structured["exclusions"].(map[string]any)
+	require.NotEqual(t, true, exclusions["2026-09"])
+
+	// Forecast settings readable
+	settings := env.mcpCall(t, token, "get_forecast_settings", `{}`)
+	require.False(t, settings.IsError, settings.Text)
+	require.NotNil(t, settings.Structured["forecastMonths"])
+	require.NotNil(t, settings.Structured["forecastPerformance"])
+}

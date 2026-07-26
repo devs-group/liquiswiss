@@ -841,4 +841,60 @@ func registerForecastTools(server *sdk.Server, deps *toolDeps) {
 		}
 		return nil, result, nil
 	})
+
+	sdk.AddTool(server, &sdk.Tool{
+		Name:        "set_forecast_exclusions",
+		Description: "Exclude or re-include specific entries from the forecast for specific months, without disabling them. Each update needs relatedID + relatedTable (from the get_forecast details tree, e.g. 'transactions' or 'salaries'), month as YYYY-MM and isExcluded. Accepts multiple updates at once. Requires editor role or higher.",
+	}, func(ctx context.Context, req *sdk.CallToolRequest, in models.UpdateForecastExclusions) (*sdk.CallToolResult, map[string]any, error) {
+		userID, err := userIDFrom(ctx)
+		if err != nil {
+			return nil, nil, err
+		}
+		if err := deps.requireEditor(userID); err != nil {
+			return nil, nil, err
+		}
+		if err := validate(in); err != nil {
+			return nil, nil, err
+		}
+		if err := deps.apiService.UpdateForecastExclusions(in, userID); err != nil {
+			return nil, nil, err
+		}
+		return nil, map[string]any{"updated": len(in.Updates)}, nil
+	})
+
+	sdk.AddTool(server, &sdk.Tool{
+		Name:        "list_forecast_exclusions",
+		Description: "List the excluded months of one forecast entry, identified by relatedID + relatedTable (e.g. 'transactions', 'salaries'). Returns a map of YYYY-MM to exclusion status.",
+	}, func(ctx context.Context, req *sdk.CallToolRequest, in struct {
+		RelatedID    int64  `json:"relatedId" jsonschema:"ID of the related entity"`
+		RelatedTable string `json:"relatedTable" jsonschema:"table of the related entity, e.g. transactions or salaries"`
+	}) (*sdk.CallToolResult, map[string]any, error) {
+		userID, err := userIDFrom(ctx)
+		if err != nil {
+			return nil, nil, err
+		}
+		exclusions, err := deps.apiService.ListForecastExclusions(userID, in.RelatedID, in.RelatedTable)
+		if err != nil {
+			return nil, nil, err
+		}
+		return nil, map[string]any{"exclusions": exclusions}, nil
+	})
+
+	sdk.AddTool(server, &sdk.Tool{
+		Name:        "get_forecast_settings",
+		Description: "Get the user's forecast view settings for the current organisation: forecastMonths (how many months the web UI shows) and forecastPerformance (a 0-200% scaling the user applies to revenue in their web view; get_forecast returns UNSCALED numbers, so mention this when the user compares figures).",
+	}, func(ctx context.Context, req *sdk.CallToolRequest, in emptyInput) (*sdk.CallToolResult, map[string]any, error) {
+		userID, err := userIDFrom(ctx)
+		if err != nil {
+			return nil, nil, err
+		}
+		setting, err := deps.apiService.GetUserOrganisationSetting(userID)
+		if err != nil {
+			return nil, nil, err
+		}
+		return nil, map[string]any{
+			"forecastMonths":      setting.ForecastMonths,
+			"forecastPerformance": setting.ForecastPerformance,
+		}, nil
+	})
 }
