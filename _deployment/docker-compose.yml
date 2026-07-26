@@ -55,6 +55,7 @@ services:
     environment:
       GIN_MODE: ${GIN_MODE:-release}
       WEB_HOST: ${WEB_HOST:-https://app.liquiswiss.ch}
+      BACKEND_PUBLIC_URL: ${BACKEND_PUBLIC_URL:-https://api.liquiswiss.ch}
       DB_USER: ${APP_DB_USER:?BWSM secret APP_DB_USER required}
       DB_PASSWORD: ${APP_DB_PASSWORD:?BWSM secret APP_DB_PASSWORD required}
       DB_HOST: ${APP_DB_HOST:-database-app}
