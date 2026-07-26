@@ -10,6 +10,8 @@ import (
 	"testing"
 
 	"github.com/stretchr/testify/require"
+
+	"liquiswiss/pkg/models"
 )
 
 // mcpAccessToken runs the full OAuth flow and returns a valid MCP access token
@@ -536,7 +538,53 @@ func TestMCPFiatRates(t *testing.T) {
 	env := setupOAuthTestEnvironment(t)
 	token := env.mcpAccessToken(t)
 
+	require.NoError(t, env.DBAdapter.UpsertFiatRate(models.CreateFiatRate{Base: "CHF", Target: "EUR", Rate: 1.08}))
+
 	rates := env.mcpCall(t, token, "get_fiat_rates", `{"base":"chf"}`)
 	require.False(t, rates.IsError, rates.Text)
-	require.NotNil(t, rates.Structured["items"])
+	items := rates.Structured["items"].([]any)
+	require.NotEmpty(t, items)
+}
+
+func TestMCPFriendlyErrors(t *testing.T) {
+	env := setupOAuthTestEnvironment(t)
+	token := env.mcpAccessToken(t)
+
+	notFoundCases := []struct {
+		tool string
+		args string
+		want string
+	}{
+		{"get_transaction", `{"id":99999}`, "transaction not found"},
+		{"get_employee", `{"id":99999}`, "employee not found"},
+		{"get_salary", `{"id":99999}`, "salary not found"},
+		{"delete_transaction", `{"id":99999}`, "transaction not found"},
+	}
+	for _, testCase := range notFoundCases {
+		result := env.mcpCall(t, token, testCase.tool, testCase.args)
+		require.True(t, result.IsError, testCase.tool)
+		require.Equal(t, testCase.want, result.Text, testCase.tool)
+	}
+
+	// once-cycle targetDate pairing validated before the DB constraint
+	employee := env.mcpCall(t, token, "create_employee", `{"name":"Fehler Mitarbeiter"}`)
+	employeeID := int64(employee.Structured["id"].(float64))
+	salary := env.mcpCall(t, token, "create_salary", fmt.Sprintf(
+		`{"employeeId":%d,"hoursPerMonth":160,"amount":1000000,"cycle":"monthly","currencyID":1,"vacationDaysPerYear":25,"fromDate":"2026-01-01","toDate":null,"isTermination":false}`, employeeID))
+	salaryID := int64(salary.Structured["id"].(float64))
+
+	onceMissing := env.mcpCall(t, token, "create_salary_cost", fmt.Sprintf(
+		`{"salaryId":%d,"cycle":"once","amountType":"fixed","amount":50000,"distributionType":"employer","relativeOffset":1,"targetDate":null,"labelID":null,"baseSalaryCostIDs":[]}`, salaryID))
+	require.True(t, onceMissing.IsError)
+	require.Contains(t, onceMissing.Text, "requires a targetDate")
+
+	recurringWithDate := env.mcpCall(t, token, "create_salary_cost", fmt.Sprintf(
+		`{"salaryId":%d,"cycle":"monthly","amountType":"fixed","amount":50000,"distributionType":"employer","relativeOffset":1,"targetDate":"2026-08-01","labelID":null,"baseSalaryCostIDs":[]}`, salaryID))
+	require.True(t, recurringWithDate.IsError)
+	require.Contains(t, recurringWithDate.Text, "only allowed with cycle 'once'")
+
+	// unknown fiat base yields a clear error instead of an empty list
+	rates := env.mcpCall(t, token, "get_fiat_rates", `{"base":"XXX"}`)
+	require.True(t, rates.IsError)
+	require.Contains(t, rates.Text, "no exchange rates")
 }

@@ -70,6 +70,30 @@ func validate(payload any) error {
 	return utils.GetValidator().Struct(payload)
 }
 
+// validateCostTargetDate enforces the once-cycle/targetDate pairing before it
+// hits the DB check constraint (which would surface as a raw SQL error)
+func validateCostTargetDate(payload models.CreateSalaryCost) error {
+	if payload.Cycle == "once" && (payload.TargetDate == nil || *payload.TargetDate == "") {
+		return errors.New("cycle 'once' requires a targetDate (YYYY-MM-DD)")
+	}
+	if payload.Cycle != "once" && payload.TargetDate != nil && *payload.TargetDate != "" {
+		return errors.New("targetDate is only allowed with cycle 'once'")
+	}
+	return nil
+}
+
+// notFound maps raw sql/no-rows errors to a clear entity message, everything else passes through
+func notFound(err error, entity string) error {
+	if err == nil {
+		return nil
+	}
+	if strings.Contains(err.Error(), "no rows in result set") ||
+		strings.Contains(err.Error(), "converting NULL to int64") {
+		return fmt.Errorf("%s not found", entity)
+	}
+	return err
+}
+
 // toMapResult wraps toMap for direct use in tool returns
 func toMapResult(v any) (*sdk.CallToolResult, map[string]any, error) {
 	m, err := toMap(v)
@@ -249,9 +273,13 @@ func registerOrganisationTools(server *sdk.Server, deps *toolDeps) {
 		if _, err := userIDFrom(ctx); err != nil {
 			return nil, nil, err
 		}
-		rates, err := deps.apiService.ListFiatRates(strings.ToUpper(in.Base))
+		base := strings.ToUpper(in.Base)
+		rates, err := deps.apiService.ListFiatRates(base)
 		if err != nil {
 			return nil, nil, err
+		}
+		if len(rates) == 0 {
+			return nil, nil, fmt.Errorf("no exchange rates found for base currency %q", base)
 		}
 		return nil, map[string]any{"items": rates}, nil
 	})
@@ -508,7 +536,7 @@ func registerBankAccountTools(server *sdk.Server, deps *toolDeps) {
 			return nil, nil, err
 		}
 		if err := deps.apiService.DeleteBankAccount(userID, in.ID); err != nil {
-			return nil, nil, err
+			return nil, nil, notFound(err, "bank account")
 		}
 		return nil, &deleteOutput{Deleted: true, ID: in.ID}, nil
 	})
@@ -549,7 +577,7 @@ func registerTransactionTools(server *sdk.Server, deps *toolDeps) {
 		}
 		transaction, err := deps.apiService.GetTransaction(userID, in.ID)
 		if err != nil {
-			return nil, nil, err
+			return nil, nil, notFound(err, "transaction")
 		}
 		return toMapResult(transaction)
 	})
@@ -611,7 +639,7 @@ func registerTransactionTools(server *sdk.Server, deps *toolDeps) {
 			return nil, nil, err
 		}
 		if err := deps.apiService.DeleteTransaction(userID, in.ID); err != nil {
-			return nil, nil, err
+			return nil, nil, notFound(err, "transaction")
 		}
 		return nil, &deleteOutput{Deleted: true, ID: in.ID}, nil
 	})
@@ -651,7 +679,7 @@ func registerEmployeeTools(server *sdk.Server, deps *toolDeps) {
 		}
 		employee, err := deps.apiService.GetEmployee(userID, in.ID)
 		if err != nil {
-			return nil, nil, err
+			return nil, nil, notFound(err, "employee")
 		}
 		return toMapResult(employee)
 	})
@@ -713,7 +741,7 @@ func registerEmployeeTools(server *sdk.Server, deps *toolDeps) {
 			return nil, nil, err
 		}
 		if err := deps.apiService.DeleteEmployee(userID, in.ID); err != nil {
-			return nil, nil, err
+			return nil, nil, notFound(err, "employee")
 		}
 		return nil, &deleteOutput{Deleted: true, ID: in.ID}, nil
 	})
@@ -745,7 +773,7 @@ func registerEmployeeTools(server *sdk.Server, deps *toolDeps) {
 		}
 		salary, err := deps.apiService.GetSalary(userID, in.ID)
 		if err != nil {
-			return nil, nil, err
+			return nil, nil, notFound(err, "salary")
 		}
 		return toMapResult(salary)
 	})
@@ -840,9 +868,12 @@ func registerEmployeeTools(server *sdk.Server, deps *toolDeps) {
 		if err := validate(in.CreateSalaryCost); err != nil {
 			return nil, nil, err
 		}
+		if err := validateCostTargetDate(in.CreateSalaryCost); err != nil {
+			return nil, nil, err
+		}
 		cost, err := deps.apiService.CreateSalaryCost(in.CreateSalaryCost, userID, in.SalaryID)
 		if err != nil {
-			return nil, nil, err
+			return nil, nil, notFound(err, "salary")
 		}
 		return toMapResult(cost)
 	})
@@ -864,9 +895,12 @@ func registerEmployeeTools(server *sdk.Server, deps *toolDeps) {
 		if err := validate(in.CreateSalaryCost); err != nil {
 			return nil, nil, err
 		}
+		if err := validateCostTargetDate(in.CreateSalaryCost); err != nil {
+			return nil, nil, err
+		}
 		cost, err := deps.apiService.UpdateSalaryCost(in.CreateSalaryCost, userID, in.ID)
 		if err != nil {
-			return nil, nil, err
+			return nil, nil, notFound(err, "salary cost")
 		}
 		return toMapResult(cost)
 	})
@@ -883,7 +917,7 @@ func registerEmployeeTools(server *sdk.Server, deps *toolDeps) {
 			return nil, nil, err
 		}
 		if err := deps.apiService.DeleteSalaryCost(userID, in.ID); err != nil {
-			return nil, nil, err
+			return nil, nil, notFound(err, "salary cost")
 		}
 		return nil, &deleteOutput{Deleted: true, ID: in.ID}, nil
 	})
@@ -1005,7 +1039,7 @@ func registerEmployeeTools(server *sdk.Server, deps *toolDeps) {
 			return nil, nil, err
 		}
 		if err := deps.apiService.DeleteSalary(userID, in.ID); err != nil {
-			return nil, nil, err
+			return nil, nil, notFound(err, "salary")
 		}
 		return nil, &deleteOutput{Deleted: true, ID: in.ID}, nil
 	})
