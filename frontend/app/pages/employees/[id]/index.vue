@@ -51,6 +51,7 @@
           v-bind="nameProps"
           id="name"
           v-model="name"
+          :data-realtime-id="`employee:${employeeID}`"
           :class="[{ 'p-invalid': errors['name']?.length }, !canEdit ? '!opacity-100 !cursor-not-allowed [&_*]:!pointer-events-auto [&_*]:!cursor-not-allowed' : '']"
           type="text"
           :disabled="!canEdit"
@@ -139,6 +140,7 @@
       <SalaryCard
         v-for="salary in salaries.data"
         :key="salary.id"
+        :data-realtime-id="`salary:${salary.id}`"
         :salary="salary"
         :is-active="employee?.salaryID == salary.id && !salary.isDisabled"
         @on-edit="onUpdateSalary"
@@ -202,6 +204,7 @@ import type { EmployeeFormData, EmployeeResponse, SalaryResponse } from '~/model
 import { RouteNames } from '~/config/routes'
 import SalaryDialog from '~/components/dialogs/SalaryDialog.vue'
 import SalaryCard from '~/components/SalaryCard.vue'
+import SalaryCostOverviewDialog from '~/components/dialogs/SalaryCostOverviewDialog.vue'
 
 const {
   useFetchGetEmployee,
@@ -220,6 +223,7 @@ const { canEdit } = useOrganisations()
 const dialog = useDialog()
 const toast = useToast()
 const route = useRoute()
+const router = useRouter()
 const confirm = useConfirm()
 
 const isSubmitting = ref(false)
@@ -410,4 +414,48 @@ const onLoadMoreSalaries = async () => {
   await listSalaries(employeeID)
   isLoadingMore.value = false
 }
+
+// Reopen the salary cost dialog after a page reload (?costs=<salaryID>)
+onMounted(() => {
+  const costsParam = Number(route.query.costs)
+  if (!costsParam || Number.isNaN(costsParam)) return
+  const salary = salaries.value.data.find(s => s.id === costsParam)
+  if (!salary) return
+  dialog.open(SalaryCostOverviewDialog, {
+    props: {
+      header: `Lohnkostenübersicht`,
+      ...ModalConfig,
+    },
+    data: { salary },
+    onClose: () => {
+      const query = { ...route.query }
+      delete query.costs
+      router.replace({ query })
+      listSalaries(employeeID)
+    },
+  })
+})
+
+// Real-time: refetch local state when this employee (or their salaries)
+// changes via MCP or another member; highlighting is handled by the SSE plugin
+const sseLastChange = useState<{ entity: string, action: string, id?: number, ts: number } | null>('sse-last-change', () => null)
+watch(sseLastChange, async (change) => {
+  if (!change) return
+  const isOwnEmployee = change.entity === 'employee' && change.id === employeeID
+  const isSalaryRelated = ['salary', 'salary_cost', 'salary_cost_label'].includes(change.entity)
+  if (!isOwnEmployee && !isSalaryRelated) return
+  if (isOwnEmployee && change.action === 'deleted') {
+    await navigateTo({ name: RouteNames.EMPLOYEES })
+    return
+  }
+  try {
+    const value = await getEmployee(employeeID)
+    employee.value = value
+    resetForm({ values: { name: value?.name ?? '' } })
+    await listSalaries(employeeID)
+  }
+  catch (reason) {
+    console.error('SSE: Mitarbeiter-Refresh fehlgeschlagen', reason)
+  }
+})
 </script>

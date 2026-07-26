@@ -1,5 +1,7 @@
 <template>
-  <div class="flex flex-col gap-4 relative">
+  <div
+    class="flex flex-col gap-4 relative"
+  >
     <div class="flex flex-col sm:flex-row gap-2 justify-between items-center">
       <div class="flex items-center gap-2 w-full sm:w-auto">
         <SearchInput
@@ -49,6 +51,7 @@
         <TransactionCard
           v-for="transaction in transactions.data"
           :key="transaction.id"
+          :data-realtime-id="`transaction:${transaction.id}`"
           :transaction="transaction"
           @on-edit="onEditTransaction"
           @on-clone="onCloneTransaction"
@@ -62,6 +65,7 @@
         <TransactionRow
           v-for="transaction in transactions.data"
           :key="transaction.id"
+          :data-realtime-id="`transaction:${transaction.id}`"
           :transaction="transaction"
           @on-edit="onEditTransaction"
           @on-clone="onCloneTransaction"

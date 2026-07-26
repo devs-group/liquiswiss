@@ -1,5 +1,7 @@
 <template>
-  <div class="flex flex-col gap-4 relative">
+  <div
+    class="flex flex-col gap-4 relative"
+  >
     <div class="flex flex-col sm:flex-row gap-2 justify-between items-center">
       <div class="flex items-center gap-2 w-full sm:w-auto">
         <SearchInput
@@ -43,6 +45,7 @@
         <EmployeeCard
           v-for="employee in employees.data"
           :key="employee.id"
+          :data-realtime-id="`employee:${employee.id}`"
           :employee="employee"
           @on-edit="onEditEmployee"
         />
@@ -55,6 +58,7 @@
         <EmployeeRow
           v-for="employee in employees.data"
           :key="employee.id"
+          :data-realtime-id="`employee:${employee.id}`"
           :employee="employee"
           @on-edit="onEditEmployee"
         />

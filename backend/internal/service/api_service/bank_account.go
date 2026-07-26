@@ -1,6 +1,7 @@
 package api_service
 
 import (
+	"liquiswiss/internal/events"
 	"liquiswiss/pkg/logger"
 	"liquiswiss/pkg/models"
 	"liquiswiss/pkg/utils"
@@ -50,6 +51,7 @@ func (a *APIService) CreateBankAccount(payload models.CreateBankAccount, userID 
 		logger.Logger.Error(err)
 		return nil, err
 	}
+	a.notifyChange(userID, "bank_account", events.ActionCreated, bankAccountID)
 	return bankAccount, nil
 }
 
@@ -74,6 +76,7 @@ func (a *APIService) UpdateBankAccount(payload models.UpdateBankAccount, userID 
 		logger.Logger.Error(err)
 		return nil, err
 	}
+	a.notifyChange(userID, "bank_account", events.ActionUpdated, bankAccountID)
 	return bankAccount, nil
 }
 
@@ -88,5 +91,6 @@ func (a *APIService) DeleteBankAccount(userID int64, bankAccountID int64) error 
 		logger.Logger.Error(err)
 		return err
 	}
+	a.notifyChange(userID, "bank_account", events.ActionDeleted, bankAccountID)
 	return nil
 }

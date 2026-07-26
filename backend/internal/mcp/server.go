@@ -178,6 +178,28 @@ func registerOrganisationTools(server *sdk.Server, deps *toolDeps) {
 	})
 
 	sdk.AddTool(server, &sdk.Tool{
+		Name:        "update_organisation",
+		Description: "Update the current organisation's name and/or base currency (partial: only provided fields change). Changing the currency affects how forecasts are calculated. Requires admin role or higher.",
+	}, func(ctx context.Context, req *sdk.CallToolRequest, in models.UpdateOrganisation) (*sdk.CallToolResult, *models.Organisation, error) {
+		userID, err := userIDFrom(ctx)
+		if err != nil {
+			return nil, nil, err
+		}
+		current, err := deps.apiService.GetCurrentOrganisation(userID)
+		if err != nil {
+			return nil, nil, err
+		}
+		if err := validate(in); err != nil {
+			return nil, nil, err
+		}
+		org, err := deps.apiService.UpdateOrganisation(in, userID, current.ID)
+		if err != nil {
+			return nil, nil, err
+		}
+		return nil, org, nil
+	})
+
+	sdk.AddTool(server, &sdk.Tool{
 		Name:        "list_organisations",
 		Description: "List all organisations the user belongs to, with their role in each. Use switch_organisation to change the active one; all other tools operate on the currently active organisation.",
 	}, func(ctx context.Context, req *sdk.CallToolRequest, in emptyInput) (*sdk.CallToolResult, map[string]any, error) {
@@ -233,6 +255,103 @@ func registerOrganisationTools(server *sdk.Server, deps *toolDeps) {
 	})
 
 	sdk.AddTool(server, &sdk.Tool{
+		Name:        "remove_organisation_member",
+		Description: "Remove a member from the current organisation. Their access ends immediately (open sessions are terminated); re-joining requires a new invitation. The last owner and yourself cannot be removed. Requires owner role.",
+	}, func(ctx context.Context, req *sdk.CallToolRequest, in struct {
+		UserID int64 `json:"userId" jsonschema:"user ID of the member to remove (from list_organisation_members)"`
+	}) (*sdk.CallToolResult, *deleteOutput, error) {
+		userID, err := userIDFrom(ctx)
+		if err != nil {
+			return nil, nil, err
+		}
+		org, err := deps.apiService.GetCurrentOrganisation(userID)
+		if err != nil {
+			return nil, nil, err
+		}
+		if err := deps.apiService.RemoveOrganisationMember(userID, org.ID, in.UserID); err != nil {
+			return nil, nil, err
+		}
+		return nil, &deleteOutput{Deleted: true, ID: in.UserID}, nil
+	})
+
+	sdk.AddTool(server, &sdk.Tool{
+		Name:        "list_invitations",
+		Description: "List pending invitations of the current organisation (email, role, invited by, expiry). Requires admin role or higher.",
+	}, func(ctx context.Context, req *sdk.CallToolRequest, in emptyInput) (*sdk.CallToolResult, map[string]any, error) {
+		userID, err := userIDFrom(ctx)
+		if err != nil {
+			return nil, nil, err
+		}
+		org, err := deps.apiService.GetCurrentOrganisation(userID)
+		if err != nil {
+			return nil, nil, err
+		}
+		invitations, err := deps.apiService.ListOrganisationInvitations(userID, org.ID)
+		if err != nil {
+			return nil, nil, err
+		}
+		return nil, map[string]any{"items": invitations, "total": len(invitations)}, nil
+	})
+
+	sdk.AddTool(server, &sdk.Tool{
+		Name:        "create_invitation",
+		Description: "Invite someone to the current organisation by email with a role (admin, editor, read-only). Sends an invitation mail; the invite expires after 7 days and can be resent. Requires admin role or higher.",
+	}, func(ctx context.Context, req *sdk.CallToolRequest, in models.CreateInvitation) (*sdk.CallToolResult, map[string]any, error) {
+		userID, err := userIDFrom(ctx)
+		if err != nil {
+			return nil, nil, err
+		}
+		org, err := deps.apiService.GetCurrentOrganisation(userID)
+		if err != nil {
+			return nil, nil, err
+		}
+		if err := validate(in); err != nil {
+			return nil, nil, err
+		}
+		invitation, err := deps.apiService.CreateOrganisationInvitation(in, userID, org.ID)
+		if err != nil {
+			return nil, nil, err
+		}
+		return toMapResult(invitation)
+	})
+
+	sdk.AddTool(server, &sdk.Tool{
+		Name:        "delete_invitation",
+		Description: "Revoke a pending invitation of the current organisation. Requires admin role or higher.",
+	}, func(ctx context.Context, req *sdk.CallToolRequest, in idInput) (*sdk.CallToolResult, *deleteOutput, error) {
+		userID, err := userIDFrom(ctx)
+		if err != nil {
+			return nil, nil, err
+		}
+		org, err := deps.apiService.GetCurrentOrganisation(userID)
+		if err != nil {
+			return nil, nil, err
+		}
+		if err := deps.apiService.DeleteOrganisationInvitation(userID, org.ID, in.ID); err != nil {
+			return nil, nil, notFound(err, "invitation")
+		}
+		return nil, &deleteOutput{Deleted: true, ID: in.ID}, nil
+	})
+
+	sdk.AddTool(server, &sdk.Tool{
+		Name:        "resend_invitation",
+		Description: "Resend the invitation mail for a pending invitation of the current organisation. Rate-limited (anti-spam). Requires admin role or higher.",
+	}, func(ctx context.Context, req *sdk.CallToolRequest, in idInput) (*sdk.CallToolResult, map[string]any, error) {
+		userID, err := userIDFrom(ctx)
+		if err != nil {
+			return nil, nil, err
+		}
+		org, err := deps.apiService.GetCurrentOrganisation(userID)
+		if err != nil {
+			return nil, nil, err
+		}
+		if err := deps.apiService.ResendOrganisationInvitation(userID, org.ID, in.ID); err != nil {
+			return nil, nil, notFound(err, "invitation")
+		}
+		return nil, map[string]any{"resent": true, "id": in.ID}, nil
+	})
+
+	sdk.AddTool(server, &sdk.Tool{
 		Name:        "get_vat_setting",
 		Description: "Get the organisation's automatic VAT billing settings: enabled flag, billingDate (first billing), transactionMonthOffset (months between billing date and money movement) and interval (monthly, quarterly, biannually, yearly). Returns an error if not configured.",
 	}, func(ctx context.Context, req *sdk.CallToolRequest, in emptyInput) (*sdk.CallToolResult, map[string]any, error) {
@@ -243,6 +362,48 @@ func registerOrganisationTools(server *sdk.Server, deps *toolDeps) {
 		setting, err := deps.apiService.GetVatSetting(userID)
 		if err != nil {
 			return nil, nil, errors.New("no VAT settings configured for this organisation")
+		}
+		return toMapResult(setting)
+	})
+
+	sdk.AddTool(server, &sdk.Tool{
+		Name:        "update_vat_setting",
+		Description: "Create or update the organisation's automatic VAT billing settings (partial: only provided fields change). Fields: enabled, billingDate (YYYY-MM-DD, first billing), transactionMonthOffset (0-12 months between billing and money movement), interval (monthly, quarterly, biannually, yearly). When no settings exist yet, enabled, billingDate and interval are required. Requires editor role or higher.",
+	}, func(ctx context.Context, req *sdk.CallToolRequest, in models.UpdateVatSetting) (*sdk.CallToolResult, map[string]any, error) {
+		userID, err := userIDFrom(ctx)
+		if err != nil {
+			return nil, nil, err
+		}
+		if err := deps.requireEditor(userID); err != nil {
+			return nil, nil, err
+		}
+		if err := validate(in); err != nil {
+			return nil, nil, err
+		}
+		existing, err := deps.apiService.GetVatSetting(userID)
+		if err == nil && existing != nil {
+			setting, err := deps.apiService.UpdateVatSetting(in, userID)
+			if err != nil {
+				return nil, nil, err
+			}
+			return toMapResult(setting)
+		}
+		// First-time setup requires the full payload
+		if in.Enabled == nil || in.BillingDate == nil || in.Interval == nil {
+			return nil, nil, errors.New("no VAT settings exist yet: enabled, billingDate and interval are required")
+		}
+		offset := 0
+		if in.TransactionMonthOffset != nil {
+			offset = *in.TransactionMonthOffset
+		}
+		setting, err := deps.apiService.CreateVatSetting(models.CreateVatSetting{
+			Enabled:                *in.Enabled,
+			BillingDate:            *in.BillingDate,
+			TransactionMonthOffset: offset,
+			Interval:               *in.Interval,
+		}, userID)
+		if err != nil {
+			return nil, nil, err
 		}
 		return toMapResult(setting)
 	})
@@ -1057,6 +1218,50 @@ func registerEmployeeTools(server *sdk.Server, deps *toolDeps) {
 			return nil, nil, err
 		}
 		return nil, map[string]any{"copied": true, "total": total, "count": len(costs)}, nil
+	})
+
+	sdk.AddTool(server, &sdk.Tool{
+		Name:        "duplicate_salary",
+		Description: "Duplicate an existing salary entry as a new period starting at fromDate, including ALL its cost entries (Lohnnebenkosten). Mirrors the frontend's salary copy function: same amount, cycle, currency, hours and vacation days; the timeline auto-adjusts neighbouring salaries (see create_salary). Requires editor role or higher.",
+	}, func(ctx context.Context, req *sdk.CallToolRequest, in struct {
+		ID       int64  `json:"id" jsonschema:"source salary ID"`
+		FromDate string `json:"fromDate" jsonschema:"start date of the new salary period (YYYY-MM-DD)"`
+	}) (*sdk.CallToolResult, map[string]any, error) {
+		userID, err := userIDFrom(ctx)
+		if err != nil {
+			return nil, nil, err
+		}
+		if err := deps.requireEditor(userID); err != nil {
+			return nil, nil, err
+		}
+		source, err := deps.apiService.GetSalary(userID, in.ID)
+		if err != nil {
+			return nil, nil, notFound(err, "salary")
+		}
+		if source.IsTermination {
+			return nil, nil, fmt.Errorf("termination entries cannot be duplicated")
+		}
+		payload := models.CreateSalary{
+			HoursPerMonth:       source.HoursPerMonth,
+			Amount:              source.Amount,
+			Cycle:               source.Cycle,
+			CurrencyID:          *source.Currency.ID,
+			VacationDaysPerYear: source.VacationDaysPerYear,
+			FromDate:            in.FromDate,
+		}
+		if err := validate(payload); err != nil {
+			return nil, nil, err
+		}
+		salary, err := deps.apiService.CreateSalary(payload, userID, source.EmployeeID)
+		if err != nil {
+			return nil, nil, err
+		}
+		if err := deps.apiService.CopySalaryCosts(models.CopySalaryCosts{
+			SourceSalaryID: &in.ID,
+		}, userID, salary.ID); err != nil {
+			return nil, nil, fmt.Errorf("salary created (id %d) but copying costs failed: %w", salary.ID, err)
+		}
+		return toMapResult(salary)
 	})
 
 	sdk.AddTool(server, &sdk.Tool{

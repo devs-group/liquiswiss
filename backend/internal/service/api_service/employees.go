@@ -1,6 +1,7 @@
 package api_service
 
 import (
+	"liquiswiss/internal/events"
 	"liquiswiss/pkg/logger"
 	"liquiswiss/pkg/models"
 	"liquiswiss/pkg/utils"
@@ -50,6 +51,7 @@ func (a *APIService) CreateEmployee(payload models.CreateEmployee, userID int64)
 		logger.Logger.Error(err)
 		return nil, err
 	}
+	a.notifyChange(userID, "employee", events.ActionCreated, employeeID)
 	return employee, nil
 }
 
@@ -78,6 +80,7 @@ func (a *APIService) UpdateEmployee(payload models.UpdateEmployee, userID int64,
 		logger.Logger.Error(err)
 		return nil, err
 	}
+	a.notifyChange(userID, "employee", events.ActionUpdated, employeeID)
 	return employee, nil
 }
 
@@ -92,6 +95,7 @@ func (a *APIService) DeleteEmployee(userID int64, employeeID int64) error {
 		logger.Logger.Error(err)
 		return err
 	}
+	a.notifyChange(userID, "employee", events.ActionDeleted, existingEmployee.ID)
 	return nil
 }
 

@@ -226,7 +226,12 @@ const toDateFormatted = computed(
 const cycle = computed(
   () => SalaryUtils.cycle(props.salary),
 )
+const route = useRoute()
+const router = useRouter()
+
 const onShowCostOverview = () => {
+  // Keep the open dialog in the URL so it survives page reloads
+  router.replace({ query: { ...route.query, costs: String(props.salary.id) } })
   dialog.open(SalaryCostOverviewDialog, {
     props: {
       header: `Lohnkostenübersicht`,
@@ -236,6 +241,9 @@ const onShowCostOverview = () => {
       salary: props.salary,
     },
     onClose: () => {
+      const query = { ...route.query }
+      delete query.costs
+      router.replace({ query })
       listSalaries(props.salary.employeeID)
     },
   })

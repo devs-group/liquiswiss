@@ -3,6 +3,7 @@ package api_service
 import (
 	"database/sql"
 	"errors"
+	"liquiswiss/internal/events"
 	"liquiswiss/pkg/logger"
 	"liquiswiss/pkg/models"
 )
@@ -114,6 +115,9 @@ func (a *APIService) UpdateOrganisationMember(payload models.UpdateMember, userI
 		}
 	}
 
+	// Role/permission changed: drop the member's streams so they re-authenticate
+	a.closeUserStreams(memberUserID)
+	a.notifyOrganisationChange(organisationID, "member", events.ActionUpdated, memberUserID)
 	return nil
 }
 
@@ -179,6 +183,10 @@ func (a *APIService) RemoveOrganisationMember(userID int64, organisationID int64
 	// from. If they have no remaining orgs we leave current_organisation_id as
 	// is — the hardened get_current_user_organisation_id function treats stale
 	// values as NULL.
+	// Membership ended: terminate the removed member's streams immediately
+	a.closeUserStreams(memberUserID)
+	a.notifyOrganisationChange(organisationID, "member", events.ActionDeleted, memberUserID)
+
 	remainingOrgs, _, listErr := a.dbService.ListOrganisations(memberUserID, 1, 1)
 	if listErr != nil {
 		logger.Logger.Error(listErr)

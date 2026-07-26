@@ -1,6 +1,7 @@
 package api_service
 
 import (
+	"liquiswiss/internal/events"
 	"liquiswiss/pkg/logger"
 	"liquiswiss/pkg/models"
 	"liquiswiss/pkg/types"
@@ -89,6 +90,7 @@ func (a *APIService) CreateSalary(payload models.CreateSalary, userID int64, emp
 		logger.Logger.Error(err)
 		return nil, err
 	}
+	a.notifyChange(userID, "salary", events.ActionCreated, salaryID)
 	return salary, nil
 }
 
@@ -158,6 +160,7 @@ func (a *APIService) UpdateSalary(payload models.UpdateSalary, userID int64, sal
 		logger.Logger.Error(err)
 		return nil, err
 	}
+	a.notifyChange(userID, "salary", events.ActionUpdated, salaryID)
 	return salary, nil
 }
 
@@ -198,6 +201,7 @@ func (a *APIService) DeleteSalary(userID int64, salaryID int64) error {
 		logger.Logger.Error(err)
 		return err
 	}
+	a.notifyChange(userID, "salary", events.ActionDeleted, salaryID)
 	return nil
 }
 

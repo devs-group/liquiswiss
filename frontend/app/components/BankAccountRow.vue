@@ -1,5 +1,5 @@
 <template>
-  <div class="grid grid-cols-bank-accounts items-center w-full *:bg-zinc-100 *:dark:bg-zinc-800 *:border *:border-r-0 *:border-b-0 *:last:border-b *:border-gray-600 *:p-1 *:text-sm *:truncate">
+  <div class="grid grid-cols-bank-accounts items-stretch w-full *:content-center *:bg-zinc-100 *:dark:bg-zinc-800 *:border *:border-r-0 *:border-b-0 *:last:border-b *:border-gray-600 *:p-1 *:text-sm *:truncate">
     <div class="flex items-center gap-2 justify-end">
       <p class="truncate">
         {{ bankAccount.name }}

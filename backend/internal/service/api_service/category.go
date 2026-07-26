@@ -2,6 +2,7 @@ package api_service
 
 import (
 	"fmt"
+	"liquiswiss/internal/events"
 	"liquiswiss/pkg/logger"
 	"liquiswiss/pkg/models"
 	"liquiswiss/pkg/utils"
@@ -51,6 +52,9 @@ func (a *APIService) CreateCategory(payload models.CreateCategory, userID *int64
 		logger.Logger.Error(err)
 		return nil, err
 	}
+	if userID != nil {
+		a.notifyChange(*userID, "category", events.ActionCreated, categoryID)
+	}
 	return category, nil
 }
 
@@ -70,6 +74,7 @@ func (a *APIService) UpdateCategory(payload models.UpdateCategory, userID int64,
 		logger.Logger.Error(err)
 		return nil, err
 	}
+	a.notifyChange(userID, "category", events.ActionUpdated, categoryID)
 	return category, nil
 }
 
@@ -95,5 +100,6 @@ func (a *APIService) DeleteCategory(userID int64, categoryID int64) error {
 		logger.Logger.Error(err)
 		return err
 	}
+	a.notifyChange(userID, "category", events.ActionDeleted, categoryID)
 	return nil
 }

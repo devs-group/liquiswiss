@@ -1,6 +1,7 @@
 package api_service
 
 import (
+	"liquiswiss/internal/events"
 	"liquiswiss/pkg/logger"
 	"liquiswiss/pkg/models"
 	"liquiswiss/pkg/utils"
@@ -86,6 +87,7 @@ func (a *APIService) CreateForecastExclusion(payload models.CreateForecastExclus
 		logger.Logger.Error(err)
 		return 0, err
 	}
+	a.notifyChange(userID, "forecast_exclusion", events.ActionCreated, excludeID)
 	return excludeID, nil
 }
 
@@ -99,6 +101,7 @@ func (a *APIService) DeleteForecastExclusion(payload models.CreateForecastExclus
 		logger.Logger.Error(err)
 		return 0, err
 	}
+	a.notifyChange(userID, "forecast_exclusion", events.ActionDeleted, payload.RelatedID)
 	return affected, nil
 }
 
@@ -123,6 +126,7 @@ func (a *APIService) UpdateForecastExclusions(payload models.UpdateForecastExclu
 		}
 	}
 
+	a.notifyChange(userID, "forecast_exclusion", events.ActionUpdated, 0)
 	return nil
 }
 
@@ -834,6 +838,15 @@ func (a *APIService) CalculateForecast(userID int64) ([]models.Forecast, error) 
 	if err := validator.Var(forecasts, "dive"); err != nil {
 		// Return validation errors
 		return nil, err
+	}
+
+	// Notify streams once per recalculation instead of per affected sub-entity
+	if a.eventHub != nil {
+		a.eventHub.Publish(events.Event{
+			Entity:         "forecast",
+			Action:         events.ActionUpdated,
+			OrganisationID: organisation.ID,
+		})
 	}
 
 	return forecasts, nil

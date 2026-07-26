@@ -96,11 +96,10 @@ func VerifyToken(tokenString string) (*Claims, error) {
 	return claims, nil
 }
 
+// All browser traffic reaches the API through the Nuxt proxy (same origin), so
+// auth cookies are strictly SameSite=Lax. Cross-site requests must never carry
+// them (blocks CSRF and cross-site SSE/WebSocket hijacking).
 func GenerateCookie(name, token string, expiration time.Time) http.Cookie {
-	sameSite := http.SameSiteLaxMode
-	if utils.IsProduction() {
-		sameSite = http.SameSiteNoneMode
-	}
 	return http.Cookie{
 		Name:     name,
 		Value:    token,
@@ -108,15 +107,11 @@ func GenerateCookie(name, token string, expiration time.Time) http.Cookie {
 		HttpOnly: true,
 		Path:     "/",
 		Secure:   utils.IsProduction(),
-		SameSite: sameSite,
+		SameSite: http.SameSiteLaxMode,
 	}
 }
 
 func GenerateDeleteCookie(name string) http.Cookie {
-	sameSite := http.SameSiteLaxMode
-	if utils.IsProduction() {
-		sameSite = http.SameSiteNoneMode
-	}
 	return http.Cookie{
 		Name:     name,
 		Value:    "",
@@ -125,7 +120,7 @@ func GenerateDeleteCookie(name string) http.Cookie {
 		HttpOnly: true,
 		Path:     "/",
 		Secure:   utils.IsProduction(),
-		SameSite: sameSite,
+		SameSite: http.SameSiteLaxMode,
 	}
 }
 

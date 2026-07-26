@@ -60,6 +60,9 @@ func (a *APIService) SetUserCurrentOrganisation(payload models.UpdateUserCurrent
 		logger.Logger.Error(err)
 		return err
 	}
+	// Terminate open event streams so no events of the previous organisation leak;
+	// clients reconnect and get rebound to the new organisation
+	a.closeUserStreams(userID)
 	return nil
 }
 

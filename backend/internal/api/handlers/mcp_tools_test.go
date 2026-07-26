@@ -624,3 +624,89 @@ func TestMCPListFilters(t *testing.T) {
 	require.False(t, currencies.IsError, currencies.Text)
 	require.Equal(t, float64(1), currencies.Structured["total"])
 }
+
+func TestMCPDuplicateSalary(t *testing.T) {
+	env := setupOAuthTestEnvironment(t)
+	token := env.mcpAccessToken(t)
+
+	employee := env.mcpCall(t, token, "create_employee", `{"name":"Duplikat Mitarbeiter"}`)
+	require.False(t, employee.IsError, employee.Text)
+	employeeID := int64(employee.Structured["id"].(float64))
+
+	source := env.mcpCall(t, token, "create_salary", fmt.Sprintf(
+		`{"employeeId":%d,"hoursPerMonth":160,"amount":800000,"cycle":"monthly","currencyID":1,"vacationDaysPerYear":25,"fromDate":"2026-01-01","toDate":null,"isTermination":false}`,
+		employeeID))
+	require.False(t, source.IsError, source.Text)
+	sourceID := int64(source.Structured["id"].(float64))
+
+	for _, cost := range []string{
+		fmt.Sprintf(`{"salaryId":%d,"cycle":"monthly","amountType":"percentage","amount":5300,"distributionType":"both","relativeOffset":1,"targetDate":null,"labelID":null,"baseSalaryCostIDs":null}`, sourceID),
+		fmt.Sprintf(`{"salaryId":%d,"cycle":"monthly","amountType":"fixed","amount":10000,"distributionType":"employer","relativeOffset":1,"targetDate":null,"labelID":null,"baseSalaryCostIDs":null}`, sourceID),
+	} {
+		created := env.mcpCall(t, token, "create_salary_cost", cost)
+		require.False(t, created.IsError, created.Text)
+	}
+
+	duplicated := env.mcpCall(t, token, "duplicate_salary", fmt.Sprintf(
+		`{"id":%d,"fromDate":"2027-01-01"}`, sourceID))
+	require.False(t, duplicated.IsError, duplicated.Text)
+	newID := int64(duplicated.Structured["id"].(float64))
+	require.NotEqual(t, sourceID, newID)
+	require.Equal(t, float64(800000), duplicated.Structured["amount"])
+	require.Equal(t, "2027-01-01", duplicated.Structured["fromDate"])
+
+	// Source got capped by the new period
+	capped := env.mcpCall(t, token, "get_salary", fmt.Sprintf(`{"id":%d}`, sourceID))
+	require.False(t, capped.IsError, capped.Text)
+	require.Equal(t, "2026-12-01", capped.Structured["toDate"])
+
+	// All cost entries were copied
+	costs := env.mcpCall(t, token, "list_salary_costs", fmt.Sprintf(`{"salaryId":%d}`, newID))
+	require.False(t, costs.IsError, costs.Text)
+	require.Equal(t, float64(2), costs.Structured["total"])
+
+	// Termination entries cannot be duplicated
+	termination := env.mcpCall(t, token, "create_salary", fmt.Sprintf(
+		`{"employeeId":%d,"hoursPerMonth":0,"amount":0,"cycle":"monthly","currencyID":1,"vacationDaysPerYear":0,"fromDate":"2027-06-01","toDate":null,"isTermination":true}`,
+		employeeID))
+	require.False(t, termination.IsError, termination.Text)
+	terminationID := int64(termination.Structured["id"].(float64))
+	rejected := env.mcpCall(t, token, "duplicate_salary", fmt.Sprintf(
+		`{"id":%d,"fromDate":"2027-09-01"}`, terminationID))
+	require.True(t, rejected.IsError)
+}
+
+func TestMCPInvitationsAndMembers(t *testing.T) {
+	env := setupOAuthTestEnvironment(t)
+	token := env.mcpAccessToken(t)
+
+	// Create invitation
+	created := env.mcpCall(t, token, "create_invitation", `{"email":"mcp-invite@example.com","role":"editor"}`)
+	require.False(t, created.IsError, created.Text)
+	invitationID := int64(created.Structured["id"].(float64))
+	require.Equal(t, "editor", created.Structured["role"])
+
+	// Invalid role rejected
+	invalid := env.mcpCall(t, token, "create_invitation", `{"email":"x@example.com","role":"superadmin"}`)
+	require.True(t, invalid.IsError)
+
+	// List contains it
+	list := env.mcpCall(t, token, "list_invitations", `{}`)
+	require.False(t, list.IsError, list.Text)
+	require.Equal(t, float64(1), list.Structured["total"])
+
+	// Resend is rate-limited right after creation
+	resent := env.mcpCall(t, token, "resend_invitation", fmt.Sprintf(`{"id":%d}`, invitationID))
+	require.True(t, resent.IsError)
+
+	// Delete it
+	deleted := env.mcpCall(t, token, "delete_invitation", fmt.Sprintf(`{"id":%d}`, invitationID))
+	require.False(t, deleted.IsError, deleted.Text)
+	list = env.mcpCall(t, token, "list_invitations", `{}`)
+	require.False(t, list.IsError)
+	require.Equal(t, float64(0), list.Structured["total"])
+
+	// Member removal: owner cannot remove themselves
+	self := env.mcpCall(t, token, "remove_organisation_member", fmt.Sprintf(`{"userId":%d}`, env.User.ID))
+	require.True(t, self.IsError)
+}

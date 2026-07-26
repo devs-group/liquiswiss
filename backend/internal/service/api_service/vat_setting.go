@@ -1,6 +1,7 @@
 package api_service
 
 import (
+	"liquiswiss/internal/events"
 	"liquiswiss/pkg/logger"
 	"liquiswiss/pkg/models"
 	"liquiswiss/pkg/utils"
@@ -56,6 +57,7 @@ func (a *APIService) CreateVatSetting(payload models.CreateVatSetting, userID in
 		logger.Logger.Error(err)
 		return nil, err
 	}
+	a.notifyChange(userID, "vat_setting", events.ActionCreated, vatSetting.ID)
 	return vatSetting, nil
 }
 
@@ -80,6 +82,7 @@ func (a *APIService) UpdateVatSetting(payload models.UpdateVatSetting, userID in
 		logger.Logger.Error(err)
 		return nil, err
 	}
+	a.notifyChange(userID, "vat_setting", events.ActionUpdated, vatSetting.ID)
 	return vatSetting, nil
 }
 
@@ -94,5 +97,6 @@ func (a *APIService) DeleteVatSetting(userID int64) error {
 		logger.Logger.Error(err)
 		return err
 	}
+	a.notifyChange(userID, "vat_setting", events.ActionDeleted, 0)
 	return nil
 }

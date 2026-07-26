@@ -90,6 +90,10 @@ func AuthMiddleware(c *gin.Context) {
 
 	// Pass the user ID to the next middleware or handler
 	c.Set("userID", accessClaims.UserID)
+	// Long-lived streams (SSE) bound their lifetime to the access token expiry
+	if accessClaims.ExpiresAt != nil {
+		c.Set("tokenExpiry", accessClaims.ExpiresAt.Time)
+	}
 	c.Next()
 }
 

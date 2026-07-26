@@ -55,6 +55,10 @@ func (a *APIService) Login(payload models.Login, deviceName string, existingRefr
 
 func (a *APIService) Logout(existingRefreshToken string) {
 	a.clearRefreshTokenFromDatabase(existingRefreshToken)
+	// Kill open event streams immediately instead of waiting for access token expiry
+	if refreshClaims, err := auth.VerifyToken(existingRefreshToken); err == nil {
+		a.closeUserStreams(refreshClaims.UserID)
+	}
 }
 
 func (a *APIService) ForgotPassword(payload models.ForgotPassword, code string) error {

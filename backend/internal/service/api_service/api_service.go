@@ -4,6 +4,8 @@ package api_service
 import (
 	"liquiswiss/internal/adapter/db_adapter"
 	"liquiswiss/internal/adapter/email_adapter"
+	"liquiswiss/internal/events"
+	"liquiswiss/pkg/logger"
 	"liquiswiss/pkg/models"
 	"time"
 )
@@ -128,11 +130,14 @@ type IAPIService interface {
 	ListOrganisationMembers(userID int64, organisationID int64) ([]models.OrganisationMember, error)
 	UpdateOrganisationMember(payload models.UpdateMember, userID int64, organisationID int64, memberUserID int64) error
 	RemoveOrganisationMember(userID int64, organisationID int64, memberUserID int64) error
+
+	SetEventHub(hub *events.Hub)
 }
 
 type APIService struct {
 	dbService    db_adapter.IDatabaseAdapter
 	emailAdapter email_adapter.IEmailAdapter
+	eventHub     *events.Hub
 }
 
 func NewAPIService(dbService db_adapter.IDatabaseAdapter, emailAdapter email_adapter.IEmailAdapter) IAPIService {
@@ -140,4 +145,59 @@ func NewAPIService(dbService db_adapter.IDatabaseAdapter, emailAdapter email_ada
 		dbService:    dbService,
 		emailAdapter: emailAdapter,
 	}
+}
+
+// SetEventHub wires the real-time event hub. A nil hub (default, e.g. in tests)
+// turns all event publishing into a no-op.
+func (a *APIService) SetEventHub(hub *events.Hub) {
+	a.eventHub = hub
+}
+
+// notifyChange publishes a change event scoped to the acting user's current
+// organisation. Failures only affect real-time refresh, never the mutation.
+func (a *APIService) notifyChange(userID int64, entity string, action string, id int64) {
+	a.notifyChangeWithParent(userID, entity, action, id, 0)
+}
+
+// notifyChangeWithParent additionally links the event to a parent entity id
+// (e.g. salary cost → owning salary) for targeted client-side highlighting
+func (a *APIService) notifyChangeWithParent(userID int64, entity string, action string, id int64, parentID int64) {
+	if a.eventHub == nil {
+		return
+	}
+	user, err := a.dbService.GetProfile(userID)
+	if err != nil {
+		logger.Logger.Warnf("events: could not resolve organisation for user %d: %v", userID, err)
+		return
+	}
+	a.eventHub.Publish(events.Event{
+		Entity:         entity,
+		Action:         action,
+		ID:             id,
+		ParentID:       parentID,
+		OrganisationID: user.CurrentOrganisationID,
+	})
+}
+
+// notifyOrganisationChange publishes a change event for an explicit
+// organisation (invitation/member mutations carry the org id directly)
+func (a *APIService) notifyOrganisationChange(organisationID int64, entity string, action string, id int64) {
+	if a.eventHub == nil || organisationID == 0 {
+		return
+	}
+	a.eventHub.Publish(events.Event{
+		Entity:         entity,
+		Action:         action,
+		ID:             id,
+		OrganisationID: organisationID,
+	})
+}
+
+// closeUserStreams force-closes a user's event streams (logout, org switch,
+// membership changes) so stale subscriptions cannot leak events.
+func (a *APIService) closeUserStreams(userID int64) {
+	if a.eventHub == nil {
+		return
+	}
+	a.eventHub.CloseUser(userID)
 }

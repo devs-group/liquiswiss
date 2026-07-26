@@ -14,6 +14,7 @@ import (
 	"liquiswiss/internal/adapter/email_adapter"
 	"liquiswiss/internal/api"
 	"liquiswiss/internal/db"
+	"liquiswiss/internal/events"
 	"liquiswiss/internal/middleware"
 	"liquiswiss/internal/service/api_service"
 	"liquiswiss/internal/service/fixer_io_service"
@@ -21,6 +22,7 @@ import (
 	"liquiswiss/pkg/utils"
 	"net/http"
 	"os"
+	"time"
 )
 
 var noMigrate = flag.Bool("no-migrate", false, "Skip database migrations on startup")
@@ -91,6 +93,11 @@ func runApp() {
 	middleware.InjectUserService(dbService)
 	apiHandler := api.NewAPI(dbService, apiService, emailService)
 
+	// Real-time event hub (SSE): service layer publishes, /api/events streams
+	eventHub := events.NewHub()
+	apiService.SetEventHub(eventHub)
+	apiHandler.EventHub = eventHub
+
 	// Cronjob
 	c := cron.New()
 	_, err = c.AddFunc("@every 12h", fixerIOService.FetchFiatRates)
@@ -114,7 +121,13 @@ func runApp() {
 		}
 	}()
 
-	err = http.ListenAndServe(":8080", apiHandler.Router)
+	server := &http.Server{
+		Addr:    ":8080",
+		Handler: apiHandler.Router,
+		// Slowloris protection; no global Read/WriteTimeout so long-lived SSE streams stay open
+		ReadHeaderTimeout: 10 * time.Second,
+	}
+	err = server.ListenAndServe()
 	if err != nil {
 		c.Stop()
 		logger.Logger.Error("Failed to start api:", err)

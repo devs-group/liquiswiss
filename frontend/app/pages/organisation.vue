@@ -1,5 +1,7 @@
 <template>
-  <div class="flex flex-col gap-6 w-full max-w-6xl mx-auto">
+  <div
+    class="flex flex-col gap-6 w-full max-w-6xl mx-auto"
+  >
     <Message
       v-if="organisationError.length"
       severity="error"
@@ -38,6 +40,7 @@
               v-bind="nameProps"
               id="name"
               v-model="name"
+              data-realtime-field="org-name"
               :class="[{ 'p-invalid': errors['name']?.length }, !canEditOrganisation ? '!opacity-100 !cursor-not-allowed' : '']"
               type="text"
               :disabled="!canEditOrganisation"
@@ -61,6 +64,7 @@
               v-bind="currencyIDProps"
               id="base-currency"
               v-model="currencyID"
+              data-realtime-field="org-currency"
               empty-message="Keine Währungen gefunden"
               :class="[{ 'p-invalid': errors['currencyID']?.length }, !canEditOrganisation ? '!opacity-100 !cursor-not-allowed [&_*]:!pointer-events-auto [&_*]:!cursor-not-allowed' : '']"
               :options="currencies"
@@ -142,6 +146,7 @@
               <ToggleSwitch
                 v-bind="vatEnabledProps"
                 id="vat-enabled"
+                data-realtime-field="vat-enabled"
                 class="scale-[0.65] origin-left"
                 :class="!canEdit ? '!opacity-100 !cursor-not-allowed [&_*]:!pointer-events-auto [&_*]:!cursor-not-allowed' : ''"
                 :model-value="vatEnabled"
@@ -169,6 +174,7 @@
               v-bind="vatBillingDateProps"
               id="vat-billing-date"
               v-model="vatBillingDate"
+              data-realtime-field="vat-billing-date"
               :class="[{ 'p-invalid': vatErrors['vatBillingDate']?.length }, !canEdit ? '!opacity-100 !cursor-not-allowed [&_*]:!pointer-events-auto [&_*]:!cursor-not-allowed' : '']"
               date-format="dd.mm.yy"
               show-button-bar
@@ -196,6 +202,7 @@
               v-bind="vatTransactionMonthOffsetProps"
               id="vat-transaction-month-offset"
               v-model="vatTransactionMonthOffset"
+              data-realtime-field="vat-offset"
               :class="[{ 'p-invalid': vatErrors['vatTransactionMonthOffset']?.length }, !canEdit ? '!opacity-100 !cursor-not-allowed [&_*]:!pointer-events-auto [&_*]:!cursor-not-allowed' : '']"
               :options="transactionMonthOffsetOptions"
               option-label="label"
@@ -218,6 +225,7 @@
               v-bind="vatIntervalProps"
               id="vat-interval"
               v-model="vatInterval"
+              data-realtime-field="vat-interval"
               :class="[{ 'p-invalid': vatErrors['vatInterval']?.length }, !canEdit ? '!opacity-100 !cursor-not-allowed [&_*]:!pointer-events-auto [&_*]:!cursor-not-allowed' : '']"
               :options="intervalOptions"
               option-label="label"
@@ -313,6 +321,7 @@
             <InvitationCard
               v-for="invitation in invitations"
               :key="invitation.id"
+              :data-realtime-id="`invitation:${invitation.id}`"
               :invitation="invitation"
               :organisation-id="organisation.id"
               data-testid="invitation-card"
@@ -331,6 +340,7 @@
           <MemberCard
             v-for="member in members"
             :key="member.userId"
+            :data-realtime-id="`member:${member.userId}`"
             :member="member"
             :can-manage="canManageMembers"
             data-testid="member-card"
@@ -518,6 +528,78 @@ const [vatEnabled, vatEnabledProps] = defineVatField('vatEnabled')
 const [vatBillingDate, vatBillingDateProps] = defineVatField('vatBillingDate')
 const [vatTransactionMonthOffset, vatTransactionMonthOffsetProps] = defineVatField('vatTransactionMonthOffset')
 const [vatInterval, vatIntervalProps] = defineVatField('vatInterval')
+
+// Real-time: refresh local page data when it changes via MCP or another
+// member; highlighting is handled by the SSE plugin
+const { getVatSetting } = useVatSettings()
+const sseLastChange = useState<{ entity: string, action: string, id?: number, ts: number } | null>('sse-last-change', () => null)
+watch(sseLastChange, async (change) => {
+  if (!change) return
+  switch (change.entity) {
+    case 'organisation': {
+      const previousName = organisation.value?.name
+      const previousCurrencyID = organisation.value?.currency?.id
+      await refreshOrganisation()
+      organisation.value = orgData.value ?? undefined
+      resetForm({
+        values: {
+          id: organisation.value?.id,
+          name: organisation.value?.name ?? '',
+          currencyID: organisation.value?.currency?.id ?? getOrganisationCurrencyID.value,
+        } as OrganisationFormData,
+      })
+      await nextTick()
+      // Only the inputs whose value actually changed blink
+      if (organisation.value?.name !== previousName) {
+        flashRealtimeSelector('[data-realtime-field="org-name"]')
+      }
+      if (organisation.value?.currency?.id !== previousCurrencyID) {
+        flashRealtimeSelector('[data-realtime-field="org-currency"]')
+      }
+      break
+    }
+    case 'member':
+      await refreshMembersData()
+      break
+    case 'invitation':
+      if (canInvite.value) await refreshInvitationsData()
+      break
+    case 'vat_setting': {
+      const previous = {
+        enabled: vatEnabled.value,
+        billingDate: vatBillingDate.value ? DateToApiFormat(vatBillingDate.value as Date) : null,
+        offset: vatTransactionMonthOffset.value,
+        interval: vatInterval.value,
+      }
+      const setting = await getVatSetting()
+      resetVatForm({
+        values: {
+          vatEnabled: setting?.enabled ?? false,
+          vatBillingDate: setting?.billingDate ? new Date(setting.billingDate) : null,
+          vatTransactionMonthOffset: setting?.transactionMonthOffset ?? 0,
+          vatInterval: setting?.interval ?? 'quarterly',
+        },
+      })
+      await nextTick()
+      if ((setting?.enabled ?? false) !== previous.enabled) {
+        flashRealtimeSelector('[data-realtime-field="vat-enabled"]')
+      }
+      const newBillingDate = setting?.billingDate ? DateToApiFormat(new Date(setting.billingDate)) : null
+      if (newBillingDate !== previous.billingDate) {
+        // Target the inner input: the DatePicker root spans the full column
+        // while the visible input is narrower
+        flashRealtimeSelector('[data-realtime-field="vat-billing-date"] input')
+      }
+      if ((setting?.transactionMonthOffset ?? 0) !== previous.offset) {
+        flashRealtimeSelector('[data-realtime-field="vat-offset"]')
+      }
+      if ((setting?.interval ?? 'quarterly') !== previous.interval) {
+        flashRealtimeSelector('[data-realtime-field="vat-interval"]')
+      }
+      break
+    }
+  }
+})
 
 const onVatSubmit = handleVatSubmit((values) => {
   if (!values.vatBillingDate) {

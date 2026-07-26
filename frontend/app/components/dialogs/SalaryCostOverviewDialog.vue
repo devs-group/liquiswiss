@@ -29,6 +29,7 @@
         <SalaryCostCard
           v-for="salaryCost of filteredSalaryCosts"
           :key="salaryCost.id"
+          :data-realtime-id="`salary_cost:${salaryCost.id}`"
           :salary-cost="salaryCost"
           :salary="salary"
           @on-clone="onCloneCost"
@@ -125,6 +126,22 @@ const filteredSalaryCosts = computed(() => {
       }
       return c
     })
+})
+
+// Real-time: refresh the cost list when costs of this salary change via
+// MCP or another member; highlighting is handled by the SSE plugin
+const sseLastChange = useState<{ entity: string, action: string, id?: number, parentId?: number, ts: number } | null>('sse-last-change', () => null)
+watch(sseLastChange, (change) => {
+  if (!change || !salary.value) return
+  if (change.entity !== 'salary_cost') return
+  if (change.parentId && change.parentId !== salary.value.id) return
+  onListSalaryCosts()
+  toast.add({
+    severity: 'info',
+    summary: 'Aktualisiert',
+    detail: 'Die Lohnkosten wurden soeben aktualisiert',
+    life: 3000,
+  })
 })
 
 const onListSalaryCosts = () => {

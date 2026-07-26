@@ -10,6 +10,7 @@
 package mocks
 
 import (
+	events "liquiswiss/internal/events"
 	models "liquiswiss/pkg/models"
 	reflect "reflect"
 	time "time"
@@ -1193,6 +1194,18 @@ func (m *MockIAPIService) ResetPassword(payload models.ResetPassword) error {
 func (mr *MockIAPIServiceMockRecorder) ResetPassword(payload any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ResetPassword", reflect.TypeOf((*MockIAPIService)(nil).ResetPassword), payload)
+}
+
+// SetEventHub mocks base method.
+func (m *MockIAPIService) SetEventHub(hub *events.Hub) {
+	m.ctrl.T.Helper()
+	m.ctrl.Call(m, "SetEventHub", hub)
+}
+
+// SetEventHub indicates an expected call of SetEventHub.
+func (mr *MockIAPIServiceMockRecorder) SetEventHub(hub any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "SetEventHub", reflect.TypeOf((*MockIAPIService)(nil).SetEventHub), hub)
 }
 
 // SetUserCurrentOrganisation mocks base method.

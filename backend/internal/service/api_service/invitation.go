@@ -5,6 +5,7 @@ import (
 	"errors"
 	"fmt"
 	"liquiswiss/config"
+	"liquiswiss/internal/events"
 	"liquiswiss/pkg/auth"
 	"liquiswiss/pkg/logger"
 	"liquiswiss/pkg/models"
@@ -111,6 +112,7 @@ func (a *APIService) CreateOrganisationInvitation(payload models.CreateInvitatio
 		return nil, err
 	}
 
+	a.notifyOrganisationChange(organisationID, "invitation", events.ActionCreated, invitationID)
 	return invitation, nil
 }
 
@@ -136,6 +138,7 @@ func (a *APIService) DeleteOrganisationInvitation(userID int64, organisationID i
 		return err
 	}
 
+	a.notifyOrganisationChange(organisationID, "invitation", events.ActionDeleted, invitationID)
 	return nil
 }
 
@@ -195,6 +198,7 @@ func (a *APIService) ResendOrganisationInvitation(userID int64, organisationID i
 		logger.Logger.Error(err)
 	}
 
+	a.notifyOrganisationChange(organisationID, "invitation", events.ActionUpdated, invitationID)
 	return nil
 }
 
@@ -259,6 +263,7 @@ func (a *APIService) DeclineMyInvitation(userID int64, invitationID int64) error
 		logger.Logger.Error(err)
 		return err
 	}
+	a.notifyOrganisationChange(target.OrganisationID, "invitation", events.ActionDeleted, target.ID)
 	return nil
 }
 
@@ -393,6 +398,10 @@ func (a *APIService) AcceptInvitation(payload models.AcceptInvitation, deviceNam
 		logger.Logger.Error(err)
 		return nil, nil, nil, nil, nil, err
 	}
+
+	// Accepted: invitation gone, new member joined
+	a.notifyOrganisationChange(invitation.OrganisationID, "invitation", events.ActionDeleted, invitation.ID)
+	a.notifyOrganisationChange(invitation.OrganisationID, "member", events.ActionCreated, userID)
 
 	// Get user profile
 	user, err := a.dbService.GetProfile(userID)

@@ -2,6 +2,7 @@ package api_service
 
 import (
 	"errors"
+	"liquiswiss/internal/events"
 	"liquiswiss/pkg/logger"
 	"liquiswiss/pkg/models"
 	"liquiswiss/pkg/utils"
@@ -87,6 +88,7 @@ func (a *APIService) UpdateOrganisation(payload models.UpdateOrganisation, userI
 		logger.Logger.Error(err)
 		return nil, err
 	}
+	a.notifyChange(userID, "organisation", events.ActionUpdated, organisationID)
 	return organisation, err
 }
 

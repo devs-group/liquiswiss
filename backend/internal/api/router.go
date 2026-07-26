@@ -5,6 +5,7 @@ import (
 	"liquiswiss/internal/adapter/db_adapter"
 	"liquiswiss/internal/adapter/email_adapter"
 	"liquiswiss/internal/api/handlers"
+	"liquiswiss/internal/events"
 	"liquiswiss/internal/mcp"
 	"liquiswiss/internal/middleware"
 	"liquiswiss/internal/oauth"
@@ -16,6 +17,8 @@ type API struct {
 	DBService       db_adapter.IDatabaseAdapter
 	APIService      api_service.IAPIService
 	EmailService email_adapter.IEmailAdapter
+	// EventHub powers the /api/events SSE stream; nil (e.g. in tests) disables it
+	EventHub *events.Hub
 }
 
 func NewAPI(
@@ -134,6 +137,11 @@ func (api *API) setupRouter() {
 			})
 			protected.GET("/access-token", func(ctx *gin.Context) {
 				handlers.GetAccessToken(ctx)
+			})
+
+			// Real-time change notifications (SSE)
+			protected.GET("/events", func(ctx *gin.Context) {
+				handlers.StreamEvents(api.EventHub, api.APIService, ctx)
 			})
 
 			// Organisations

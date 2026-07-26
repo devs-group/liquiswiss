@@ -76,3 +76,38 @@
         @apply sm:!max-w-xl;
     }
 }
+
+/* Real-time refresh indicator: elements tagged with data-realtime get this
+   class from the SSE plugin when their data was refreshed via event stream */
+@keyframes realtime-flash {
+    0%, 100% {
+        outline-color: transparent;
+    }
+    50% {
+        outline-color: var(--p-primary-400, #34d399);
+    }
+}
+
+.realtime-flash {
+    /* Inset outline: keeps the highlight inside the element so slim list rows
+       don't bleed into their neighbours; follows the element's own radius */
+    outline: 3px solid transparent;
+    outline-offset: -3px;
+    animation: realtime-flash 0.5s ease-in-out 3;
+}
+
+@keyframes realtime-flash-delete {
+    0%, 100% {
+        outline-color: transparent;
+    }
+    50% {
+        outline-color: var(--p-red-400, #f87171);
+    }
+}
+
+/* Deleted elements blink red before the refetch removes them */
+.realtime-flash-delete {
+    outline: 3px solid transparent;
+    outline-offset: -3px;
+    animation: realtime-flash-delete 0.5s ease-in-out 3;
+}

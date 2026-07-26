@@ -1,5 +1,7 @@
 <template>
-  <div class="flex flex-col gap-4 relative">
+  <div
+    class="flex flex-col gap-4 relative"
+  >
     <div class="flex flex-col sm:flex-row gap-2 justify-between items-center">
       <div class="flex items-center gap-2 w-full sm:w-auto">
         <SearchInput
@@ -41,6 +43,7 @@
         <BankAccountCard
           v-for="bankAccount in bankAccounts.data"
           :key="bankAccount.id"
+          :data-realtime-id="`bank_account:${bankAccount.id}`"
           :bank-account="bankAccount"
           @on-edit="onEditBankAccount"
           @on-clone="onCloneBankAccount"
@@ -54,6 +57,7 @@
         <BankAccountRow
           v-for="bankAccount in bankAccounts.data"
           :key="bankAccount.id"
+          :data-realtime-id="`bank_account:${bankAccount.id}`"
           :bank-account="bankAccount"
           @on-edit="onEditBankAccount"
           @on-clone="onCloneBankAccount"

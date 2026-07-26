@@ -1,6 +1,7 @@
 package api_service
 
 import (
+	"liquiswiss/internal/events"
 	"liquiswiss/pkg/logger"
 	"liquiswiss/pkg/models"
 	"liquiswiss/pkg/utils"
@@ -50,6 +51,7 @@ func (a *APIService) CreateSalaryCostLabel(payload models.CreateSalaryCostLabel,
 		logger.Logger.Error(err)
 		return nil, err
 	}
+	a.notifyChange(userID, "salary_cost_label", events.ActionCreated, salaryCostLabelID)
 	return salaryCostLabel, nil
 }
 
@@ -74,6 +76,7 @@ func (a *APIService) UpdateSalaryCostLabel(payload models.CreateSalaryCostLabel,
 		logger.Logger.Error(err)
 		return nil, err
 	}
+	a.notifyChange(userID, "salary_cost_label", events.ActionUpdated, salaryCostLabelID)
 	return salaryCostLabel, nil
 }
 
@@ -88,5 +91,6 @@ func (a *APIService) DeleteSalaryCostLabel(userID int64, salaryCostLabelID int64
 		logger.Logger.Error(err)
 		return err
 	}
+	a.notifyChange(userID, "salary_cost_label", events.ActionDeleted, existingSalaryCostLabel.ID)
 	return nil
 }

@@ -24,3 +24,4 @@ _deployment/.credentials
 
 # Claude Code conversation exports
 claude_chat_history.txt
+.playwright-mcp/

@@ -3,6 +3,7 @@ package api_service
 import (
 	"fmt"
 
+	"liquiswiss/internal/events"
 	"liquiswiss/pkg/logger"
 	"liquiswiss/pkg/models"
 	"liquiswiss/pkg/utils"
@@ -73,6 +74,7 @@ func (a *APIService) CreateTransaction(payload models.CreateTransaction, userID 
 		logger.Logger.Error(err)
 		return nil, err
 	}
+	a.notifyChange(userID, "transaction", events.ActionCreated, transactionID)
 	return transaction, nil
 }
 
@@ -134,6 +136,7 @@ func (a *APIService) UpdateTransaction(payload models.UpdateTransaction, userID 
 		logger.Logger.Error(err)
 		return nil, err
 	}
+	a.notifyChange(userID, "transaction", events.ActionUpdated, transactionID)
 	return transaction, nil
 }
 
@@ -154,5 +157,6 @@ func (a *APIService) DeleteTransaction(userID int64, transactionID int64) error 
 		logger.Logger.Error(err)
 		return err
 	}
+	a.notifyChange(userID, "transaction", events.ActionDeleted, transactionID)
 	return nil
 }
