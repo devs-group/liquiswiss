@@ -243,6 +243,7 @@ const onShowCostOverview = () => {
     onClose: () => {
       const query = { ...route.query }
       delete query.costs
+      delete query.cost
       router.replace({ query })
       listSalaries(props.salary.employeeID)
     },

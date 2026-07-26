@@ -133,6 +133,11 @@ const filteredSalaryCosts = computed(() => {
 const sseLastChange = useState<{ entity: string, action: string, id?: number, parentId?: number, ts: number } | null>('sse-last-change', () => null)
 watch(sseLastChange, (change) => {
   if (!change || !salary.value) return
+  // Label renames change the names shown on the cost cards too
+  if (change.entity === 'salary_cost_label') {
+    onListSalaryCosts()
+    return
+  }
   if (change.entity !== 'salary_cost') return
   if (change.parentId && change.parentId !== salary.value.id) return
   onListSalaryCosts()
@@ -161,11 +166,56 @@ const onListSalaryCosts = () => {
   }
 }
 
+// Keep the open cost dialog in the URL so it survives page reloads
+// (?cost=new | ?cost=<id> | ?cost=clone:<id>, on top of ?costs=<salaryID>)
+const route = useRoute()
+const router = useRouter()
+const setCostQuery = (value: string | null) => {
+  const query = { ...route.query }
+  if (value === null) delete query.cost
+  else query.cost = value
+  router.replace({ query })
+}
+
 onMounted(() => {
-  onListSalaryCosts()
+  if (salary.value) {
+    costsErrorMessage.value = ''
+    isLoadingCosts.value = true
+    listSalaryCosts(salary.value.id)
+      .then((resp) => {
+        costs.value = resp.data
+        restoreCostDialogFromQuery()
+      })
+      .catch(() => {
+        costsErrorMessage.value = 'Es gab einen Fehler beim Laden der Lohnkosten'
+      })
+      .finally(() => {
+        isLoadingCosts.value = false
+      })
+  }
 })
 
+const restoreCostDialogFromQuery = () => {
+  const costParam = route.query.cost
+  if (typeof costParam !== 'string' || !costParam.length) return
+  if (costParam === 'new') {
+    onCreateCost()
+    return
+  }
+  const isClone = costParam.startsWith('clone:')
+  const id = Number(isClone ? costParam.slice('clone:'.length) : costParam)
+  if (Number.isNaN(id)) return
+  const cost = costs.value.find(c => c.id === id)
+  if (!cost) {
+    setCostQuery(null)
+    return
+  }
+  if (isClone) onCloneCost(cost)
+  else onEditCost(cost)
+}
+
 const onCreateCost = () => {
+  setCostQuery('new')
   dialog.open(SalaryCostDialog, {
     props: {
       header: 'Neue Lohnkosten anlegen',
@@ -175,6 +225,7 @@ const onCreateCost = () => {
       salary: salary.value,
     },
     onClose: () => {
+      setCostQuery(null)
       requiresRefresh.value = true
       onListSalaryCosts()
     },
@@ -200,6 +251,7 @@ const onCopyFromEmployee = () => {
 }
 
 const onCloneCost = (costToClone: SalaryCostResponse) => {
+  setCostQuery(`clone:${costToClone.id}`)
   dialog.open(SalaryCostDialog, {
     props: {
       header: 'Lohnkosten klonen',
@@ -211,6 +263,7 @@ const onCloneCost = (costToClone: SalaryCostResponse) => {
       isClone: true,
     },
     onClose: () => {
+      setCostQuery(null)
       requiresRefresh.value = true
       onListSalaryCosts()
     },
@@ -218,6 +271,7 @@ const onCloneCost = (costToClone: SalaryCostResponse) => {
 }
 
 const onEditCost = (costToEdit: SalaryCostResponse) => {
+  setCostQuery(String(costToEdit.id))
   dialog.open(SalaryCostDialog, {
     props: {
       header: 'Lohnkosten bearbeiten',
@@ -228,6 +282,7 @@ const onEditCost = (costToEdit: SalaryCostResponse) => {
       salaryCostToEdit: costToEdit,
     },
     onClose: () => {
+      setCostQuery(null)
       requiresRefresh.value = true
       onListSalaryCosts()
     },

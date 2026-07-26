@@ -430,6 +430,7 @@ onMounted(() => {
     onClose: () => {
       const query = { ...route.query }
       delete query.costs
+      delete query.cost
       router.replace({ query })
       listSalaries(employeeID)
     },

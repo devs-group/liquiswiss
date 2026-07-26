@@ -4,6 +4,29 @@
     @submit.prevent
   >
     <Message
+      v-if="externalChange"
+      severity="warn"
+      class="col-span-full"
+      :closable="false"
+    >
+      <div class="flex items-center justify-between gap-4 w-full">
+        <span v-if="externalChange === 'deleted'">
+          Diese Lohnkosten wurden soeben extern gelöscht.
+        </span>
+        <span v-else>
+          Diese Lohnkosten wurden soeben extern geändert. Beim Speichern werden die externen Änderungen überschrieben.
+        </span>
+        <Button
+          v-if="externalChange === 'updated'"
+          label="Neu laden"
+          icon="pi pi-refresh"
+          size="small"
+          severity="warn"
+          @click="onReloadExternalChange"
+        />
+      </div>
+    </Message>
+    <Message
       severity="secondary"
       class="col-span-full"
     >
@@ -30,6 +53,7 @@
         v-bind="labelIDProps"
         id="label-id"
         v-model="labelID"
+        data-realtime-field="cost-label-select"
         empty-message="Keine Labels gefunden"
         show-clear
         :options="salaryCostsLabels.data"
@@ -332,7 +356,7 @@ import { selectAllOnFocus } from '~/utils/element-helper'
 
 const dialogRef = inject<ISalaryCostFormDialog>('dialogRef')!
 
-const { createSalaryCost, updateSalaryCost, listSalaryCosts } = useSalaryCosts()
+const { createSalaryCost, updateSalaryCost, listSalaryCosts, getSalaryCost } = useSalaryCosts()
 const { salaryCostsLabels, listSalaryCostsLabels, deleteSalaryCostLabel } = useSalaryCostLabels()
 const toast = useToast()
 const dialog = useDialog()
@@ -359,7 +383,7 @@ listSalaryCostsLabels(false)
     isLoadingCostLabels.value = false
   })
 
-const { defineField, errors, handleSubmit, meta, setFieldValue } = useForm<SalaryCostFormData>({
+const { defineField, errors, handleSubmit, meta, setFieldValue, resetForm } = useForm<SalaryCostFormData>({
   validationSchema: yup.object({
     labelID: yup.number().nullable().typeError('Ungültiger Wert'),
     cycle: yup.string().required('Zyklus wird benötigt').typeError('Ungültiger Wert'),
@@ -421,6 +445,51 @@ const { defineField, errors, handleSubmit, meta, setFieldValue } = useForm<Salar
 })
 
 const [labelID, labelIDProps] = defineField('labelID')
+
+// Real-time: blink the label dropdown when the selected label was renamed
+// elsewhere (options themselves update via shared state); warn when the cost
+// being edited was changed or deleted externally (form values stay untouched,
+// saving would overwrite the external change)
+const externalChange = ref<'updated' | 'deleted' | null>(null)
+const sseLastChange = useState<{ entity: string, action: string, id?: number, ts: number } | null>('sse-last-change', () => null)
+watch(sseLastChange, async (change) => {
+  if (!change) return
+  if (change.entity === 'salary_cost_label') {
+    if (!change.id || change.id !== labelID.value) return
+    await nextTick()
+    flashRealtimeSelector('[data-realtime-field="cost-label-select"]')
+    return
+  }
+  if (change.entity !== 'salary_cost') return
+  if (isCreate || !salaryCost?.id || change.id !== salaryCost.id) return
+  externalChange.value = change.action === 'deleted' ? 'deleted' : 'updated'
+})
+
+const onReloadExternalChange = async () => {
+  if (!salaryCost?.id) return
+  try {
+    const fresh = await getSalaryCost(salaryCost.id)
+    resetForm({
+      values: {
+        id: fresh.id,
+        labelID: fresh.label?.id ?? undefined,
+        relativeOffset: fresh.relativeOffset ?? 1,
+        cycle: fresh.cycle,
+        amountType: fresh.amountType,
+        amount: fresh.amountType == EmployeeCostType.Fixed
+          ? AmountToFloat(fresh.amount, 2)
+          : AmountToFloat(fresh.amount, 3),
+        distributionType: fresh.distributionType,
+        targetDate: fresh.targetDate ? DateToUTCDate(fresh.targetDate) : undefined,
+        baseSalaryCostIDs: fresh.baseSalaryCostIDs ?? [],
+      },
+    })
+    externalChange.value = null
+  }
+  catch {
+    errorMessage.value = 'Lohnkosten konnten nicht neu geladen werden'
+  }
+}
 const [cycle, cycleProps] = defineField('cycle')
 const [relativeOffset, relativeOffsetProps] = defineField('relativeOffset')
 const [amountType, amountTypeProps] = defineField('amountType')
