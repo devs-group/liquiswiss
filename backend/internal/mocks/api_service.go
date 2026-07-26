@@ -416,6 +416,20 @@ func (mr *MockIAPIServiceMockRecorder) DeleteBankAccount(userID, bankAccountID a
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "DeleteBankAccount", reflect.TypeOf((*MockIAPIService)(nil).DeleteBankAccount), userID, bankAccountID)
 }
 
+// DeleteCategory mocks base method.
+func (m *MockIAPIService) DeleteCategory(userID, categoryID int64) error {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "DeleteCategory", userID, categoryID)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// DeleteCategory indicates an expected call of DeleteCategory.
+func (mr *MockIAPIServiceMockRecorder) DeleteCategory(userID, categoryID any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "DeleteCategory", reflect.TypeOf((*MockIAPIService)(nil).DeleteCategory), userID, categoryID)
+}
+
 // DeleteEmployee mocks base method.
 func (m *MockIAPIService) DeleteEmployee(userID, employeeID int64) error {
 	m.ctrl.T.Helper()

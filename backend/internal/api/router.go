@@ -366,14 +366,17 @@ func (api *API) setupRouter() {
 			protected.GET("/categories", func(ctx *gin.Context) {
 				handlers.ListCategories(api.APIService, ctx)
 			})
-			protected.GET("/categories/:id", func(ctx *gin.Context) {
+			protected.GET("/categories/:categoryID", func(ctx *gin.Context) {
 				handlers.GetCategory(api.APIService, ctx)
 			})
 			editorRoutes.POST("/categories", func(ctx *gin.Context) {
 				handlers.CreateCategory(api.APIService, ctx)
 			})
-			editorRoutes.PATCH("/categories/:id", func(ctx *gin.Context) {
+			editorRoutes.PATCH("/categories/:categoryID", func(ctx *gin.Context) {
 				handlers.UpdateCategory(api.APIService, ctx)
+			})
+			editorRoutes.DELETE("/categories/:categoryID", func(ctx *gin.Context) {
+				handlers.DeleteCategory(api.APIService, ctx)
 			})
 
 			// Currencies

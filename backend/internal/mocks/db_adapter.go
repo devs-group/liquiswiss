@@ -188,6 +188,21 @@ func (mr *MockIDatabaseAdapterMockRecorder) CountOwners(organisationID any) *gom
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CountOwners", reflect.TypeOf((*MockIDatabaseAdapter)(nil).CountOwners), organisationID)
 }
 
+// CountTransactionsWithCategory mocks base method.
+func (m *MockIDatabaseAdapter) CountTransactionsWithCategory(userID, categoryID int64) (int64, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "CountTransactionsWithCategory", userID, categoryID)
+	ret0, _ := ret[0].(int64)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// CountTransactionsWithCategory indicates an expected call of CountTransactionsWithCategory.
+func (mr *MockIDatabaseAdapterMockRecorder) CountTransactionsWithCategory(userID, categoryID any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CountTransactionsWithCategory", reflect.TypeOf((*MockIDatabaseAdapter)(nil).CountTransactionsWithCategory), userID, categoryID)
+}
+
 // CountUniqueCurrenciesInFiatRates mocks base method.
 func (m *MockIDatabaseAdapter) CountUniqueCurrenciesInFiatRates() (int64, error) {
 	m.ctrl.T.Helper()
@@ -529,6 +544,20 @@ func (m *MockIDatabaseAdapter) DeleteBankAccount(userID, bankAccountID int64) er
 func (mr *MockIDatabaseAdapterMockRecorder) DeleteBankAccount(userID, bankAccountID any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "DeleteBankAccount", reflect.TypeOf((*MockIDatabaseAdapter)(nil).DeleteBankAccount), userID, bankAccountID)
+}
+
+// DeleteCategory mocks base method.
+func (m *MockIDatabaseAdapter) DeleteCategory(userID, categoryID int64) error {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "DeleteCategory", userID, categoryID)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// DeleteCategory indicates an expected call of DeleteCategory.
+func (mr *MockIDatabaseAdapterMockRecorder) DeleteCategory(userID, categoryID any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "DeleteCategory", reflect.TypeOf((*MockIDatabaseAdapter)(nil).DeleteCategory), userID, categoryID)
 }
 
 // DeleteEmployee mocks base method.

@@ -128,3 +128,25 @@ func UpdateCategory(apiService api_service.IAPIService, c *gin.Context) {
 	// Poste
 	c.JSON(http.StatusOK, category)
 }
+
+func DeleteCategory(apiService api_service.IAPIService, c *gin.Context) {
+	userID := c.GetInt64("userID")
+	if userID == 0 {
+		c.Status(http.StatusUnauthorized)
+		return
+	}
+	categoryID, err := strconv.ParseInt(c.Param("categoryID"), 10, 64)
+	if err != nil {
+		c.Status(http.StatusBadRequest)
+		return
+	}
+
+	// Action
+	if err := apiService.DeleteCategory(userID, categoryID); err != nil {
+		c.Status(http.StatusInternalServerError)
+		return
+	}
+
+	// Poste
+	c.Status(http.StatusNoContent)
+}

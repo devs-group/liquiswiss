@@ -102,3 +102,26 @@ func (d *DatabaseAdapter) UpdateCategory(payload models.UpdateCategory, userID i
 
 	return nil
 }
+
+func (d *DatabaseAdapter) DeleteCategory(userID int64, categoryID int64) error {
+	query, err := sqlQueries.ReadFile("queries/delete_category.sql")
+	if err != nil {
+		return err
+	}
+
+	_, err = d.db.Exec(string(query), categoryID, userID)
+
+	return err
+}
+
+func (d *DatabaseAdapter) CountTransactionsWithCategory(userID int64, categoryID int64) (int64, error) {
+	query, err := sqlQueries.ReadFile("queries/count_transactions_with_category.sql")
+	if err != nil {
+		return 0, err
+	}
+
+	var count int64
+	err = d.db.QueryRow(string(query), categoryID, userID).Scan(&count)
+
+	return count, err
+}

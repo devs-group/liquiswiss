@@ -170,6 +170,75 @@ func registerOrganisationTools(server *sdk.Server, deps *toolDeps) {
 	})
 
 	sdk.AddTool(server, &sdk.Tool{
+		Name:        "create_category",
+		Description: "Create an organisation-owned transaction category. Global preset categories (canEdit=false) are shared; own categories (canEdit=true) can be renamed and deleted. Requires editor role or higher.",
+	}, func(ctx context.Context, req *sdk.CallToolRequest, in models.CreateCategory) (*sdk.CallToolResult, *models.Category, error) {
+		userID, err := userIDFrom(ctx)
+		if err != nil {
+			return nil, nil, err
+		}
+		if err := deps.requireEditor(userID); err != nil {
+			return nil, nil, err
+		}
+		if err := validate(in); err != nil {
+			return nil, nil, err
+		}
+		category, err := deps.apiService.CreateCategory(in, &userID)
+		if err != nil {
+			return nil, nil, err
+		}
+		return nil, category, nil
+	})
+
+	sdk.AddTool(server, &sdk.Tool{
+		Name:        "update_category",
+		Description: "Rename an organisation-owned category (canEdit=true only; global presets cannot be changed). Requires editor role or higher.",
+	}, func(ctx context.Context, req *sdk.CallToolRequest, in struct {
+		ID int64 `json:"id" jsonschema:"category ID"`
+		models.UpdateCategory
+	}) (*sdk.CallToolResult, *models.Category, error) {
+		userID, err := userIDFrom(ctx)
+		if err != nil {
+			return nil, nil, err
+		}
+		if err := deps.requireEditor(userID); err != nil {
+			return nil, nil, err
+		}
+		if err := validate(in.UpdateCategory); err != nil {
+			return nil, nil, err
+		}
+		existing, err := deps.apiService.GetCategory(userID, in.ID)
+		if err != nil {
+			return nil, nil, errors.New("category not found")
+		}
+		if !existing.CanEdit {
+			return nil, nil, errors.New("this category is a global preset and cannot be modified")
+		}
+		category, err := deps.apiService.UpdateCategory(in.UpdateCategory, userID, in.ID)
+		if err != nil {
+			return nil, nil, err
+		}
+		return nil, category, nil
+	})
+
+	sdk.AddTool(server, &sdk.Tool{
+		Name:        "delete_category",
+		Description: "Delete an organisation-owned category permanently (canEdit=true only; global presets cannot be deleted). Requires editor role or higher.",
+	}, func(ctx context.Context, req *sdk.CallToolRequest, in idInput) (*sdk.CallToolResult, *deleteOutput, error) {
+		userID, err := userIDFrom(ctx)
+		if err != nil {
+			return nil, nil, err
+		}
+		if err := deps.requireEditor(userID); err != nil {
+			return nil, nil, err
+		}
+		if err := deps.apiService.DeleteCategory(userID, in.ID); err != nil {
+			return nil, nil, err
+		}
+		return nil, &deleteOutput{Deleted: true, ID: in.ID}, nil
+	})
+
+	sdk.AddTool(server, &sdk.Tool{
 		Name:        "list_currencies",
 		Description: "List all currencies (needed as currency ID when creating bank accounts or transactions).",
 	}, func(ctx context.Context, req *sdk.CallToolRequest, in emptyInput) (*sdk.CallToolResult, map[string]any, error) {

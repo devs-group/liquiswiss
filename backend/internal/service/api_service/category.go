@@ -1,6 +1,7 @@
 package api_service
 
 import (
+	"fmt"
 	"liquiswiss/pkg/logger"
 	"liquiswiss/pkg/models"
 	"liquiswiss/pkg/utils"
@@ -70,4 +71,29 @@ func (a *APIService) UpdateCategory(payload models.UpdateCategory, userID int64,
 		return nil, err
 	}
 	return category, nil
+}
+
+func (a *APIService) DeleteCategory(userID int64, categoryID int64) error {
+	category, err := a.dbService.GetCategory(userID, categoryID)
+	if err != nil {
+		logger.Logger.Error(err)
+		return err
+	}
+	if !category.CanEdit {
+		return fmt.Errorf("global categories cannot be deleted")
+	}
+	inUse, err := a.dbService.CountTransactionsWithCategory(userID, categoryID)
+	if err != nil {
+		logger.Logger.Error(err)
+		return err
+	}
+	if inUse > 0 {
+		return fmt.Errorf("category is used by %d transaction(s) and cannot be deleted", inUse)
+	}
+	err = a.dbService.DeleteCategory(userID, categoryID)
+	if err != nil {
+		logger.Logger.Error(err)
+		return err
+	}
+	return nil
 }

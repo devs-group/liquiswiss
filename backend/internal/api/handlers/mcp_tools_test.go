@@ -363,3 +363,57 @@ func TestMCPSalaryTimelineSemantics(t *testing.T) {
 	require.False(t, salaries.IsError)
 	require.Equal(t, float64(0), salaries.Structured["total"])
 }
+
+func TestMCPCategoryCRUDAndGlobalProtection(t *testing.T) {
+	env := setupOAuthTestEnvironment(t)
+	token := env.mcpAccessToken(t)
+
+	// Global preset (id 1 from fixtures) is protected
+	globalUpdate := env.mcpCall(t, token, "update_category", `{"id":1,"name":"Umbenannt"}`)
+	require.True(t, globalUpdate.IsError)
+	require.Contains(t, globalUpdate.Text, "global")
+	globalDelete := env.mcpCall(t, token, "delete_category", `{"id":1}`)
+	require.True(t, globalDelete.IsError)
+	require.Contains(t, globalDelete.Text, "global")
+
+	// Own category lifecycle
+	created := env.mcpCall(t, token, "create_category", `{"name":"Marketing"}`)
+	require.False(t, created.IsError, created.Text)
+	categoryID := int64(created.Structured["id"].(float64))
+	require.Equal(t, true, created.Structured["canEdit"])
+
+	renamed := env.mcpCall(t, token, "update_category", fmt.Sprintf(`{"id":%d,"name":"Marketing & Sales"}`, categoryID))
+	require.False(t, renamed.IsError, renamed.Text)
+	require.Equal(t, "Marketing & Sales", renamed.Structured["name"])
+
+	listed := env.mcpCall(t, token, "list_categories", `{}`)
+	require.False(t, listed.IsError)
+	require.Equal(t, float64(2), listed.Structured["total"], "global preset + own category")
+
+	// A category still used by a transaction must not be deletable (transactions
+	// INNER JOIN categories, an orphaned category_id would hide the transaction)
+	transaction := env.mcpCall(t, token, "create_transaction", fmt.Sprintf(
+		`{"name":"Werbebudget","link":null,"amount":-50000,"cycle":"monthly","type":"repeating","startDate":"2026-08-01","endDate":null,"category":%d,"currency":1,"employee":null,"vat":null,"VatIncluded":false}`,
+		categoryID))
+	require.False(t, transaction.IsError, transaction.Text)
+	transactionID := int64(transaction.Structured["id"].(float64))
+
+	blocked := env.mcpCall(t, token, "delete_category", fmt.Sprintf(`{"id":%d}`, categoryID))
+	require.True(t, blocked.IsError)
+	require.Contains(t, blocked.Text, "used by")
+
+	// Reassign the transaction to the global category, then deletion works
+	reassigned := env.mcpCall(t, token, "update_transaction", allNullUpdateTransactionArgs(transactionID, map[string]string{
+		"category": "1", "cycle": `"monthly"`, "isDisabled": "false",
+	}))
+	require.False(t, reassigned.IsError, reassigned.Text)
+
+	deleted := env.mcpCall(t, token, "delete_category", fmt.Sprintf(`{"id":%d}`, categoryID))
+	require.False(t, deleted.IsError, deleted.Text)
+
+	after := env.mcpCall(t, token, "get_transaction", fmt.Sprintf(`{"id":%d}`, transactionID))
+	require.False(t, after.IsError, after.Text)
+
+	listedAfter := env.mcpCall(t, token, "list_categories", `{}`)
+	require.Equal(t, float64(1), listedAfter.Structured["total"], "only the global preset remains")
+}
