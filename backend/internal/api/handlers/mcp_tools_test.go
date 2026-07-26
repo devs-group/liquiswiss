@@ -588,3 +588,39 @@ func TestMCPFriendlyErrors(t *testing.T) {
 	require.True(t, rates.IsError)
 	require.Contains(t, rates.Text, "no exchange rates")
 }
+
+func TestMCPListFilters(t *testing.T) {
+	env := setupOAuthTestEnvironment(t)
+	token := env.mcpAccessToken(t)
+
+	employee := env.mcpCall(t, token, "create_employee", `{"name":"Filter Mitarbeiter"}`)
+	employeeID := int64(employee.Structured["id"].(float64))
+
+	mkTx := func(name string, amount int64, employeeRef string) {
+		result := env.mcpCall(t, token, "create_transaction", fmt.Sprintf(
+			`{"name":%q,"link":null,"amount":%d,"cycle":"monthly","type":"repeating","startDate":"2026-08-01","endDate":null,"category":1,"currency":1,"employee":%s,"vat":null,"VatIncluded":false}`,
+			name, amount, employeeRef))
+		require.False(t, result.IsError, result.Text)
+	}
+	mkTx("Umsatz A", 100000, fmt.Sprintf("%d", employeeID))
+	mkTx("Kosten B", -50000, "null")
+	mkTx("Umsatz C", 200000, "null")
+
+	byEmployee := env.mcpCall(t, token, "list_transactions", fmt.Sprintf(`{"employeeId":%d}`, employeeID))
+	require.False(t, byEmployee.IsError, byEmployee.Text)
+	require.Equal(t, float64(1), byEmployee.Structured["total"])
+
+	expenses := env.mcpCall(t, token, "list_transactions", `{"direction":"expense"}`)
+	require.Equal(t, float64(1), expenses.Structured["total"])
+
+	revenue := env.mcpCall(t, token, "list_transactions", `{"direction":"revenue"}`)
+	require.Equal(t, float64(2), revenue.Structured["total"])
+
+	categories := env.mcpCall(t, token, "list_categories", `{"search":"gener"}`)
+	require.False(t, categories.IsError, categories.Text)
+	require.Equal(t, float64(1), categories.Structured["total"])
+
+	currencies := env.mcpCall(t, token, "list_currencies", `{"search":"chf"}`)
+	require.False(t, currencies.IsError, currencies.Text)
+	require.Equal(t, float64(1), currencies.Structured["total"])
+}

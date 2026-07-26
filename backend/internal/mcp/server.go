@@ -139,7 +139,7 @@ type idInput struct {
 type listInput struct {
 	Page   int64  `json:"page,omitempty" jsonschema:"page number, starts at 1 (default 1)"`
 	Limit  int64  `json:"limit,omitempty" jsonschema:"items per page (default 50, max 200)"`
-	Search string `json:"search,omitempty" jsonschema:"optional search term"`
+	Search string `json:"search,omitempty" jsonschema:"optional fuzzy search; results ranked by matchScore (1 = exact, typos tolerated)"`
 }
 
 func (l *listInput) normalize() {
@@ -249,17 +249,26 @@ func registerOrganisationTools(server *sdk.Server, deps *toolDeps) {
 
 	sdk.AddTool(server, &sdk.Tool{
 		Name:        "list_categories",
-		Description: "List all transaction categories (needed as category ID when creating transactions).",
-	}, func(ctx context.Context, req *sdk.CallToolRequest, in emptyInput) (*sdk.CallToolResult, map[string]any, error) {
+		Description: "List all transaction categories (needed as category ID when creating transactions). Optional search filters by name.",
+	}, func(ctx context.Context, req *sdk.CallToolRequest, in struct {
+		Search string `json:"search,omitempty" jsonschema:"optional name filter, case-insensitive substring"`
+	}) (*sdk.CallToolResult, map[string]any, error) {
 		userID, err := userIDFrom(ctx)
 		if err != nil {
 			return nil, nil, err
 		}
-		categories, total, err := deps.apiService.ListCategories(userID, 1, 1000)
+		categories, _, err := deps.apiService.ListCategories(userID, 1, 1000)
 		if err != nil {
 			return nil, nil, err
 		}
-		return nil, map[string]any{"items": categories, "total": total}, nil
+		if in.Search != "" {
+			ranked, err := fuzzyRank(categories, in.Search, func(category models.Category) string { return category.Name })
+			if err != nil {
+				return nil, nil, err
+			}
+			return nil, map[string]any{"items": ranked, "total": len(ranked)}, nil
+		}
+		return nil, map[string]any{"items": categories, "total": len(categories)}, nil
 	})
 
 	sdk.AddTool(server, &sdk.Tool{
@@ -353,8 +362,10 @@ func registerOrganisationTools(server *sdk.Server, deps *toolDeps) {
 
 	sdk.AddTool(server, &sdk.Tool{
 		Name:        "list_currencies",
-		Description: "List all currencies (needed as currency ID when creating bank accounts or transactions).",
-	}, func(ctx context.Context, req *sdk.CallToolRequest, in emptyInput) (*sdk.CallToolResult, map[string]any, error) {
+		Description: "List all currencies (needed as currency ID when creating bank accounts or transactions). Optional search filters by code or description.",
+	}, func(ctx context.Context, req *sdk.CallToolRequest, in struct {
+		Search string `json:"search,omitempty" jsonschema:"optional filter on code or description, case-insensitive"`
+	}) (*sdk.CallToolResult, map[string]any, error) {
 		userID, err := userIDFrom(ctx)
 		if err != nil {
 			return nil, nil, err
@@ -363,7 +374,23 @@ func registerOrganisationTools(server *sdk.Server, deps *toolDeps) {
 		if err != nil {
 			return nil, nil, err
 		}
-		return nil, map[string]any{"items": currencies}, nil
+		if in.Search != "" {
+			ranked, err := fuzzyRank(currencies, in.Search, func(currency models.Currency) string {
+				code, description := "", ""
+				if currency.Code != nil {
+					code = *currency.Code
+				}
+				if currency.Description != nil {
+					description = *currency.Description
+				}
+				return code + " " + description
+			})
+			if err != nil {
+				return nil, nil, err
+			}
+			return nil, map[string]any{"items": ranked, "total": len(ranked)}, nil
+		}
+		return nil, map[string]any{"items": currencies, "total": len(currencies)}, nil
 	})
 
 	sdk.AddTool(server, &sdk.Tool{
@@ -470,9 +497,23 @@ func registerBankAccountTools(server *sdk.Server, deps *toolDeps) {
 			return nil, nil, err
 		}
 		in.normalize()
-		accounts, total, err := deps.apiService.ListBankAccounts(userID, in.Page, in.Limit, "name", "ASC", in.Search)
+		backendSearch, page, limit := in.Search, in.Page, in.Limit
+		if in.Search != "" {
+			backendSearch, page, limit = "", 1, 10000
+		}
+		accounts, total, err := deps.apiService.ListBankAccounts(userID, page, limit, "name", "ASC", backendSearch)
 		if err != nil {
 			return nil, nil, err
+		}
+		if in.Search != "" {
+			ranked, err := fuzzyRank(accounts, in.Search, func(account models.BankAccount) string { return account.Name })
+			if err != nil {
+				return nil, nil, err
+			}
+			if int64(len(ranked)) > in.Limit {
+				ranked = ranked[:in.Limit]
+			}
+			return nil, map[string]any{"items": ranked, "total": len(ranked)}, nil
 		}
 		return nil, map[string]any{"items": accounts, "total": total}, nil
 	})
@@ -544,8 +585,31 @@ func registerBankAccountTools(server *sdk.Server, deps *toolDeps) {
 
 type listTransactionsInput struct {
 	listInput
-	HideDisabled bool `json:"hideDisabled,omitempty" jsonschema:"exclude disabled transactions"`
-	HideExpired  bool `json:"hideExpired,omitempty" jsonschema:"exclude transactions whose end date is in the past"`
+	HideDisabled bool   `json:"hideDisabled,omitempty" jsonschema:"exclude disabled transactions"`
+	HideExpired  bool   `json:"hideExpired,omitempty" jsonschema:"exclude transactions whose end date is in the past"`
+	EmployeeID   int64  `json:"employeeId,omitempty" jsonschema:"only transactions linked to this employee"`
+	CategoryID   int64  `json:"categoryId,omitempty" jsonschema:"only transactions in this category"`
+	Type         string `json:"type,omitempty" jsonschema:"only 'single' or 'repeating' transactions"`
+	Direction    string `json:"direction,omitempty" jsonschema:"'revenue' (positive amounts) or 'expense' (negative amounts)"`
+}
+
+func (l *listTransactionsInput) matches(transaction models.Transaction) bool {
+	if l.EmployeeID != 0 && (transaction.Employee == nil || transaction.Employee.ID != l.EmployeeID) {
+		return false
+	}
+	if l.CategoryID != 0 && transaction.Category.ID != l.CategoryID {
+		return false
+	}
+	if l.Type != "" && transaction.Type != l.Type {
+		return false
+	}
+	if l.Direction == "revenue" && transaction.Amount < 0 {
+		return false
+	}
+	if l.Direction == "expense" && transaction.Amount >= 0 {
+		return false
+	}
+	return true
 }
 
 func registerTransactionTools(server *sdk.Server, deps *toolDeps) {
@@ -558,9 +622,43 @@ func registerTransactionTools(server *sdk.Server, deps *toolDeps) {
 			return nil, nil, err
 		}
 		in.normalize()
-		transactions, total, err := deps.apiService.ListTransactions(userID, in.Page, in.Limit, "name", "ASC", in.Search, in.HideDisabled, in.HideExpired)
+		hasExtraFilters := in.EmployeeID != 0 || in.CategoryID != 0 || in.Type != "" || in.Direction != ""
+		useFuzzy := in.Search != ""
+		page, limit := in.Page, in.Limit
+		if hasExtraFilters || useFuzzy {
+			// Filters and fuzzy ranking are applied in this layer, fetch the full set
+			page, limit = 1, 10000
+		}
+		backendSearch := ""
+		transactions, total, err := deps.apiService.ListTransactions(userID, page, limit, "name", "ASC", backendSearch, in.HideDisabled, in.HideExpired)
 		if err != nil {
 			return nil, nil, err
+		}
+		if hasExtraFilters {
+			filtered := make([]models.Transaction, 0, len(transactions))
+			for _, transaction := range transactions {
+				if in.matches(transaction) {
+					filtered = append(filtered, transaction)
+				}
+			}
+			transactions = filtered
+			total = int64(len(filtered))
+		}
+		if useFuzzy {
+			ranked, err := fuzzyRank(transactions, in.Search, func(transaction models.Transaction) string {
+				name := transaction.Name
+				if transaction.Employee != nil {
+					name += " " + transaction.Employee.Name
+				}
+				return name + " " + transaction.Category.Name
+			})
+			if err != nil {
+				return nil, nil, err
+			}
+			if int64(len(ranked)) > in.Limit {
+				ranked = ranked[:in.Limit]
+			}
+			return nil, map[string]any{"items": ranked, "total": len(ranked)}, nil
 		}
 		return nil, map[string]any{"items": transactions, "total": total}, nil
 	})
@@ -660,9 +758,23 @@ func registerEmployeeTools(server *sdk.Server, deps *toolDeps) {
 			return nil, nil, err
 		}
 		in.normalize()
-		employees, total, err := deps.apiService.ListEmployees(userID, in.Page, in.Limit, "name", "ASC", in.Search, in.HideTerminated)
+		backendSearch, page, limit := in.Search, in.Page, in.Limit
+		if in.Search != "" {
+			backendSearch, page, limit = "", 1, 10000
+		}
+		employees, total, err := deps.apiService.ListEmployees(userID, page, limit, "name", "ASC", backendSearch, in.HideTerminated)
 		if err != nil {
 			return nil, nil, err
+		}
+		if in.Search != "" {
+			ranked, err := fuzzyRank(employees, in.Search, func(employee models.Employee) string { return employee.Name })
+			if err != nil {
+				return nil, nil, err
+			}
+			if int64(len(ranked)) > in.Limit {
+				ranked = ranked[:in.Limit]
+			}
+			return nil, map[string]any{"items": ranked, "total": len(ranked)}, nil
 		}
 		return nil, map[string]any{"items": employees, "total": total}, nil
 	})
@@ -949,17 +1061,26 @@ func registerEmployeeTools(server *sdk.Server, deps *toolDeps) {
 
 	sdk.AddTool(server, &sdk.Tool{
 		Name:        "list_salary_cost_labels",
-		Description: "List the organisation's salary cost labels (categories for Lohnnebenkosten, e.g. AHV/IV/EO, BVG, KTG). Use their IDs as labelID on salary cost entries.",
-	}, func(ctx context.Context, req *sdk.CallToolRequest, in emptyInput) (*sdk.CallToolResult, map[string]any, error) {
+		Description: "List the organisation's salary cost labels (categories for Lohnnebenkosten, e.g. AHV/IV/EO, BVG, KTG). Use their IDs as labelID on salary cost entries. Optional search filters by name.",
+	}, func(ctx context.Context, req *sdk.CallToolRequest, in struct {
+		Search string `json:"search,omitempty" jsonschema:"optional name filter, case-insensitive substring"`
+	}) (*sdk.CallToolResult, map[string]any, error) {
 		userID, err := userIDFrom(ctx)
 		if err != nil {
 			return nil, nil, err
 		}
-		labels, total, err := deps.apiService.ListSalaryCostLabels(userID, 1, 1000)
+		labels, _, err := deps.apiService.ListSalaryCostLabels(userID, 1, 1000)
 		if err != nil {
 			return nil, nil, err
 		}
-		return nil, map[string]any{"items": labels, "total": total}, nil
+		if in.Search != "" {
+			ranked, err := fuzzyRank(labels, in.Search, func(label models.SalaryCostLabel) string { return label.Name })
+			if err != nil {
+				return nil, nil, err
+			}
+			return nil, map[string]any{"items": ranked, "total": len(ranked)}, nil
+		}
+		return nil, map[string]any{"items": labels, "total": len(labels)}, nil
 	})
 
 	sdk.AddTool(server, &sdk.Tool{
@@ -1108,8 +1229,11 @@ func registerForecastTools(server *sdk.Server, deps *toolDeps) {
 
 	sdk.AddTool(server, &sdk.Tool{
 		Name:        "list_forecast_exclusions",
-		Description: "List ALL active forecast exclusions of the current organisation: per row the month (YYYY-MM), the excluded entry's relatedTable/relatedId, its name and amount (Rappen/cents). Use these IDs with set_forecast_exclusions to re-include entries.",
-	}, func(ctx context.Context, req *sdk.CallToolRequest, in emptyInput) (*sdk.CallToolResult, map[string]any, error) {
+		Description: "List ALL active forecast exclusions of the current organisation: per row the month (YYYY-MM), the excluded entry's relatedTable/relatedId, its name and amount (Rappen/cents). Use these IDs with set_forecast_exclusions to re-include entries. Optional filters: month (YYYY-MM) and relatedTable.",
+	}, func(ctx context.Context, req *sdk.CallToolRequest, in struct {
+		Month        string `json:"month,omitempty" jsonschema:"only exclusions for this month (YYYY-MM)"`
+		RelatedTable string `json:"relatedTable,omitempty" jsonschema:"only exclusions of this table, e.g. transactions or salaries"`
+	}) (*sdk.CallToolResult, map[string]any, error) {
 		userID, err := userIDFrom(ctx)
 		if err != nil {
 			return nil, nil, err
@@ -1117,6 +1241,19 @@ func registerForecastTools(server *sdk.Server, deps *toolDeps) {
 		exclusions, err := deps.apiService.ListAllForecastExclusions(userID)
 		if err != nil {
 			return nil, nil, err
+		}
+		if in.Month != "" || in.RelatedTable != "" {
+			filtered := make([]models.ForecastExclusionInfo, 0, len(exclusions))
+			for _, exclusion := range exclusions {
+				if in.Month != "" && exclusion.Month != in.Month {
+					continue
+				}
+				if in.RelatedTable != "" && exclusion.RelatedTable != in.RelatedTable {
+					continue
+				}
+				filtered = append(filtered, exclusion)
+			}
+			exclusions = filtered
 		}
 		return nil, map[string]any{"items": exclusions, "total": len(exclusions)}, nil
 	})
