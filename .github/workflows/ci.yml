@@ -13,11 +13,7 @@ on:
 
 env:
   NUXT_IMAGE: ghcr.io/${{ github.repository }}/nuxt:latest
-  NUXT_IMAGE_ARTIFACT: nuxt-image
-  NUXT_IMAGE_ZIP_FILE: nuxt-image.tar.gz
   BACKEND_IMAGE: ghcr.io/${{ github.repository }}/backend:latest
-  BACKEND_IMAGE_ARTIFACT: backend-image
-  BACKEND_IMAGE_ZIP_FILE: backend-image.tar.gz
 
 jobs:
   changes:
@@ -220,20 +216,25 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v4
 
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
       - name: Log in to Docker registry
-        run: echo "${{ secrets.GITHUB_TOKEN }}" | docker login ghcr.io -u ${{ github.actor }} --password-stdin
-
-      - name: Build and Tag Docker Image
-        run: docker build -f ./_deployment/nuxt/Dockerfile -t ${{ env.NUXT_IMAGE }} ./
-
-      - name: Save Nuxt Image as Tarball
-        run: docker save ${{ env.NUXT_IMAGE }} | gzip > ${{ env.NUXT_IMAGE_ZIP_FILE }}
-
-      - name: Upload Nuxt Image as Artifact
-        uses: actions/upload-artifact@v4
+        uses: docker/login-action@v3
         with:
-          name: ${{ env.NUXT_IMAGE_ARTIFACT }}
-          path: ${{ env.NUXT_IMAGE_ZIP_FILE }}
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Build and Push Docker Image
+        uses: docker/build-push-action@v6
+        with:
+          context: .
+          file: ./_deployment/nuxt/Dockerfile
+          tags: ${{ env.NUXT_IMAGE }}
+          push: true
+          cache-from: type=gha,scope=nuxt
+          cache-to: type=gha,scope=nuxt,mode=max
 
   build_backend:
     name: Build Backend
@@ -242,29 +243,32 @@ jobs:
     if: ${{ github.ref == 'refs/heads/main'
       && (github.event_name == 'workflow_dispatch' || needs.changes.outputs.backend == 'true' || needs.changes.outputs.workflow == 'true')
       && needs.test_backend.result == 'success' }}
-    env:
-      IMAGE: ghcr.io/${{ github.repository }}/backend:latest
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
 
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
       - name: Log in to Docker registry
-        run: echo "${{ secrets.GITHUB_TOKEN }}" | docker login ghcr.io -u ${{ github.actor }} --password-stdin
-
-      - name: Build and Tag Docker Image
-        run: docker build -f ./_deployment/backend/Dockerfile -t ${{ env.BACKEND_IMAGE }} ./
-
-      - name: Save Nuxt Image as Tarball
-        run: docker save ${{ env.BACKEND_IMAGE }} | gzip > ${{ env.BACKEND_IMAGE_ZIP_FILE }}
-
-      - name: Upload Nuxt Image as Artifact
-        uses: actions/upload-artifact@v4
+        uses: docker/login-action@v3
         with:
-          name: ${{ env.BACKEND_IMAGE_ARTIFACT }}
-          path: ${{ env.BACKEND_IMAGE_ZIP_FILE }}
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
 
-  push_images:
-    name: Push Images
+      - name: Build and Push Docker Image
+        uses: docker/build-push-action@v6
+        with:
+          context: .
+          file: ./_deployment/backend/Dockerfile
+          tags: ${{ env.BACKEND_IMAGE }}
+          push: true
+          cache-from: type=gha,scope=backend
+          cache-to: type=gha,scope=backend,mode=max
+
+  deploy:
+    name: Deploy to Production
     runs-on: ubuntu-latest
     needs: [ build_nuxt, build_backend, lint_nuxt, test_backend, e2e_tests ]
     if: ${{ always()
@@ -275,46 +279,6 @@ jobs:
       && needs.lint_nuxt.result != 'failure'
       && needs.test_backend.result != 'failure'
       && needs.e2e_tests.result != 'failure' }}
-    steps:
-      - name: Download Nuxt Image Artifact
-        uses: actions/download-artifact@v4
-        if: ${{ needs.build_nuxt.result == 'success' }}
-        with:
-          name: ${{ env.NUXT_IMAGE_ARTIFACT }}
-
-      - name: Download Backend Image Artifact
-        uses: actions/download-artifact@v4
-        if: ${{ needs.build_backend.result == 'success' }}
-        with:
-          name: ${{ env.BACKEND_IMAGE_ARTIFACT }}
-
-      - name: Load Nuxt Image
-        if: ${{ needs.build_nuxt.result == 'success' }}
-        run: gunzip < ${{ env.NUXT_IMAGE_ZIP_FILE }} | docker load
-
-      - name: Load Backend Image
-        if: ${{ needs.build_backend.result == 'success' }}
-        run: gunzip < ${{ env.BACKEND_IMAGE_ZIP_FILE }} | docker load
-
-      - name: Log in to Docker registry
-        if: ${{ needs.build_nuxt.result == 'success' || needs.build_backend.result == 'success' }}
-        run: echo "${{ secrets.GITHUB_TOKEN }}" | docker login ghcr.io -u ${{ github.actor }} --password-stdin
-
-      - name: Push Nuxt Image
-        if: ${{ needs.build_nuxt.result == 'success' }}
-        run: docker push ${{ env.NUXT_IMAGE }}
-
-      - name: Push Backend Image
-        if: ${{ needs.build_backend.result == 'success' }}
-        run: docker push ${{ env.BACKEND_IMAGE }}
-
-  deploy:
-    name: Deploy to Production
-    runs-on: ubuntu-latest
-    needs: [ push_images ]
-    if: ${{ always()
-      && github.ref == 'refs/heads/main'
-      && needs.push_images.result == 'success' }}
     env:
       DEPLOY_URL: ${{ secrets.DEPLOY_URL }}
       DEPLOY_TOKEN: ${{ secrets.DEPLOY_TOKEN }}
