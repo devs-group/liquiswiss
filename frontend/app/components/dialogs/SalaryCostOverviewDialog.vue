@@ -130,23 +130,24 @@ const filteredSalaryCosts = computed(() => {
 
 // Real-time: refresh the cost list when costs of this salary change via
 // MCP or another member; highlighting is handled by the SSE plugin
-const sseLastChange = useState<{ entity: string, action: string, id?: number, parentId?: number, ts: number } | null>('sse-last-change', () => null)
-watch(sseLastChange, (change) => {
-  if (!change || !salary.value) return
+const { onEntityChange } = useRealtimeChanges()
+onEntityChange(['salary_cost', 'salary_cost_label'], (change) => {
+  if (!salary.value) return
   // Label renames change the names shown on the cost cards too
   if (change.entity === 'salary_cost_label') {
     onListSalaryCosts()
     return
   }
-  if (change.entity !== 'salary_cost') return
   if (change.parentId && change.parentId !== salary.value.id) return
   onListSalaryCosts()
-  toast.add({
-    severity: 'info',
-    summary: 'Aktualisiert',
-    detail: 'Die Lohnkosten wurden soeben aktualisiert',
-    life: 3000,
-  })
+  if (!change.own) {
+    toast.add({
+      severity: 'info',
+      summary: 'Aktualisiert',
+      detail: 'Die Lohnkosten wurden soeben aktualisiert',
+      life: 3000,
+    })
+  }
 })
 
 const onListSalaryCosts = () => {

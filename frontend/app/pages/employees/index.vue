@@ -219,8 +219,9 @@ const onCreateEmployee = () => {
   })
 }
 
-// Reopen the employee dialog after a page reload (?employee=new)
-onMounted(() => {
+// Reopen the employee dialog after a page reload (?employee=new);
+// onNuxtReady guarantees the dialog host is mounted
+onNuxtReady(() => {
   if (route.query.employee === 'new') {
     onCreateEmployee()
   }

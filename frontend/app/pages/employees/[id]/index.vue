@@ -429,8 +429,8 @@ const onLoadMoreSalaries = async () => {
   isLoadingMore.value = false
 }
 
-// Reopen the salary cost dialog after a page reload (?costs=<salaryID>)
-onMounted(() => {
+// Reopen dialogs after a page reload; onNuxtReady guarantees the dialog host is mounted
+onNuxtReady(() => {
   // Restore the cost overview dialog chain (?costs=...&cost=...)
   const costsParam = Number(route.query.costs)
   if (costsParam && !Number.isNaN(costsParam)) {
@@ -479,12 +479,10 @@ onMounted(() => {
 
 // Real-time: refetch local state when this employee (or their salaries)
 // changes via MCP or another member; highlighting is handled by the SSE plugin
-const sseLastChange = useState<{ entity: string, action: string, id?: number, ts: number } | null>('sse-last-change', () => null)
-watch(sseLastChange, async (change) => {
-  if (!change) return
+const { onEntityChange } = useRealtimeChanges()
+onEntityChange(['employee', 'salary', 'salary_cost', 'salary_cost_label'], async (change) => {
   const isOwnEmployee = change.entity === 'employee' && change.id === employeeID
-  const isSalaryRelated = ['salary', 'salary_cost', 'salary_cost_label'].includes(change.entity)
-  if (!isOwnEmployee && !isSalaryRelated) return
+  if (change.entity === 'employee' && !isOwnEmployee) return
   if (isOwnEmployee && change.action === 'deleted') {
     await navigateTo({ name: RouteNames.EMPLOYEES })
     return

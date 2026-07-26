@@ -435,6 +435,8 @@ const { vats, listVats, deleteVat } = useVat()
 const { categories, currencies, getCurrencyLabel, convertAmountToRate } = useGlobalData()
 const confirm = useConfirm()
 const dialog = useDialog()
+const route = useRoute()
+const router = useRouter()
 const toast = useToast()
 
 // Data
@@ -499,13 +501,8 @@ const { defineField, errors, handleSubmit, meta, setFieldValue, resetForm } = us
 
 // Real-time: warn when the transaction being edited was changed or deleted
 // externally (form values stay untouched, saving would overwrite)
-const externalChange = ref<'updated' | 'deleted' | null>(null)
-const sseLastChange = useState<{ entity: string, action: string, id?: number, ts: number } | null>('sse-last-change', () => null)
-watch(sseLastChange, (change) => {
-  if (!change || change.entity !== 'transaction') return
-  if (isCreate || !transaction.value?.id || change.id !== transaction.value.id) return
-  externalChange.value = change.action === 'deleted' ? 'deleted' : 'updated'
-})
+const { useExternalChangeBanner } = useRealtimeChanges()
+const externalChange = useExternalChangeBanner('transaction', () => isCreate ? undefined : transaction.value?.id)
 
 const onReloadExternalChange = async () => {
   if (!transaction.value?.id) return
@@ -655,13 +652,24 @@ const onDeleteTransaction = () => {
   })
 }
 
+// Keep the open VAT dialog in the URL so it survives page reloads
+// (?vat=new | <id>, on top of ?transaction=...)
+const setVatQuery = (value: string | null) => {
+  const query = { ...route.query }
+  if (value === null) delete query.vat
+  else query.vat = value
+  router.replace({ query })
+}
+
 const onCreateVat = () => {
+  setVatQuery('new')
   dialog.open(VatDialog, {
     props: {
       header: 'Neue Mehrwertsteuer anlegen',
       ...ModalConfig,
     },
-    onClose: () => {
+    onClose: (options) => {
+      setVatQuery(null)
       if (options?.data) {
         setFieldValue('vat', options.data)
       }
@@ -670,6 +678,7 @@ const onCreateVat = () => {
 }
 
 const onEditVat = (vatToEdit: VatResponse) => {
+  setVatQuery(String(vatToEdit.id))
   dialog.open(VatDialog, {
     props: {
       header: 'Mehrwertsteuer bearbeiten',
@@ -678,13 +687,32 @@ const onEditVat = (vatToEdit: VatResponse) => {
     data: {
       vatToEdit,
     },
-    onClose: () => {
+    onClose: (options) => {
+      setVatQuery(null)
       if (options?.data) {
         setFieldValue('vat', options.data)
       }
     },
   })
 }
+
+// Restore the VAT dialog after a page reload
+onMounted(() => {
+  const vatParam = route.query.vat
+  if (typeof vatParam !== 'string' || !vatParam.length) return
+  if (vatParam === 'new') {
+    onCreateVat()
+    return
+  }
+  const id = Number(vatParam)
+  if (Number.isNaN(id)) return
+  const vat = vats.value.find(v => v.id === id)
+  if (!vat) {
+    setVatQuery(null)
+    return
+  }
+  onEditVat(vat)
+})
 
 const onDeleteVat = (vatToDelete: VatResponse) => {
   confirm.require({

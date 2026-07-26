@@ -116,13 +116,8 @@ const { defineField, errors, handleSubmit, meta, resetForm } = useForm<VatFormDa
 
 // Real-time: warn when the VAT being edited was changed or deleted
 // externally (form values stay untouched, saving would overwrite)
-const externalChange = ref<'updated' | 'deleted' | null>(null)
-const sseLastChange = useState<{ entity: string, action: string, id?: number, ts: number } | null>('sse-last-change', () => null)
-watch(sseLastChange, (change) => {
-  if (!change || change.entity !== 'vat') return
-  if (isCreate || !vat.value?.id || change.id !== vat.value.id) return
-  externalChange.value = change.action === 'deleted' ? 'deleted' : 'updated'
-})
+const { useExternalChangeBanner } = useRealtimeChanges()
+const externalChange = useExternalChangeBanner('vat', () => isCreate ? undefined : vat.value?.id)
 
 const onReloadExternalChange = async () => {
   if (!vat.value?.id) return

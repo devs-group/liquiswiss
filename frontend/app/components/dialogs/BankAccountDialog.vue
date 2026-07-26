@@ -180,13 +180,8 @@ const { defineField, errors, handleSubmit, meta, resetForm } = useForm({
 
 // Real-time: warn when the bank account being edited was changed or deleted
 // externally (form values stay untouched, saving would overwrite)
-const externalChange = ref<'updated' | 'deleted' | null>(null)
-const sseLastChange = useState<{ entity: string, action: string, id?: number, ts: number } | null>('sse-last-change', () => null)
-watch(sseLastChange, (change) => {
-  if (!change || change.entity !== 'bank_account') return
-  if (isCreate || !bankAccount.value?.id || change.id !== bankAccount.value.id) return
-  externalChange.value = change.action === 'deleted' ? 'deleted' : 'updated'
-})
+const { useExternalChangeBanner } = useRealtimeChanges()
+const externalChange = useExternalChangeBanner('bank_account', () => isCreate ? undefined : bankAccount.value?.id)
 
 const onReloadExternalChange = async () => {
   if (!bankAccount.value?.id) return

@@ -277,8 +277,8 @@ const onCloneTransaction = (transaction: TransactionResponse) => {
 }
 
 // Reopen the transaction dialog after a page reload
-// (?transaction=new | <id> | clone:<id>)
-onMounted(() => {
+// (?transaction=new | <id> | clone:<id>); onNuxtReady guarantees the dialog host is mounted
+onNuxtReady(() => {
   const transactionParam = route.query.transaction
   if (typeof transactionParam !== 'string' || !transactionParam.length) return
   if (transactionParam === 'new') {

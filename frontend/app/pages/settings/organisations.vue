@@ -275,8 +275,11 @@ const doSwitchOrganisation = (organisationId: number) => {
 
 onMounted(() => {
   settingsTab.value = RouteNames.SETTINGS_ORGANISATIONS
+})
 
-  // Reopen the organisation dialog after a page reload (?organisation=new)
+// Reopen the organisation dialog after a page reload (?organisation=new);
+// onNuxtReady guarantees the dialog host is mounted
+onNuxtReady(() => {
   if (route.query.organisation === 'new') {
     onCreateOrganisation()
   }

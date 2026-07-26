@@ -404,13 +404,8 @@ const { defineField, errors, handleSubmit, meta, resetForm } = useForm({
 
 // Real-time: warn when the salary being edited was changed or deleted
 // externally (form values stay untouched, saving would overwrite)
-const externalChange = ref<'updated' | 'deleted' | null>(null)
-const sseLastChange = useState<{ entity: string, action: string, id?: number, ts: number } | null>('sse-last-change', () => null)
-watch(sseLastChange, (change) => {
-  if (!change || change.entity !== 'salary') return
-  if (isCreate.value || !salary.value?.id || change.id !== salary.value.id) return
-  externalChange.value = change.action === 'deleted' ? 'deleted' : 'updated'
-})
+const { useExternalChangeBanner } = useRealtimeChanges()
+const externalChange = useExternalChangeBanner('salary', () => isCreate.value ? undefined : salary.value?.id)
 
 const onReloadExternalChange = async () => {
   if (!salary.value?.id) return

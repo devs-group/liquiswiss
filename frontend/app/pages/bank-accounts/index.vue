@@ -253,8 +253,8 @@ const onCloneBankAccount = (bankAccount: BankAccountResponse) => {
 }
 
 // Reopen the bank account dialog after a page reload
-// (?bankAccount=new | <id> | clone:<id>)
-onMounted(() => {
+// (?bankAccount=new | <id> | clone:<id>); onNuxtReady guarantees the dialog host is mounted
+onNuxtReady(() => {
   const bankAccountParam = route.query.bankAccount
   if (typeof bankAccountParam !== 'string' || !bankAccountParam.length) return
   if (bankAccountParam === 'new') {

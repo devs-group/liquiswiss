@@ -447,8 +447,11 @@ onMounted(() => {
   setRefreshInvitations(async () => {
     await refreshInvitationsData()
   })
+})
 
-  // Reopen the invite dialog after a page reload (?invite=1)
+// Reopen the invite dialog after a page reload (?invite=1);
+// onNuxtReady guarantees the dialog host is mounted
+onNuxtReady(() => {
   if (route.query.invite === '1' && canInvite.value) {
     onOpenInviteDialog()
   }
@@ -539,9 +542,8 @@ const [vatInterval, vatIntervalProps] = defineVatField('vatInterval')
 // Real-time: refresh local page data when it changes via MCP or another
 // member; highlighting is handled by the SSE plugin
 const { getVatSetting } = useVatSettings()
-const sseLastChange = useState<{ entity: string, action: string, id?: number, ts: number } | null>('sse-last-change', () => null)
-watch(sseLastChange, async (change) => {
-  if (!change) return
+const { onEntityChange } = useRealtimeChanges()
+onEntityChange(['organisation', 'member', 'invitation', 'vat_setting'], async (change) => {
   switch (change.entity) {
     case 'organisation': {
       const previousName = organisation.value?.name

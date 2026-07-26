@@ -360,6 +360,8 @@ const { createSalaryCost, updateSalaryCost, listSalaryCosts, getSalaryCost } = u
 const { salaryCostsLabels, listSalaryCostsLabels, deleteSalaryCostLabel } = useSalaryCostLabels()
 const toast = useToast()
 const dialog = useDialog()
+const route = useRoute()
+const router = useRouter()
 const confirm = useConfirm()
 
 const salary = dialogRef.value.data?.salary
@@ -376,6 +378,23 @@ const baseCostsErrorMessage = ref('')
 const baseCostOptions = ref<SalaryCostResponse[]>([])
 
 listSalaryCostsLabels(false)
+  .then(() => {
+    // Restore the label dialog after a page reload
+    const labelParam = useRoute().query.label
+    if (typeof labelParam !== 'string' || !labelParam.length) return
+    if (labelParam === 'new') {
+      onCreateEmployeeCostLabel()
+      return
+    }
+    const id = Number(labelParam)
+    if (Number.isNaN(id)) return
+    const label = salaryCostsLabels.value.data.find(l => l.id === id)
+    if (!label) {
+      setLabelQuery(null)
+      return
+    }
+    onEditEmployeeCostLabel(label)
+  })
   .catch(() => {
     employeesCostLabelsErrorMessage.value = 'Lohnkosten Labels konnten nicht geladen werden'
   })
@@ -450,19 +469,12 @@ const [labelID, labelIDProps] = defineField('labelID')
 // elsewhere (options themselves update via shared state); warn when the cost
 // being edited was changed or deleted externally (form values stay untouched,
 // saving would overwrite the external change)
-const externalChange = ref<'updated' | 'deleted' | null>(null)
-const sseLastChange = useState<{ entity: string, action: string, id?: number, ts: number } | null>('sse-last-change', () => null)
-watch(sseLastChange, async (change) => {
-  if (!change) return
-  if (change.entity === 'salary_cost_label') {
-    if (!change.id || change.id !== labelID.value) return
-    await nextTick()
-    flashRealtimeSelector('[data-realtime-field="cost-label-select"]')
-    return
-  }
-  if (change.entity !== 'salary_cost') return
-  if (isCreate || !salaryCost?.id || change.id !== salaryCost.id) return
-  externalChange.value = change.action === 'deleted' ? 'deleted' : 'updated'
+const { onEntityChange, useExternalChangeBanner } = useRealtimeChanges()
+const externalChange = useExternalChangeBanner('salary_cost', () => isCreate ? undefined : salaryCost?.id)
+onEntityChange('salary_cost_label', async (change) => {
+  if (!change.id || change.id !== labelID.value) return
+  await nextTick()
+  flashRealtimeSelector('[data-realtime-field="cost-label-select"]')
 })
 
 const onReloadExternalChange = async () => {
@@ -603,13 +615,24 @@ const onParseAmount = (event: Event) => {
   }
 }
 
+// Keep the open label dialog in the URL so it survives page reloads
+// (?label=new | <id>, on top of ?costs=...&cost=...)
+const setLabelQuery = (value: string | null) => {
+  const query = { ...route.query }
+  if (value === null) delete query.label
+  else query.label = value
+  router.replace({ query })
+}
+
 const onCreateEmployeeCostLabel = () => {
+  setLabelQuery('new')
   dialog.open(SalaryCostLabelDialog, {
     props: {
       header: 'Neues Kostenlabel anlegen',
       ...ModalConfig,
     },
     onClose: (options) => {
+      setLabelQuery(null)
       const isLoadingCostLabels = ref(true)
       listSalaryCostsLabels(false)
         .then(() => {
@@ -628,6 +651,7 @@ const onCreateEmployeeCostLabel = () => {
 }
 
 const onEditEmployeeCostLabel = (employeeCostLabelToEdit: SalaryCostLabelResponse) => {
+  setLabelQuery(String(employeeCostLabelToEdit.id))
   dialog.open(SalaryCostLabelDialog, {
     props: {
       header: 'Kostenlabel bearbeiten',
@@ -637,6 +661,7 @@ const onEditEmployeeCostLabel = (employeeCostLabelToEdit: SalaryCostLabelRespons
       employeeCostLabelToEdit: employeeCostLabelToEdit,
     },
     onClose: (options) => {
+      setLabelQuery(null)
       const isLoadingCostLabels = ref(true)
       listSalaryCostsLabels(false)
         .then(() => {
