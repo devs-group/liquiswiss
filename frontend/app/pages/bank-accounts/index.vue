@@ -108,6 +108,8 @@ const { getOrganisationCurrencyCode, getOrganisationCurrencyLocaleCode } = useAu
 const { bankAccounts, noMoreDataBankAccounts, pageBankAccounts, searchBankAccounts, totalBankSaldoInCHF, useFetchListBankAccounts, listBankAccounts } = useBankAccounts()
 const { toggleBankAccountDisplayType, bankAccountDisplay } = useSettings()
 const { canEdit } = useOrganisations()
+const route = useRoute()
+const router = useRouter()
 
 const isLoading = ref(false)
 const isLoadingMore = ref(false)
@@ -197,16 +199,32 @@ const onLoadMoreBankAccounts = async () => {
     .finally(() => isLoadingMore.value = false)
 }
 
+// Keep the open bank account dialog in the URL so it survives page reloads
+// (?bankAccount=new | <id> | clone:<id>)
+const setBankAccountQuery = (value: string | null) => {
+  const query = { ...route.query }
+  if (value === null) delete query.bankAccount
+  else query.bankAccount = value
+  router.replace({ query })
+}
+
+const onClosedBankAccountDialog = () => {
+  setBankAccountQuery(null)
+}
+
 const onCreateBankAccount = () => {
+  setBankAccountQuery('new')
   dialog.open(BankAccountDialog, {
     props: {
       header: 'Neues Bankkonto anlegen',
       ...ModalConfig,
     },
+    onClose: onClosedBankAccountDialog,
   })
 }
 
 const onEditBankAccount = (bankAccount: BankAccountResponse) => {
+  setBankAccountQuery(String(bankAccount.id))
   dialog.open(BankAccountDialog, {
     data: {
       bankAccount: bankAccount,
@@ -215,10 +233,12 @@ const onEditBankAccount = (bankAccount: BankAccountResponse) => {
       header: 'Bankkonto bearbeiten',
       ...ModalConfig,
     },
+    onClose: onClosedBankAccountDialog,
   })
 }
 
 const onCloneBankAccount = (bankAccount: BankAccountResponse) => {
+  setBankAccountQuery(`clone:${bankAccount.id}`)
   dialog.open(BankAccountDialog, {
     data: {
       bankAccount: bankAccount,
@@ -228,6 +248,28 @@ const onCloneBankAccount = (bankAccount: BankAccountResponse) => {
       header: 'Bankkonto klonen',
       ...ModalConfig,
     },
+    onClose: onClosedBankAccountDialog,
   })
 }
+
+// Reopen the bank account dialog after a page reload
+// (?bankAccount=new | <id> | clone:<id>)
+onMounted(() => {
+  const bankAccountParam = route.query.bankAccount
+  if (typeof bankAccountParam !== 'string' || !bankAccountParam.length) return
+  if (bankAccountParam === 'new') {
+    onCreateBankAccount()
+    return
+  }
+  const isClone = bankAccountParam.startsWith('clone:')
+  const id = Number(isClone ? bankAccountParam.slice('clone:'.length) : bankAccountParam)
+  if (Number.isNaN(id)) return
+  const bankAccount = bankAccounts.value.data.find(b => b.id === id)
+  if (!bankAccount) {
+    setBankAccountQuery(null)
+    return
+  }
+  if (isClone) onCloneBankAccount(bankAccount)
+  else onEditBankAccount(bankAccount)
+})
 </script>

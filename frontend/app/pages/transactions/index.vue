@@ -116,6 +116,8 @@ const dialog = useDialog()
 const { transactions, noMoreDataTransactions, pageTransactions, searchTransactions, useFetchListTransactions, listTransactions } = useTransactions()
 const { toggleTransactionDisplayType, transactionDisplay, transactionHideDisabled, toggleTransactionHideDisabled, transactionHideExpired, toggleTransactionHideExpired } = useSettings()
 const { canEdit } = useOrganisations()
+const route = useRoute()
+const router = useRouter()
 
 const isLoading = ref(false)
 const isLoadingMore = ref(false)
@@ -221,16 +223,32 @@ const onToggleHideExpired = () => {
     })
 }
 
+// Keep the open transaction dialog in the URL so it survives page reloads
+// (?transaction=new | <id> | clone:<id>)
+const setTransactionQuery = (value: string | null) => {
+  const query = { ...route.query }
+  if (value === null) delete query.transaction
+  else query.transaction = value
+  router.replace({ query })
+}
+
+const onClosedTransactionDialog = () => {
+  setTransactionQuery(null)
+}
+
 const onCreateTransaction = () => {
+  setTransactionQuery('new')
   dialog.open(TransactionDialog, {
     props: {
       header: 'Neue Transaktion anlegen',
       ...ModalConfig,
     },
+    onClose: onClosedTransactionDialog,
   })
 }
 
 const onEditTransaction = (transaction: TransactionResponse) => {
+  setTransactionQuery(String(transaction.id))
   dialog.open(TransactionDialog, {
     data: {
       transaction: transaction,
@@ -239,10 +257,12 @@ const onEditTransaction = (transaction: TransactionResponse) => {
       header: 'Transaktion bearbeiten',
       ...ModalConfig,
     },
+    onClose: onClosedTransactionDialog,
   })
 }
 
 const onCloneTransaction = (transaction: TransactionResponse) => {
+  setTransactionQuery(`clone:${transaction.id}`)
   dialog.open(TransactionDialog, {
     data: {
       transaction: transaction,
@@ -252,8 +272,30 @@ const onCloneTransaction = (transaction: TransactionResponse) => {
       header: 'Transaktion klonen',
       ...ModalConfig,
     },
+    onClose: onClosedTransactionDialog,
   })
 }
+
+// Reopen the transaction dialog after a page reload
+// (?transaction=new | <id> | clone:<id>)
+onMounted(() => {
+  const transactionParam = route.query.transaction
+  if (typeof transactionParam !== 'string' || !transactionParam.length) return
+  if (transactionParam === 'new') {
+    onCreateTransaction()
+    return
+  }
+  const isClone = transactionParam.startsWith('clone:')
+  const id = Number(isClone ? transactionParam.slice('clone:'.length) : transactionParam)
+  if (Number.isNaN(id)) return
+  const transaction = transactions.value.data.find(t => t.id === id)
+  if (!transaction) {
+    setTransactionQuery(null)
+    return
+  }
+  if (isClone) onCloneTransaction(transaction)
+  else onEditTransaction(transaction)
+})
 
 const onLoadMoreTransactions = async () => {
   isLoadingMore.value = true

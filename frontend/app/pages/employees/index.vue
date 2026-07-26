@@ -106,6 +106,8 @@ const { employees, noMoreDataEmployees, pageEmployees, searchEmployees, useFetch
 const { toggleEmployeeDisplayType, toggleEmployeeHideTerminated, employeeDisplay, employeeHideTerminated } = useSettings()
 const { canEdit } = useOrganisations()
 const dialog = useDialog()
+const route = useRoute()
+const router = useRouter()
 
 const isLoading = ref(false)
 const isLoadingMore = ref(false)
@@ -195,14 +197,34 @@ const onToggleHideTerminated = () => {
     })
 }
 
+// Keep the open employee dialog in the URL so it survives page reloads
+// (?employee=new)
+const setEmployeeQuery = (value: string | null) => {
+  const query = { ...route.query }
+  if (value === null) delete query.employee
+  else query.employee = value
+  router.replace({ query })
+}
+
 const onCreateEmployee = () => {
+  setEmployeeQuery('new')
   dialog.open(EmployeeDialog, {
     props: {
       header: 'Neuen Mitarbeiter anlegen',
       ...ModalConfig,
     },
+    onClose: () => {
+      setEmployeeQuery(null)
+    },
   })
 }
+
+// Reopen the employee dialog after a page reload (?employee=new)
+onMounted(() => {
+  if (route.query.employee === 'new') {
+    onCreateEmployee()
+  }
+})
 
 const onEditEmployee = (employee: EmployeeResponse) => {
   navigateTo({ name: RouteNames.EMPLOYEES_EDIT, params: { id: employee.id } })

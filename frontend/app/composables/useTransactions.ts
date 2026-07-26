@@ -64,6 +64,17 @@ export default function useTransactions() {
     }
   }
 
+  const getTransaction = async (transactionID: number) => {
+    try {
+      return await $fetch<TransactionResponse>(`/api/transactions/${transactionID}`, {
+        method: 'GET',
+      })
+    }
+    catch {
+      return Promise.reject('Fehler beim Laden der Transaktion')
+    }
+  }
+
   const createTransaction = async (payload: TransactionFormData) => {
     try {
       await $fetch<TransactionResponse>(`/api/transactions`, {
@@ -161,6 +172,7 @@ export default function useTransactions() {
     searchTransactions,
     useFetchListTransactions,
     listTransactions,
+    getTransaction,
     createTransaction,
     updateTransaction,
     patchTransaction,

@@ -157,6 +157,8 @@ useHead({
 })
 
 const dialog = useDialog()
+const route = useRoute()
+const router = useRouter()
 const confirm = useConfirm()
 const toast = useToast()
 const { settingsTab } = useSettings()
@@ -216,11 +218,24 @@ const onDeclineInvitation = (invitation: { id: number, organisationName: string 
   })
 }
 
+// Keep the open organisation dialog in the URL so it survives page reloads
+// (?organisation=new)
+const setOrganisationQuery = (value: string | null) => {
+  const query = { ...route.query }
+  if (value === null) delete query.organisation
+  else query.organisation = value
+  router.replace({ query })
+}
+
 const onCreateOrganisation = () => {
+  setOrganisationQuery('new')
   dialog.open(OrganisationDialog, {
     props: {
       header: 'Neue Organisation anlegen',
       ...ModalConfig,
+    },
+    onClose: () => {
+      setOrganisationQuery(null)
     },
   })
 }
@@ -260,5 +275,10 @@ const doSwitchOrganisation = (organisationId: number) => {
 
 onMounted(() => {
   settingsTab.value = RouteNames.SETTINGS_ORGANISATIONS
+
+  // Reopen the organisation dialog after a page reload (?organisation=new)
+  if (route.query.organisation === 'new') {
+    onCreateOrganisation()
+  }
 })
 </script>

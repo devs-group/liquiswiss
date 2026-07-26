@@ -3,6 +3,29 @@
     class="grid grid-cols-2 gap-2"
     @submit.prevent
   >
+    <Message
+      v-if="externalChange"
+      severity="warn"
+      class="col-span-full"
+      :closable="false"
+    >
+      <div class="flex items-center justify-between gap-4 w-full">
+        <span v-if="externalChange === 'deleted'">
+          Diese Mehrwertsteuer wurde soeben extern gelöscht.
+        </span>
+        <span v-else>
+          Diese Mehrwertsteuer wurde soeben extern geändert. Beim Speichern werden die externen Änderungen überschrieben.
+        </span>
+        <Button
+          v-if="externalChange === 'updated'"
+          label="Neu laden"
+          icon="pi pi-refresh"
+          size="small"
+          severity="warn"
+          @click="onReloadExternalChange"
+        />
+      </div>
+    </Message>
     <div class="col-span-2 flex flex-col gap-2">
       <label
         class="text-sm font-bold"
@@ -66,15 +89,15 @@ import { selectAllOnFocus } from '~/utils/element-helper'
 
 const dialogRef = inject<IVatFormDialog>('dialogRef')!
 
-const { vats, createVat, updateVat } = useVat()
+const { vats, getVat, createVat, updateVat } = useVat()
 const toast = useToast()
 
-const vat = dialogRef.value.data?.vatToEdit
-const isCreate = !vat?.id
+const vat = ref(dialogRef.value.data?.vatToEdit)
+const isCreate = !vat.value?.id
 const isLoading = ref(false)
 const errorMessage = ref('')
 
-const { defineField, errors, handleSubmit, meta } = useForm<VatFormData>({
+const { defineField, errors, handleSubmit, meta, resetForm } = useForm<VatFormData>({
   validationSchema: yup.object({
     value: yup.number()
       .required('Prozentualer Wert wird benötigt')
@@ -86,10 +109,38 @@ const { defineField, errors, handleSubmit, meta } = useForm<VatFormData>({
       }),
   }),
   initialValues: {
-    id: vat?.id ?? undefined,
-    value: isCreate ? undefined : vat?.value ? AmountToFloat(vat.value) : undefined,
+    id: vat.value?.id ?? undefined,
+    value: isCreate ? undefined : vat.value?.value ? AmountToFloat(vat.value.value) : undefined,
   },
 })
+
+// Real-time: warn when the VAT being edited was changed or deleted
+// externally (form values stay untouched, saving would overwrite)
+const externalChange = ref<'updated' | 'deleted' | null>(null)
+const sseLastChange = useState<{ entity: string, action: string, id?: number, ts: number } | null>('sse-last-change', () => null)
+watch(sseLastChange, (change) => {
+  if (!change || change.entity !== 'vat') return
+  if (isCreate || !vat.value?.id || change.id !== vat.value.id) return
+  externalChange.value = change.action === 'deleted' ? 'deleted' : 'updated'
+})
+
+const onReloadExternalChange = async () => {
+  if (!vat.value?.id) return
+  try {
+    const fresh = await getVat(vat.value.id)
+    vat.value = fresh
+    resetForm({
+      values: {
+        id: fresh.id,
+        value: fresh.value ? AmountToFloat(fresh.value) : undefined,
+      },
+    })
+    externalChange.value = null
+  }
+  catch {
+    // Keep the banner; reloading failed
+  }
+}
 
 const [value, valueProps] = defineField('value')
 

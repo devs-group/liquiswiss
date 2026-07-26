@@ -4,6 +4,29 @@
     class="grid grid-cols-2 gap-2"
     @submit.prevent
   >
+    <Message
+      v-if="externalChange"
+      severity="warn"
+      class="col-span-full"
+      :closable="false"
+    >
+      <div class="flex items-center justify-between gap-4 w-full">
+        <span v-if="externalChange === 'deleted'">
+          Dieses Bankkonto wurde soeben extern gelöscht.
+        </span>
+        <span v-else>
+          Dieses Bankkonto wurde soeben extern geändert. Beim Speichern werden die externen Änderungen überschrieben.
+        </span>
+        <Button
+          v-if="externalChange === 'updated'"
+          label="Neu laden"
+          icon="pi pi-refresh"
+          size="small"
+          severity="warn"
+          @click="onReloadExternalChange"
+        />
+      </div>
+    </Message>
     <div class="flex flex-col gap-2 col-span-full">
       <label
         class="text-sm font-bold"
@@ -129,31 +152,61 @@ import { selectAllOnFocus } from '~/utils/element-helper'
 const dialogRef = inject<IBankAccountFormDialog>('dialogRef')!
 
 const { getOrganisationCurrencyID } = useAuth()
-const { createBankAccount, updateBankAccount, deleteBankAccount } = useBankAccounts()
+const { getBankAccount, createBankAccount, updateBankAccount, deleteBankAccount } = useBankAccounts()
 const { currencies, getCurrencyLabel } = useGlobalData()
 const confirm = useConfirm()
 const toast = useToast()
 
 // Data
 const isLoading = ref(false)
-const bankAccount = dialogRef.value.data?.bankAccount
+const bankAccount = ref(dialogRef.value.data?.bankAccount)
 const isClone = dialogRef.value.data?.isClone
-const isCreate = isClone || !bankAccount?.id
+const isCreate = isClone || !bankAccount.value?.id
 const errorMessage = ref('')
 
-const { defineField, errors, handleSubmit, meta } = useForm({
+const { defineField, errors, handleSubmit, meta, resetForm } = useForm({
   validationSchema: yup.object({
     name: yup.string().trim().required('Name wird benötigt'),
     amount: yup.number().required('Betrag wird benötigt').typeError('Ungültiger Betrag'),
     currency: yup.number().required('Währung wird benötigt').typeError('Ungültige Währung'),
   }),
   initialValues: {
-    id: isClone ? undefined : bankAccount?.id ?? undefined,
-    name: bankAccount?.name ?? '',
-    amount: isNumber(bankAccount?.amount) ? AmountToFloat(bankAccount!.amount) : '',
-    currency: bankAccount?.currency.id ?? getOrganisationCurrencyID.value,
+    id: isClone ? undefined : bankAccount.value?.id ?? undefined,
+    name: bankAccount.value?.name ?? '',
+    amount: isNumber(bankAccount.value?.amount) ? AmountToFloat(bankAccount.value!.amount) : '',
+    currency: bankAccount.value?.currency.id ?? getOrganisationCurrencyID.value,
   } as BankAccountFormData,
 })
+
+// Real-time: warn when the bank account being edited was changed or deleted
+// externally (form values stay untouched, saving would overwrite)
+const externalChange = ref<'updated' | 'deleted' | null>(null)
+const sseLastChange = useState<{ entity: string, action: string, id?: number, ts: number } | null>('sse-last-change', () => null)
+watch(sseLastChange, (change) => {
+  if (!change || change.entity !== 'bank_account') return
+  if (isCreate || !bankAccount.value?.id || change.id !== bankAccount.value.id) return
+  externalChange.value = change.action === 'deleted' ? 'deleted' : 'updated'
+})
+
+const onReloadExternalChange = async () => {
+  if (!bankAccount.value?.id) return
+  try {
+    const fresh = await getBankAccount(bankAccount.value.id)
+    bankAccount.value = fresh
+    resetForm({
+      values: {
+        id: fresh.id,
+        name: fresh.name ?? '',
+        amount: isNumber(fresh.amount) ? AmountToFloat(fresh.amount) : '',
+        currency: fresh.currency.id ?? getOrganisationCurrencyID.value,
+      } as BankAccountFormData,
+    })
+    externalChange.value = null
+  }
+  catch {
+    // Keep the banner; reloading failed
+  }
+}
 
 const [name, nameProps] = defineField('name')
 const [amount, amountProps] = defineField('amount')
@@ -223,13 +276,13 @@ const onDeleteBankAccount = () => {
     rejectLabel: 'Nein',
     acceptLabel: 'Ja',
     accept: () => {
-      if (bankAccount) {
+      if (bankAccount.value) {
         isLoading.value = true
-        deleteBankAccount(bankAccount.id)
+        deleteBankAccount(bankAccount.value.id)
           .then(() => {
             toast.add({
               summary: 'Erfolg',
-              detail: `Bankkonto "${bankAccount.name}" wurde gelöscht`,
+              detail: `Bankkonto "${bankAccount.value!.name}" wurde gelöscht`,
               severity: 'success',
               life: Config.TOAST_LIFE_TIME,
             })

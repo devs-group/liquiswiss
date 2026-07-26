@@ -382,6 +382,8 @@ const { useFetchGetVatSetting, saveVatSetting } = useVatSettings()
 const dialog = useDialog()
 const confirm = useConfirm()
 const toast = useToast()
+const route = useRoute()
+const router = useRouter()
 
 const organisation = ref<OrganisationResponse>()
 const organisationError = ref('')
@@ -445,6 +447,11 @@ onMounted(() => {
   setRefreshInvitations(async () => {
     await refreshInvitationsData()
   })
+
+  // Reopen the invite dialog after a page reload (?invite=1)
+  if (route.query.invite === '1' && canInvite.value) {
+    onOpenInviteDialog()
+  }
 })
 
 useHead({
@@ -670,8 +677,18 @@ const onSubmit = handleSubmit((values) => {
     })
 })
 
+// Keep the open invite dialog in the URL so it survives page reloads
+// (?invite=1)
+const setInviteQuery = (value: string | null) => {
+  const query = { ...route.query }
+  if (value === null) delete query.invite
+  else query.invite = value
+  router.replace({ query })
+}
+
 // Member/Invitation handlers
 const onOpenInviteDialog = () => {
+  setInviteQuery('1')
   dialog.open(InviteMemberDialog, {
     props: {
       header: 'Mitglied einladen',
@@ -679,6 +696,9 @@ const onOpenInviteDialog = () => {
     },
     data: {
       organisationId: organisation.value?.id,
+    },
+    onClose: () => {
+      setInviteQuery(null)
     },
   })
 }

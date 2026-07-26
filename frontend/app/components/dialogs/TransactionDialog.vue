@@ -4,6 +4,29 @@
     class="grid grid-cols-2 gap-2"
     @submit.prevent
   >
+    <Message
+      v-if="externalChange"
+      severity="warn"
+      class="col-span-full"
+      :closable="false"
+    >
+      <div class="flex items-center justify-between gap-4 w-full">
+        <span v-if="externalChange === 'deleted'">
+          Diese Transaktion wurde soeben extern gelöscht.
+        </span>
+        <span v-else>
+          Diese Transaktion wurde soeben extern geändert. Beim Speichern werden die externen Änderungen überschrieben.
+        </span>
+        <Button
+          v-if="externalChange === 'updated'"
+          label="Neu laden"
+          icon="pi pi-refresh"
+          size="small"
+          severity="warn"
+          @click="onReloadExternalChange"
+        />
+      </div>
+    </Message>
     <div class="flex flex-col gap-2 col-span-full md:col-span-1">
       <label
         class="text-sm font-bold"
@@ -406,7 +429,7 @@ import { selectAllOnFocus } from '~/utils/element-helper'
 const dialogRef = inject<ITransactionFormDialog>('dialogRef')!
 
 const { getOrganisationCurrencyID, getOrganisationCurrencyCode, getOrganisationCurrencyLocaleCode } = useAuth()
-const { createTransaction, updateTransaction, deleteTransaction } = useTransactions()
+const { getTransaction, createTransaction, updateTransaction, deleteTransaction } = useTransactions()
 const { employees, listEmployees } = useEmployees()
 const { vats, listVats, deleteVat } = useVat()
 const { categories, currencies, getCurrencyLabel, convertAmountToRate } = useGlobalData()
@@ -418,9 +441,9 @@ const toast = useToast()
 const isLoading = ref(false)
 const isLoadingEmployees = ref(true)
 const isLoadingVats = ref(true)
-const transaction = dialogRef.value.data?.transaction
+const transaction = ref(dialogRef.value.data?.transaction)
 const isClone = dialogRef.value.data?.isClone
-const isCreate = isClone || !transaction?.id
+const isCreate = isClone || !transaction.value?.id
 const errorMessage = ref('')
 const employeesErrorMessage = ref('')
 const vatsErrorMessage = ref('')
@@ -442,7 +465,7 @@ listVats()
     isLoadingVats.value = false
   })
 
-const { defineField, errors, handleSubmit, meta, setFieldValue } = useForm({
+const { defineField, errors, handleSubmit, meta, setFieldValue, resetForm } = useForm({
   validationSchema: yup.object({
     name: yup.string().trim().required('Name wird benötigt'),
     link: yup.string().trim().max(2048, 'Link ist zu lang').nullable(),
@@ -458,21 +481,60 @@ const { defineField, errors, handleSubmit, meta, setFieldValue } = useForm({
     employee: yup.number().nullable().typeError('Ungültiger Mitarbeiter'),
   }),
   initialValues: {
-    id: isClone ? undefined : transaction?.id ?? undefined,
-    name: transaction?.name ?? '',
-    link: transaction?.link ?? '',
-    amount: isNumber(transaction?.amount) ? AmountToFloat(transaction!.amount) : '',
-    vat: transaction?.vat?.id ?? null,
-    vatIncluded: transaction?.vatIncluded ?? false,
-    cycle: transaction?.cycle ?? CycleType.Monthly,
-    type: transaction?.type ?? TransactionType.Single,
-    startDate: transaction?.startDate ? DateToUTCDate(transaction?.startDate) : null,
-    endDate: transaction?.endDate ? DateToUTCDate(transaction?.endDate) : undefined,
-    category: transaction?.category.id ?? null,
-    currency: transaction?.currency.id ?? getOrganisationCurrencyID.value,
-    employee: transaction?.employee?.id ?? null,
+    id: isClone ? undefined : transaction.value?.id ?? undefined,
+    name: transaction.value?.name ?? '',
+    link: transaction.value?.link ?? '',
+    amount: isNumber(transaction.value?.amount) ? AmountToFloat(transaction.value!.amount) : '',
+    vat: transaction.value?.vat?.id ?? null,
+    vatIncluded: transaction.value?.vatIncluded ?? false,
+    cycle: transaction.value?.cycle ?? CycleType.Monthly,
+    type: transaction.value?.type ?? TransactionType.Single,
+    startDate: transaction.value?.startDate ? DateToUTCDate(transaction.value?.startDate) : null,
+    endDate: transaction.value?.endDate ? DateToUTCDate(transaction.value?.endDate) : undefined,
+    category: transaction.value?.category.id ?? null,
+    currency: transaction.value?.currency.id ?? getOrganisationCurrencyID.value,
+    employee: transaction.value?.employee?.id ?? null,
   } as TransactionFormData,
 })
+
+// Real-time: warn when the transaction being edited was changed or deleted
+// externally (form values stay untouched, saving would overwrite)
+const externalChange = ref<'updated' | 'deleted' | null>(null)
+const sseLastChange = useState<{ entity: string, action: string, id?: number, ts: number } | null>('sse-last-change', () => null)
+watch(sseLastChange, (change) => {
+  if (!change || change.entity !== 'transaction') return
+  if (isCreate || !transaction.value?.id || change.id !== transaction.value.id) return
+  externalChange.value = change.action === 'deleted' ? 'deleted' : 'updated'
+})
+
+const onReloadExternalChange = async () => {
+  if (!transaction.value?.id) return
+  try {
+    const fresh = await getTransaction(transaction.value.id)
+    transaction.value = fresh
+    resetForm({
+      values: {
+        id: fresh.id,
+        name: fresh.name ?? '',
+        link: fresh.link ?? '',
+        amount: isNumber(fresh.amount) ? AmountToFloat(fresh.amount) : '',
+        vat: fresh.vat?.id ?? null,
+        vatIncluded: fresh.vatIncluded ?? false,
+        cycle: fresh.cycle ?? CycleType.Monthly,
+        type: fresh.type ?? TransactionType.Single,
+        startDate: fresh.startDate ? DateToUTCDate(fresh.startDate) : null,
+        endDate: fresh.endDate ? DateToUTCDate(fresh.endDate) : undefined,
+        category: fresh.category.id ?? null,
+        currency: fresh.currency.id ?? getOrganisationCurrencyID.value,
+        employee: fresh.employee?.id ?? null,
+      } as TransactionFormData,
+    })
+    externalChange.value = null
+  }
+  catch {
+    // Keep the banner; reloading failed
+  }
+}
 
 const [name, nameProps] = defineField('name')
 const [link, linkProps] = defineField('link')
@@ -565,13 +627,13 @@ const onDeleteTransaction = () => {
     rejectLabel: 'Nein',
     acceptLabel: 'Ja',
     accept: () => {
-      if (transaction) {
+      if (transaction.value) {
         isLoading.value = true
-        deleteTransaction(transaction.id)
+        deleteTransaction(transaction.value.id)
           .then(() => {
             toast.add({
               summary: 'Erfolg',
-              detail: `Transaktion "${transaction.name}" wurde gelöscht`,
+              detail: `Transaktion "${transaction.value!.name}" wurde gelöscht`,
               severity: 'success',
               life: Config.TOAST_LIFE_TIME,
             })

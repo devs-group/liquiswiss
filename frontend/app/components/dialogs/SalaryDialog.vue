@@ -4,6 +4,29 @@
     class="grid grid-cols-2 gap-2"
     @submit.prevent
   >
+    <Message
+      v-if="externalChange"
+      severity="warn"
+      class="col-span-full"
+      :closable="false"
+    >
+      <div class="flex items-center justify-between gap-4 w-full">
+        <span v-if="externalChange === 'deleted'">
+          Dieser Lohn wurde soeben extern gelöscht.
+        </span>
+        <span v-else>
+          Dieser Lohn wurde soeben extern geändert. Beim Speichern werden die externen Änderungen überschrieben.
+        </span>
+        <Button
+          v-if="externalChange === 'updated'"
+          label="Neu laden"
+          icon="pi pi-refresh"
+          size="small"
+          severity="warn"
+          @click="onReloadExternalChange"
+        />
+      </div>
+    </Message>
     <template v-if="!isTermination">
       <div class="flex flex-col gap-2 col-span-full md:col-span-1">
         <label
@@ -260,7 +283,7 @@ import { DateFirstDayOfNextMonth } from '~/utils/date-helper'
 const dialogRef = inject<ISalaryFormDialog>('dialogRef')!
 
 const { getOrganisationCurrencyID } = useAuth()
-const { createSalary, updateSalary, deleteSalary, listSalaries, salaries } = useSalaries()
+const { createSalary, updateSalary, deleteSalary, listSalaries, salaries, getSalary } = useSalaries()
 const { copySalaryCost } = useSalaryCosts()
 const { currencies, getCurrencyLabel } = useGlobalData()
 const confirm = useConfirm()
@@ -357,7 +380,7 @@ const cloneDefaultFromDate = computed(() => {
   return today
 })
 
-const { defineField, errors, handleSubmit, meta } = useForm({
+const { defineField, errors, handleSubmit, meta, resetForm } = useForm({
   validationSchema: yup.object({
     hoursPerMonth: yup.number().typeError('Bitte Zahl eingeben').min(0, 'Muss mindestens 0 sein').max(480, 'Kann maximal 480 sein'),
     amount: yup.number().typeError('Bitte Gehalt eingeben').min(0, 'Muss mindestens 0 sein'),
@@ -378,6 +401,39 @@ const { defineField, errors, handleSubmit, meta } = useForm({
     cycle: salary.value?.cycle ?? CycleType.Monthly,
   } as SalaryPUTFormData,
 })
+
+// Real-time: warn when the salary being edited was changed or deleted
+// externally (form values stay untouched, saving would overwrite)
+const externalChange = ref<'updated' | 'deleted' | null>(null)
+const sseLastChange = useState<{ entity: string, action: string, id?: number, ts: number } | null>('sse-last-change', () => null)
+watch(sseLastChange, (change) => {
+  if (!change || change.entity !== 'salary') return
+  if (isCreate.value || !salary.value?.id || change.id !== salary.value.id) return
+  externalChange.value = change.action === 'deleted' ? 'deleted' : 'updated'
+})
+
+const onReloadExternalChange = async () => {
+  if (!salary.value?.id) return
+  try {
+    const fresh = await getSalary(salary.value.id)
+    salary.value = fresh
+    resetForm({
+      values: {
+        id: fresh.id,
+        hoursPerMonth: fresh.hoursPerMonth ?? 0,
+        amount: isNumber(fresh.amount) ? AmountToFloat(fresh.amount) : 0,
+        currencyID: fresh.currency.id ?? getOrganisationCurrencyID.value,
+        vacationDaysPerYear: fresh.vacationDaysPerYear ?? 0,
+        fromDate: fresh.fromDate ? DateToUTCDate(fresh.fromDate) : null,
+        cycle: fresh.cycle ?? CycleType.Monthly,
+      } as SalaryPUTFormData,
+    })
+    externalChange.value = null
+  }
+  catch {
+    // Keep the banner; reloading failed
+  }
+}
 
 const [hoursPerMonth, hoursPerMonthProps] = defineField('hoursPerMonth')
 const [amount, amountProps] = defineField('amount')

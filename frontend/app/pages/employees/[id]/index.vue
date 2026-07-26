@@ -336,7 +336,17 @@ const onDeleteEmployee = () => {
   })
 }
 
+// Keep the open salary dialog in the URL so it survives page reloads
+// (?salary=new | termination | <id> | clone:<id>)
+const setSalaryQuery = (value: string | null) => {
+  const query = { ...route.query }
+  if (value === null) delete query.salary
+  else query.salary = value
+  router.replace({ query })
+}
+
 const onCreateSalary = () => {
+  setSalaryQuery('new')
   dialog.open(SalaryDialog, {
     data: {
       employeeID,
@@ -350,6 +360,7 @@ const onCreateSalary = () => {
 }
 
 const onCreateTermination = () => {
+  setSalaryQuery('termination')
   dialog.open(SalaryDialog, {
     data: {
       employeeID,
@@ -364,6 +375,7 @@ const onCreateTermination = () => {
 }
 
 const onUpdateSalary = (salary: SalaryResponse) => {
+  setSalaryQuery(String(salary.id))
   dialog.open(SalaryDialog, {
     data: {
       employeeID,
@@ -378,6 +390,7 @@ const onUpdateSalary = (salary: SalaryResponse) => {
 }
 
 const onCloneSalary = (salary: SalaryResponse) => {
+  setSalaryQuery(`clone:${salary.id}`)
   dialog.open(SalaryDialog, {
     data: {
       employeeID,
@@ -398,6 +411,7 @@ const onSalaryDeleted = () => {
 }
 
 const onClosedSalaryDialog = () => {
+  setSalaryQuery(null)
   // Refetch employee to set proper active salary
   getEmployee(employeeID)
     .then((value) => {
@@ -417,24 +431,50 @@ const onLoadMoreSalaries = async () => {
 
 // Reopen the salary cost dialog after a page reload (?costs=<salaryID>)
 onMounted(() => {
+  // Restore the cost overview dialog chain (?costs=...&cost=...)
   const costsParam = Number(route.query.costs)
-  if (!costsParam || Number.isNaN(costsParam)) return
-  const salary = salaries.value.data.find(s => s.id === costsParam)
-  if (!salary) return
-  dialog.open(SalaryCostOverviewDialog, {
-    props: {
-      header: `Lohnkostenübersicht`,
-      ...ModalConfig,
-    },
-    data: { salary },
-    onClose: () => {
-      const query = { ...route.query }
-      delete query.costs
-      delete query.cost
-      router.replace({ query })
-      listSalaries(employeeID)
-    },
-  })
+  if (costsParam && !Number.isNaN(costsParam)) {
+    const salary = salaries.value.data.find(s => s.id === costsParam)
+    if (salary) {
+      dialog.open(SalaryCostOverviewDialog, {
+        props: {
+          header: `Lohnkostenübersicht`,
+          ...ModalConfig,
+        },
+        data: { salary },
+        onClose: () => {
+          const query = { ...route.query }
+          delete query.costs
+          delete query.cost
+          router.replace({ query })
+          listSalaries(employeeID)
+        },
+      })
+    }
+    return
+  }
+
+  // Restore the salary dialog (?salary=new | termination | <id> | clone:<id>)
+  const salaryParam = route.query.salary
+  if (typeof salaryParam !== 'string' || !salaryParam.length) return
+  if (salaryParam === 'new') {
+    onCreateSalary()
+    return
+  }
+  if (salaryParam === 'termination') {
+    onCreateTermination()
+    return
+  }
+  const isClone = salaryParam.startsWith('clone:')
+  const id = Number(isClone ? salaryParam.slice('clone:'.length) : salaryParam)
+  if (Number.isNaN(id)) return
+  const salary = salaries.value.data.find(s => s.id === id)
+  if (!salary) {
+    setSalaryQuery(null)
+    return
+  }
+  if (isClone) onCloneSalary(salary)
+  else onUpdateSalary(salary)
 })
 
 // Real-time: refetch local state when this employee (or their salaries)
