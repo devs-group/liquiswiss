@@ -457,3 +457,86 @@ func TestMCPForecastExclusionsAndSettings(t *testing.T) {
 	require.NotNil(t, settings.Structured["forecastMonths"])
 	require.NotNil(t, settings.Structured["forecastPerformance"])
 }
+
+func TestMCPSalaryCostsAndLabels(t *testing.T) {
+	env := setupOAuthTestEnvironment(t)
+	token := env.mcpAccessToken(t)
+
+	employee := env.mcpCall(t, token, "create_employee", `{"name":"Kosten Mitarbeiter"}`)
+	require.False(t, employee.IsError, employee.Text)
+	employeeID := int64(employee.Structured["id"].(float64))
+
+	salary := env.mcpCall(t, token, "create_salary", fmt.Sprintf(
+		`{"employeeId":%d,"hoursPerMonth":160,"amount":1000000,"cycle":"monthly","currencyID":1,"vacationDaysPerYear":25,"fromDate":"2026-01-01","toDate":null,"isTermination":false}`,
+		employeeID))
+	require.False(t, salary.IsError, salary.Text)
+	salaryID := int64(salary.Structured["id"].(float64))
+
+	// Label lifecycle
+	label := env.mcpCall(t, token, "create_salary_cost_label", `{"name":"AHV/IV/EO"}`)
+	require.False(t, label.IsError, label.Text)
+	labelID := int64(label.Structured["id"].(float64))
+
+	renamed := env.mcpCall(t, token, "update_salary_cost_label", fmt.Sprintf(`{"id":%d,"name":"AHV"}`, labelID))
+	require.False(t, renamed.IsError, renamed.Text)
+	require.Equal(t, "AHV", renamed.Structured["name"])
+
+	labels := env.mcpCall(t, token, "list_salary_cost_labels", `{}`)
+	require.False(t, labels.IsError)
+	require.Equal(t, float64(1), labels.Structured["total"])
+
+	// Percentage cost split between employer and employee: 5.3% AHV (unit: 5300 = 5.3%)
+	cost := env.mcpCall(t, token, "create_salary_cost", fmt.Sprintf(
+		`{"salaryId":%d,"cycle":"monthly","amountType":"percentage","amount":5300,"distributionType":"both","relativeOffset":1,"targetDate":null,"labelID":%d,"baseSalaryCostIDs":[]}`,
+		salaryID, labelID))
+	require.False(t, cost.IsError, cost.Text)
+	costID := int64(cost.Structured["id"].(float64))
+
+	// Salary reflects deductions and employer costs (5.3% of 10'000.00 = 530.00 each side)
+	salaryAfter := env.mcpCall(t, token, "get_salary", fmt.Sprintf(`{"id":%d}`, salaryID))
+	require.False(t, salaryAfter.IsError, salaryAfter.Text)
+	require.Equal(t, float64(53000), salaryAfter.Structured["employeeDeductions"])
+	require.Equal(t, float64(53000), salaryAfter.Structured["employerCosts"])
+
+	// Update to employer-only fixed cost
+	updated := env.mcpCall(t, token, "update_salary_cost", fmt.Sprintf(
+		`{"id":%d,"cycle":"monthly","amountType":"fixed","amount":20000,"distributionType":"employer","relativeOffset":1,"targetDate":null,"labelID":%d,"baseSalaryCostIDs":[]}`,
+		costID, labelID))
+	require.False(t, updated.IsError, updated.Text)
+	require.Equal(t, "fixed", updated.Structured["amountType"])
+
+	salaryAfter = env.mcpCall(t, token, "get_salary", fmt.Sprintf(`{"id":%d}`, salaryID))
+	require.Equal(t, float64(0), salaryAfter.Structured["employeeDeductions"])
+	require.Equal(t, float64(20000), salaryAfter.Structured["employerCosts"])
+
+	// Copy costs to a second salary
+	secondSalary := env.mcpCall(t, token, "create_salary", fmt.Sprintf(
+		`{"employeeId":%d,"hoursPerMonth":160,"amount":1100000,"cycle":"monthly","currencyID":1,"vacationDaysPerYear":25,"fromDate":"2027-01-01","toDate":null,"isTermination":false}`,
+		employeeID))
+	require.False(t, secondSalary.IsError, secondSalary.Text)
+	secondSalaryID := int64(secondSalary.Structured["id"].(float64))
+
+	copied := env.mcpCall(t, token, "copy_salary_costs", fmt.Sprintf(
+		`{"salaryId":%d,"sourceSalaryID":%d,"ids":[]}`, secondSalaryID, salaryID))
+	require.False(t, copied.IsError, copied.Text)
+	require.Equal(t, float64(1), copied.Structured["total"])
+
+	// Delete cost, salary costs empty again
+	deleted := env.mcpCall(t, token, "delete_salary_cost", fmt.Sprintf(`{"id":%d}`, costID))
+	require.False(t, deleted.IsError, deleted.Text)
+	costs := env.mcpCall(t, token, "list_salary_costs", fmt.Sprintf(`{"salaryId":%d}`, salaryID))
+	require.Equal(t, float64(0), costs.Structured["total"])
+
+	// Label deletion
+	labelDeleted := env.mcpCall(t, token, "delete_salary_cost_label", fmt.Sprintf(`{"id":%d}`, labelID))
+	require.False(t, labelDeleted.IsError, labelDeleted.Text)
+}
+
+func TestMCPFiatRates(t *testing.T) {
+	env := setupOAuthTestEnvironment(t)
+	token := env.mcpAccessToken(t)
+
+	rates := env.mcpCall(t, token, "get_fiat_rates", `{"base":"chf"}`)
+	require.False(t, rates.IsError, rates.Text)
+	require.NotNil(t, rates.Structured["items"])
+}

@@ -6,6 +6,7 @@ import (
 	"errors"
 	"fmt"
 	"net/http"
+	"strings"
 
 	"github.com/gin-gonic/gin"
 	sdk "github.com/modelcontextprotocol/go-sdk/mcp"
@@ -237,6 +238,22 @@ func registerOrganisationTools(server *sdk.Server, deps *toolDeps) {
 			return nil, nil, err
 		}
 		return nil, map[string]any{"items": categories, "total": total}, nil
+	})
+
+	sdk.AddTool(server, &sdk.Tool{
+		Name:        "get_fiat_rates",
+		Description: "Get the currency exchange rates used for conversions (base = the given currency code, e.g. CHF). The forecast converts foreign-currency amounts into the organisation's base currency with these rates. Rates sync from fixer.io twice a day.",
+	}, func(ctx context.Context, req *sdk.CallToolRequest, in struct {
+		Base string `json:"base" jsonschema:"base currency code, e.g. CHF"`
+	}) (*sdk.CallToolResult, map[string]any, error) {
+		if _, err := userIDFrom(ctx); err != nil {
+			return nil, nil, err
+		}
+		rates, err := deps.apiService.ListFiatRates(strings.ToUpper(in.Base))
+		if err != nil {
+			return nil, nil, err
+		}
+		return nil, map[string]any{"items": rates}, nil
 	})
 
 	sdk.AddTool(server, &sdk.Tool{
@@ -779,6 +796,201 @@ func registerEmployeeTools(server *sdk.Server, deps *toolDeps) {
 			return nil, nil, err
 		}
 		return toMapResult(salary)
+	})
+
+	sdk.AddTool(server, &sdk.Tool{
+		Name:        "list_salary_costs",
+		Description: "List the employer/employee cost entries (Lohnnebenkosten like AHV, BVG, insurances) attached to one salary. Each cost has a label, cycle (once, monthly, quarterly, biannually, yearly), amountType (fixed = Rappen/cents, percentage where 5300 = 5.3% of the salary), distributionType (employee deduction, employer cost, or both) and calculated amounts/execution dates.",
+	}, func(ctx context.Context, req *sdk.CallToolRequest, in struct {
+		SalaryID int64 `json:"salaryId" jsonschema:"salary ID"`
+	}) (*sdk.CallToolResult, map[string]any, error) {
+		userID, err := userIDFrom(ctx)
+		if err != nil {
+			return nil, nil, err
+		}
+		costs, total, err := deps.apiService.ListSalaryCosts(userID, in.SalaryID, 1, 1000, false)
+		if err != nil {
+			return nil, nil, err
+		}
+		items := make([]map[string]any, 0, len(costs))
+		for _, cost := range costs {
+			item, err := toMap(cost)
+			if err != nil {
+				return nil, nil, err
+			}
+			items = append(items, item)
+		}
+		return nil, map[string]any{"items": items, "total": total}, nil
+	})
+
+	sdk.AddTool(server, &sdk.Tool{
+		Name:        "create_salary_cost",
+		Description: "Add a cost entry (Lohnnebenkosten) to a salary. amountType 'fixed' (amount in Rappen/cents) or 'percentage' (5300 = 5.3% of the salary). distributionType: 'employee' (deducted from gross), 'employer' (on top of gross) or 'both'. Cycle 'once' needs targetDate (YYYY-MM-DD); recurring cycles use relativeOffset (>=1, e.g. 1 = every cycle). Optionally labelID from list_salary_cost_labels and baseSalaryCostIDs to compute the percentage on top of other cost entries instead of the salary. Requires editor role or higher.",
+	}, func(ctx context.Context, req *sdk.CallToolRequest, in struct {
+		SalaryID int64 `json:"salaryId" jsonschema:"salary ID"`
+		models.CreateSalaryCost
+	}) (*sdk.CallToolResult, map[string]any, error) {
+		userID, err := userIDFrom(ctx)
+		if err != nil {
+			return nil, nil, err
+		}
+		if err := deps.requireEditor(userID); err != nil {
+			return nil, nil, err
+		}
+		if err := validate(in.CreateSalaryCost); err != nil {
+			return nil, nil, err
+		}
+		cost, err := deps.apiService.CreateSalaryCost(in.CreateSalaryCost, userID, in.SalaryID)
+		if err != nil {
+			return nil, nil, err
+		}
+		return toMapResult(cost)
+	})
+
+	sdk.AddTool(server, &sdk.Tool{
+		Name:        "update_salary_cost",
+		Description: "Update a salary cost entry. Full replace: send ALL fields (cycle, amountType, amount, distributionType, relativeOffset, and targetDate/labelID/baseSalaryCostIDs as applicable), not a partial patch. Requires editor role or higher.",
+	}, func(ctx context.Context, req *sdk.CallToolRequest, in struct {
+		ID int64 `json:"id" jsonschema:"salary cost ID"`
+		models.CreateSalaryCost
+	}) (*sdk.CallToolResult, map[string]any, error) {
+		userID, err := userIDFrom(ctx)
+		if err != nil {
+			return nil, nil, err
+		}
+		if err := deps.requireEditor(userID); err != nil {
+			return nil, nil, err
+		}
+		if err := validate(in.CreateSalaryCost); err != nil {
+			return nil, nil, err
+		}
+		cost, err := deps.apiService.UpdateSalaryCost(in.CreateSalaryCost, userID, in.ID)
+		if err != nil {
+			return nil, nil, err
+		}
+		return toMapResult(cost)
+	})
+
+	sdk.AddTool(server, &sdk.Tool{
+		Name:        "delete_salary_cost",
+		Description: "Delete a salary cost entry permanently. Requires editor role or higher.",
+	}, func(ctx context.Context, req *sdk.CallToolRequest, in idInput) (*sdk.CallToolResult, *deleteOutput, error) {
+		userID, err := userIDFrom(ctx)
+		if err != nil {
+			return nil, nil, err
+		}
+		if err := deps.requireEditor(userID); err != nil {
+			return nil, nil, err
+		}
+		if err := deps.apiService.DeleteSalaryCost(userID, in.ID); err != nil {
+			return nil, nil, err
+		}
+		return nil, &deleteOutput{Deleted: true, ID: in.ID}, nil
+	})
+
+	sdk.AddTool(server, &sdk.Tool{
+		Name:        "copy_salary_costs",
+		Description: "Copy cost entries from another salary onto the target salary. Provide sourceSalaryID (copies all its costs) or specific cost ids. Useful when a new salary period should keep the same Lohnnebenkosten. Requires editor role or higher.",
+	}, func(ctx context.Context, req *sdk.CallToolRequest, in struct {
+		SalaryID int64 `json:"salaryId" jsonschema:"target salary ID"`
+		models.CopySalaryCosts
+	}) (*sdk.CallToolResult, map[string]any, error) {
+		userID, err := userIDFrom(ctx)
+		if err != nil {
+			return nil, nil, err
+		}
+		if err := deps.requireEditor(userID); err != nil {
+			return nil, nil, err
+		}
+		if err := validate(in.CopySalaryCosts); err != nil {
+			return nil, nil, err
+		}
+		if err := deps.apiService.CopySalaryCosts(in.CopySalaryCosts, userID, in.SalaryID); err != nil {
+			return nil, nil, err
+		}
+		costs, total, err := deps.apiService.ListSalaryCosts(userID, in.SalaryID, 1, 1000, false)
+		if err != nil {
+			return nil, nil, err
+		}
+		return nil, map[string]any{"copied": true, "total": total, "count": len(costs)}, nil
+	})
+
+	sdk.AddTool(server, &sdk.Tool{
+		Name:        "list_salary_cost_labels",
+		Description: "List the organisation's salary cost labels (categories for Lohnnebenkosten, e.g. AHV/IV/EO, BVG, KTG). Use their IDs as labelID on salary cost entries.",
+	}, func(ctx context.Context, req *sdk.CallToolRequest, in emptyInput) (*sdk.CallToolResult, map[string]any, error) {
+		userID, err := userIDFrom(ctx)
+		if err != nil {
+			return nil, nil, err
+		}
+		labels, total, err := deps.apiService.ListSalaryCostLabels(userID, 1, 1000)
+		if err != nil {
+			return nil, nil, err
+		}
+		return nil, map[string]any{"items": labels, "total": total}, nil
+	})
+
+	sdk.AddTool(server, &sdk.Tool{
+		Name:        "create_salary_cost_label",
+		Description: "Create a salary cost label (category for Lohnnebenkosten). Requires editor role or higher.",
+	}, func(ctx context.Context, req *sdk.CallToolRequest, in models.CreateSalaryCostLabel) (*sdk.CallToolResult, *models.SalaryCostLabel, error) {
+		userID, err := userIDFrom(ctx)
+		if err != nil {
+			return nil, nil, err
+		}
+		if err := deps.requireEditor(userID); err != nil {
+			return nil, nil, err
+		}
+		if err := validate(in); err != nil {
+			return nil, nil, err
+		}
+		label, err := deps.apiService.CreateSalaryCostLabel(in, userID)
+		if err != nil {
+			return nil, nil, err
+		}
+		return nil, label, nil
+	})
+
+	sdk.AddTool(server, &sdk.Tool{
+		Name:        "update_salary_cost_label",
+		Description: "Rename a salary cost label. Requires editor role or higher.",
+	}, func(ctx context.Context, req *sdk.CallToolRequest, in struct {
+		ID   int64  `json:"id" jsonschema:"label ID"`
+		Name string `json:"name" jsonschema:"new label name"`
+	}) (*sdk.CallToolResult, *models.SalaryCostLabel, error) {
+		userID, err := userIDFrom(ctx)
+		if err != nil {
+			return nil, nil, err
+		}
+		if err := deps.requireEditor(userID); err != nil {
+			return nil, nil, err
+		}
+		payload := models.CreateSalaryCostLabel{Name: in.Name}
+		if err := validate(payload); err != nil {
+			return nil, nil, err
+		}
+		label, err := deps.apiService.UpdateSalaryCostLabel(payload, userID, in.ID)
+		if err != nil {
+			return nil, nil, err
+		}
+		return nil, label, nil
+	})
+
+	sdk.AddTool(server, &sdk.Tool{
+		Name:        "delete_salary_cost_label",
+		Description: "Delete a salary cost label permanently. Cost entries using it keep working but lose the label. Requires editor role or higher.",
+	}, func(ctx context.Context, req *sdk.CallToolRequest, in idInput) (*sdk.CallToolResult, *deleteOutput, error) {
+		userID, err := userIDFrom(ctx)
+		if err != nil {
+			return nil, nil, err
+		}
+		if err := deps.requireEditor(userID); err != nil {
+			return nil, nil, err
+		}
+		if err := deps.apiService.DeleteSalaryCostLabel(userID, in.ID); err != nil {
+			return nil, nil, err
+		}
+		return nil, &deleteOutput{Deleted: true, ID: in.ID}, nil
 	})
 
 	sdk.AddTool(server, &sdk.Tool{
