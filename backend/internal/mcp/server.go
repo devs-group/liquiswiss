@@ -155,6 +155,76 @@ func registerOrganisationTools(server *sdk.Server, deps *toolDeps) {
 	})
 
 	sdk.AddTool(server, &sdk.Tool{
+		Name:        "list_organisations",
+		Description: "List all organisations the user belongs to, with their role in each. Use switch_organisation to change the active one; all other tools operate on the currently active organisation.",
+	}, func(ctx context.Context, req *sdk.CallToolRequest, in emptyInput) (*sdk.CallToolResult, map[string]any, error) {
+		userID, err := userIDFrom(ctx)
+		if err != nil {
+			return nil, nil, err
+		}
+		organisations, total, err := deps.apiService.ListOrganisations(userID, 1, 100)
+		if err != nil {
+			return nil, nil, err
+		}
+		return nil, map[string]any{"items": organisations, "total": total}, nil
+	})
+
+	sdk.AddTool(server, &sdk.Tool{
+		Name:        "switch_organisation",
+		Description: "Switch the user's active organisation. Affects ALL subsequent tool calls (and the web UI session of the user). Use list_organisations for valid IDs.",
+	}, func(ctx context.Context, req *sdk.CallToolRequest, in struct {
+		OrganisationID int64 `json:"organisationId" jsonschema:"organisation ID to switch to"`
+	}) (*sdk.CallToolResult, *models.Organisation, error) {
+		userID, err := userIDFrom(ctx)
+		if err != nil {
+			return nil, nil, err
+		}
+		err = deps.apiService.SetUserCurrentOrganisation(models.UpdateUserCurrentOrganisation{OrganisationID: in.OrganisationID}, userID)
+		if err != nil {
+			return nil, nil, err
+		}
+		org, err := deps.apiService.GetCurrentOrganisation(userID)
+		if err != nil {
+			return nil, nil, err
+		}
+		return nil, org, nil
+	})
+
+	sdk.AddTool(server, &sdk.Tool{
+		Name:        "list_organisation_members",
+		Description: "List the members of the current organisation with user ID, name, email and role (owner, admin, editor, read-only).",
+	}, func(ctx context.Context, req *sdk.CallToolRequest, in emptyInput) (*sdk.CallToolResult, map[string]any, error) {
+		userID, err := userIDFrom(ctx)
+		if err != nil {
+			return nil, nil, err
+		}
+		org, err := deps.apiService.GetCurrentOrganisation(userID)
+		if err != nil {
+			return nil, nil, err
+		}
+		members, err := deps.apiService.ListOrganisationMembers(userID, org.ID)
+		if err != nil {
+			return nil, nil, err
+		}
+		return nil, map[string]any{"items": members}, nil
+	})
+
+	sdk.AddTool(server, &sdk.Tool{
+		Name:        "get_vat_setting",
+		Description: "Get the organisation's automatic VAT billing settings: enabled flag, billingDate (first billing), transactionMonthOffset (months between billing date and money movement) and interval (monthly, quarterly, biannually, yearly). Returns an error if not configured.",
+	}, func(ctx context.Context, req *sdk.CallToolRequest, in emptyInput) (*sdk.CallToolResult, map[string]any, error) {
+		userID, err := userIDFrom(ctx)
+		if err != nil {
+			return nil, nil, err
+		}
+		setting, err := deps.apiService.GetVatSetting(userID)
+		if err != nil {
+			return nil, nil, errors.New("no VAT settings configured for this organisation")
+		}
+		return toMapResult(setting)
+	})
+
+	sdk.AddTool(server, &sdk.Tool{
 		Name:        "list_categories",
 		Description: "List all transaction categories (needed as category ID when creating transactions).",
 	}, func(ctx context.Context, req *sdk.CallToolRequest, in emptyInput) (*sdk.CallToolResult, map[string]any, error) {
