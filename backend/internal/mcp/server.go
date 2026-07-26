@@ -1138,4 +1138,32 @@ func registerForecastTools(server *sdk.Server, deps *toolDeps) {
 			"forecastPerformance": setting.ForecastPerformance,
 		}, nil
 	})
+
+	sdk.AddTool(server, &sdk.Tool{
+		Name:        "update_forecast_settings",
+		Description: "Update the user's forecast view settings for the current organisation: forecastMonths (1-60) and/or forecastPerformance (0-200, percent scaling applied to revenue in the web forecast view). Only provided fields change.",
+	}, func(ctx context.Context, req *sdk.CallToolRequest, in struct {
+		ForecastMonths      *int `json:"forecastMonths,omitempty" jsonschema:"months shown in the web forecast, 1-60"`
+		ForecastPerformance *int `json:"forecastPerformance,omitempty" jsonschema:"revenue performance scaling in percent, 0-200"`
+	}) (*sdk.CallToolResult, map[string]any, error) {
+		userID, err := userIDFrom(ctx)
+		if err != nil {
+			return nil, nil, err
+		}
+		payload := models.UpdateUserOrganisationSetting{
+			ForecastMonths:      in.ForecastMonths,
+			ForecastPerformance: in.ForecastPerformance,
+		}
+		if err := validate(payload); err != nil {
+			return nil, nil, err
+		}
+		setting, err := deps.apiService.UpdateUserOrganisationSetting(payload, userID)
+		if err != nil {
+			return nil, nil, err
+		}
+		return nil, map[string]any{
+			"forecastMonths":      setting.ForecastMonths,
+			"forecastPerformance": setting.ForecastPerformance,
+		}, nil
+	})
 }
