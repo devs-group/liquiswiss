@@ -282,3 +282,84 @@ func TestMCPForecastReflectsTransactions(t *testing.T) {
 	require.True(t, foundRevenue, "monthly revenue transaction must appear in the forecast")
 	require.NotNil(t, forecast.Structured["details"])
 }
+
+func TestMCPSalaryTimelineSemantics(t *testing.T) {
+	env := setupOAuthTestEnvironment(t)
+	token := env.mcpAccessToken(t)
+
+	employee := env.mcpCall(t, token, "create_employee", `{"name":"Timeline Mitarbeiter"}`)
+	require.False(t, employee.IsError, employee.Text)
+	employeeID := int64(employee.Structured["id"].(float64))
+
+	createSalary := func(fromDate string, amount int64, isTermination bool) mcpToolResult {
+		hours, vacation := 160, 25
+		if isTermination {
+			hours, vacation = 0, 0
+		}
+		return env.mcpCall(t, token, "create_salary", fmt.Sprintf(
+			`{"employeeId":%d,"hoursPerMonth":%d,"amount":%d,"cycle":"monthly","currencyID":1,"vacationDaysPerYear":%d,"fromDate":%q,"toDate":null,"isTermination":%t}`,
+			employeeID, hours, amount, vacation, fromDate, isTermination))
+	}
+	salaryByID := func(id int64) map[string]any {
+		result := env.mcpCall(t, token, "get_salary", fmt.Sprintf(`{"id":%d}`, id))
+		require.False(t, result.IsError, result.Text)
+		return result.Structured
+	}
+
+	// January open-ended
+	january := createSalary("2026-01-01", 800000, false)
+	require.False(t, january.IsError, january.Text)
+	januaryID := int64(january.Structured["id"].(float64))
+	require.Nil(t, january.Structured["toDate"])
+
+	// August insertion caps January automatically
+	august := createSalary("2026-08-01", 900000, false)
+	require.False(t, august.IsError, august.Text)
+	augustID := int64(august.Structured["id"].(float64))
+	require.Equal(t, "2026-07-01", salaryByID(januaryID)["toDate"])
+
+	// April insertion re-caps January and gets capped itself by August
+	april := createSalary("2026-04-01", 850000, false)
+	require.False(t, april.IsError, april.Text)
+	aprilID := int64(april.Structured["id"].(float64))
+	require.Equal(t, "2026-07-01", april.Structured["toDate"])
+	require.Equal(t, "2026-03-01", salaryByID(januaryID)["toDate"])
+
+	// Deleting April re-expands January up to August
+	deleted := env.mcpCall(t, token, "delete_salary", fmt.Sprintf(`{"id":%d}`, aprilID))
+	require.False(t, deleted.IsError, deleted.Text)
+	require.Equal(t, "2026-07-01", salaryByID(januaryID)["toDate"])
+
+	// Termination caps the previous salary and flags the employee
+	termination := createSalary("2026-10-01", 0, true)
+	require.False(t, termination.IsError, termination.Text)
+	terminationID := int64(termination.Structured["id"].(float64))
+	require.Equal(t, "2026-09-01", salaryByID(augustID)["toDate"])
+
+	employeeState := env.mcpCall(t, token, "get_employee", fmt.Sprintf(`{"id":%d}`, employeeID))
+	require.False(t, employeeState.IsError, employeeState.Text)
+	require.Equal(t, true, employeeState.Structured["willBeTerminated"])
+
+	// Rehire after termination caps the termination entry (multiple exits supported)
+	rehire := createSalary("2027-01-01", 950000, false)
+	require.False(t, rehire.IsError, rehire.Text)
+	rehireID := int64(rehire.Structured["id"].(float64))
+	require.Equal(t, "2026-12-01", salaryByID(terminationID)["toDate"])
+
+	secondExit := createSalary("2027-04-01", 0, true)
+	require.False(t, secondExit.IsError, secondExit.Text)
+	require.Equal(t, "2027-03-01", salaryByID(rehireID)["toDate"])
+
+	// Same fromDate is rejected (unique per employee), for salaries and exits alike
+	duplicate := createSalary("2026-08-01", 777000, false)
+	require.True(t, duplicate.IsError)
+	duplicateExit := createSalary("2027-04-01", 0, true)
+	require.True(t, duplicateExit.IsError)
+
+	// Deleting the employee cascades all salaries
+	removed := env.mcpCall(t, token, "delete_employee", fmt.Sprintf(`{"id":%d}`, employeeID))
+	require.False(t, removed.IsError, removed.Text)
+	salaries := env.mcpCall(t, token, "list_salaries", fmt.Sprintf(`{"employeeId":%d}`, employeeID))
+	require.False(t, salaries.IsError)
+	require.Equal(t, float64(0), salaries.Structured["total"])
+}

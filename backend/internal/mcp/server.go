@@ -564,7 +564,7 @@ func registerEmployeeTools(server *sdk.Server, deps *toolDeps) {
 
 	sdk.AddTool(server, &sdk.Tool{
 		Name:        "list_salaries",
-		Description: "List the salary history of one employee (amounts in Rappen/cents, with employer cost details).",
+		Description: "List the salary history of one employee (amounts in Rappen/cents, with employer cost details). Salaries form a contiguous timeline of employment periods, ordered by fromDate: each entry is valid from its fromDate until its toDate (null = open-ended). Entries with isTermination=true mark an employment end at their fromDate.",
 	}, func(ctx context.Context, req *sdk.CallToolRequest, in struct {
 		EmployeeID int64 `json:"employeeId" jsonschema:"employee ID"`
 	}) (*sdk.CallToolResult, map[string]any, error) {
@@ -577,6 +577,86 @@ func registerEmployeeTools(server *sdk.Server, deps *toolDeps) {
 			return nil, nil, err
 		}
 		return nil, map[string]any{"items": salaries, "total": total}, nil
+	})
+
+	sdk.AddTool(server, &sdk.Tool{
+		Name:        "get_salary",
+		Description: "Get a single salary entry by ID.",
+	}, func(ctx context.Context, req *sdk.CallToolRequest, in idInput) (*sdk.CallToolResult, map[string]any, error) {
+		userID, err := userIDFrom(ctx)
+		if err != nil {
+			return nil, nil, err
+		}
+		salary, err := deps.apiService.GetSalary(userID, in.ID)
+		if err != nil {
+			return nil, nil, err
+		}
+		return toMapResult(salary)
+	})
+
+	sdk.AddTool(server, &sdk.Tool{
+		Name:        "create_salary",
+		Description: "Create a salary entry for an employee. Amount is the gross salary per cycle in Rappen/cents (e.g. 1000000 = 10'000.00), cycle one of monthly, quarterly, biannually, yearly. Dates as YYYY-MM-DD. IMPORTANT concept: salaries form a contiguous employment timeline and the system auto-adjusts neighbours. Inserting a salary automatically caps the previous salary's toDate at one cycle before the new fromDate, and the new salary itself gets capped by the next existing salary. Leave toDate null; it is managed automatically. The latest salary stays open-ended. To model an employment end (Austritt), create an entry with isTermination=true, amount 0 and fromDate = end boundary; the employee then shows willBeTerminated/isTerminated. Multiple exits and re-entries are supported: a salary created after a termination models a rehire and caps the termination entry, enabling employment gaps. Only ONE entry per employee per fromDate (salary or termination); creating a second one on the same date fails. Requires editor role or higher.",
+	}, func(ctx context.Context, req *sdk.CallToolRequest, in struct {
+		EmployeeID int64 `json:"employeeId" jsonschema:"employee ID"`
+		models.CreateSalary
+	}) (*sdk.CallToolResult, map[string]any, error) {
+		userID, err := userIDFrom(ctx)
+		if err != nil {
+			return nil, nil, err
+		}
+		if err := deps.requireEditor(userID); err != nil {
+			return nil, nil, err
+		}
+		if err := validate(in.CreateSalary); err != nil {
+			return nil, nil, err
+		}
+		salary, err := deps.apiService.CreateSalary(in.CreateSalary, userID, in.EmployeeID)
+		if err != nil {
+			return nil, nil, err
+		}
+		return toMapResult(salary)
+	})
+
+	sdk.AddTool(server, &sdk.Tool{
+		Name:        "update_salary",
+		Description: "Update a salary entry (partial: only provided fields change). Note: changing fromDate re-triggers the automatic timeline shifts of neighbouring salaries (see create_salary). Requires editor role or higher.",
+	}, func(ctx context.Context, req *sdk.CallToolRequest, in struct {
+		ID int64 `json:"id" jsonschema:"salary ID"`
+		models.UpdateSalary
+	}) (*sdk.CallToolResult, map[string]any, error) {
+		userID, err := userIDFrom(ctx)
+		if err != nil {
+			return nil, nil, err
+		}
+		if err := deps.requireEditor(userID); err != nil {
+			return nil, nil, err
+		}
+		if err := validate(in.UpdateSalary); err != nil {
+			return nil, nil, err
+		}
+		salary, err := deps.apiService.UpdateSalary(in.UpdateSalary, userID, in.ID)
+		if err != nil {
+			return nil, nil, err
+		}
+		return toMapResult(salary)
+	})
+
+	sdk.AddTool(server, &sdk.Tool{
+		Name:        "delete_salary",
+		Description: "Delete a salary entry permanently. The timeline auto-heals: the previous salary re-expands up to the next remaining salary (or open-ended). Requires editor role or higher.",
+	}, func(ctx context.Context, req *sdk.CallToolRequest, in idInput) (*sdk.CallToolResult, *deleteOutput, error) {
+		userID, err := userIDFrom(ctx)
+		if err != nil {
+			return nil, nil, err
+		}
+		if err := deps.requireEditor(userID); err != nil {
+			return nil, nil, err
+		}
+		if err := deps.apiService.DeleteSalary(userID, in.ID); err != nil {
+			return nil, nil, err
+		}
+		return nil, &deleteOutput{Deleted: true, ID: in.ID}, nil
 	})
 }
 
