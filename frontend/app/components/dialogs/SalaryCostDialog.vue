@@ -331,7 +331,7 @@
         :loading="isLoading"
         label="Abbrechen"
         severity="secondary"
-        @click="dialogRef?.close(requiresRefresh)"
+        @click="requestClose(requiresRefresh)"
       />
     </div>
   </form>
@@ -402,7 +402,7 @@ listSalaryCostsLabels(false)
     isLoadingCostLabels.value = false
   })
 
-const { defineField, errors, handleSubmit, meta, setFieldValue, resetForm } = useForm<SalaryCostFormData>({
+const { defineField, errors, handleSubmit, meta, setFieldValue, resetForm, values: formValues, setValues } = useForm<SalaryCostFormData>({
   validationSchema: yup.object({
     labelID: yup.number().nullable().typeError('Ungültiger Wert'),
     cycle: yup.string().required('Zyklus wird benötigt').typeError('Ungültiger Wert'),
@@ -469,6 +469,24 @@ const [labelID, labelIDProps] = defineField('labelID')
 // elsewhere (options themselves update via shared state); warn when the cost
 // being edited was changed or deleted externally (form values stay untouched,
 // saving would overwrite the external change)
+// Escape/X close with dirty-confirm; unsaved entries survive reloads
+const { requestClose, close } = useDialogGuard({
+  dirty: () => meta.value.dirty,
+  close: payload => dialogRef.value.close(payload),
+  payload: () => requiresRefresh.value,
+  draft: {
+    key: `salary_cost:${salary?.id}:${isCreate ? 'new' : salaryCost?.id}`,
+    capture: () => ({ ...formValues }),
+    restore: (saved) => {
+      // JSON turns Dates into strings; DatePicker needs Date objects
+      setValues({
+        ...saved,
+        targetDate: saved.targetDate ? new Date(saved.targetDate) : undefined,
+      })
+    },
+  },
+})
+
 const { onEntityChange, useExternalChangeBanner } = useRealtimeChanges()
 const externalChange = useExternalChangeBanner('salary_cost', () => isCreate ? undefined : salaryCost?.id)
 onEntityChange('salary_cost_label', async (change) => {
@@ -574,7 +592,7 @@ const onSubmit = handleSubmit((values) => {
   if (isCreate) {
     createSalaryCost(salary?.id, values)
       .then(async (salaryCost) => {
-        dialogRef?.value.close(salaryCost.id)
+        close(salaryCost.id)
         toast.add({
           summary: 'Erfolg',
           detail: `Lohnnebenkosten "${SalaryCostUtils.title(salaryCost)}" wurde angelegt`,
@@ -592,7 +610,7 @@ const onSubmit = handleSubmit((values) => {
   else {
     updateSalaryCost(values)
       .then(async (salaryCost) => {
-        dialogRef?.value.close(salaryCost.id)
+        close(salaryCost.id)
         toast.add({
           summary: 'Erfolg',
           detail: `Lohnnebenkosten wurde bearbeitet`,

@@ -40,7 +40,7 @@
         :loading="isLoading"
         label="Abbrechen"
         severity="contrast"
-        @click="dialogRef?.close()"
+        @click="requestClose()"
       />
     </div>
   </form>
@@ -62,13 +62,24 @@ const toast = useToast()
 const isLoading = ref(false)
 const errorMessage = ref('')
 
-const { defineField, errors, handleSubmit, meta } = useForm({
+const { defineField, errors, handleSubmit, meta, values: formValues, setValues } = useForm({
   validationSchema: yup.object({
     name: yup.string().trim().required('Name wird benötigt'),
   }),
   initialValues: {
     name: '',
   } as OrganisationFormData,
+})
+
+// Escape/X close with dirty-confirm; unsaved entries survive reloads
+const { requestClose, close } = useDialogGuard({
+  dirty: () => meta.value.dirty,
+  close: payload => dialogRef.value.close(payload),
+  draft: {
+    key: 'organisation:new',
+    capture: () => ({ ...formValues }),
+    restore: saved => setValues(saved),
+  },
 })
 
 const [name, nameProps] = defineField('name')
@@ -78,7 +89,7 @@ const onCreateOrganisation = handleSubmit((values) => {
   errorMessage.value = ''
   createOrganisation(values)
     .then(async (organisation) => {
-      dialogRef?.value.close()
+      close()
       navigateTo({ name: RouteNames.SETTINGS_ORGANISATION_EDIT, params: { id: organisation.id } })
       toast.add({
         summary: 'Erfolg',

@@ -66,7 +66,7 @@
         :loading="isLoading"
         label="Abbrechen"
         severity="secondary"
-        @click="dialogRef?.close()"
+        @click="requestClose()"
       />
     </div>
   </form>
@@ -89,7 +89,7 @@ const isCreate = !salaryCost.value?.id
 const isLoading = ref(false)
 const errorMessage = ref('')
 
-const { defineField, errors, handleSubmit, meta, resetForm } = useForm<SalaryCostLabelFormData>({
+const { defineField, errors, handleSubmit, meta, resetForm, values: formValues, setValues } = useForm<SalaryCostLabelFormData>({
   validationSchema: yup.object({
     name: yup.string().required('Name wird benötigt').typeError('Ungültiger Wert'),
   }),
@@ -101,6 +101,17 @@ const { defineField, errors, handleSubmit, meta, resetForm } = useForm<SalaryCos
 
 // Real-time: warn when the cost label being edited was changed or deleted
 // externally (form values stay untouched, saving would overwrite)
+// Escape/X close with dirty-confirm; unsaved entries survive reloads
+const { requestClose, close } = useDialogGuard({
+  dirty: () => meta.value.dirty,
+  close: payload => dialogRef.value.close(payload),
+  draft: {
+    key: `salary_cost_label:${salaryCost.value?.id ?? 'new'}`,
+    capture: () => ({ ...formValues }),
+    restore: saved => setValues(saved),
+  },
+})
+
 const { useExternalChangeBanner } = useRealtimeChanges()
 const externalChange = useExternalChangeBanner('salary_cost_label', () => isCreate ? undefined : salaryCost.value?.id)
 
@@ -131,7 +142,7 @@ const onSubmit = handleSubmit((values) => {
   if (isCreate) {
     createSalaryCostLabel(values)
       .then(async (costLabel) => {
-        dialogRef?.value.close(costLabel.id)
+        close(costLabel.id)
         toast.add({
           summary: 'Erfolg',
           detail: `Kostenlabel "${costLabel.name}" wurde angelegt`,
@@ -149,7 +160,7 @@ const onSubmit = handleSubmit((values) => {
   else {
     updateSalaryCostLabel(values)
       .then(async (costLabel) => {
-        dialogRef?.value.close(costLabel.id)
+        close(costLabel.id)
         toast.add({
           summary: 'Erfolg',
           detail: `Kostenlabel wurde bearbeitet`,

@@ -66,7 +66,7 @@
         :loading="isLoading"
         label="Abbrechen"
         severity="secondary"
-        @click="dialogRef?.close()"
+        @click="requestClose()"
       />
     </div>
   </form>
@@ -89,13 +89,24 @@ const isCreate = !category.value?.id
 const isLoading = ref(false)
 const errorMessage = ref('')
 
-const { defineField, errors, handleSubmit, meta, resetForm } = useForm<CategoryFormData>({
+const { defineField, errors, handleSubmit, meta, resetForm, values, setValues } = useForm<CategoryFormData>({
   validationSchema: yup.object({
     name: yup.string().required('Name wird benötigt').typeError('Ungültiger Wert'),
   }),
   initialValues: {
     id: category.value?.id ?? undefined,
     name: isCreate ? undefined : category.value?.name,
+  },
+})
+
+// Escape/X close with dirty-confirm; unsaved entries survive reloads
+const { requestClose, close } = useDialogGuard({
+  dirty: () => meta.value.dirty,
+  close: payload => dialogRef.value.close(payload),
+  draft: {
+    key: `category:${category.value?.id ?? 'new'}`,
+    capture: () => ({ ...values }),
+    restore: saved => setValues(saved),
   },
 })
 
@@ -131,7 +142,7 @@ const onSubmit = handleSubmit((values) => {
   if (isCreate) {
     createCategory(values)
       .then((created) => {
-        dialogRef?.value.close(created.id)
+        close(created.id)
         toast.add({
           summary: 'Erfolg',
           detail: `Kategorie "${created.name}" wurde angelegt`,
@@ -149,7 +160,7 @@ const onSubmit = handleSubmit((values) => {
   else {
     updateCategory(values)
       .then((updated) => {
-        dialogRef?.value.close(updated.id)
+        close(updated.id)
         toast.add({
           summary: 'Erfolg',
           detail: 'Kategorie wurde bearbeitet',

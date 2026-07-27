@@ -73,7 +73,7 @@
         :loading="isLoading"
         label="Abbrechen"
         severity="secondary"
-        @click="dialogRef?.close()"
+        @click="requestClose()"
       />
     </div>
   </form>
@@ -97,7 +97,7 @@ const isCreate = !vat.value?.id
 const isLoading = ref(false)
 const errorMessage = ref('')
 
-const { defineField, errors, handleSubmit, meta, resetForm } = useForm<VatFormData>({
+const { defineField, errors, handleSubmit, meta, resetForm, values: formValues, setValues } = useForm<VatFormData>({
   validationSchema: yup.object({
     value: yup.number()
       .required('Prozentualer Wert wird benötigt')
@@ -116,6 +116,17 @@ const { defineField, errors, handleSubmit, meta, resetForm } = useForm<VatFormDa
 
 // Real-time: warn when the VAT being edited was changed or deleted
 // externally (form values stay untouched, saving would overwrite)
+// Escape/X close with dirty-confirm; unsaved entries survive reloads
+const { requestClose, close } = useDialogGuard({
+  dirty: () => meta.value.dirty,
+  close: payload => dialogRef.value.close(payload),
+  draft: {
+    key: `vat:${vat.value?.id ?? 'new'}`,
+    capture: () => ({ ...formValues }),
+    restore: saved => setValues(saved),
+  },
+})
+
 const { useExternalChangeBanner } = useRealtimeChanges()
 const externalChange = useExternalChangeBanner('vat', () => isCreate ? undefined : vat.value?.id)
 
@@ -149,7 +160,7 @@ const onSubmit = handleSubmit((values) => {
       value: val,
     })
       .then(async (vat) => {
-        dialogRef?.value.close(vat.id)
+        close(vat.id)
         toast.add({
           summary: 'Erfolg',
           detail: `Mehrwertsteuer "${vat.formattedValue}" wurde angelegt`,
@@ -170,7 +181,7 @@ const onSubmit = handleSubmit((values) => {
       value: val,
     })
       .then(async () => {
-        dialogRef?.value.close(values.id)
+        close(values.id)
         toast.add({
           summary: 'Erfolg',
           detail: `Mehrwertsteuer wurde bearbeitet`,

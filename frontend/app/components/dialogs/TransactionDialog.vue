@@ -443,7 +443,7 @@
         :loading="isLoading"
         label="Abbrechen"
         severity="contrast"
-        @click="dialogRef?.close()"
+        @click="requestClose()"
       />
       <Button
         v-if="!isCreate"
@@ -516,7 +516,7 @@ listVats()
     isLoadingVats.value = false
   })
 
-const { defineField, errors, handleSubmit, meta, setFieldValue, resetForm } = useForm({
+const { defineField, errors, handleSubmit, meta, setFieldValue, resetForm, values: formValues, setValues } = useForm({
   validationSchema: yup.object({
     name: yup.string().trim().required('Name wird benötigt'),
     link: yup.string().trim().max(2048, 'Link ist zu lang').nullable(),
@@ -546,6 +546,24 @@ const { defineField, errors, handleSubmit, meta, setFieldValue, resetForm } = us
     currency: transaction.value?.currency.id ?? getOrganisationCurrencyID.value,
     employee: transaction.value?.employee?.id ?? null,
   } as TransactionFormData,
+})
+
+// Escape/X close with dirty-confirm; unsaved entries survive reloads
+const { requestClose, close } = useDialogGuard({
+  dirty: () => meta.value.dirty,
+  close: payload => dialogRef.value.close(payload),
+  draft: {
+    key: `transaction:${isCreate ? 'new' : transaction.value?.id}`,
+    capture: () => ({ ...formValues }),
+    restore: (saved) => {
+      // JSON turns Dates into strings; DatePicker needs Date objects
+      setValues({
+        ...saved,
+        startDate: saved.startDate ? new Date(saved.startDate) : null,
+        endDate: saved.endDate ? new Date(saved.endDate) : undefined,
+      })
+    },
+  },
 })
 
 // Real-time: warn when the transaction being edited was changed or deleted
@@ -616,7 +634,7 @@ const onSubmit = handleSubmit((values) => {
   if (isCreate) {
     createTransaction(values)
       .then(() => {
-        dialogRef.value.close()
+        close()
         toast.add({
           summary: 'Erfolg',
           detail: `Transaktion "${values.name}" wurde angelegt`,
@@ -637,7 +655,7 @@ const onSubmit = handleSubmit((values) => {
   else {
     updateTransaction(values)
       .then(() => {
-        dialogRef.value.close()
+        close()
         toast.add({
           summary: 'Erfolg',
           detail: `Transaktion "${values.name}" wurde bearbeitet`,
@@ -683,7 +701,7 @@ const onDeleteTransaction = () => {
               severity: 'success',
               life: Config.TOAST_LIFE_TIME,
             })
-            dialogRef.value.close()
+            close()
           })
           .catch(() => {
             errorMessage.value = 'Transaktion konnte nicht gelöscht werden'

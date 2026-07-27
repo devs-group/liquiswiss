@@ -40,7 +40,7 @@
         :loading="isLoading"
         label="Abbrechen"
         severity="secondary"
-        @click="dialogRef?.close()"
+        @click="requestClose()"
       />
     </div>
   </form>
@@ -62,13 +62,24 @@ const toast = useToast()
 const isLoading = ref(false)
 const errorMessage = ref('')
 
-const { defineField, errors, handleSubmit, meta } = useForm({
+const { defineField, errors, handleSubmit, meta, values: formValues, setValues } = useForm({
   validationSchema: yup.object({
     name: yup.string().trim().required('Name wird benötigt'),
   }),
   initialValues: {
     name: '',
   } as EmployeeFormData,
+})
+
+// Escape/X close with dirty-confirm; unsaved entries survive reloads
+const { requestClose, close } = useDialogGuard({
+  dirty: () => meta.value.dirty,
+  close: payload => dialogRef.value.close(payload),
+  draft: {
+    key: 'employee:new',
+    capture: () => ({ ...formValues }),
+    restore: saved => setValues(saved),
+  },
 })
 
 const [name, nameProps] = defineField('name')
@@ -78,7 +89,7 @@ const onCreateEmployee = handleSubmit((values) => {
   errorMessage.value = ''
   createEmployee(values)
     .then(async (employeeID: number) => {
-      dialogRef?.value.close()
+      close()
       navigateTo({ name: RouteNames.EMPLOYEES_EDIT, params: { id: employeeID } })
       toast.add({
         summary: 'Erfolg',

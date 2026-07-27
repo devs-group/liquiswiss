@@ -57,7 +57,7 @@
         :loading="isLoading"
         label="Abbrechen"
         severity="secondary"
-        @click="dialogRef?.close()"
+        @click="requestClose()"
       />
     </div>
   </form>
@@ -68,6 +68,12 @@ import type { ICategoryReassignDialog } from '~/interfaces/dialog-interfaces'
 import { Config } from '~/config/config'
 
 const dialogRef = inject<ICategoryReassignDialog>('dialogRef')!
+
+// Escape/X close (no form: nothing to guard)
+const { requestClose } = useDialogGuard({
+  dirty: () => false,
+  close: payload => dialogRef.value.close(payload),
+})
 
 const { categories, deleteCategory, reassignCategoryTransactions } = useCategories()
 const toast = useToast()

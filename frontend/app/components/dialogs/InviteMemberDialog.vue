@@ -58,7 +58,7 @@
         :loading="isLoading"
         label="Abbrechen"
         severity="contrast"
-        @click="dialogRef?.close()"
+        @click="requestClose()"
       />
     </div>
   </form>
@@ -85,7 +85,7 @@ const roleOptions = [
   { label: 'Nur Lesen', value: 'read-only' },
 ]
 
-const { defineField, errors, handleSubmit, meta } = useForm({
+const { defineField, errors, handleSubmit, meta, values: formValues, setValues } = useForm({
   validationSchema: yup.object({
     email: yup.string().email('Ungültige E-Mail-Adresse').trim().required('E-Mail wird benötigt'),
     role: yup.string().required('Rolle wird benötigt'),
@@ -96,6 +96,17 @@ const { defineField, errors, handleSubmit, meta } = useForm({
   } as CreateInvitationFormData,
 })
 
+// Escape/X close with dirty-confirm; unsaved entries survive reloads
+const { requestClose, close } = useDialogGuard({
+  dirty: () => meta.value.dirty,
+  close: payload => dialogRef.value.close(payload),
+  draft: {
+    key: 'invitation:new',
+    capture: () => ({ ...formValues }),
+    restore: saved => setValues(saved),
+  },
+})
+
 const [email, emailProps] = defineField('email')
 const [role, roleProps] = defineField('role')
 
@@ -104,7 +115,7 @@ const onInvite = handleSubmit((values) => {
   errorMessage.value = ''
   createInvitation(dialogRef.value.data.organisationId, values)
     .then(() => {
-      dialogRef?.value.close()
+      close()
       toast.add({
         summary: 'Erfolg',
         detail: `Einladung an "${values.email}" wurde gesendet`,

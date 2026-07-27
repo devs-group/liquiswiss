@@ -70,7 +70,7 @@
         :disabled="isLoading"
         label="Schliessen"
         severity="contrast"
-        @click="dialogRef.close(requiresRefresh)"
+        @click="requestClose(requiresRefresh)"
       />
     </div>
   </div>
@@ -104,6 +104,14 @@ const isLoading = ref(false)
 const salary = ref(dialogRef.value.data!.salary)
 const isLoadingCosts = ref(false)
 const requiresRefresh = ref(false)
+
+// Escape/X close (list dialog: nothing to guard); propagates the
+// requires-refresh flag to the parent like the Schliessen button
+const { requestClose } = useDialogGuard({
+  dirty: () => false,
+  close: payload => dialogRef.value.close(payload),
+  payload: () => requiresRefresh.value,
+})
 const costsErrorMessage = ref('')
 const costs = ref<SalaryCostResponse[]>([])
 const search = ref('')

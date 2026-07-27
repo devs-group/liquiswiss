@@ -125,7 +125,7 @@
         :loading="isLoading"
         label="Abbrechen"
         severity="contrast"
-        @click="dialogRef?.close()"
+        @click="requestClose()"
       />
       <Button
         v-if="!isCreate"
@@ -164,7 +164,7 @@ const isClone = dialogRef.value.data?.isClone
 const isCreate = isClone || !bankAccount.value?.id
 const errorMessage = ref('')
 
-const { defineField, errors, handleSubmit, meta, resetForm } = useForm({
+const { defineField, errors, handleSubmit, meta, resetForm, values: formValues, setValues } = useForm({
   validationSchema: yup.object({
     name: yup.string().trim().required('Name wird benötigt'),
     amount: yup.number().required('Betrag wird benötigt').typeError('Ungültiger Betrag'),
@@ -176,6 +176,17 @@ const { defineField, errors, handleSubmit, meta, resetForm } = useForm({
     amount: isNumber(bankAccount.value?.amount) ? AmountToFloat(bankAccount.value!.amount) : '',
     currency: bankAccount.value?.currency.id ?? getOrganisationCurrencyID.value,
   } as BankAccountFormData,
+})
+
+// Escape/X close with dirty-confirm; unsaved entries survive reloads
+const { requestClose, close } = useDialogGuard({
+  dirty: () => meta.value.dirty,
+  close: payload => dialogRef.value.close(payload),
+  draft: {
+    key: `bank_account:${isCreate ? 'new' : bankAccount.value?.id}`,
+    capture: () => ({ ...formValues }),
+    restore: saved => setValues(saved),
+  },
 })
 
 // Real-time: warn when the bank account being edited was changed or deleted
@@ -222,7 +233,7 @@ const onSubmit = handleSubmit((values) => {
   if (isCreate) {
     createBankAccount(values)
       .then(() => {
-        dialogRef.value.close()
+        close()
         toast.add({
           summary: 'Erfolg',
           detail: `Bankkonto "${values.name}" wurde angelegt`,
@@ -243,7 +254,7 @@ const onSubmit = handleSubmit((values) => {
   else {
     updateBankAccount(values)
       .then(() => {
-        dialogRef.value.close()
+        close()
         toast.add({
           summary: 'Erfolg',
           detail: `Bankkonto "${values.name}" wurde bearbeitet`,
@@ -281,7 +292,7 @@ const onDeleteBankAccount = () => {
               severity: 'success',
               life: Config.TOAST_LIFE_TIME,
             })
-            dialogRef.value.close()
+            close()
           })
           .catch(() => {
             errorMessage.value = 'Bankkonto konnte nicht gelöscht werden'

@@ -251,7 +251,7 @@
         :disabled="isLoading"
         label="Abbrechen"
         severity="contrast"
-        @click="dialogRef.close()"
+        @click="requestClose()"
       />
       <Button
         v-if="!isCreate && !isTermination"
@@ -380,7 +380,7 @@ const cloneDefaultFromDate = computed(() => {
   return today
 })
 
-const { defineField, errors, handleSubmit, meta, resetForm } = useForm({
+const { defineField, errors, handleSubmit, meta, resetForm, values: formValues, setValues } = useForm({
   validationSchema: yup.object({
     hoursPerMonth: yup.number().typeError('Bitte Zahl eingeben').min(0, 'Muss mindestens 0 sein').max(480, 'Kann maximal 480 sein'),
     amount: yup.number().typeError('Bitte Gehalt eingeben').min(0, 'Muss mindestens 0 sein'),
@@ -400,6 +400,23 @@ const { defineField, errors, handleSubmit, meta, resetForm } = useForm({
       : salary.value?.fromDate ? DateToUTCDate(salary.value.fromDate) : isTermination.value ? getEarliestRecommendedTerminationDate.value : null,
     cycle: salary.value?.cycle ?? CycleType.Monthly,
   } as SalaryPUTFormData,
+})
+
+// Escape/X close with dirty-confirm; unsaved entries survive reloads
+const { requestClose, close } = useDialogGuard({
+  dirty: () => meta.value.dirty,
+  close: payload => dialogRef.value.close(payload),
+  draft: {
+    key: `salary:${isCreate.value ? 'new' : salary.value?.id}`,
+    capture: () => ({ ...formValues }),
+    restore: (saved) => {
+      // JSON turns Dates into strings; DatePicker needs Date objects
+      setValues({
+        ...saved,
+        fromDate: saved.fromDate ? new Date(saved.fromDate) : null,
+      })
+    },
+  },
 })
 
 // Real-time: warn when the salary being edited was changed or deleted
@@ -475,7 +492,7 @@ const onSubmit = handleSubmit(async (values) => {
     try {
       const createdSalary = await createSalary(employeeID, values)
       await cloneSalaryCostsIfNeeded(createdSalary.id)
-      dialogRef.value.close(true)
+      close(true)
       toast.add({
         summary: 'Erfolg',
         detail: `Lohn wurde angelegt`,
@@ -501,7 +518,7 @@ const onSubmit = handleSubmit(async (values) => {
         ...values,
         isTermination: true,
       })
-      dialogRef.value.close(true)
+      close(true)
       toast.add({
         summary: 'Erfolg',
         detail: `Austritt wurde angelegt`,
@@ -523,7 +540,7 @@ const onSubmit = handleSubmit(async (values) => {
 
   try {
     await updateSalary(employeeID, values)
-    dialogRef.value.close(true)
+    close(true)
     toast.add({
       summary: 'Erfolg',
       detail: `Lohn wurde bearbeitet`,
@@ -560,7 +577,7 @@ const onDeleteSalary = () => {
               severity: 'success',
               life: Config.TOAST_LIFE_TIME,
             })
-            dialogRef.value.close(true)
+            close(true)
             listSalaries(employeeID)
           })
           .catch(() => {

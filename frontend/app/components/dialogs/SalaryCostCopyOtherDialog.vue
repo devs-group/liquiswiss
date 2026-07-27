@@ -95,7 +95,7 @@
         :disabled="isCopying"
         label="Schliessen"
         severity="contrast"
-        @click="dialogRef.close()"
+        @click="requestClose()"
       />
     </div>
   </div>
@@ -116,6 +116,12 @@ import { Config } from '~/config/config'
 import SalaryCostCopyHeaders from '~/components/SalaryCostCopyHeaders.vue'
 
 const dialogRef = inject<ISalaryCostCopyDialog>('dialogRef')!
+
+// Escape/X close (no form: nothing to guard)
+const { requestClose } = useDialogGuard({
+  dirty: () => false,
+  close: payload => dialogRef.value.close(payload),
+})
 
 const toast = useToast()
 const confirm = useConfirm()
