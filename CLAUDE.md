@@ -89,7 +89,7 @@ make dc CMD="logs -f backend"   # any compose passthrough
 
 **Local currency rates fallback**: when `FIXER_IO_KEY` is empty, `FetchFiatRates()` upserts pairs from `backend/internal/service/fixer_io_service/fallback_rates.json` instead of calling Fixer.io. Refresh the JSON manually if drift becomes problematic (one-off `curl` against Fixer.io with a real key, paste in).
 
-**Bitwarden Secrets Manager (BWSM) project**: `liquiswiss-dev` (id `81c6783f-41ae-4e28-b688-b437016bfa13`).
+**Bitwarden Secrets Manager (BWSM)**: local dev uses the `liquiswiss-dev` project. Project id and access token come from the vault (web vault → Secrets Manager), they are not documented here.
 
 **Keychain access token setup** (token = `0.<uuid>...:<key>` from BWSM machine account):
 
@@ -106,7 +106,7 @@ security add-generic-password -a "$USER" -s "bws-liquiswiss-dev" -w
 security delete-generic-password -a "$USER" -s "bws-liquiswiss-dev"
 ```
 
-**Token expiry**: BWSM access tokens expire 60 days after creation. Current token created 2026-04-25, expires **2026-06-24**. Rotate before then via web vault → Secrets Manager → Machine accounts → access tokens, then re-run keychain `delete` + `add` above.
+**Token expiry**: BWSM access tokens expire 60 days after creation. When `make` stops injecting secrets, the token has lapsed: mint a new one via web vault → Secrets Manager → Machine accounts → access tokens, then re-run keychain `delete` + `add` above. Without a token everything still runs on the dev fallbacks described above.
 
 To follow logs of specific services:
 
@@ -153,7 +153,7 @@ Detailed documentation is in [docs/ai/](docs/ai/):
 
 ## Configuration
 
-See `.env.example`, `backend/.env.example`, and `frontend/.env.example` for required environment variables.
+All environment variables and their local dev defaults are declared inline in `docker-compose.yml` (local) and `_deployment/docker-compose.yml` (production). There are no `.env.example` files anymore; production values come from BWSM.
 
 ## External Services
 

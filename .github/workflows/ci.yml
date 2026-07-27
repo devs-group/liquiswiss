@@ -170,8 +170,6 @@ jobs:
           DB_NAME: test
           JWT_KEY: test-jwt-key
           WEB_HOST: http://localhost:3000
-          SEND_GRID_TOKEN: ""
-          SEND_GRID_TEMPLATE_ID: ""
           FIXER_IO_URL: ""
           FIXER_IO_KEY: ""
 

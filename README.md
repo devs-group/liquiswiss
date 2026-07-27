@@ -15,37 +15,24 @@ This enables pre-commit hooks that run lint and tests before each commit.
 
 ## Configuration
 
-> We are planning to add [Mailpit](https://mailpit.axllent.org/) for local e-mail testing and replace fixer.io with a
-> local mock
+No configuration is needed to start: every variable has a local dev default in `docker-compose.yml`, so
+`make up` brings up the full stack without any accounts or secrets.
 
-1. Copy the [.env.example](.env.example)  into the same directory and name it `.env`
-    - Set your credentials for [MariaDB](https://hub.docker.com/_/mariadb)
-2. Copy the [backend/.env.example](backend/.env.example) into the same directory and name it `.env`
-    - The `WEB_HOST` is set to http://localhost:3000 and works for local dev
-    - THE `JWT_KEY` can be anything for local development but make sure to set it for [production](#production)
-    - Set your credentials for [MariaDB](https://hub.docker.com/_/mariadb) and make sure they
-      match [.env.example](.env.example)
-    - Set your Token for [SendGrid](https://app.sendgrid.com/)
-        - This requires you to have an account with SendGrid
-            - Create an API key [here](https://app.sendgrid.com/settings/api_keys)
-        - You also need to have a [Dynamic Template](https://mc.sendgrid.com/dynamic-templates) and get the ID
-            - The template for LiquiSwiss looks like this:
-            - ![sendgrid.png](.readme/sendgrid.png "Dynamic Template")
-            - The values to submit can be found in [this model](backend/pkg/models/mail.go)
-            - You can find the usage in the [SendgridService](backend/internal/service/sendgrid_service.go)
-    - Set your credentials for [Fixer](https://fixer.io/)
-        - This requires you to have an account with Fixer
-        - Copy the API key that you find in the [Dashboard](https://fixer.io/dashboard)
-3. Copy the [fronted/.env.example](frontend/.env.example) into the same directory and name it `.env`
-    - The `NUXT_API_HOST` works fine for local dev but must be changed for production
+- **E-mail**: outbound mail goes to the local [Mailpit](https://mailpit.axllent.org/) service. Read it at
+  http://localhost:8025. Production uses any SMTP relay via the `SMTP_*` variables.
+- **Currency rates**: with an empty `FIXER_IO_KEY`, rates are loaded from
+  [fallback_rates.json](backend/internal/service/fixer_io_service/fallback_rates.json) instead of calling
+  [Fixer.io](https://fixer.io/).
+- **Secrets**: production values are injected from Bitwarden Secrets Manager by the `make` targets. See
+  [CLAUDE.md](CLAUDE.md) for the setup.
 
 ## Admin
 
 We are using [phpMyAdmin](https://www.phpmyadmin.net/) with Docker to provide an interface to the database.
 
-- Check out the [.env.example](.env.example) to see the values you can set (all starting with `PMA_`). You can find more
-  information [here](https://hub.docker.com/_/phpmyadmin)
-- You can check out your database (locally) at: http://localhost:8082/
+- Configure it with the `PMA_*` variables in `docker-compose.yml`, see the
+  [image documentation](https://hub.docker.com/_/phpmyadmin)
+- You can check out your database (locally) at: http://localhost:8097/
 
 # Frontend (Nuxt 4)
 
