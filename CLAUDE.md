@@ -143,7 +143,8 @@ Detailed documentation is in [docs/ai/](docs/ai/):
 - No "Co-Authored-By" or similar footers
 - Start with capital letter
 - Write as if completing: "(This commit will) ..."
-- **Always `git push` after a successful commit** (as a separate command, never combined with commit)
+- Commit in small logical groups, but keep the total commit count low
+- **Never `git push` without asking first** (unless explicitly instructed to push for a while)
 
 **Examples:**
 - `Add link field to transactions to enter url`
