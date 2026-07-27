@@ -281,6 +281,9 @@ func TestResendOrganisationInvitation_UpdatesLastSentAtAfterDelay(t *testing.T) 
 	_, err = conn.Exec("UPDATE organisation_invitations SET last_sent_at = ? WHERE id = ?", pastTime, invitationID)
 	require.NoError(t, err)
 
+	before, err := dbAdapter.GetInvitationByID(org.ID, invitationID)
+	require.NoError(t, err)
+
 	// Resend should succeed and advance last_sent_at to "now".
 	err = apiService.ResendOrganisationInvitation(context.Background(), user.ID, org.ID, invitationID)
 	require.NoError(t, err)
@@ -289,6 +292,15 @@ func TestResendOrganisationInvitation_UpdatesLastSentAtAfterDelay(t *testing.T) 
 	require.NoError(t, err)
 	require.WithinDuration(t, time.Now(), after.LastSentAt, 10*time.Second,
 		"last_sent_at should advance to ~now after a successful resend")
+
+	// Regression (MariaDB implicit ON UPDATE CURRENT_TIMESTAMP on the first
+	// TIMESTAMP column): the resend UPDATE must NOT touch expires_at, else
+	// every resent invitation is instantly expired. Fixed by migration 00043
+	// (expires_at TIMESTAMP -> DATETIME).
+	require.Equal(t, before.ExpiresAt.Unix(), after.ExpiresAt.Unix(),
+		"expires_at must not change on resend")
+	require.True(t, time.Now().Before(after.ExpiresAt),
+		"resent invitation must still be valid")
 }
 
 func TestCheckInvitation_ValidToken(t *testing.T) {
