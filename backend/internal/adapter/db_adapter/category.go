@@ -14,7 +14,7 @@ func (d *DatabaseAdapter) ListCategories(userID, page, limit int64) ([]models.Ca
 		return nil, 0, err
 	}
 
-	rows, err := d.db.Query(string(query), userID, limit, (page-1)*limit)
+	rows, err := d.db.Query(string(query), userID, userID, limit, (page-1)*limit)
 	if err != nil {
 		return nil, 0, err
 	}
@@ -23,7 +23,7 @@ func (d *DatabaseAdapter) ListCategories(userID, page, limit int64) ([]models.Ca
 	for rows.Next() {
 		var category models.Category
 
-		err := rows.Scan(&category.ID, &category.Name, &category.CanEdit, &totalCount)
+		err := rows.Scan(&category.ID, &category.Name, &category.CanEdit, &category.InUse, &totalCount)
 		if err != nil {
 			return nil, 0, err
 		}
@@ -42,7 +42,7 @@ func (d *DatabaseAdapter) GetCategory(userID int64, categoryID int64) (*models.C
 		return nil, err
 	}
 
-	err = d.db.QueryRow(string(query), categoryID, userID).Scan(&category.ID, &category.Name, &category.CanEdit)
+	err = d.db.QueryRow(string(query), userID, categoryID, userID).Scan(&category.ID, &category.Name, &category.CanEdit, &category.InUse)
 	if err != nil {
 		return nil, err
 	}
@@ -112,6 +112,20 @@ func (d *DatabaseAdapter) DeleteCategory(userID int64, categoryID int64) error {
 	_, err = d.db.Exec(string(query), categoryID, userID)
 
 	return err
+}
+
+func (d *DatabaseAdapter) ReassignTransactionsCategory(userID int64, fromCategoryID int64, toCategoryID int64) (int64, error) {
+	query, err := sqlQueries.ReadFile("queries/reassign_transactions_category.sql")
+	if err != nil {
+		return 0, err
+	}
+
+	result, err := d.db.Exec(string(query), toCategoryID, fromCategoryID, userID)
+	if err != nil {
+		return 0, err
+	}
+
+	return result.RowsAffected()
 }
 
 func (d *DatabaseAdapter) CountTransactionsWithCategory(userID int64, categoryID int64) (int64, error) {

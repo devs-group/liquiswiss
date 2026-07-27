@@ -522,6 +522,27 @@ func registerOrganisationTools(server *sdk.Server, deps *toolDeps) {
 	})
 
 	sdk.AddTool(server, &sdk.Tool{
+		Name:        "reassign_category_transactions",
+		Description: "Move ALL transactions of the current organisation from one category to another (e.g. to free up a category before delete_category). Requires editor role or higher.",
+	}, func(ctx context.Context, req *sdk.CallToolRequest, in struct {
+		FromID int64 `json:"fromId" jsonschema:"source category id whose transactions get moved"`
+		ToID   int64 `json:"toId" jsonschema:"target category id the transactions get assigned to"`
+	}) (*sdk.CallToolResult, map[string]any, error) {
+		userID, err := userIDFrom(ctx)
+		if err != nil {
+			return nil, nil, err
+		}
+		if err := deps.requireEditor(userID); err != nil {
+			return nil, nil, err
+		}
+		affected, err := deps.apiService.ReassignCategoryTransactions(userID, in.FromID, in.ToID)
+		if err != nil {
+			return nil, nil, err
+		}
+		return nil, map[string]any{"affected": affected}, nil
+	})
+
+	sdk.AddTool(server, &sdk.Tool{
 		Name:        "list_currencies",
 		Description: "List all currencies (needed as currency ID when creating bank accounts or transactions). Optional search filters by code or description.",
 	}, func(ctx context.Context, req *sdk.CallToolRequest, in struct {

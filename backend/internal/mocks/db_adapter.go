@@ -1530,6 +1530,21 @@ func (mr *MockIDatabaseAdapterMockRecorder) MarkOAuthAuthCodeUsed(codeHash any) 
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "MarkOAuthAuthCodeUsed", reflect.TypeOf((*MockIDatabaseAdapter)(nil).MarkOAuthAuthCodeUsed), codeHash)
 }
 
+// ReassignTransactionsCategory mocks base method.
+func (m *MockIDatabaseAdapter) ReassignTransactionsCategory(userID, fromCategoryID, toCategoryID int64) (int64, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "ReassignTransactionsCategory", userID, fromCategoryID, toCategoryID)
+	ret0, _ := ret[0].(int64)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// ReassignTransactionsCategory indicates an expected call of ReassignTransactionsCategory.
+func (mr *MockIDatabaseAdapterMockRecorder) ReassignTransactionsCategory(userID, fromCategoryID, toCategoryID any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ReassignTransactionsCategory", reflect.TypeOf((*MockIDatabaseAdapter)(nil).ReassignTransactionsCategory), userID, fromCategoryID, toCategoryID)
+}
+
 // RefreshSalaryCostDetails mocks base method.
 func (m *MockIDatabaseAdapter) RefreshSalaryCostDetails(userID, salaryID int64) error {
 	m.ctrl.T.Helper()

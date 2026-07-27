@@ -6,6 +6,7 @@ import (
 
 	"github.com/stretchr/testify/require"
 
+	"liquiswiss/internal/service/api_service"
 	"liquiswiss/pkg/models"
 )
 
@@ -106,4 +107,86 @@ func TestUpdateCategory_CrossOrgIsolation(t *testing.T) {
 	require.NoError(t, err)
 	require.Equal(t, "Category A Updated", catAfterAttempt.Name)
 	require.NotEqual(t, "Hacked By B", catAfterAttempt.Name)
+}
+
+// TestDeleteCategory_SentinelErrors verifies that blocked deletes return the
+// typed errors the REST handler maps to 409 Conflict
+func TestDeleteCategory_SentinelErrors(t *testing.T) {
+	env := SetupCrossOrgTestEnvironment(t)
+	defer env.Conn.Close()
+
+	// Global preset (no owner organisation) must not be deletable
+	globalCat, err := env.APIService.CreateCategory(models.CreateCategory{Name: "Global Preset"}, nil)
+	require.NoError(t, err)
+	err = env.APIService.DeleteCategory(env.UserA.ID, globalCat.ID)
+	require.ErrorIs(t, err, api_service.ErrCategoryGlobal)
+
+	// Own category still used by a transaction must not be deletable
+	ownCat, err := env.APIService.CreateCategory(models.CreateCategory{Name: "In Use"}, &env.UserA.ID)
+	require.NoError(t, err)
+	transaction, err := env.APIService.CreateTransaction(models.CreateTransaction{
+		Name:        "Uses Category",
+		Amount:      100_00,
+		Type:        "single",
+		StartDate:   "2025-01-01",
+		Category:    ownCat.ID,
+		Currency:    *env.Currency.ID,
+		VatIncluded: false,
+	}, env.UserA.ID)
+	require.NoError(t, err)
+	err = env.APIService.DeleteCategory(env.UserA.ID, ownCat.ID)
+	require.ErrorIs(t, err, api_service.ErrCategoryInUse)
+
+	// After removing the transaction the category can be deleted
+	err = env.APIService.DeleteTransaction(env.UserA.ID, transaction.ID)
+	require.NoError(t, err)
+	err = env.APIService.DeleteCategory(env.UserA.ID, ownCat.ID)
+	require.NoError(t, err)
+}
+
+// TestReassignCategoryTransactions verifies bulk relinking of transactions to
+// another category, including cross-org isolation of both source and target
+func TestReassignCategoryTransactions(t *testing.T) {
+	env := SetupCrossOrgTestEnvironment(t)
+	defer env.Conn.Close()
+
+	source, err := env.APIService.CreateCategory(models.CreateCategory{Name: "Reassign Source"}, &env.UserA.ID)
+	require.NoError(t, err)
+	target, err := env.APIService.CreateCategory(models.CreateCategory{Name: "Reassign Target"}, &env.UserA.ID)
+	require.NoError(t, err)
+
+	for i := range 2 {
+		_, err = env.APIService.CreateTransaction(models.CreateTransaction{
+			Name:        "Reassign TX",
+			Amount:      int64(100_00 + i),
+			Type:        "single",
+			StartDate:   "2025-01-01",
+			Category:    source.ID,
+			Currency:    *env.Currency.ID,
+			VatIncluded: false,
+		}, env.UserA.ID)
+		require.NoError(t, err)
+	}
+
+	// User B must not be able to touch User A's categories
+	_, err = env.APIService.ReassignCategoryTransactions(env.UserB.ID, source.ID, target.ID)
+	require.Error(t, err)
+
+	// Same source and target is rejected
+	_, err = env.APIService.ReassignCategoryTransactions(env.UserA.ID, source.ID, source.ID)
+	require.Error(t, err)
+
+	// Happy path: both transactions move, then the source can be deleted
+	affected, err := env.APIService.ReassignCategoryTransactions(env.UserA.ID, source.ID, target.ID)
+	require.NoError(t, err)
+	require.Equal(t, int64(2), affected)
+
+	count, err := env.DBAdapter.CountTransactionsWithCategory(env.UserA.ID, source.ID)
+	require.NoError(t, err)
+	require.Equal(t, int64(0), count)
+	count, err = env.DBAdapter.CountTransactionsWithCategory(env.UserA.ID, target.ID)
+	require.NoError(t, err)
+	require.Equal(t, int64(2), count)
+
+	require.NoError(t, env.APIService.DeleteCategory(env.UserA.ID, source.ID))
 }

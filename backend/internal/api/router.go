@@ -386,6 +386,9 @@ func (api *API) setupRouter() {
 			editorRoutes.DELETE("/categories/:categoryID", func(ctx *gin.Context) {
 				handlers.DeleteCategory(api.APIService, ctx)
 			})
+			editorRoutes.POST("/categories/:categoryID/reassign", func(ctx *gin.Context) {
+				handlers.ReassignCategory(api.APIService, ctx)
+			})
 
 			// Currencies
 			protected.GET("/currencies", func(ctx *gin.Context) {

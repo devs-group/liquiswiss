@@ -1154,6 +1154,21 @@ func (mr *MockIAPIServiceMockRecorder) Logout(existingRefreshToken any) *gomock.
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Logout", reflect.TypeOf((*MockIAPIService)(nil).Logout), existingRefreshToken)
 }
 
+// ReassignCategoryTransactions mocks base method.
+func (m *MockIAPIService) ReassignCategoryTransactions(userID, fromCategoryID, toCategoryID int64) (int64, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "ReassignCategoryTransactions", userID, fromCategoryID, toCategoryID)
+	ret0, _ := ret[0].(int64)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// ReassignCategoryTransactions indicates an expected call of ReassignCategoryTransactions.
+func (mr *MockIAPIServiceMockRecorder) ReassignCategoryTransactions(userID, fromCategoryID, toCategoryID any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ReassignCategoryTransactions", reflect.TypeOf((*MockIAPIService)(nil).ReassignCategoryTransactions), userID, fromCategoryID, toCategoryID)
+}
+
 // RemoveOrganisationMember mocks base method.
 func (m *MockIAPIService) RemoveOrganisationMember(userID, organisationID, memberUserID int64) error {
 	m.ctrl.T.Helper()

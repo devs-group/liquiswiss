@@ -106,6 +106,7 @@ type IAPIService interface {
 	CreateCategory(payload models.CreateCategory, userID *int64) (*models.Category, error)
 	UpdateCategory(payload models.UpdateCategory, userID int64, categoryID int64) (*models.Category, error)
 	DeleteCategory(userID int64, categoryID int64) error
+	ReassignCategoryTransactions(userID int64, fromCategoryID int64, toCategoryID int64) (int64, error)
 
 	ListCurrencies(userID int64) ([]models.Currency, error)
 	GetCurrency(currencyID int64) (*models.Currency, error)

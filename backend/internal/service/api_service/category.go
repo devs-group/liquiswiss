@@ -1,11 +1,19 @@
 package api_service
 
 import (
+	"errors"
 	"fmt"
 	"liquiswiss/internal/events"
 	"liquiswiss/pkg/logger"
 	"liquiswiss/pkg/models"
 	"liquiswiss/pkg/utils"
+)
+
+var (
+	// ErrCategoryGlobal marks attempts to delete a global preset category
+	ErrCategoryGlobal = errors.New("global categories cannot be deleted")
+	// ErrCategoryInUse marks deletes blocked by transactions still using the category
+	ErrCategoryInUse = errors.New("category is still used by transactions")
 )
 
 func (a *APIService) ListCategories(userID, page, limit int64) ([]models.Category, int64, error) {
@@ -42,7 +50,13 @@ func (a *APIService) CreateCategory(payload models.CreateCategory, userID *int64
 		logger.Logger.Error(err)
 		return nil, err
 	}
-	category, err := a.dbService.GetCategory(*userID, categoryID)
+	// Global categories are created without a user; userID 0 still resolves
+	// them because the query matches organisation_id IS NULL
+	var scopeUserID int64
+	if userID != nil {
+		scopeUserID = *userID
+	}
+	category, err := a.dbService.GetCategory(scopeUserID, categoryID)
 	if err != nil {
 		logger.Logger.Error(err)
 		return nil, err
@@ -78,6 +92,36 @@ func (a *APIService) UpdateCategory(payload models.UpdateCategory, userID int64,
 	return category, nil
 }
 
+// ReassignCategoryTransactions moves every transaction of the user's current
+// organisation from one category to another, typically right before the
+// source category gets deleted.
+func (a *APIService) ReassignCategoryTransactions(userID int64, fromCategoryID int64, toCategoryID int64) (int64, error) {
+	if fromCategoryID == toCategoryID {
+		return 0, fmt.Errorf("source and target category must differ")
+	}
+	// Both categories must be visible to the user (own org or global preset)
+	if _, err := a.dbService.GetCategory(userID, fromCategoryID); err != nil {
+		logger.Logger.Error(err)
+		return 0, err
+	}
+	if _, err := a.dbService.GetCategory(userID, toCategoryID); err != nil {
+		logger.Logger.Error(err)
+		return 0, err
+	}
+	affected, err := a.dbService.ReassignTransactionsCategory(userID, fromCategoryID, toCategoryID)
+	if err != nil {
+		logger.Logger.Error(err)
+		return 0, err
+	}
+	if affected > 0 {
+		if _, err := a.CalculateForecast(userID); err != nil {
+			logger.Logger.Error(err)
+		}
+		a.notifyChange(userID, "transaction", events.ActionUpdated, 0)
+	}
+	return affected, nil
+}
+
 func (a *APIService) DeleteCategory(userID int64, categoryID int64) error {
 	category, err := a.dbService.GetCategory(userID, categoryID)
 	if err != nil {
@@ -85,7 +129,7 @@ func (a *APIService) DeleteCategory(userID int64, categoryID int64) error {
 		return err
 	}
 	if !category.CanEdit {
-		return fmt.Errorf("global categories cannot be deleted")
+		return ErrCategoryGlobal
 	}
 	inUse, err := a.dbService.CountTransactionsWithCategory(userID, categoryID)
 	if err != nil {
@@ -93,7 +137,7 @@ func (a *APIService) DeleteCategory(userID int64, categoryID int64) error {
 		return err
 	}
 	if inUse > 0 {
-		return fmt.Errorf("category is used by %d transaction(s) and cannot be deleted", inUse)
+		return fmt.Errorf("%w: %d transaction(s)", ErrCategoryInUse, inUse)
 	}
 	err = a.dbService.DeleteCategory(userID, categoryID)
 	if err != nil {
