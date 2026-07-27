@@ -317,16 +317,16 @@ func (a *APIService) AcceptInvitation(ctx context.Context, payload models.Accept
 			// Otherwise require password to prevent anyone with the invitation
 			// token from hijacking the account.
 			if payload.Password == nil || *payload.Password == "" {
-				return nil, nil, nil, nil, nil, errors.New("invalid credentials")
+				return nil, nil, nil, nil, nil, ErrInvalidCredentials
 			}
 
 			loginUser, err := a.dbService.GetUserPasswordByEMail(invitation.Email)
 			if err != nil {
 				logger.Logger.Error(err)
-				return nil, nil, nil, nil, nil, errors.New("invalid credentials")
+				return nil, nil, nil, nil, nil, ErrInvalidCredentials
 			}
 			if err := bcrypt.CompareHashAndPassword([]byte(loginUser.Password), []byte(*payload.Password)); err != nil {
-				return nil, nil, nil, nil, nil, errors.New("invalid credentials")
+				return nil, nil, nil, nil, nil, ErrInvalidCredentials
 			}
 			userID = existingUserID
 		}

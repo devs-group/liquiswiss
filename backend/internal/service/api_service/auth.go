@@ -2,6 +2,8 @@ package api_service
 
 import (
 	"context"
+	"database/sql"
+	"errors"
 	"golang.org/x/crypto/bcrypt"
 	"liquiswiss/config"
 	"liquiswiss/pkg/auth"
@@ -10,17 +12,24 @@ import (
 	"time"
 )
 
+// ErrInvalidCredentials is returned when an email is unknown or the password
+// does not match. Callers must map it to 401 and never reveal which of the two
+// it was (no user enumeration).
+var ErrInvalidCredentials = errors.New("invalid credentials")
+
 func (a *APIService) Login(ctx context.Context, payload models.Login, deviceName string, existingRefreshToken string) (*models.User, *string, *time.Time, *string, *time.Time, error) {
 	loginUser, err := a.dbService.GetUserPasswordByEMail(payload.Email)
 	if err != nil {
+		if errors.Is(err, sql.ErrNoRows) {
+			return nil, nil, nil, nil, nil, ErrInvalidCredentials
+		}
 		logger.Logger.Error(err)
 		return nil, nil, nil, nil, nil, err
 	}
 
 	err = bcrypt.CompareHashAndPassword([]byte(loginUser.Password), []byte(payload.Password))
 	if err != nil {
-		logger.Logger.Error(err)
-		return nil, nil, nil, nil, nil, err
+		return nil, nil, nil, nil, nil, ErrInvalidCredentials
 	}
 
 	user, err := a.dbService.GetProfile(loginUser.ID)

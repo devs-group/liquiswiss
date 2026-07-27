@@ -252,7 +252,7 @@ func AcceptInvitation(apiService api_service.IAPIService, c *gin.Context) {
 			c.JSON(http.StatusGone, gin.H{"error": "invitation has expired"})
 			return
 		}
-		if err.Error() == "invalid credentials" {
+		if errors.Is(err, api_service.ErrInvalidCredentials) {
 			c.JSON(http.StatusUnauthorized, gin.H{"error": "invalid credentials"})
 			return
 		}

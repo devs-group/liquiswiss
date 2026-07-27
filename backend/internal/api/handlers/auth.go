@@ -32,6 +32,10 @@ func Login(apiService api_service.IAPIService, c *gin.Context) {
 	// Action
 	user, accessToken, accessExpirationTime, refreshToken, refreshExpirationTime, err := apiService.Login(c.Request.Context(), payload, deviceName, existingRefreshToken)
 	if err != nil {
+		if errors.Is(err, api_service.ErrInvalidCredentials) {
+			c.Status(http.StatusUnauthorized)
+			return
+		}
 		c.Status(http.StatusInternalServerError)
 		return
 	}
