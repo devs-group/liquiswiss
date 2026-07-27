@@ -228,7 +228,8 @@ const onParseAmount = (event: Event) => {
   }
 }
 
-const onSubmit = handleSubmit((values) => {
+const onSubmit = handleSubmit((rawValues) => {
+  const values = trimStringValues(rawValues)
   isLoading.value = true
   errorMessage.value = ''
 

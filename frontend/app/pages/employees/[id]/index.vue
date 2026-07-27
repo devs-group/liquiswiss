@@ -285,7 +285,8 @@ const onGoBack = () => {
   navigateTo({ name: RouteNames.EMPLOYEES, replace: true })
 }
 
-const onUpdateEmployee = handleSubmit((values) => {
+const onUpdateEmployee = handleSubmit((rawValues) => {
+  const values = trimStringValues(rawValues)
   employeeUpdateErrorMessage.value = ''
   employeeUpdateMessage.value = ''
   isSubmitting.value = true

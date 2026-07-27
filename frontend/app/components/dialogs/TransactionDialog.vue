@@ -622,7 +622,8 @@ watch(startDate, (value) => {
   }
 })
 
-const onSubmit = handleSubmit((values) => {
+const onSubmit = handleSubmit((rawValues) => {
+  const values = trimStringValues(rawValues)
   isLoading.value = true
   errorMessage.value = ''
   values.startDate.setMinutes(values.startDate.getMinutes() - values.startDate.getTimezoneOffset())

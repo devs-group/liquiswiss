@@ -86,7 +86,8 @@ const { requestClose, close } = useDialogGuard({
 
 const [name, nameProps] = defineField('name')
 
-const onCreateEmployee = handleSubmit((values) => {
+const onCreateEmployee = handleSubmit((rawValues) => {
+  const values = trimStringValues(rawValues)
   isLoading.value = true
   errorMessage.value = ''
   createEmployee(values)

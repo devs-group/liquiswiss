@@ -112,7 +112,8 @@ const { requestClose, close } = useDialogGuard({
 const [email, emailProps] = defineField('email')
 const [role, roleProps] = defineField('role')
 
-const onInvite = handleSubmit((values) => {
+const onInvite = handleSubmit((rawValues) => {
+  const values = trimStringValues(rawValues)
   isLoading.value = true
   errorMessage.value = ''
   createInvitation(dialogRef.value.data.organisationId, values)

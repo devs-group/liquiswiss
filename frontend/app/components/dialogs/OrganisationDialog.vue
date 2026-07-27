@@ -86,7 +86,8 @@ const { requestClose, close } = useDialogGuard({
 
 const [name, nameProps] = defineField('name')
 
-const onCreateOrganisation = handleSubmit((values) => {
+const onCreateOrganisation = handleSubmit((rawValues) => {
+  const values = trimStringValues(rawValues)
   isLoading.value = true
   errorMessage.value = ''
   createOrganisation(values)

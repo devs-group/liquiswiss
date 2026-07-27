@@ -53,6 +53,10 @@ const bindEscapeListener = () => {
   window.addEventListener('keydown', (event) => {
     if (event.key !== 'Escape' || guardStack.length === 0) return
     if (document.querySelector(OVERLAY_SELECTOR)) return
+    // Consume the event: otherwise the same Escape press reaches the just
+    // opened ConfirmDialog and instantly dismisses it again
+    event.preventDefault()
+    event.stopPropagation()
     guardStack[guardStack.length - 1]!.requestClose()
   }, { capture: true })
 }

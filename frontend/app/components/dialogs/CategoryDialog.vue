@@ -137,7 +137,8 @@ const onReloadExternalChange = async () => {
 
 const [name, nameProps] = defineField('name')
 
-const onSubmit = handleSubmit((values) => {
+const onSubmit = handleSubmit((rawValues) => {
+  const values = trimStringValues(rawValues)
   isLoading.value = true
   errorMessage.value = ''
 

@@ -790,7 +790,8 @@ const onVatSubmit = handleVatSubmit((values) => {
     })
 })
 
-const onSubmit = handleSubmit((values) => {
+const onSubmit = handleSubmit((rawValues) => {
+  const values = trimStringValues(rawValues)
   if (!organisation.value) {
     return
   }

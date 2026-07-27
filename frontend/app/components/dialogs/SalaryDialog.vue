@@ -240,7 +240,7 @@
 
     <div class="flex items-center justify-end gap-2 col-span-full">
       <Button
-        :disabled="(!isDirty && !isClone) || !meta.valid || isLoading"
+        :disabled="(!isDirty && !isClone && !isTermination) || !meta.valid || isLoading"
         :loading="isLoading"
         :label="isClone ? 'Klonen' : 'Speichern'"
         icon="pi pi-save"

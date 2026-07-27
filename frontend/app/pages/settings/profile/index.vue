@@ -65,7 +65,7 @@
 
       <div class="flex justify-end gap-2 col-span-full">
         <Button
-          :disabled="!metaProfile.valid || (metaProfile.valid && !metaProfile.dirty) || isSubmittingProfile"
+          :disabled="!metaProfile.valid || !isProfileDirty || isSubmittingProfile"
           :loading="isSubmittingProfile"
           label="Profil aktualisieren"
           icon="pi pi-save"
@@ -259,7 +259,7 @@ onMounted(() => {
   settingsTab.value = RouteNames.SETTINGS_PROFILE
 })
 
-const { defineField: defineFieldProfile, errors: errorsProfile, handleSubmit: handleSubmitProfile, meta: metaProfile, resetForm: resetFormProfile } = useForm({
+const { defineField: defineFieldProfile, errors: errorsProfile, handleSubmit: handleSubmitProfile, meta: metaProfile, resetForm: resetFormProfile, values: profileFormValues } = useForm({
   validationSchema: yup.object({
     name: yup.string().trim().required('Name wird benötigt'),
     email: yup.string().email('Ungültiges E-Mail Format').trim().required('E-Mail wird benötigt'),
@@ -271,6 +271,10 @@ const { defineField: defineFieldProfile, errors: errorsProfile, handleSubmit: ha
   } as UserProfileFormData,
 })
 
+const isProfileDirty = useTrimmedDirty(metaProfile, profileFormValues)
+
+// Password form deliberately keeps the plain dirty flag: whitespace in
+// passwords is significant and must never be trimmed away
 const { defineField: defineFieldPassword, errors: errorsPassword, handleSubmit: handleSubmitPassword, meta: metaPassword, resetForm: resetFormPassword } = useForm({
   validationSchema: yup.object({
     password: yup.string().when({
@@ -353,7 +357,14 @@ onMounted(() => {
   loadConnections()
 })
 
-const onUpdateProfile = handleSubmitProfile((values) => {
+const onUpdateProfile = handleSubmitProfile((rawValues) => {
+  // Persist trimmed values: yup's .trim() only validates, it does not
+  // transform what gets submitted
+  const values = {
+    ...rawValues,
+    name: rawValues.name?.trim() ?? '',
+    email: rawValues.email?.trim() ?? '',
+  }
   profileUpdateMessage.value = ''
   profileUpdateErrorMessage.value = ''
   isSubmittingProfile.value = true
