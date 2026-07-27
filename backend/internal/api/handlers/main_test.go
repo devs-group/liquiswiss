@@ -1,6 +1,7 @@
 package handlers_test
 
 import (
+	"context"
 	"database/sql"
 	"fmt"
 	"os"
@@ -11,8 +12,8 @@ import (
 	"github.com/joho/godotenv"
 	"github.com/pressly/goose/v3"
 
-	"liquiswiss/internal/adapter/db_adapter"
 	"liquiswiss/config"
+	"liquiswiss/internal/adapter/db_adapter"
 	"liquiswiss/internal/adapter/email_adapter"
 	"liquiswiss/internal/db"
 	"liquiswiss/internal/service/api_service"
@@ -64,20 +65,20 @@ func CreateUserWithOrganisation(apiService api_service.IAPIService, dbService db
 		return nil, nil, err
 	}
 
-	organisation, err := apiService.CreateOrganisation(models.CreateOrganisation{
+	organisation, err := apiService.CreateOrganisation(context.Background(), models.CreateOrganisation{
 		Name: organisationName,
 	}, userID)
 	if err != nil {
 		return nil, nil, err
 	}
 
-	err = apiService.SetUserCurrentOrganisation(models.UpdateUserCurrentOrganisation{OrganisationID: organisation.ID}, userID)
+	err = apiService.SetUserCurrentOrganisation(context.Background(), models.UpdateUserCurrentOrganisation{OrganisationID: organisation.ID}, userID)
 	if err != nil {
 		return nil, nil, err
 	}
 
 	userName := "John Doe"
-	user, err := apiService.UpdateProfile(models.UpdateUser{
+	user, err := apiService.UpdateProfile(context.Background(), models.UpdateUser{
 		Name: &userName,
 	}, userID)
 	if err != nil {
@@ -88,7 +89,7 @@ func CreateUserWithOrganisation(apiService api_service.IAPIService, dbService db
 }
 
 func CreateEmployee(apiService api_service.IAPIService, userID int64, name string) (*models.Employee, error) {
-	employee, err := apiService.CreateEmployee(models.CreateEmployee{
+	employee, err := apiService.CreateEmployee(context.Background(), models.CreateEmployee{
 		Name: name,
 	}, userID)
 	if err != nil {
@@ -99,7 +100,7 @@ func CreateEmployee(apiService api_service.IAPIService, userID int64, name strin
 }
 
 func CreateCurrency(apiService api_service.IAPIService, code, description, localeCode string) (*models.Currency, error) {
-	currency, err := apiService.CreateCurrency(models.CreateCurrency{
+	currency, err := apiService.CreateCurrency(context.Background(), models.CreateCurrency{
 		Code:        code,
 		Description: description,
 		LocaleCode:  localeCode,
@@ -112,7 +113,7 @@ func CreateCurrency(apiService api_service.IAPIService, code, description, local
 }
 
 func CreateSalaryCostLabel(apiService api_service.IAPIService, userID int64, name string) (*models.SalaryCostLabel, error) {
-	salaryCostLabel, err := apiService.CreateSalaryCostLabel(models.CreateSalaryCostLabel{
+	salaryCostLabel, err := apiService.CreateSalaryCostLabel(context.Background(), models.CreateSalaryCostLabel{
 		Name: name,
 	}, userID)
 	if err != nil {

@@ -1,14 +1,15 @@
 package handlers_test
 
 import (
+	"context"
 	"database/sql"
 	"testing"
 
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 
-	"liquiswiss/internal/adapter/db_adapter"
 	"liquiswiss/config"
+	"liquiswiss/internal/adapter/db_adapter"
 	"liquiswiss/internal/adapter/email_adapter"
 	"liquiswiss/internal/service/api_service"
 	"liquiswiss/pkg/models"
@@ -60,7 +61,7 @@ func TestListEmployees_NoSearch(t *testing.T) {
 	require.NoError(t, err)
 
 	// List without search
-	employees, total, err := apiService.ListEmployees(user.ID, 1, 100, "name", "ASC", "", false)
+	employees, total, err := apiService.ListEmployees(context.Background(), user.ID, 1, 100, "name", "ASC", "", false)
 	require.NoError(t, err)
 	require.Equal(t, int64(3), total)
 	require.Len(t, employees, 3)
@@ -79,7 +80,7 @@ func TestListEmployees_WithSearch(t *testing.T) {
 	require.NoError(t, err)
 
 	// Search for "Alice"
-	employees, total, err := apiService.ListEmployees(user.ID, 1, 100, "name", "ASC", "Alice", false)
+	employees, total, err := apiService.ListEmployees(context.Background(), user.ID, 1, 100, "name", "ASC", "Alice", false)
 	require.NoError(t, err)
 	require.Equal(t, int64(1), total)
 	require.Len(t, employees, 1)
@@ -95,14 +96,14 @@ func TestListEmployees_SearchCaseInsensitive(t *testing.T) {
 	require.NoError(t, err)
 
 	// Search with lowercase
-	employees, total, err := apiService.ListEmployees(user.ID, 1, 100, "name", "ASC", "alice", false)
+	employees, total, err := apiService.ListEmployees(context.Background(), user.ID, 1, 100, "name", "ASC", "alice", false)
 	require.NoError(t, err)
 	require.Equal(t, int64(1), total)
 	require.Len(t, employees, 1)
 	require.Equal(t, "Alice Smith", employees[0].Name)
 
 	// Search with uppercase
-	employees, total, err = apiService.ListEmployees(user.ID, 1, 100, "name", "ASC", "ALICE", false)
+	employees, total, err = apiService.ListEmployees(context.Background(), user.ID, 1, 100, "name", "ASC", "ALICE", false)
 	require.NoError(t, err)
 	require.Equal(t, int64(1), total)
 	require.Len(t, employees, 1)
@@ -116,7 +117,7 @@ func TestListEmployees_SearchNoResults(t *testing.T) {
 	require.NoError(t, err)
 
 	// Search for non-existent term
-	employees, total, err := apiService.ListEmployees(user.ID, 1, 100, "name", "ASC", "nonexistent", false)
+	employees, total, err := apiService.ListEmployees(context.Background(), user.ID, 1, 100, "name", "ASC", "nonexistent", false)
 	require.NoError(t, err)
 	require.Equal(t, int64(0), total)
 	require.Len(t, employees, 0)
@@ -174,14 +175,14 @@ func TestListEmployees_SortByName(t *testing.T) {
 	require.NoError(t, err)
 
 	// ASC
-	employees, _, err := apiService.ListEmployees(user.ID, 1, 100, "name", "ASC", "", false)
+	employees, _, err := apiService.ListEmployees(context.Background(), user.ID, 1, 100, "name", "ASC", "", false)
 	require.NoError(t, err)
 	require.Equal(t, "Alpha", employees[0].Name)
 	require.Equal(t, "Bravo", employees[1].Name)
 	require.Equal(t, "Charlie", employees[2].Name)
 
 	// DESC
-	employees, _, err = apiService.ListEmployees(user.ID, 1, 100, "name", "DESC", "", false)
+	employees, _, err = apiService.ListEmployees(context.Background(), user.ID, 1, 100, "name", "DESC", "", false)
 	require.NoError(t, err)
 	require.Equal(t, "Charlie", employees[0].Name)
 	require.Equal(t, "Bravo", employees[1].Name)
@@ -194,7 +195,7 @@ func TestListEmployees_SortByHoursPerMonth(t *testing.T) {
 
 	empA, err := CreateEmployee(apiService, user.ID, "Medium Hours")
 	require.NoError(t, err)
-	_, err = apiService.CreateSalary(models.CreateSalary{
+	_, err = apiService.CreateSalary(context.Background(), models.CreateSalary{
 		HoursPerMonth:       100,
 		Amount:              5000_00,
 		Cycle:               "monthly",
@@ -206,7 +207,7 @@ func TestListEmployees_SortByHoursPerMonth(t *testing.T) {
 
 	empB, err := CreateEmployee(apiService, user.ID, "Few Hours")
 	require.NoError(t, err)
-	_, err = apiService.CreateSalary(models.CreateSalary{
+	_, err = apiService.CreateSalary(context.Background(), models.CreateSalary{
 		HoursPerMonth:       50,
 		Amount:              2500_00,
 		Cycle:               "monthly",
@@ -218,7 +219,7 @@ func TestListEmployees_SortByHoursPerMonth(t *testing.T) {
 
 	empC, err := CreateEmployee(apiService, user.ID, "Many Hours")
 	require.NoError(t, err)
-	_, err = apiService.CreateSalary(models.CreateSalary{
+	_, err = apiService.CreateSalary(context.Background(), models.CreateSalary{
 		HoursPerMonth:       160,
 		Amount:              8000_00,
 		Cycle:               "monthly",
@@ -229,14 +230,14 @@ func TestListEmployees_SortByHoursPerMonth(t *testing.T) {
 	require.NoError(t, err)
 
 	// ASC
-	employees, _, err := apiService.ListEmployees(user.ID, 1, 100, "hoursPerMonth", "ASC", "", false)
+	employees, _, err := apiService.ListEmployees(context.Background(), user.ID, 1, 100, "hoursPerMonth", "ASC", "", false)
 	require.NoError(t, err)
 	require.Equal(t, "Few Hours", employees[0].Name)
 	require.Equal(t, "Medium Hours", employees[1].Name)
 	require.Equal(t, "Many Hours", employees[2].Name)
 
 	// DESC
-	employees, _, err = apiService.ListEmployees(user.ID, 1, 100, "hoursPerMonth", "DESC", "", false)
+	employees, _, err = apiService.ListEmployees(context.Background(), user.ID, 1, 100, "hoursPerMonth", "DESC", "", false)
 	require.NoError(t, err)
 	require.Equal(t, "Many Hours", employees[0].Name)
 	require.Equal(t, "Medium Hours", employees[1].Name)
@@ -249,7 +250,7 @@ func TestListEmployees_SortBySalary(t *testing.T) {
 
 	empA, err := CreateEmployee(apiService, user.ID, "Medium Salary")
 	require.NoError(t, err)
-	_, err = apiService.CreateSalary(models.CreateSalary{
+	_, err = apiService.CreateSalary(context.Background(), models.CreateSalary{
 		HoursPerMonth:       160,
 		Amount:              5000_00,
 		Cycle:               "monthly",
@@ -261,7 +262,7 @@ func TestListEmployees_SortBySalary(t *testing.T) {
 
 	empB, err := CreateEmployee(apiService, user.ID, "Low Salary")
 	require.NoError(t, err)
-	_, err = apiService.CreateSalary(models.CreateSalary{
+	_, err = apiService.CreateSalary(context.Background(), models.CreateSalary{
 		HoursPerMonth:       160,
 		Amount:              3000_00,
 		Cycle:               "monthly",
@@ -273,7 +274,7 @@ func TestListEmployees_SortBySalary(t *testing.T) {
 
 	empC, err := CreateEmployee(apiService, user.ID, "High Salary")
 	require.NoError(t, err)
-	_, err = apiService.CreateSalary(models.CreateSalary{
+	_, err = apiService.CreateSalary(context.Background(), models.CreateSalary{
 		HoursPerMonth:       160,
 		Amount:              8000_00,
 		Cycle:               "monthly",
@@ -284,14 +285,14 @@ func TestListEmployees_SortBySalary(t *testing.T) {
 	require.NoError(t, err)
 
 	// ASC
-	employees, _, err := apiService.ListEmployees(user.ID, 1, 100, "salary", "ASC", "", false)
+	employees, _, err := apiService.ListEmployees(context.Background(), user.ID, 1, 100, "salary", "ASC", "", false)
 	require.NoError(t, err)
 	require.Equal(t, "Low Salary", employees[0].Name)
 	require.Equal(t, "Medium Salary", employees[1].Name)
 	require.Equal(t, "High Salary", employees[2].Name)
 
 	// DESC
-	employees, _, err = apiService.ListEmployees(user.ID, 1, 100, "salary", "DESC", "", false)
+	employees, _, err = apiService.ListEmployees(context.Background(), user.ID, 1, 100, "salary", "DESC", "", false)
 	require.NoError(t, err)
 	require.Equal(t, "High Salary", employees[0].Name)
 	require.Equal(t, "Medium Salary", employees[1].Name)
@@ -304,7 +305,7 @@ func TestListEmployees_SortByVacationDaysPerYear(t *testing.T) {
 
 	empA, err := CreateEmployee(apiService, user.ID, "Medium Vacation")
 	require.NoError(t, err)
-	_, err = apiService.CreateSalary(models.CreateSalary{
+	_, err = apiService.CreateSalary(context.Background(), models.CreateSalary{
 		HoursPerMonth:       160,
 		Amount:              5000_00,
 		Cycle:               "monthly",
@@ -316,7 +317,7 @@ func TestListEmployees_SortByVacationDaysPerYear(t *testing.T) {
 
 	empB, err := CreateEmployee(apiService, user.ID, "Few Vacation")
 	require.NoError(t, err)
-	_, err = apiService.CreateSalary(models.CreateSalary{
+	_, err = apiService.CreateSalary(context.Background(), models.CreateSalary{
 		HoursPerMonth:       160,
 		Amount:              5000_00,
 		Cycle:               "monthly",
@@ -328,7 +329,7 @@ func TestListEmployees_SortByVacationDaysPerYear(t *testing.T) {
 
 	empC, err := CreateEmployee(apiService, user.ID, "Many Vacation")
 	require.NoError(t, err)
-	_, err = apiService.CreateSalary(models.CreateSalary{
+	_, err = apiService.CreateSalary(context.Background(), models.CreateSalary{
 		HoursPerMonth:       160,
 		Amount:              5000_00,
 		Cycle:               "monthly",
@@ -339,14 +340,14 @@ func TestListEmployees_SortByVacationDaysPerYear(t *testing.T) {
 	require.NoError(t, err)
 
 	// ASC
-	employees, _, err := apiService.ListEmployees(user.ID, 1, 100, "vacationDaysPerYear", "ASC", "", false)
+	employees, _, err := apiService.ListEmployees(context.Background(), user.ID, 1, 100, "vacationDaysPerYear", "ASC", "", false)
 	require.NoError(t, err)
 	require.Equal(t, "Few Vacation", employees[0].Name)
 	require.Equal(t, "Medium Vacation", employees[1].Name)
 	require.Equal(t, "Many Vacation", employees[2].Name)
 
 	// DESC
-	employees, _, err = apiService.ListEmployees(user.ID, 1, 100, "vacationDaysPerYear", "DESC", "", false)
+	employees, _, err = apiService.ListEmployees(context.Background(), user.ID, 1, 100, "vacationDaysPerYear", "DESC", "", false)
 	require.NoError(t, err)
 	require.Equal(t, "Many Vacation", employees[0].Name)
 	require.Equal(t, "Medium Vacation", employees[1].Name)
@@ -359,7 +360,7 @@ func TestListEmployees_SortByFromDate(t *testing.T) {
 
 	empA, err := CreateEmployee(apiService, user.ID, "Middle Start")
 	require.NoError(t, err)
-	_, err = apiService.CreateSalary(models.CreateSalary{
+	_, err = apiService.CreateSalary(context.Background(), models.CreateSalary{
 		HoursPerMonth:       160,
 		Amount:              5000_00,
 		Cycle:               "monthly",
@@ -371,7 +372,7 @@ func TestListEmployees_SortByFromDate(t *testing.T) {
 
 	empB, err := CreateEmployee(apiService, user.ID, "Early Start")
 	require.NoError(t, err)
-	_, err = apiService.CreateSalary(models.CreateSalary{
+	_, err = apiService.CreateSalary(context.Background(), models.CreateSalary{
 		HoursPerMonth:       160,
 		Amount:              5000_00,
 		Cycle:               "monthly",
@@ -383,7 +384,7 @@ func TestListEmployees_SortByFromDate(t *testing.T) {
 
 	empC, err := CreateEmployee(apiService, user.ID, "Late Start")
 	require.NoError(t, err)
-	_, err = apiService.CreateSalary(models.CreateSalary{
+	_, err = apiService.CreateSalary(context.Background(), models.CreateSalary{
 		HoursPerMonth:       160,
 		Amount:              5000_00,
 		Cycle:               "monthly",
@@ -394,14 +395,14 @@ func TestListEmployees_SortByFromDate(t *testing.T) {
 	require.NoError(t, err)
 
 	// ASC
-	employees, _, err := apiService.ListEmployees(user.ID, 1, 100, "fromDate", "ASC", "", false)
+	employees, _, err := apiService.ListEmployees(context.Background(), user.ID, 1, 100, "fromDate", "ASC", "", false)
 	require.NoError(t, err)
 	require.Equal(t, "Early Start", employees[0].Name)
 	require.Equal(t, "Middle Start", employees[1].Name)
 	require.Equal(t, "Late Start", employees[2].Name)
 
 	// DESC
-	employees, _, err = apiService.ListEmployees(user.ID, 1, 100, "fromDate", "DESC", "", false)
+	employees, _, err = apiService.ListEmployees(context.Background(), user.ID, 1, 100, "fromDate", "DESC", "", false)
 	require.NoError(t, err)
 	require.Equal(t, "Late Start", employees[0].Name)
 	require.Equal(t, "Middle Start", employees[1].Name)
@@ -422,7 +423,7 @@ func TestListEmployees_SortByToDate(t *testing.T) {
 
 	empA, err := CreateEmployee(apiService, user.ID, "Middle End")
 	require.NoError(t, err)
-	_, err = apiService.CreateSalary(models.CreateSalary{
+	_, err = apiService.CreateSalary(context.Background(), models.CreateSalary{
 		HoursPerMonth:       160,
 		Amount:              5000_00,
 		Cycle:               "monthly",
@@ -435,7 +436,7 @@ func TestListEmployees_SortByToDate(t *testing.T) {
 
 	empB, err := CreateEmployee(apiService, user.ID, "Early End")
 	require.NoError(t, err)
-	_, err = apiService.CreateSalary(models.CreateSalary{
+	_, err = apiService.CreateSalary(context.Background(), models.CreateSalary{
 		HoursPerMonth:       160,
 		Amount:              5000_00,
 		Cycle:               "monthly",
@@ -448,7 +449,7 @@ func TestListEmployees_SortByToDate(t *testing.T) {
 
 	empC, err := CreateEmployee(apiService, user.ID, "Late End")
 	require.NoError(t, err)
-	_, err = apiService.CreateSalary(models.CreateSalary{
+	_, err = apiService.CreateSalary(context.Background(), models.CreateSalary{
 		HoursPerMonth:       160,
 		Amount:              5000_00,
 		Cycle:               "monthly",
@@ -460,14 +461,14 @@ func TestListEmployees_SortByToDate(t *testing.T) {
 	require.NoError(t, err)
 
 	// ASC
-	employees, _, err := apiService.ListEmployees(user.ID, 1, 100, "toDate", "ASC", "", false)
+	employees, _, err := apiService.ListEmployees(context.Background(), user.ID, 1, 100, "toDate", "ASC", "", false)
 	require.NoError(t, err)
 	require.Equal(t, "Early End", employees[0].Name)
 	require.Equal(t, "Middle End", employees[1].Name)
 	require.Equal(t, "Late End", employees[2].Name)
 
 	// DESC
-	employees, _, err = apiService.ListEmployees(user.ID, 1, 100, "toDate", "DESC", "", false)
+	employees, _, err = apiService.ListEmployees(context.Background(), user.ID, 1, 100, "toDate", "DESC", "", false)
 	require.NoError(t, err)
 	require.Equal(t, "Late End", employees[0].Name)
 	require.Equal(t, "Middle End", employees[1].Name)
@@ -481,7 +482,7 @@ func TestListEmployees_InvalidSortBy(t *testing.T) {
 	_, err := CreateEmployee(apiService, user.ID, "Test Employee")
 	require.NoError(t, err)
 
-	_, _, err = apiService.ListEmployees(user.ID, 1, 100, "invalidField", "ASC", "", false)
+	_, _, err = apiService.ListEmployees(context.Background(), user.ID, 1, 100, "invalidField", "ASC", "", false)
 	require.Error(t, err)
 }
 
@@ -492,6 +493,6 @@ func TestListEmployees_InvalidSortOrder(t *testing.T) {
 	_, err := CreateEmployee(apiService, user.ID, "Test Employee")
 	require.NoError(t, err)
 
-	_, _, err = apiService.ListEmployees(user.ID, 1, 100, "name", "INVALID", "", false)
+	_, _, err = apiService.ListEmployees(context.Background(), user.ID, 1, 100, "name", "INVALID", "", false)
 	require.Error(t, err)
 }

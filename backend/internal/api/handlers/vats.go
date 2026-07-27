@@ -19,7 +19,7 @@ func ListVats(apiService api_service.IAPIService, c *gin.Context) {
 	}
 
 	// Action
-	vats, err := apiService.ListVats(userID)
+	vats, err := apiService.ListVats(c.Request.Context(), userID)
 	if err != nil {
 		c.Status(http.StatusInternalServerError)
 		return
@@ -43,7 +43,7 @@ func GetVat(apiService api_service.IAPIService, c *gin.Context) {
 	}
 
 	// Action
-	vat, err := apiService.GetVat(userID, vatID)
+	vat, err := apiService.GetVat(c.Request.Context(), userID, vatID)
 	if err != nil {
 		switch err {
 		case sql.ErrNoRows:
@@ -78,7 +78,7 @@ func CreateVat(apiService api_service.IAPIService, c *gin.Context) {
 	}
 
 	// Action
-	vat, err := apiService.CreateVat(payload, userID)
+	vat, err := apiService.CreateVat(c.Request.Context(), payload, userID)
 	if err != nil {
 		c.Status(http.StatusInternalServerError)
 		return
@@ -112,7 +112,7 @@ func UpdateVat(apiService api_service.IAPIService, c *gin.Context) {
 	}
 
 	// Action
-	vat, err := apiService.UpdateVat(payload, userID, vatID)
+	vat, err := apiService.UpdateVat(c.Request.Context(), payload, userID, vatID)
 	if err != nil {
 		c.Status(http.StatusInternalServerError)
 		return
@@ -136,7 +136,7 @@ func DeleteVat(apiService api_service.IAPIService, c *gin.Context) {
 	}
 
 	// Action
-	err = apiService.DeleteVat(userID, vatID)
+	err = apiService.DeleteVat(c.Request.Context(), userID, vatID)
 	if err != nil {
 		c.Status(http.StatusInternalServerError)
 		return

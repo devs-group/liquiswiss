@@ -1,13 +1,14 @@
 package api_service
 
 import (
+	"context"
 	"liquiswiss/internal/events"
 	"liquiswiss/pkg/logger"
 	"liquiswiss/pkg/models"
 	"liquiswiss/pkg/utils"
 )
 
-func (a *APIService) ListSalaryCostLabels(userID int64, page int64, limit int64) ([]models.SalaryCostLabel, int64, error) {
+func (a *APIService) ListSalaryCostLabels(ctx context.Context, userID int64, page int64, limit int64) ([]models.SalaryCostLabel, int64, error) {
 	salaryCostLabels, totalCount, err := a.dbService.ListSalaryCostLabels(userID, page, limit)
 	if err != nil {
 		logger.Logger.Error(err)
@@ -21,7 +22,7 @@ func (a *APIService) ListSalaryCostLabels(userID int64, page int64, limit int64)
 	return salaryCostLabels, totalCount, nil
 }
 
-func (a *APIService) GetSalaryCostLabel(userID int64, salaryCostLabelID int64) (*models.SalaryCostLabel, error) {
+func (a *APIService) GetSalaryCostLabel(ctx context.Context, userID int64, salaryCostLabelID int64) (*models.SalaryCostLabel, error) {
 	salaryCostLabel, err := a.dbService.GetSalaryCostLabel(userID, salaryCostLabelID)
 	if err != nil {
 		logger.Logger.Error(err)
@@ -35,7 +36,7 @@ func (a *APIService) GetSalaryCostLabel(userID int64, salaryCostLabelID int64) (
 	return salaryCostLabel, nil
 }
 
-func (a *APIService) CreateSalaryCostLabel(payload models.CreateSalaryCostLabel, userID int64) (*models.SalaryCostLabel, error) {
+func (a *APIService) CreateSalaryCostLabel(ctx context.Context, payload models.CreateSalaryCostLabel, userID int64) (*models.SalaryCostLabel, error) {
 	salaryCostLabelID, err := a.dbService.CreateSalaryCostLabel(payload, userID)
 	if err != nil {
 		logger.Logger.Error(err)
@@ -51,11 +52,11 @@ func (a *APIService) CreateSalaryCostLabel(payload models.CreateSalaryCostLabel,
 		logger.Logger.Error(err)
 		return nil, err
 	}
-	a.notifyChange(userID, "salary_cost_label", events.ActionCreated, salaryCostLabelID)
+	a.notifyChange(ctx, userID, "salary_cost_label", events.ActionCreated, salaryCostLabelID)
 	return salaryCostLabel, nil
 }
 
-func (a *APIService) UpdateSalaryCostLabel(payload models.CreateSalaryCostLabel, userID int64, salaryCostLabelID int64) (*models.SalaryCostLabel, error) {
+func (a *APIService) UpdateSalaryCostLabel(ctx context.Context, payload models.CreateSalaryCostLabel, userID int64, salaryCostLabelID int64) (*models.SalaryCostLabel, error) {
 	_, err := a.dbService.GetSalaryCostLabel(userID, salaryCostLabelID)
 	if err != nil {
 		logger.Logger.Error(err)
@@ -76,11 +77,11 @@ func (a *APIService) UpdateSalaryCostLabel(payload models.CreateSalaryCostLabel,
 		logger.Logger.Error(err)
 		return nil, err
 	}
-	a.notifyChange(userID, "salary_cost_label", events.ActionUpdated, salaryCostLabelID)
+	a.notifyChange(ctx, userID, "salary_cost_label", events.ActionUpdated, salaryCostLabelID)
 	return salaryCostLabel, nil
 }
 
-func (a *APIService) DeleteSalaryCostLabel(userID int64, salaryCostLabelID int64) error {
+func (a *APIService) DeleteSalaryCostLabel(ctx context.Context, userID int64, salaryCostLabelID int64) error {
 	existingSalaryCostLabel, err := a.dbService.GetSalaryCostLabel(userID, salaryCostLabelID)
 	if err != nil {
 		logger.Logger.Error(err)
@@ -91,6 +92,6 @@ func (a *APIService) DeleteSalaryCostLabel(userID int64, salaryCostLabelID int64
 		logger.Logger.Error(err)
 		return err
 	}
-	a.notifyChange(userID, "salary_cost_label", events.ActionDeleted, existingSalaryCostLabel.ID)
+	a.notifyChange(ctx, userID, "salary_cost_label", events.ActionDeleted, existingSalaryCostLabel.ID)
 	return nil
 }

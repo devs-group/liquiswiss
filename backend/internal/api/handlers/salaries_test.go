@@ -1,9 +1,10 @@
 package handlers_test
 
 import (
+	"context"
 	"github.com/stretchr/testify/assert"
-	"liquiswiss/internal/adapter/db_adapter"
 	"liquiswiss/config"
+	"liquiswiss/internal/adapter/db_adapter"
 	"liquiswiss/internal/adapter/email_adapter"
 	"liquiswiss/internal/service/api_service"
 	"liquiswiss/pkg/models"
@@ -207,10 +208,10 @@ func TestSalaryExecutionDates(t *testing.T) {
 				utils.DefaultClock.SetFixedTime(nil)
 			}()
 
-			salary, err := apiService.CreateSalary(testCase.CreateData, user.ID, employee.ID)
+			salary, err := apiService.CreateSalary(context.Background(), testCase.CreateData, user.ID, employee.ID)
 			assert.NoError(t, err)
 
-			err = apiService.DeleteSalary(user.ID, salary.ID)
+			err = apiService.DeleteSalary(context.Background(), user.ID, salary.ID)
 			assert.NoError(t, err)
 
 			if salary.NextExecutionDate != nil {
@@ -244,7 +245,7 @@ func TestTerminationSalaryResetsFinancialData(t *testing.T) {
 	assert.NoError(t, err)
 
 	// Create an active salary to have context
-	_, err = apiService.CreateSalary(models.CreateSalary{
+	_, err = apiService.CreateSalary(context.Background(), models.CreateSalary{
 		HoursPerMonth:       160,
 		Amount:              9000_00,
 		Cycle:               "monthly",
@@ -256,7 +257,7 @@ func TestTerminationSalaryResetsFinancialData(t *testing.T) {
 	}, user.ID, employee.ID)
 	assert.NoError(t, err)
 
-	terminationSalary, err := apiService.CreateSalary(models.CreateSalary{
+	terminationSalary, err := apiService.CreateSalary(context.Background(), models.CreateSalary{
 		HoursPerMonth:       160,
 		Amount:              7000_00,
 		Cycle:               "monthly",
@@ -277,7 +278,7 @@ func TestTerminationSalaryResetsFinancialData(t *testing.T) {
 	assert.EqualValues(t, 0, terminationSalary.EmployeeDeductions)
 	assert.EqualValues(t, 0, terminationSalary.EmployerCosts)
 
-	_, err = apiService.CreateSalaryCost(models.CreateSalaryCost{
+	_, err = apiService.CreateSalaryCost(context.Background(), models.CreateSalaryCost{
 		Cycle:            "monthly",
 		AmountType:       "fixed",
 		Amount:           100_00,
@@ -308,7 +309,7 @@ func TestSalaryHasSeparateCostsDefined(t *testing.T) {
 	employee, err := CreateEmployee(apiService, user.ID, "Tom Riddle")
 	assert.NoError(t, err)
 
-	salary, err := apiService.CreateSalary(models.CreateSalary{
+	salary, err := apiService.CreateSalary(context.Background(), models.CreateSalary{
 		HoursPerMonth:       160,
 		Amount:              5000_00,
 		Cycle:               "monthly",
@@ -321,7 +322,7 @@ func TestSalaryHasSeparateCostsDefined(t *testing.T) {
 	assert.NoError(t, err)
 	assert.False(t, salary.HasSeparateCostsDefined)
 
-	_, err = apiService.CreateSalaryCost(models.CreateSalaryCost{
+	_, err = apiService.CreateSalaryCost(context.Background(), models.CreateSalaryCost{
 		Cycle:            "monthly",
 		AmountType:       "fixed",
 		Amount:           150_00,
@@ -332,7 +333,7 @@ func TestSalaryHasSeparateCostsDefined(t *testing.T) {
 	}, user.ID, salary.ID)
 	assert.NoError(t, err)
 
-	updatedSalary, err := apiService.GetSalary(user.ID, salary.ID)
+	updatedSalary, err := apiService.GetSalary(context.Background(), user.ID, salary.ID)
 	assert.NoError(t, err)
 	assert.True(t, updatedSalary.HasSeparateCostsDefined)
 }
@@ -356,7 +357,7 @@ func TestListEmployeesIncludesEmployerCosts(t *testing.T) {
 	employee, err := CreateEmployee(apiService, user.ID, "Employer Cost Employee")
 	assert.NoError(t, err)
 
-	salary, err := apiService.CreateSalary(models.CreateSalary{
+	salary, err := apiService.CreateSalary(context.Background(), models.CreateSalary{
 		HoursPerMonth:       160,
 		Amount:              6000_00,
 		Cycle:               "monthly",
@@ -369,7 +370,7 @@ func TestListEmployeesIncludesEmployerCosts(t *testing.T) {
 	assert.NoError(t, err)
 
 	employerCostAmount := uint64(350_00)
-	_, err = apiService.CreateSalaryCost(models.CreateSalaryCost{
+	_, err = apiService.CreateSalaryCost(context.Background(), models.CreateSalaryCost{
 		Cycle:            "monthly",
 		AmountType:       "fixed",
 		Amount:           employerCostAmount,
@@ -380,7 +381,7 @@ func TestListEmployeesIncludesEmployerCosts(t *testing.T) {
 	}, user.ID, salary.ID)
 	assert.NoError(t, err)
 
-	employees, _, err := apiService.ListEmployees(user.ID, 1, 10, "name", "ASC", "", false)
+	employees, _, err := apiService.ListEmployees(context.Background(), user.ID, 1, 10, "name", "ASC", "", false)
 	assert.NoError(t, err)
 	assert.Len(t, employees, 1)
 	assert.NotNil(t, employees[0].SalaryAmount)

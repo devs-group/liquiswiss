@@ -30,7 +30,7 @@ func ListSalaryCostLabels(apiService api_service.IAPIService, c *gin.Context) {
 	}
 
 	// Action
-	salaryCostLabels, totalCount, err := apiService.ListSalaryCostLabels(userID, page, limit)
+	salaryCostLabels, totalCount, err := apiService.ListSalaryCostLabels(c.Request.Context(), userID, page, limit)
 	if err != nil {
 		return
 	}
@@ -56,7 +56,7 @@ func GetSalaryCostLabel(apiService api_service.IAPIService, c *gin.Context) {
 	}
 
 	// Action
-	salaryCostLabel, err := apiService.GetSalaryCostLabel(userID, salaryCostLabelID)
+	salaryCostLabel, err := apiService.GetSalaryCostLabel(c.Request.Context(), userID, salaryCostLabelID)
 	if err != nil {
 		switch err {
 		case sql.ErrNoRows:
@@ -91,7 +91,7 @@ func CreateSalaryCostLabel(apiService api_service.IAPIService, c *gin.Context) {
 	}
 
 	// Action
-	salaryCostLabel, err := apiService.CreateSalaryCostLabel(payload, userID)
+	salaryCostLabel, err := apiService.CreateSalaryCostLabel(c.Request.Context(), payload, userID)
 	if err != nil {
 		switch err {
 		case sql.ErrNoRows:
@@ -131,7 +131,7 @@ func UpdateSalaryCostLabel(apiService api_service.IAPIService, c *gin.Context) {
 	}
 
 	// Action
-	salaryCostLabel, err := apiService.UpdateSalaryCostLabel(payload, userID, salaryCostLabelID)
+	salaryCostLabel, err := apiService.UpdateSalaryCostLabel(c.Request.Context(), payload, userID, salaryCostLabelID)
 	if err != nil {
 		c.Status(http.StatusInternalServerError)
 		return
@@ -155,7 +155,7 @@ func DeleteSalaryCostLabel(apiService api_service.IAPIService, c *gin.Context) {
 	}
 
 	// Action
-	err = apiService.DeleteSalaryCostLabel(userID, salaryCostLabelID)
+	err = apiService.DeleteSalaryCostLabel(c.Request.Context(), userID, salaryCostLabelID)
 	if err != nil {
 		c.Status(http.StatusInternalServerError)
 		return

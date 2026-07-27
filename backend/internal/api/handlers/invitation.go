@@ -28,7 +28,7 @@ func ListOrganisationInvitations(apiService api_service.IAPIService, c *gin.Cont
 	}
 
 	// Action
-	invitations, err := apiService.ListOrganisationInvitations(userID, organisationID)
+	invitations, err := apiService.ListOrganisationInvitations(c.Request.Context(), userID, organisationID)
 	if err != nil {
 		if err.Error() == "permission denied" {
 			c.Status(http.StatusForbidden)
@@ -66,7 +66,7 @@ func CreateOrganisationInvitation(apiService api_service.IAPIService, c *gin.Con
 	}
 
 	// Action
-	invitation, err := apiService.CreateOrganisationInvitation(payload, userID, organisationID)
+	invitation, err := apiService.CreateOrganisationInvitation(c.Request.Context(), payload, userID, organisationID)
 	if err != nil {
 		if err.Error() == "permission denied" {
 			c.Status(http.StatusForbidden)
@@ -103,7 +103,7 @@ func DeleteOrganisationInvitation(apiService api_service.IAPIService, c *gin.Con
 	}
 
 	// Action
-	err = apiService.DeleteOrganisationInvitation(userID, organisationID, invitationID)
+	err = apiService.DeleteOrganisationInvitation(c.Request.Context(), userID, organisationID, invitationID)
 	if err != nil {
 		if err.Error() == "permission denied" {
 			c.Status(http.StatusForbidden)
@@ -136,7 +136,7 @@ func ResendOrganisationInvitation(apiService api_service.IAPIService, c *gin.Con
 	}
 
 	// Action
-	err = apiService.ResendOrganisationInvitation(userID, organisationID, invitationID)
+	err = apiService.ResendOrganisationInvitation(c.Request.Context(), userID, organisationID, invitationID)
 	if err != nil {
 		if err.Error() == "permission denied" {
 			c.Status(http.StatusForbidden)
@@ -159,7 +159,7 @@ func CheckInvitation(apiService api_service.IAPIService, c *gin.Context) {
 	}
 
 	// Action
-	response, err := apiService.CheckInvitation(token)
+	response, err := apiService.CheckInvitation(c.Request.Context(), token)
 	if err != nil {
 		if errors.Is(err, sql.ErrNoRows) {
 			c.Status(http.StatusNotFound)
@@ -189,7 +189,7 @@ func DeclineMyInvitation(apiService api_service.IAPIService, c *gin.Context) {
 		return
 	}
 
-	if err := apiService.DeclineMyInvitation(userID, invitationID); err != nil {
+	if err := apiService.DeclineMyInvitation(c.Request.Context(), userID, invitationID); err != nil {
 		if err.Error() == "invitation not found" {
 			c.Status(http.StatusNotFound)
 			return
@@ -208,7 +208,7 @@ func ListMyPendingInvitations(apiService api_service.IAPIService, c *gin.Context
 		return
 	}
 
-	invitations, err := apiService.ListMyPendingInvitations(userID)
+	invitations, err := apiService.ListMyPendingInvitations(c.Request.Context(), userID)
 	if err != nil {
 		c.Status(http.StatusInternalServerError)
 		return
@@ -242,7 +242,7 @@ func AcceptInvitation(apiService api_service.IAPIService, c *gin.Context) {
 	}
 
 	// Action
-	user, accessToken, accessExpirationTime, refreshToken, refreshExpirationTime, err := apiService.AcceptInvitation(payload, deviceName, authenticatedUserID)
+	user, accessToken, accessExpirationTime, refreshToken, refreshExpirationTime, err := apiService.AcceptInvitation(c.Request.Context(), payload, deviceName, authenticatedUserID)
 	if err != nil {
 		if errors.Is(err, sql.ErrNoRows) {
 			c.Status(http.StatusNotFound)

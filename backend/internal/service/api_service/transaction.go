@@ -1,6 +1,7 @@
 package api_service
 
 import (
+	"context"
 	"fmt"
 
 	"liquiswiss/internal/events"
@@ -9,7 +10,7 @@ import (
 	"liquiswiss/pkg/utils"
 )
 
-func (a *APIService) ListTransactions(userID int64, page int64, limit int64, sortBy string, sortOrder string, search string, hideDisabled bool, hideExpired bool) ([]models.Transaction, int64, error) {
+func (a *APIService) ListTransactions(ctx context.Context, userID int64, page int64, limit int64, sortBy string, sortOrder string, search string, hideDisabled bool, hideExpired bool) ([]models.Transaction, int64, error) {
 	transactions, totalCount, err := a.dbService.ListTransactions(userID, page, limit, sortBy, sortOrder, search, hideDisabled, hideExpired)
 	if err != nil {
 		logger.Logger.Error(err)
@@ -23,7 +24,7 @@ func (a *APIService) ListTransactions(userID int64, page int64, limit int64, sor
 	return transactions, totalCount, nil
 }
 
-func (a *APIService) GetTransaction(userID int64, transactionID int64) (*models.Transaction, error) {
+func (a *APIService) GetTransaction(ctx context.Context, userID int64, transactionID int64) (*models.Transaction, error) {
 	transaction, err := a.dbService.GetTransaction(userID, transactionID)
 	if err != nil {
 		logger.Logger.Error(err)
@@ -37,7 +38,7 @@ func (a *APIService) GetTransaction(userID int64, transactionID int64) (*models.
 	return transaction, nil
 }
 
-func (a *APIService) CreateTransaction(payload models.CreateTransaction, userID int64) (*models.Transaction, error) {
+func (a *APIService) CreateTransaction(ctx context.Context, payload models.CreateTransaction, userID int64) (*models.Transaction, error) {
 	// Validate that referenced entities belong to user's organisation
 	if payload.Employee != nil {
 		if _, err := a.dbService.GetEmployee(userID, *payload.Employee); err != nil {
@@ -69,16 +70,16 @@ func (a *APIService) CreateTransaction(payload models.CreateTransaction, userID 
 		return nil, err
 	}
 	// Recalculate Forecast
-	_, err = a.CalculateForecast(userID)
+	_, err = a.CalculateForecast(ctx, userID)
 	if err != nil {
 		logger.Logger.Error(err)
 		return nil, err
 	}
-	a.notifyChange(userID, "transaction", events.ActionCreated, transactionID)
+	a.notifyChange(ctx, userID, "transaction", events.ActionCreated, transactionID)
 	return transaction, nil
 }
 
-func (a *APIService) UpdateTransaction(payload models.UpdateTransaction, userID int64, transactionID int64) (*models.Transaction, error) {
+func (a *APIService) UpdateTransaction(ctx context.Context, payload models.UpdateTransaction, userID int64, transactionID int64) (*models.Transaction, error) {
 	existingTransaction, err := a.dbService.GetTransaction(userID, transactionID)
 	if err != nil {
 		logger.Logger.Error(err)
@@ -131,16 +132,16 @@ func (a *APIService) UpdateTransaction(payload models.UpdateTransaction, userID 
 		return nil, err
 	}
 	// Recalculate Forecast
-	_, err = a.CalculateForecast(userID)
+	_, err = a.CalculateForecast(ctx, userID)
 	if err != nil {
 		logger.Logger.Error(err)
 		return nil, err
 	}
-	a.notifyChange(userID, "transaction", events.ActionUpdated, transactionID)
+	a.notifyChange(ctx, userID, "transaction", events.ActionUpdated, transactionID)
 	return transaction, nil
 }
 
-func (a *APIService) DeleteTransaction(userID int64, transactionID int64) error {
+func (a *APIService) DeleteTransaction(ctx context.Context, userID int64, transactionID int64) error {
 	_, err := a.dbService.GetTransaction(userID, transactionID)
 	if err != nil {
 		logger.Logger.Error(err)
@@ -152,11 +153,11 @@ func (a *APIService) DeleteTransaction(userID int64, transactionID int64) error 
 		return err
 	}
 	// Recalculate Forecast
-	_, err = a.CalculateForecast(userID)
+	_, err = a.CalculateForecast(ctx, userID)
 	if err != nil {
 		logger.Logger.Error(err)
 		return err
 	}
-	a.notifyChange(userID, "transaction", events.ActionDeleted, transactionID)
+	a.notifyChange(ctx, userID, "transaction", events.ActionDeleted, transactionID)
 	return nil
 }

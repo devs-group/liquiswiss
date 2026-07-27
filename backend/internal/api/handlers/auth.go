@@ -30,7 +30,7 @@ func Login(apiService api_service.IAPIService, c *gin.Context) {
 	}
 
 	// Action
-	user, accessToken, accessExpirationTime, refreshToken, refreshExpirationTime, err := apiService.Login(payload, deviceName, existingRefreshToken)
+	user, accessToken, accessExpirationTime, refreshToken, refreshExpirationTime, err := apiService.Login(c.Request.Context(), payload, deviceName, existingRefreshToken)
 	if err != nil {
 		c.Status(http.StatusInternalServerError)
 		return
@@ -54,7 +54,7 @@ func Logout(apiService api_service.IAPIService, c *gin.Context) {
 	}
 
 	// Action
-	apiService.Logout(existingRefreshToken)
+	apiService.Logout(c.Request.Context(), existingRefreshToken)
 
 	// Post
 	auth.ClearAuthCookies(c)
@@ -76,7 +76,7 @@ func ForgotPassword(apiService api_service.IAPIService, c *gin.Context) {
 
 	// Action
 	code := utils.GenerateUUID()
-	err := apiService.ForgotPassword(payload, code)
+	err := apiService.ForgotPassword(c.Request.Context(), payload, code)
 	if err != nil {
 		c.Status(http.StatusInternalServerError)
 		return
@@ -100,7 +100,7 @@ func ResetPassword(apiService api_service.IAPIService, c *gin.Context) {
 	}
 
 	// Action
-	err := apiService.ResetPassword(payload)
+	err := apiService.ResetPassword(c.Request.Context(), payload)
 	if err != nil {
 		c.Status(http.StatusInternalServerError)
 		return
@@ -124,7 +124,7 @@ func CheckResetPasswordCode(apiService api_service.IAPIService, c *gin.Context) 
 	}
 
 	// Action
-	err := apiService.CheckResetPasswordCode(payload)
+	err := apiService.CheckResetPasswordCode(c.Request.Context(), payload)
 	if err != nil {
 		c.Status(http.StatusInternalServerError)
 		return
@@ -149,7 +149,7 @@ func CreateRegistration(apiService api_service.IAPIService, c *gin.Context) {
 
 	// Action
 	code := utils.GenerateUUID()
-	_, err := apiService.CreateRegistration(payload, code)
+	_, err := apiService.CreateRegistration(c.Request.Context(), payload, code)
 	if err != nil {
 		c.Status(http.StatusInternalServerError)
 		return
@@ -173,7 +173,7 @@ func CheckRegistrationCode(apiService api_service.IAPIService, c *gin.Context) {
 	}
 
 	// Action
-	_, err := apiService.CheckRegistrationCode(payload, utils.RegistrationCodeValidity)
+	_, err := apiService.CheckRegistrationCode(c.Request.Context(), payload, utils.RegistrationCodeValidity)
 	if err != nil {
 		c.Status(http.StatusBadRequest)
 		return
@@ -198,7 +198,7 @@ func FinishRegistration(apiService api_service.IAPIService, c *gin.Context) {
 	deviceName := c.Request.UserAgent()
 
 	// Action
-	user, accessToken, accessExpirationTime, refreshToken, refreshExpirationTime, err := apiService.FinishRegistration(payload, deviceName, utils.RegistrationCodeValidity)
+	user, accessToken, accessExpirationTime, refreshToken, refreshExpirationTime, err := apiService.FinishRegistration(c.Request.Context(), payload, deviceName, utils.RegistrationCodeValidity)
 	if err != nil {
 		c.Status(http.StatusInternalServerError)
 		return

@@ -1,6 +1,7 @@
 package handlers_test
 
 import (
+	"context"
 	"database/sql"
 	"testing"
 
@@ -16,13 +17,13 @@ func TestListTransactions_CrossOrgIsolation(t *testing.T) {
 	defer env.Conn.Close()
 
 	// Create categories for each org
-	categoryA, err := env.APIService.CreateCategory(models.CreateCategory{Name: "Category A"}, &env.UserA.ID)
+	categoryA, err := env.APIService.CreateCategory(context.Background(), models.CreateCategory{Name: "Category A"}, &env.UserA.ID)
 	require.NoError(t, err)
-	categoryB, err := env.APIService.CreateCategory(models.CreateCategory{Name: "Category B"}, &env.UserB.ID)
+	categoryB, err := env.APIService.CreateCategory(context.Background(), models.CreateCategory{Name: "Category B"}, &env.UserB.ID)
 	require.NoError(t, err)
 
 	// Create transactions for User A's organisation
-	txA1, err := env.APIService.CreateTransaction(models.CreateTransaction{
+	txA1, err := env.APIService.CreateTransaction(context.Background(), models.CreateTransaction{
 		Name:        "Transaction A1",
 		Amount:      100_00,
 		Type:        "single",
@@ -33,7 +34,7 @@ func TestListTransactions_CrossOrgIsolation(t *testing.T) {
 	}, env.UserA.ID)
 	require.NoError(t, err)
 
-	txA2, err := env.APIService.CreateTransaction(models.CreateTransaction{
+	txA2, err := env.APIService.CreateTransaction(context.Background(), models.CreateTransaction{
 		Name:        "Transaction A2",
 		Amount:      200_00,
 		Type:        "single",
@@ -45,7 +46,7 @@ func TestListTransactions_CrossOrgIsolation(t *testing.T) {
 	require.NoError(t, err)
 
 	// Create transactions for User B's organisation
-	txB1, err := env.APIService.CreateTransaction(models.CreateTransaction{
+	txB1, err := env.APIService.CreateTransaction(context.Background(), models.CreateTransaction{
 		Name:        "Transaction B1",
 		Amount:      300_00,
 		Type:        "single",
@@ -57,7 +58,7 @@ func TestListTransactions_CrossOrgIsolation(t *testing.T) {
 	require.NoError(t, err)
 
 	// User A should only see their own transactions
-	transactionsA, totalA, err := env.APIService.ListTransactions(env.UserA.ID, 1, 100, "name", "ASC", "", false, false)
+	transactionsA, totalA, err := env.APIService.ListTransactions(context.Background(), env.UserA.ID, 1, 100, "name", "ASC", "", false, false)
 	require.NoError(t, err)
 	require.Equal(t, int64(2), totalA)
 	require.Len(t, transactionsA, 2)
@@ -68,7 +69,7 @@ func TestListTransactions_CrossOrgIsolation(t *testing.T) {
 	require.NotContains(t, txIDs, txB1.ID)
 
 	// User B should only see their own transactions
-	transactionsB, totalB, err := env.APIService.ListTransactions(env.UserB.ID, 1, 100, "name", "ASC", "", false, false)
+	transactionsB, totalB, err := env.APIService.ListTransactions(context.Background(), env.UserB.ID, 1, 100, "name", "ASC", "", false, false)
 	require.NoError(t, err)
 	require.Equal(t, int64(1), totalB)
 	require.Len(t, transactionsB, 1)
@@ -82,11 +83,11 @@ func TestGetTransaction_CrossOrgIsolation(t *testing.T) {
 	defer env.Conn.Close()
 
 	// Create category for User A
-	categoryA, err := env.APIService.CreateCategory(models.CreateCategory{Name: "Category A"}, &env.UserA.ID)
+	categoryA, err := env.APIService.CreateCategory(context.Background(), models.CreateCategory{Name: "Category A"}, &env.UserA.ID)
 	require.NoError(t, err)
 
 	// Create transaction for User A's organisation
-	txA, err := env.APIService.CreateTransaction(models.CreateTransaction{
+	txA, err := env.APIService.CreateTransaction(context.Background(), models.CreateTransaction{
 		Name:        "Transaction A",
 		Amount:      100_00,
 		Type:        "single",
@@ -98,13 +99,13 @@ func TestGetTransaction_CrossOrgIsolation(t *testing.T) {
 	require.NoError(t, err)
 
 	// User A can get their own transaction
-	fetchedTx, err := env.APIService.GetTransaction(env.UserA.ID, txA.ID)
+	fetchedTx, err := env.APIService.GetTransaction(context.Background(), env.UserA.ID, txA.ID)
 	require.NoError(t, err)
 	require.Equal(t, txA.ID, fetchedTx.ID)
 	require.Equal(t, "Transaction A", fetchedTx.Name)
 
 	// User B cannot get User A's transaction (should return sql.ErrNoRows)
-	_, err = env.APIService.GetTransaction(env.UserB.ID, txA.ID)
+	_, err = env.APIService.GetTransaction(context.Background(), env.UserB.ID, txA.ID)
 	require.Error(t, err)
 	require.ErrorIs(t, err, sql.ErrNoRows)
 }
@@ -116,11 +117,11 @@ func TestUpdateTransaction_CrossOrgIsolation(t *testing.T) {
 	defer env.Conn.Close()
 
 	// Create category for User A
-	categoryA, err := env.APIService.CreateCategory(models.CreateCategory{Name: "Category A"}, &env.UserA.ID)
+	categoryA, err := env.APIService.CreateCategory(context.Background(), models.CreateCategory{Name: "Category A"}, &env.UserA.ID)
 	require.NoError(t, err)
 
 	// Create transaction for User A's organisation
-	txA, err := env.APIService.CreateTransaction(models.CreateTransaction{
+	txA, err := env.APIService.CreateTransaction(context.Background(), models.CreateTransaction{
 		Name:        "Transaction A Original",
 		Amount:      100_00,
 		Type:        "single",
@@ -133,26 +134,26 @@ func TestUpdateTransaction_CrossOrgIsolation(t *testing.T) {
 
 	// User A can update their own transaction
 	newNameA := "Transaction A Updated By A"
-	_, err = env.APIService.UpdateTransaction(models.UpdateTransaction{
+	_, err = env.APIService.UpdateTransaction(context.Background(), models.UpdateTransaction{
 		Name: &newNameA,
 	}, env.UserA.ID, txA.ID)
 	require.NoError(t, err)
 
 	// Verify the update worked
-	updatedTx, err := env.APIService.GetTransaction(env.UserA.ID, txA.ID)
+	updatedTx, err := env.APIService.GetTransaction(context.Background(), env.UserA.ID, txA.ID)
 	require.NoError(t, err)
 	require.Equal(t, "Transaction A Updated By A", updatedTx.Name)
 
 	// User B attempts to update User A's transaction (should fail with ErrNoRows)
 	maliciousName := "Hacked By B"
-	_, err = env.APIService.UpdateTransaction(models.UpdateTransaction{
+	_, err = env.APIService.UpdateTransaction(context.Background(), models.UpdateTransaction{
 		Name: &maliciousName,
 	}, env.UserB.ID, txA.ID)
 	require.Error(t, err)
 	require.ErrorIs(t, err, sql.ErrNoRows)
 
 	// Verify Transaction A's name was NOT changed by User B
-	txAfterAttempt, err := env.APIService.GetTransaction(env.UserA.ID, txA.ID)
+	txAfterAttempt, err := env.APIService.GetTransaction(context.Background(), env.UserA.ID, txA.ID)
 	require.NoError(t, err)
 	require.Equal(t, "Transaction A Updated By A", txAfterAttempt.Name)
 	require.NotEqual(t, "Hacked By B", txAfterAttempt.Name)
@@ -165,11 +166,11 @@ func TestDeleteTransaction_CrossOrgIsolation(t *testing.T) {
 	defer env.Conn.Close()
 
 	// Create category for User A
-	categoryA, err := env.APIService.CreateCategory(models.CreateCategory{Name: "Category A"}, &env.UserA.ID)
+	categoryA, err := env.APIService.CreateCategory(context.Background(), models.CreateCategory{Name: "Category A"}, &env.UserA.ID)
 	require.NoError(t, err)
 
 	// Create transaction for User A's organisation
-	txA, err := env.APIService.CreateTransaction(models.CreateTransaction{
+	txA, err := env.APIService.CreateTransaction(context.Background(), models.CreateTransaction{
 		Name:        "Transaction A To Delete",
 		Amount:      100_00,
 		Type:        "single",
@@ -185,7 +186,7 @@ func TestDeleteTransaction_CrossOrgIsolation(t *testing.T) {
 	// The delete should not return an error but should affect 0 rows
 
 	// Verify Transaction A still exists and was NOT deleted
-	txAfterDelete, err := env.APIService.GetTransaction(env.UserA.ID, txA.ID)
+	txAfterDelete, err := env.APIService.GetTransaction(context.Background(), env.UserA.ID, txA.ID)
 	require.NoError(t, err)
 	require.NotNil(t, txAfterDelete)
 	require.Equal(t, txA.ID, txAfterDelete.ID)
@@ -195,7 +196,7 @@ func TestDeleteTransaction_CrossOrgIsolation(t *testing.T) {
 	require.NoError(t, err)
 
 	// Verify Transaction A is now deleted
-	_, err = env.APIService.GetTransaction(env.UserA.ID, txA.ID)
+	_, err = env.APIService.GetTransaction(context.Background(), env.UserA.ID, txA.ID)
 	require.Error(t, err)
 	require.ErrorIs(t, err, sql.ErrNoRows)
 }
@@ -211,12 +212,12 @@ func TestCreateTransaction_WithCrossOrgEmployee(t *testing.T) {
 	require.NoError(t, err)
 
 	// Create category for User B (to have a valid category)
-	categoryB, err := env.APIService.CreateCategory(models.CreateCategory{Name: "Category B"}, &env.UserB.ID)
+	categoryB, err := env.APIService.CreateCategory(context.Background(), models.CreateCategory{Name: "Category B"}, &env.UserB.ID)
 	require.NoError(t, err)
 
 	// User B attempts to create a transaction referencing User A's employee
 	employeeAID := employeeA.ID
-	_, err = env.APIService.CreateTransaction(models.CreateTransaction{
+	_, err = env.APIService.CreateTransaction(context.Background(), models.CreateTransaction{
 		Name:        "Transaction with Cross-Org Employee",
 		Amount:      100_00,
 		Type:        "single",
@@ -230,7 +231,7 @@ func TestCreateTransaction_WithCrossOrgEmployee(t *testing.T) {
 	// The exact behavior depends on the implementation - we just verify isolation is maintained
 	if err == nil {
 		// If no error, verify the created transaction doesn't have the cross-org employee
-		transactions, _, err := env.APIService.ListTransactions(env.UserB.ID, 1, 100, "name", "ASC", "", false, false)
+		transactions, _, err := env.APIService.ListTransactions(context.Background(), env.UserB.ID, 1, 100, "name", "ASC", "", false, false)
 		require.NoError(t, err)
 		for _, tx := range transactions {
 			if tx.Employee != nil {
@@ -249,11 +250,11 @@ func TestCreateTransaction_WithCrossOrgCategory(t *testing.T) {
 	defer env.Conn.Close()
 
 	// Create org-specific categories
-	categoryA, err := env.APIService.CreateCategory(models.CreateCategory{Name: "Category A"}, &env.UserA.ID)
+	categoryA, err := env.APIService.CreateCategory(context.Background(), models.CreateCategory{Name: "Category A"}, &env.UserA.ID)
 	require.NoError(t, err)
 
 	// User B attempts to use User A's category
-	_, err = env.APIService.CreateTransaction(models.CreateTransaction{
+	_, err = env.APIService.CreateTransaction(context.Background(), models.CreateTransaction{
 		Name:        "Transaction with Cross-Org Category",
 		Amount:      100_00,
 		Type:        "single",

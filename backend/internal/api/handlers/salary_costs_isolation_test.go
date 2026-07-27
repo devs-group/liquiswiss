@@ -1,6 +1,7 @@
 package handlers_test
 
 import (
+	"context"
 	"database/sql"
 	"testing"
 
@@ -24,7 +25,7 @@ func TestListSalaryCosts_CrossOrgIsolation(t *testing.T) {
 	require.NoError(t, err)
 
 	// Create salaries for each employee
-	salaryA, err := env.APIService.CreateSalary(models.CreateSalary{
+	salaryA, err := env.APIService.CreateSalary(context.Background(), models.CreateSalary{
 		HoursPerMonth:       160,
 		Amount:              5000_00,
 		Cycle:               utils.CycleMonthly,
@@ -34,7 +35,7 @@ func TestListSalaryCosts_CrossOrgIsolation(t *testing.T) {
 	}, env.UserA.ID, employeeA.ID)
 	require.NoError(t, err)
 
-	salaryB, err := env.APIService.CreateSalary(models.CreateSalary{
+	salaryB, err := env.APIService.CreateSalary(context.Background(), models.CreateSalary{
 		HoursPerMonth:       160,
 		Amount:              6000_00,
 		Cycle:               utils.CycleMonthly,
@@ -45,7 +46,7 @@ func TestListSalaryCosts_CrossOrgIsolation(t *testing.T) {
 	require.NoError(t, err)
 
 	// Create salary costs for Salary A
-	costA1, err := env.APIService.CreateSalaryCost(models.CreateSalaryCost{
+	costA1, err := env.APIService.CreateSalaryCost(context.Background(), models.CreateSalaryCost{
 		Cycle:            utils.CycleMonthly,
 		AmountType:       "fixed",
 		Amount:           100_00,
@@ -54,7 +55,7 @@ func TestListSalaryCosts_CrossOrgIsolation(t *testing.T) {
 	}, env.UserA.ID, salaryA.ID)
 	require.NoError(t, err)
 
-	costA2, err := env.APIService.CreateSalaryCost(models.CreateSalaryCost{
+	costA2, err := env.APIService.CreateSalaryCost(context.Background(), models.CreateSalaryCost{
 		Cycle:            utils.CycleMonthly,
 		AmountType:       "fixed",
 		Amount:           200_00,
@@ -64,7 +65,7 @@ func TestListSalaryCosts_CrossOrgIsolation(t *testing.T) {
 	require.NoError(t, err)
 
 	// Create salary cost for Salary B
-	costB1, err := env.APIService.CreateSalaryCost(models.CreateSalaryCost{
+	costB1, err := env.APIService.CreateSalaryCost(context.Background(), models.CreateSalaryCost{
 		Cycle:            utils.CycleMonthly,
 		AmountType:       "fixed",
 		Amount:           150_00,
@@ -74,7 +75,7 @@ func TestListSalaryCosts_CrossOrgIsolation(t *testing.T) {
 	require.NoError(t, err)
 
 	// User A can list salary costs for their own salary
-	costsA, totalA, err := env.APIService.ListSalaryCosts(env.UserA.ID, salaryA.ID, 1, 100, false)
+	costsA, totalA, err := env.APIService.ListSalaryCosts(context.Background(), env.UserA.ID, salaryA.ID, 1, 100, false)
 	require.NoError(t, err)
 	require.Equal(t, int64(2), totalA)
 	require.Len(t, costsA, 2)
@@ -85,13 +86,13 @@ func TestListSalaryCosts_CrossOrgIsolation(t *testing.T) {
 	require.NotContains(t, costIDs, costB1.ID)
 
 	// User B cannot list salary costs for User A's salary (should return empty)
-	costsBAttempt, totalBAttempt, err := env.APIService.ListSalaryCosts(env.UserB.ID, salaryA.ID, 1, 100, false)
+	costsBAttempt, totalBAttempt, err := env.APIService.ListSalaryCosts(context.Background(), env.UserB.ID, salaryA.ID, 1, 100, false)
 	require.NoError(t, err)
 	require.Equal(t, int64(0), totalBAttempt)
 	require.Len(t, costsBAttempt, 0)
 
 	// User B can list salary costs for their own salary
-	costsB, totalB, err := env.APIService.ListSalaryCosts(env.UserB.ID, salaryB.ID, 1, 100, false)
+	costsB, totalB, err := env.APIService.ListSalaryCosts(context.Background(), env.UserB.ID, salaryB.ID, 1, 100, false)
 	require.NoError(t, err)
 	require.Equal(t, int64(1), totalB)
 	require.Len(t, costsB, 1)
@@ -108,7 +109,7 @@ func TestGetSalaryCost_CrossOrgIsolation(t *testing.T) {
 	employeeA, err := CreateEmployee(env.APIService, env.UserA.ID, "Employee A")
 	require.NoError(t, err)
 
-	salaryA, err := env.APIService.CreateSalary(models.CreateSalary{
+	salaryA, err := env.APIService.CreateSalary(context.Background(), models.CreateSalary{
 		HoursPerMonth:       160,
 		Amount:              5000_00,
 		Cycle:               utils.CycleMonthly,
@@ -119,7 +120,7 @@ func TestGetSalaryCost_CrossOrgIsolation(t *testing.T) {
 	require.NoError(t, err)
 
 	// Create salary cost for Salary A
-	costA, err := env.APIService.CreateSalaryCost(models.CreateSalaryCost{
+	costA, err := env.APIService.CreateSalaryCost(context.Background(), models.CreateSalaryCost{
 		Cycle:            utils.CycleMonthly,
 		AmountType:       "fixed",
 		Amount:           100_00,
@@ -129,13 +130,13 @@ func TestGetSalaryCost_CrossOrgIsolation(t *testing.T) {
 	require.NoError(t, err)
 
 	// User A can get their own salary cost
-	fetchedCost, err := env.APIService.GetSalaryCost(env.UserA.ID, costA.ID, false)
+	fetchedCost, err := env.APIService.GetSalaryCost(context.Background(), env.UserA.ID, costA.ID, false)
 	require.NoError(t, err)
 	require.Equal(t, costA.ID, fetchedCost.ID)
 	require.Equal(t, uint64(100_00), fetchedCost.Amount)
 
 	// User B cannot get User A's salary cost (should return sql.ErrNoRows)
-	_, err = env.APIService.GetSalaryCost(env.UserB.ID, costA.ID, false)
+	_, err = env.APIService.GetSalaryCost(context.Background(), env.UserB.ID, costA.ID, false)
 	require.Error(t, err)
 	require.ErrorIs(t, err, sql.ErrNoRows)
 }
@@ -150,7 +151,7 @@ func TestCreateSalaryCost_CrossOrgSalary(t *testing.T) {
 	employeeA, err := CreateEmployee(env.APIService, env.UserA.ID, "Employee A")
 	require.NoError(t, err)
 
-	salaryA, err := env.APIService.CreateSalary(models.CreateSalary{
+	salaryA, err := env.APIService.CreateSalary(context.Background(), models.CreateSalary{
 		HoursPerMonth:       160,
 		Amount:              5000_00,
 		Cycle:               utils.CycleMonthly,
@@ -161,7 +162,7 @@ func TestCreateSalaryCost_CrossOrgSalary(t *testing.T) {
 	require.NoError(t, err)
 
 	// User B attempts to create a salary cost for User A's salary
-	_, err = env.APIService.CreateSalaryCost(models.CreateSalaryCost{
+	_, err = env.APIService.CreateSalaryCost(context.Background(), models.CreateSalaryCost{
 		Cycle:            utils.CycleMonthly,
 		AmountType:       "fixed",
 		Amount:           100_00,
@@ -182,7 +183,7 @@ func TestUpdateSalaryCost_CrossOrgIsolation(t *testing.T) {
 	employeeA, err := CreateEmployee(env.APIService, env.UserA.ID, "Employee A")
 	require.NoError(t, err)
 
-	salaryA, err := env.APIService.CreateSalary(models.CreateSalary{
+	salaryA, err := env.APIService.CreateSalary(context.Background(), models.CreateSalary{
 		HoursPerMonth:       160,
 		Amount:              5000_00,
 		Cycle:               utils.CycleMonthly,
@@ -193,7 +194,7 @@ func TestUpdateSalaryCost_CrossOrgIsolation(t *testing.T) {
 	require.NoError(t, err)
 
 	// Create salary cost for Salary A
-	costA, err := env.APIService.CreateSalaryCost(models.CreateSalaryCost{
+	costA, err := env.APIService.CreateSalaryCost(context.Background(), models.CreateSalaryCost{
 		Cycle:            utils.CycleMonthly,
 		AmountType:       "fixed",
 		Amount:           100_00,
@@ -203,7 +204,7 @@ func TestUpdateSalaryCost_CrossOrgIsolation(t *testing.T) {
 	require.NoError(t, err)
 
 	// User A can update their own salary cost
-	_, err = env.APIService.UpdateSalaryCost(models.CreateSalaryCost{
+	_, err = env.APIService.UpdateSalaryCost(context.Background(), models.CreateSalaryCost{
 		Cycle:            utils.CycleMonthly,
 		AmountType:       "fixed",
 		Amount:           150_00,
@@ -213,12 +214,12 @@ func TestUpdateSalaryCost_CrossOrgIsolation(t *testing.T) {
 	require.NoError(t, err)
 
 	// Verify the update worked
-	updatedCost, err := env.APIService.GetSalaryCost(env.UserA.ID, costA.ID, false)
+	updatedCost, err := env.APIService.GetSalaryCost(context.Background(), env.UserA.ID, costA.ID, false)
 	require.NoError(t, err)
 	require.Equal(t, uint64(150_00), updatedCost.Amount)
 
 	// User B attempts to update User A's salary cost
-	_, err = env.APIService.UpdateSalaryCost(models.CreateSalaryCost{
+	_, err = env.APIService.UpdateSalaryCost(context.Background(), models.CreateSalaryCost{
 		Cycle:            utils.CycleMonthly,
 		AmountType:       "fixed",
 		Amount:           1_00,
@@ -229,7 +230,7 @@ func TestUpdateSalaryCost_CrossOrgIsolation(t *testing.T) {
 	require.Error(t, err)
 
 	// Verify salary cost was NOT changed by User B
-	costAfterAttempt, err := env.APIService.GetSalaryCost(env.UserA.ID, costA.ID, false)
+	costAfterAttempt, err := env.APIService.GetSalaryCost(context.Background(), env.UserA.ID, costA.ID, false)
 	require.NoError(t, err)
 	require.Equal(t, uint64(150_00), costAfterAttempt.Amount)
 	require.NotEqual(t, uint64(1_00), costAfterAttempt.Amount)
@@ -245,7 +246,7 @@ func TestDeleteSalaryCost_CrossOrgIsolation(t *testing.T) {
 	employeeA, err := CreateEmployee(env.APIService, env.UserA.ID, "Employee A")
 	require.NoError(t, err)
 
-	salaryA, err := env.APIService.CreateSalary(models.CreateSalary{
+	salaryA, err := env.APIService.CreateSalary(context.Background(), models.CreateSalary{
 		HoursPerMonth:       160,
 		Amount:              5000_00,
 		Cycle:               utils.CycleMonthly,
@@ -256,7 +257,7 @@ func TestDeleteSalaryCost_CrossOrgIsolation(t *testing.T) {
 	require.NoError(t, err)
 
 	// Create salary cost for Salary A
-	costA, err := env.APIService.CreateSalaryCost(models.CreateSalaryCost{
+	costA, err := env.APIService.CreateSalaryCost(context.Background(), models.CreateSalaryCost{
 		Cycle:            utils.CycleMonthly,
 		AmountType:       "fixed",
 		Amount:           100_00,
@@ -266,22 +267,22 @@ func TestDeleteSalaryCost_CrossOrgIsolation(t *testing.T) {
 	require.NoError(t, err)
 
 	// User B attempts to delete User A's salary cost
-	err = env.APIService.DeleteSalaryCost(env.UserB.ID, costA.ID)
+	err = env.APIService.DeleteSalaryCost(context.Background(), env.UserB.ID, costA.ID)
 	// This should fail - can't delete costs from another org
 	require.Error(t, err)
 
 	// Verify salary cost still exists and was NOT deleted
-	costAfterDelete, err := env.APIService.GetSalaryCost(env.UserA.ID, costA.ID, false)
+	costAfterDelete, err := env.APIService.GetSalaryCost(context.Background(), env.UserA.ID, costA.ID, false)
 	require.NoError(t, err)
 	require.NotNil(t, costAfterDelete)
 	require.Equal(t, costA.ID, costAfterDelete.ID)
 
 	// User A can successfully delete their own salary cost
-	err = env.APIService.DeleteSalaryCost(env.UserA.ID, costA.ID)
+	err = env.APIService.DeleteSalaryCost(context.Background(), env.UserA.ID, costA.ID)
 	require.NoError(t, err)
 
 	// Verify salary cost is now deleted
-	_, err = env.APIService.GetSalaryCost(env.UserA.ID, costA.ID, false)
+	_, err = env.APIService.GetSalaryCost(context.Background(), env.UserA.ID, costA.ID, false)
 	require.Error(t, err)
 	require.ErrorIs(t, err, sql.ErrNoRows)
 }
@@ -296,7 +297,7 @@ func TestCopySalaryCosts_CrossOrgIsolation(t *testing.T) {
 	employeeA, err := CreateEmployee(env.APIService, env.UserA.ID, "Employee A")
 	require.NoError(t, err)
 
-	salaryA1, err := env.APIService.CreateSalary(models.CreateSalary{
+	salaryA1, err := env.APIService.CreateSalary(context.Background(), models.CreateSalary{
 		HoursPerMonth:       160,
 		Amount:              5000_00,
 		Cycle:               utils.CycleMonthly,
@@ -307,7 +308,7 @@ func TestCopySalaryCosts_CrossOrgIsolation(t *testing.T) {
 	}, env.UserA.ID, employeeA.ID)
 	require.NoError(t, err)
 
-	salaryA2, err := env.APIService.CreateSalary(models.CreateSalary{
+	salaryA2, err := env.APIService.CreateSalary(context.Background(), models.CreateSalary{
 		HoursPerMonth:       160,
 		Amount:              5500_00,
 		Cycle:               utils.CycleMonthly,
@@ -318,7 +319,7 @@ func TestCopySalaryCosts_CrossOrgIsolation(t *testing.T) {
 	require.NoError(t, err)
 
 	// Create salary cost for Salary A1
-	_, err = env.APIService.CreateSalaryCost(models.CreateSalaryCost{
+	_, err = env.APIService.CreateSalaryCost(context.Background(), models.CreateSalaryCost{
 		Cycle:            utils.CycleMonthly,
 		AmountType:       "fixed",
 		Amount:           100_00,
@@ -331,7 +332,7 @@ func TestCopySalaryCosts_CrossOrgIsolation(t *testing.T) {
 	employeeB, err := CreateEmployee(env.APIService, env.UserB.ID, "Employee B")
 	require.NoError(t, err)
 
-	salaryB, err := env.APIService.CreateSalary(models.CreateSalary{
+	salaryB, err := env.APIService.CreateSalary(context.Background(), models.CreateSalary{
 		HoursPerMonth:       160,
 		Amount:              6000_00,
 		Cycle:               utils.CycleMonthly,
@@ -343,26 +344,26 @@ func TestCopySalaryCosts_CrossOrgIsolation(t *testing.T) {
 
 	// User B attempts to copy costs from User A's salary to their own
 	sourceSalaryA1ID := salaryA1.ID
-	err = env.APIService.CopySalaryCosts(models.CopySalaryCosts{
+	err = env.APIService.CopySalaryCosts(context.Background(), models.CopySalaryCosts{
 		SourceSalaryID: &sourceSalaryA1ID,
 	}, env.UserB.ID, salaryB.ID)
 	// This should fail - can't copy costs from another org's salary
 	require.Error(t, err)
 
 	// Verify no costs were copied to User B's salary
-	costsB, totalB, err := env.APIService.ListSalaryCosts(env.UserB.ID, salaryB.ID, 1, 100, false)
+	costsB, totalB, err := env.APIService.ListSalaryCosts(context.Background(), env.UserB.ID, salaryB.ID, 1, 100, false)
 	require.NoError(t, err)
 	require.Equal(t, int64(0), totalB)
 	require.Len(t, costsB, 0)
 
 	// User A can successfully copy costs between their own salaries
-	err = env.APIService.CopySalaryCosts(models.CopySalaryCosts{
+	err = env.APIService.CopySalaryCosts(context.Background(), models.CopySalaryCosts{
 		SourceSalaryID: &sourceSalaryA1ID,
 	}, env.UserA.ID, salaryA2.ID)
 	require.NoError(t, err)
 
 	// Verify costs were copied to Salary A2
-	costsA2, totalA2, err := env.APIService.ListSalaryCosts(env.UserA.ID, salaryA2.ID, 1, 100, false)
+	costsA2, totalA2, err := env.APIService.ListSalaryCosts(context.Background(), env.UserA.ID, salaryA2.ID, 1, 100, false)
 	require.NoError(t, err)
 	require.Equal(t, int64(1), totalA2)
 	require.Len(t, costsA2, 1)

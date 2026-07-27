@@ -1,6 +1,7 @@
 package api_service
 
 import (
+	"context"
 	"liquiswiss/internal/events"
 	"liquiswiss/pkg/logger"
 	"liquiswiss/pkg/models"
@@ -8,7 +9,7 @@ import (
 	"liquiswiss/pkg/utils"
 )
 
-func (a *APIService) ListSalaries(userID int64, employeeID int64, page int64, limit int64) ([]models.Salary, int64, error) {
+func (a *APIService) ListSalaries(ctx context.Context, userID int64, employeeID int64, page int64, limit int64) ([]models.Salary, int64, error) {
 	salaries, totalCount, err := a.dbService.ListSalaries(userID, employeeID, page, limit)
 	if err != nil {
 		logger.Logger.Error(err)
@@ -16,7 +17,7 @@ func (a *APIService) ListSalaries(userID int64, employeeID int64, page int64, li
 	}
 	for i := range salaries {
 		salary := salaries[i]
-		updatedSalary, err := a.applySalaryCalculations(userID, &salary)
+		updatedSalary, err := a.applySalaryCalculations(ctx, userID, &salary)
 		if err != nil {
 			return nil, 0, err
 		}
@@ -30,7 +31,7 @@ func (a *APIService) ListSalaries(userID int64, employeeID int64, page int64, li
 	return salaries, totalCount, nil
 }
 
-func (a *APIService) GetSalary(userID int64, salaryID int64) (*models.Salary, error) {
+func (a *APIService) GetSalary(ctx context.Context, userID int64, salaryID int64) (*models.Salary, error) {
 	salary, err := a.dbService.GetSalary(userID, salaryID)
 	if err != nil {
 		logger.Logger.Error(err)
@@ -41,14 +42,14 @@ func (a *APIService) GetSalary(userID int64, salaryID int64) (*models.Salary, er
 		logger.Logger.Error(err)
 		return nil, err
 	}
-	salary, err = a.applySalaryCalculations(userID, salary)
+	salary, err = a.applySalaryCalculations(ctx, userID, salary)
 	if err != nil {
 		return nil, err
 	}
 	return salary, nil
 }
 
-func (a *APIService) CreateSalary(payload models.CreateSalary, userID int64, employeeID int64) (*models.Salary, error) {
+func (a *APIService) CreateSalary(ctx context.Context, payload models.CreateSalary, userID int64, employeeID int64) (*models.Salary, error) {
 	salaryID, previousSalaryID, nextSalaryID, err := a.dbService.CreateSalary(payload, userID, employeeID)
 	if err != nil {
 		logger.Logger.Error(err)
@@ -74,7 +75,7 @@ func (a *APIService) CreateSalary(payload models.CreateSalary, userID int64, emp
 			return nil, err
 		}
 	}
-	salary, err := a.GetSalary(userID, salaryID)
+	salary, err := a.GetSalary(ctx, userID, salaryID)
 	if err != nil {
 		logger.Logger.Error(err)
 		return nil, err
@@ -85,17 +86,17 @@ func (a *APIService) CreateSalary(payload models.CreateSalary, userID int64, emp
 		return nil, err
 	}
 	// Recalculate Forecast
-	_, err = a.CalculateForecast(userID)
+	_, err = a.CalculateForecast(ctx, userID)
 	if err != nil {
 		logger.Logger.Error(err)
 		return nil, err
 	}
-	a.notifyChange(userID, "salary", events.ActionCreated, salaryID)
+	a.notifyChange(ctx, userID, "salary", events.ActionCreated, salaryID)
 	return salary, nil
 }
 
-func (a *APIService) UpdateSalary(payload models.UpdateSalary, userID int64, salaryID int64) (*models.Salary, error) {
-	existingSalary, err := a.GetSalary(userID, salaryID)
+func (a *APIService) UpdateSalary(ctx context.Context, payload models.UpdateSalary, userID int64, salaryID int64) (*models.Salary, error) {
+	existingSalary, err := a.GetSalary(ctx, userID, salaryID)
 	if err != nil {
 		logger.Logger.Error(err)
 		return nil, err
@@ -144,7 +145,7 @@ func (a *APIService) UpdateSalary(payload models.UpdateSalary, userID int64, sal
 			return nil, err
 		}
 	}
-	salary, err := a.GetSalary(userID, salaryID)
+	salary, err := a.GetSalary(ctx, userID, salaryID)
 	if err != nil {
 		logger.Logger.Error(err)
 		return nil, err
@@ -155,17 +156,17 @@ func (a *APIService) UpdateSalary(payload models.UpdateSalary, userID int64, sal
 		return nil, err
 	}
 	// Recalculate Forecast
-	_, err = a.CalculateForecast(userID)
+	_, err = a.CalculateForecast(ctx, userID)
 	if err != nil {
 		logger.Logger.Error(err)
 		return nil, err
 	}
-	a.notifyChange(userID, "salary", events.ActionUpdated, salaryID)
+	a.notifyChange(ctx, userID, "salary", events.ActionUpdated, salaryID)
 	return salary, nil
 }
 
-func (a *APIService) DeleteSalary(userID int64, salaryID int64) error {
-	existingSalary, err := a.GetSalary(userID, salaryID)
+func (a *APIService) DeleteSalary(ctx context.Context, userID int64, salaryID int64) error {
+	existingSalary, err := a.GetSalary(ctx, userID, salaryID)
 	if err != nil {
 		logger.Logger.Error(err)
 		return err
@@ -196,18 +197,18 @@ func (a *APIService) DeleteSalary(userID int64, salaryID int64) error {
 		}
 	}
 	// Recalculate Forecast
-	_, err = a.CalculateForecast(userID)
+	_, err = a.CalculateForecast(ctx, userID)
 	if err != nil {
 		logger.Logger.Error(err)
 		return err
 	}
-	a.notifyChange(userID, "salary", events.ActionDeleted, salaryID)
+	a.notifyChange(ctx, userID, "salary", events.ActionDeleted, salaryID)
 	return nil
 }
 
-func (a *APIService) applySalaryCalculations(userID int64, salary *models.Salary) (*models.Salary, error) {
+func (a *APIService) applySalaryCalculations(ctx context.Context, userID int64, salary *models.Salary) (*models.Salary, error) {
 	// Determine whether separate salary costs exist.
-	salaryCosts, _, err := a.ListSalaryCosts(userID, salary.ID, 1, 1000, true)
+	salaryCosts, _, err := a.ListSalaryCosts(ctx, userID, salary.ID, 1, 1000, true)
 	if err != nil {
 		return nil, err
 	}

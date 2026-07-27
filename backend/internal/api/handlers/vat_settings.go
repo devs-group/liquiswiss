@@ -18,7 +18,7 @@ func GetVatSetting(apiService api_service.IAPIService, c *gin.Context) {
 	}
 
 	// Action
-	vatSetting, err := apiService.GetVatSetting(userID)
+	vatSetting, err := apiService.GetVatSetting(c.Request.Context(), userID)
 	if err != nil {
 		switch err {
 		case sql.ErrNoRows:
@@ -53,7 +53,7 @@ func CreateVatSetting(apiService api_service.IAPIService, c *gin.Context) {
 	}
 
 	// Action
-	vatSetting, err := apiService.CreateVatSetting(payload, userID)
+	vatSetting, err := apiService.CreateVatSetting(c.Request.Context(), payload, userID)
 	if err != nil {
 		c.Status(http.StatusInternalServerError)
 		return
@@ -82,7 +82,7 @@ func UpdateVatSetting(apiService api_service.IAPIService, c *gin.Context) {
 	}
 
 	// Action
-	vatSetting, err := apiService.UpdateVatSetting(payload, userID)
+	vatSetting, err := apiService.UpdateVatSetting(c.Request.Context(), payload, userID)
 	if err != nil {
 		c.Status(http.StatusInternalServerError)
 		return
@@ -101,7 +101,7 @@ func DeleteVatSetting(apiService api_service.IAPIService, c *gin.Context) {
 	}
 
 	// Action
-	err := apiService.DeleteVatSetting(userID)
+	err := apiService.DeleteVatSetting(c.Request.Context(), userID)
 	if err != nil {
 		c.Status(http.StatusInternalServerError)
 		return

@@ -1,6 +1,7 @@
 package api_service
 
 import (
+	"context"
 	"golang.org/x/crypto/bcrypt"
 	"liquiswiss/config"
 	"liquiswiss/pkg/auth"
@@ -9,7 +10,7 @@ import (
 	"time"
 )
 
-func (a *APIService) Login(payload models.Login, deviceName string, existingRefreshToken string) (*models.User, *string, *time.Time, *string, *time.Time, error) {
+func (a *APIService) Login(ctx context.Context, payload models.Login, deviceName string, existingRefreshToken string) (*models.User, *string, *time.Time, *string, *time.Time, error) {
 	loginUser, err := a.dbService.GetUserPasswordByEMail(payload.Email)
 	if err != nil {
 		logger.Logger.Error(err)
@@ -53,7 +54,7 @@ func (a *APIService) Login(payload models.Login, deviceName string, existingRefr
 	return user, &accessToken, &accessExpirationTime, &refreshToken, &refreshExpirationTime, nil
 }
 
-func (a *APIService) Logout(existingRefreshToken string) {
+func (a *APIService) Logout(ctx context.Context, existingRefreshToken string) {
 	a.clearRefreshTokenFromDatabase(existingRefreshToken)
 	// Kill open event streams immediately instead of waiting for access token expiry
 	if refreshClaims, err := auth.VerifyToken(existingRefreshToken); err == nil {
@@ -61,7 +62,7 @@ func (a *APIService) Logout(existingRefreshToken string) {
 	}
 }
 
-func (a *APIService) ForgotPassword(payload models.ForgotPassword, code string) error {
+func (a *APIService) ForgotPassword(ctx context.Context, payload models.ForgotPassword, code string) error {
 	hasCreated, err := a.dbService.CreateResetPassword(payload.Email, code, config.GetConfig().ResetPasswordDelay)
 	if err != nil {
 		logger.Logger.Error(err)
@@ -84,7 +85,7 @@ func (a *APIService) ForgotPassword(payload models.ForgotPassword, code string) 
 	return nil
 }
 
-func (a *APIService) ResetPassword(payload models.ResetPassword) error {
+func (a *APIService) ResetPassword(ctx context.Context, payload models.ResetPassword) error {
 	_, err := a.dbService.ValidateResetPassword(payload.Email, payload.Code, config.GetConfig().ResetPasswordValidity)
 	if err != nil {
 		logger.Logger.Error(err)
@@ -112,7 +113,7 @@ func (a *APIService) ResetPassword(payload models.ResetPassword) error {
 	return nil
 }
 
-func (a *APIService) CheckResetPasswordCode(payload models.CheckResetPasswordCode) error {
+func (a *APIService) CheckResetPasswordCode(ctx context.Context, payload models.CheckResetPasswordCode) error {
 	_, err := a.dbService.ValidateResetPassword(payload.Email, payload.Code, config.GetConfig().ResetPasswordValidity)
 	if err != nil {
 		logger.Logger.Error(err)
@@ -121,7 +122,7 @@ func (a *APIService) CheckResetPasswordCode(payload models.CheckResetPasswordCod
 	return nil
 }
 
-func (a *APIService) CreateRegistration(payload models.CreateRegistration, code string) (int64, error) {
+func (a *APIService) CreateRegistration(ctx context.Context, payload models.CreateRegistration, code string) (int64, error) {
 	registrationID, err := a.dbService.CreateRegistration(payload.Email, code)
 	if err != nil {
 		logger.Logger.Error(err)
@@ -137,7 +138,7 @@ func (a *APIService) CreateRegistration(payload models.CreateRegistration, code 
 	if err != nil {
 		logger.Logger.Error(err)
 
-		err2 := a.DeleteRegistration(registrationID, code)
+		err2 := a.DeleteRegistration(ctx, registrationID, code)
 		if err2 != nil {
 			logger.Logger.Error(err2)
 		}
@@ -147,7 +148,7 @@ func (a *APIService) CreateRegistration(payload models.CreateRegistration, code 
 	return registrationID, nil
 }
 
-func (a *APIService) CheckRegistrationCode(payload models.CheckRegistrationCode, validity time.Duration) (int64, error) {
+func (a *APIService) CheckRegistrationCode(ctx context.Context, payload models.CheckRegistrationCode, validity time.Duration) (int64, error) {
 	registrationID, err := a.dbService.ValidateRegistration(payload.Email, payload.Code, validity)
 	if err != nil {
 		logger.Logger.Error(err)
@@ -156,8 +157,8 @@ func (a *APIService) CheckRegistrationCode(payload models.CheckRegistrationCode,
 	return registrationID, nil
 }
 
-func (a *APIService) FinishRegistration(payload models.FinishRegistration, deviceName string, validity time.Duration) (*models.User, *string, *time.Time, *string, *time.Time, error) {
-	registrationId, err := a.CheckRegistrationCode(models.CheckRegistrationCode{
+func (a *APIService) FinishRegistration(ctx context.Context, payload models.FinishRegistration, deviceName string, validity time.Duration) (*models.User, *string, *time.Time, *string, *time.Time, error) {
+	registrationId, err := a.CheckRegistrationCode(ctx, models.CheckRegistrationCode{
 		Email: payload.Email,
 		Code:  payload.Code,
 	}, validity)
@@ -234,7 +235,7 @@ func (a *APIService) FinishRegistration(payload models.FinishRegistration, devic
 	return user, &accessToken, &accessExpirationTime, &refreshToken, &refreshExpirationTime, nil
 }
 
-func (a *APIService) DeleteRegistration(registrationID int64, email string) error {
+func (a *APIService) DeleteRegistration(ctx context.Context, registrationID int64, email string) error {
 	err := a.dbService.DeleteRegistration(registrationID, email)
 	if err != nil {
 		logger.Logger.Error(err)

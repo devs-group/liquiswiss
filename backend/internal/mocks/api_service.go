@@ -10,6 +10,7 @@
 package mocks
 
 import (
+	context "context"
 	events "liquiswiss/internal/events"
 	models "liquiswiss/pkg/models"
 	reflect "reflect"
@@ -43,9 +44,9 @@ func (m *MockIAPIService) EXPECT() *MockIAPIServiceMockRecorder {
 }
 
 // AcceptInvitation mocks base method.
-func (m *MockIAPIService) AcceptInvitation(payload models.AcceptInvitation, deviceName string, authenticatedUserID int64) (*models.User, *string, *time.Time, *string, *time.Time, error) {
+func (m *MockIAPIService) AcceptInvitation(ctx context.Context, payload models.AcceptInvitation, deviceName string, authenticatedUserID int64) (*models.User, *string, *time.Time, *string, *time.Time, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "AcceptInvitation", payload, deviceName, authenticatedUserID)
+	ret := m.ctrl.Call(m, "AcceptInvitation", ctx, payload, deviceName, authenticatedUserID)
 	ret0, _ := ret[0].(*models.User)
 	ret1, _ := ret[1].(*string)
 	ret2, _ := ret[2].(*time.Time)
@@ -56,526 +57,526 @@ func (m *MockIAPIService) AcceptInvitation(payload models.AcceptInvitation, devi
 }
 
 // AcceptInvitation indicates an expected call of AcceptInvitation.
-func (mr *MockIAPIServiceMockRecorder) AcceptInvitation(payload, deviceName, authenticatedUserID any) *gomock.Call {
+func (mr *MockIAPIServiceMockRecorder) AcceptInvitation(ctx, payload, deviceName, authenticatedUserID any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "AcceptInvitation", reflect.TypeOf((*MockIAPIService)(nil).AcceptInvitation), payload, deviceName, authenticatedUserID)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "AcceptInvitation", reflect.TypeOf((*MockIAPIService)(nil).AcceptInvitation), ctx, payload, deviceName, authenticatedUserID)
 }
 
 // CalculateForecast mocks base method.
-func (m *MockIAPIService) CalculateForecast(userID int64) ([]models.Forecast, error) {
+func (m *MockIAPIService) CalculateForecast(ctx context.Context, userID int64) ([]models.Forecast, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "CalculateForecast", userID)
+	ret := m.ctrl.Call(m, "CalculateForecast", ctx, userID)
 	ret0, _ := ret[0].([]models.Forecast)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
 
 // CalculateForecast indicates an expected call of CalculateForecast.
-func (mr *MockIAPIServiceMockRecorder) CalculateForecast(userID any) *gomock.Call {
+func (mr *MockIAPIServiceMockRecorder) CalculateForecast(ctx, userID any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CalculateForecast", reflect.TypeOf((*MockIAPIService)(nil).CalculateForecast), userID)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CalculateForecast", reflect.TypeOf((*MockIAPIService)(nil).CalculateForecast), ctx, userID)
 }
 
 // CheckInvitation mocks base method.
-func (m *MockIAPIService) CheckInvitation(token string) (*models.CheckInvitationResponse, error) {
+func (m *MockIAPIService) CheckInvitation(ctx context.Context, token string) (*models.CheckInvitationResponse, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "CheckInvitation", token)
+	ret := m.ctrl.Call(m, "CheckInvitation", ctx, token)
 	ret0, _ := ret[0].(*models.CheckInvitationResponse)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
 
 // CheckInvitation indicates an expected call of CheckInvitation.
-func (mr *MockIAPIServiceMockRecorder) CheckInvitation(token any) *gomock.Call {
+func (mr *MockIAPIServiceMockRecorder) CheckInvitation(ctx, token any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CheckInvitation", reflect.TypeOf((*MockIAPIService)(nil).CheckInvitation), token)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CheckInvitation", reflect.TypeOf((*MockIAPIService)(nil).CheckInvitation), ctx, token)
 }
 
 // CheckRegistrationCode mocks base method.
-func (m *MockIAPIService) CheckRegistrationCode(payload models.CheckRegistrationCode, validity time.Duration) (int64, error) {
+func (m *MockIAPIService) CheckRegistrationCode(ctx context.Context, payload models.CheckRegistrationCode, validity time.Duration) (int64, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "CheckRegistrationCode", payload, validity)
+	ret := m.ctrl.Call(m, "CheckRegistrationCode", ctx, payload, validity)
 	ret0, _ := ret[0].(int64)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
 
 // CheckRegistrationCode indicates an expected call of CheckRegistrationCode.
-func (mr *MockIAPIServiceMockRecorder) CheckRegistrationCode(payload, validity any) *gomock.Call {
+func (mr *MockIAPIServiceMockRecorder) CheckRegistrationCode(ctx, payload, validity any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CheckRegistrationCode", reflect.TypeOf((*MockIAPIService)(nil).CheckRegistrationCode), payload, validity)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CheckRegistrationCode", reflect.TypeOf((*MockIAPIService)(nil).CheckRegistrationCode), ctx, payload, validity)
 }
 
 // CheckResetPasswordCode mocks base method.
-func (m *MockIAPIService) CheckResetPasswordCode(payload models.CheckResetPasswordCode) error {
+func (m *MockIAPIService) CheckResetPasswordCode(ctx context.Context, payload models.CheckResetPasswordCode) error {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "CheckResetPasswordCode", payload)
+	ret := m.ctrl.Call(m, "CheckResetPasswordCode", ctx, payload)
 	ret0, _ := ret[0].(error)
 	return ret0
 }
 
 // CheckResetPasswordCode indicates an expected call of CheckResetPasswordCode.
-func (mr *MockIAPIServiceMockRecorder) CheckResetPasswordCode(payload any) *gomock.Call {
+func (mr *MockIAPIServiceMockRecorder) CheckResetPasswordCode(ctx, payload any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CheckResetPasswordCode", reflect.TypeOf((*MockIAPIService)(nil).CheckResetPasswordCode), payload)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CheckResetPasswordCode", reflect.TypeOf((*MockIAPIService)(nil).CheckResetPasswordCode), ctx, payload)
 }
 
 // CopySalaryCosts mocks base method.
-func (m *MockIAPIService) CopySalaryCosts(payload models.CopySalaryCosts, userID, salaryID int64) error {
+func (m *MockIAPIService) CopySalaryCosts(ctx context.Context, payload models.CopySalaryCosts, userID, salaryID int64) error {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "CopySalaryCosts", payload, userID, salaryID)
+	ret := m.ctrl.Call(m, "CopySalaryCosts", ctx, payload, userID, salaryID)
 	ret0, _ := ret[0].(error)
 	return ret0
 }
 
 // CopySalaryCosts indicates an expected call of CopySalaryCosts.
-func (mr *MockIAPIServiceMockRecorder) CopySalaryCosts(payload, userID, salaryID any) *gomock.Call {
+func (mr *MockIAPIServiceMockRecorder) CopySalaryCosts(ctx, payload, userID, salaryID any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CopySalaryCosts", reflect.TypeOf((*MockIAPIService)(nil).CopySalaryCosts), payload, userID, salaryID)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CopySalaryCosts", reflect.TypeOf((*MockIAPIService)(nil).CopySalaryCosts), ctx, payload, userID, salaryID)
 }
 
 // CountCurrencies mocks base method.
-func (m *MockIAPIService) CountCurrencies() (int64, error) {
+func (m *MockIAPIService) CountCurrencies(ctx context.Context) (int64, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "CountCurrencies")
+	ret := m.ctrl.Call(m, "CountCurrencies", ctx)
 	ret0, _ := ret[0].(int64)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
 
 // CountCurrencies indicates an expected call of CountCurrencies.
-func (mr *MockIAPIServiceMockRecorder) CountCurrencies() *gomock.Call {
+func (mr *MockIAPIServiceMockRecorder) CountCurrencies(ctx any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CountCurrencies", reflect.TypeOf((*MockIAPIService)(nil).CountCurrencies))
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CountCurrencies", reflect.TypeOf((*MockIAPIService)(nil).CountCurrencies), ctx)
 }
 
 // CountEmployees mocks base method.
-func (m *MockIAPIService) CountEmployees(userID, page, limit int64) (int64, error) {
+func (m *MockIAPIService) CountEmployees(ctx context.Context, userID, page, limit int64) (int64, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "CountEmployees", userID, page, limit)
+	ret := m.ctrl.Call(m, "CountEmployees", ctx, userID, page, limit)
 	ret0, _ := ret[0].(int64)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
 
 // CountEmployees indicates an expected call of CountEmployees.
-func (mr *MockIAPIServiceMockRecorder) CountEmployees(userID, page, limit any) *gomock.Call {
+func (mr *MockIAPIServiceMockRecorder) CountEmployees(ctx, userID, page, limit any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CountEmployees", reflect.TypeOf((*MockIAPIService)(nil).CountEmployees), userID, page, limit)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CountEmployees", reflect.TypeOf((*MockIAPIService)(nil).CountEmployees), ctx, userID, page, limit)
 }
 
 // CountUniqueCurrenciesInFiatRates mocks base method.
-func (m *MockIAPIService) CountUniqueCurrenciesInFiatRates() (int64, error) {
+func (m *MockIAPIService) CountUniqueCurrenciesInFiatRates(ctx context.Context) (int64, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "CountUniqueCurrenciesInFiatRates")
+	ret := m.ctrl.Call(m, "CountUniqueCurrenciesInFiatRates", ctx)
 	ret0, _ := ret[0].(int64)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
 
 // CountUniqueCurrenciesInFiatRates indicates an expected call of CountUniqueCurrenciesInFiatRates.
-func (mr *MockIAPIServiceMockRecorder) CountUniqueCurrenciesInFiatRates() *gomock.Call {
+func (mr *MockIAPIServiceMockRecorder) CountUniqueCurrenciesInFiatRates(ctx any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CountUniqueCurrenciesInFiatRates", reflect.TypeOf((*MockIAPIService)(nil).CountUniqueCurrenciesInFiatRates))
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CountUniqueCurrenciesInFiatRates", reflect.TypeOf((*MockIAPIService)(nil).CountUniqueCurrenciesInFiatRates), ctx)
 }
 
 // CreateBankAccount mocks base method.
-func (m *MockIAPIService) CreateBankAccount(payload models.CreateBankAccount, userID int64) (*models.BankAccount, error) {
+func (m *MockIAPIService) CreateBankAccount(ctx context.Context, payload models.CreateBankAccount, userID int64) (*models.BankAccount, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "CreateBankAccount", payload, userID)
+	ret := m.ctrl.Call(m, "CreateBankAccount", ctx, payload, userID)
 	ret0, _ := ret[0].(*models.BankAccount)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
 
 // CreateBankAccount indicates an expected call of CreateBankAccount.
-func (mr *MockIAPIServiceMockRecorder) CreateBankAccount(payload, userID any) *gomock.Call {
+func (mr *MockIAPIServiceMockRecorder) CreateBankAccount(ctx, payload, userID any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CreateBankAccount", reflect.TypeOf((*MockIAPIService)(nil).CreateBankAccount), payload, userID)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CreateBankAccount", reflect.TypeOf((*MockIAPIService)(nil).CreateBankAccount), ctx, payload, userID)
 }
 
 // CreateCategory mocks base method.
-func (m *MockIAPIService) CreateCategory(payload models.CreateCategory, userID *int64) (*models.Category, error) {
+func (m *MockIAPIService) CreateCategory(ctx context.Context, payload models.CreateCategory, userID *int64) (*models.Category, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "CreateCategory", payload, userID)
+	ret := m.ctrl.Call(m, "CreateCategory", ctx, payload, userID)
 	ret0, _ := ret[0].(*models.Category)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
 
 // CreateCategory indicates an expected call of CreateCategory.
-func (mr *MockIAPIServiceMockRecorder) CreateCategory(payload, userID any) *gomock.Call {
+func (mr *MockIAPIServiceMockRecorder) CreateCategory(ctx, payload, userID any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CreateCategory", reflect.TypeOf((*MockIAPIService)(nil).CreateCategory), payload, userID)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CreateCategory", reflect.TypeOf((*MockIAPIService)(nil).CreateCategory), ctx, payload, userID)
 }
 
 // CreateCurrency mocks base method.
-func (m *MockIAPIService) CreateCurrency(payload models.CreateCurrency) (*models.Currency, error) {
+func (m *MockIAPIService) CreateCurrency(ctx context.Context, payload models.CreateCurrency) (*models.Currency, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "CreateCurrency", payload)
+	ret := m.ctrl.Call(m, "CreateCurrency", ctx, payload)
 	ret0, _ := ret[0].(*models.Currency)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
 
 // CreateCurrency indicates an expected call of CreateCurrency.
-func (mr *MockIAPIServiceMockRecorder) CreateCurrency(payload any) *gomock.Call {
+func (mr *MockIAPIServiceMockRecorder) CreateCurrency(ctx, payload any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CreateCurrency", reflect.TypeOf((*MockIAPIService)(nil).CreateCurrency), payload)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CreateCurrency", reflect.TypeOf((*MockIAPIService)(nil).CreateCurrency), ctx, payload)
 }
 
 // CreateEmployee mocks base method.
-func (m *MockIAPIService) CreateEmployee(payload models.CreateEmployee, userID int64) (*models.Employee, error) {
+func (m *MockIAPIService) CreateEmployee(ctx context.Context, payload models.CreateEmployee, userID int64) (*models.Employee, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "CreateEmployee", payload, userID)
+	ret := m.ctrl.Call(m, "CreateEmployee", ctx, payload, userID)
 	ret0, _ := ret[0].(*models.Employee)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
 
 // CreateEmployee indicates an expected call of CreateEmployee.
-func (mr *MockIAPIServiceMockRecorder) CreateEmployee(payload, userID any) *gomock.Call {
+func (mr *MockIAPIServiceMockRecorder) CreateEmployee(ctx, payload, userID any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CreateEmployee", reflect.TypeOf((*MockIAPIService)(nil).CreateEmployee), payload, userID)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CreateEmployee", reflect.TypeOf((*MockIAPIService)(nil).CreateEmployee), ctx, payload, userID)
 }
 
 // CreateForecastExclusion mocks base method.
-func (m *MockIAPIService) CreateForecastExclusion(payload models.CreateForecastExclusion, userID int64) (int64, error) {
+func (m *MockIAPIService) CreateForecastExclusion(ctx context.Context, payload models.CreateForecastExclusion, userID int64) (int64, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "CreateForecastExclusion", payload, userID)
+	ret := m.ctrl.Call(m, "CreateForecastExclusion", ctx, payload, userID)
 	ret0, _ := ret[0].(int64)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
 
 // CreateForecastExclusion indicates an expected call of CreateForecastExclusion.
-func (mr *MockIAPIServiceMockRecorder) CreateForecastExclusion(payload, userID any) *gomock.Call {
+func (mr *MockIAPIServiceMockRecorder) CreateForecastExclusion(ctx, payload, userID any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CreateForecastExclusion", reflect.TypeOf((*MockIAPIService)(nil).CreateForecastExclusion), payload, userID)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CreateForecastExclusion", reflect.TypeOf((*MockIAPIService)(nil).CreateForecastExclusion), ctx, payload, userID)
 }
 
 // CreateOrganisation mocks base method.
-func (m *MockIAPIService) CreateOrganisation(payload models.CreateOrganisation, userID int64) (*models.Organisation, error) {
+func (m *MockIAPIService) CreateOrganisation(ctx context.Context, payload models.CreateOrganisation, userID int64) (*models.Organisation, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "CreateOrganisation", payload, userID)
+	ret := m.ctrl.Call(m, "CreateOrganisation", ctx, payload, userID)
 	ret0, _ := ret[0].(*models.Organisation)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
 
 // CreateOrganisation indicates an expected call of CreateOrganisation.
-func (mr *MockIAPIServiceMockRecorder) CreateOrganisation(payload, userID any) *gomock.Call {
+func (mr *MockIAPIServiceMockRecorder) CreateOrganisation(ctx, payload, userID any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CreateOrganisation", reflect.TypeOf((*MockIAPIService)(nil).CreateOrganisation), payload, userID)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CreateOrganisation", reflect.TypeOf((*MockIAPIService)(nil).CreateOrganisation), ctx, payload, userID)
 }
 
 // CreateOrganisationInvitation mocks base method.
-func (m *MockIAPIService) CreateOrganisationInvitation(payload models.CreateInvitation, userID, organisationID int64) (*models.Invitation, error) {
+func (m *MockIAPIService) CreateOrganisationInvitation(ctx context.Context, payload models.CreateInvitation, userID, organisationID int64) (*models.Invitation, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "CreateOrganisationInvitation", payload, userID, organisationID)
+	ret := m.ctrl.Call(m, "CreateOrganisationInvitation", ctx, payload, userID, organisationID)
 	ret0, _ := ret[0].(*models.Invitation)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
 
 // CreateOrganisationInvitation indicates an expected call of CreateOrganisationInvitation.
-func (mr *MockIAPIServiceMockRecorder) CreateOrganisationInvitation(payload, userID, organisationID any) *gomock.Call {
+func (mr *MockIAPIServiceMockRecorder) CreateOrganisationInvitation(ctx, payload, userID, organisationID any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CreateOrganisationInvitation", reflect.TypeOf((*MockIAPIService)(nil).CreateOrganisationInvitation), payload, userID, organisationID)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CreateOrganisationInvitation", reflect.TypeOf((*MockIAPIService)(nil).CreateOrganisationInvitation), ctx, payload, userID, organisationID)
 }
 
 // CreateRegistration mocks base method.
-func (m *MockIAPIService) CreateRegistration(payload models.CreateRegistration, code string) (int64, error) {
+func (m *MockIAPIService) CreateRegistration(ctx context.Context, payload models.CreateRegistration, code string) (int64, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "CreateRegistration", payload, code)
+	ret := m.ctrl.Call(m, "CreateRegistration", ctx, payload, code)
 	ret0, _ := ret[0].(int64)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
 
 // CreateRegistration indicates an expected call of CreateRegistration.
-func (mr *MockIAPIServiceMockRecorder) CreateRegistration(payload, code any) *gomock.Call {
+func (mr *MockIAPIServiceMockRecorder) CreateRegistration(ctx, payload, code any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CreateRegistration", reflect.TypeOf((*MockIAPIService)(nil).CreateRegistration), payload, code)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CreateRegistration", reflect.TypeOf((*MockIAPIService)(nil).CreateRegistration), ctx, payload, code)
 }
 
 // CreateSalary mocks base method.
-func (m *MockIAPIService) CreateSalary(payload models.CreateSalary, userID, employeeID int64) (*models.Salary, error) {
+func (m *MockIAPIService) CreateSalary(ctx context.Context, payload models.CreateSalary, userID, employeeID int64) (*models.Salary, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "CreateSalary", payload, userID, employeeID)
+	ret := m.ctrl.Call(m, "CreateSalary", ctx, payload, userID, employeeID)
 	ret0, _ := ret[0].(*models.Salary)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
 
 // CreateSalary indicates an expected call of CreateSalary.
-func (mr *MockIAPIServiceMockRecorder) CreateSalary(payload, userID, employeeID any) *gomock.Call {
+func (mr *MockIAPIServiceMockRecorder) CreateSalary(ctx, payload, userID, employeeID any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CreateSalary", reflect.TypeOf((*MockIAPIService)(nil).CreateSalary), payload, userID, employeeID)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CreateSalary", reflect.TypeOf((*MockIAPIService)(nil).CreateSalary), ctx, payload, userID, employeeID)
 }
 
 // CreateSalaryCost mocks base method.
-func (m *MockIAPIService) CreateSalaryCost(payload models.CreateSalaryCost, userID, salaryID int64) (*models.SalaryCost, error) {
+func (m *MockIAPIService) CreateSalaryCost(ctx context.Context, payload models.CreateSalaryCost, userID, salaryID int64) (*models.SalaryCost, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "CreateSalaryCost", payload, userID, salaryID)
+	ret := m.ctrl.Call(m, "CreateSalaryCost", ctx, payload, userID, salaryID)
 	ret0, _ := ret[0].(*models.SalaryCost)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
 
 // CreateSalaryCost indicates an expected call of CreateSalaryCost.
-func (mr *MockIAPIServiceMockRecorder) CreateSalaryCost(payload, userID, salaryID any) *gomock.Call {
+func (mr *MockIAPIServiceMockRecorder) CreateSalaryCost(ctx, payload, userID, salaryID any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CreateSalaryCost", reflect.TypeOf((*MockIAPIService)(nil).CreateSalaryCost), payload, userID, salaryID)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CreateSalaryCost", reflect.TypeOf((*MockIAPIService)(nil).CreateSalaryCost), ctx, payload, userID, salaryID)
 }
 
 // CreateSalaryCostLabel mocks base method.
-func (m *MockIAPIService) CreateSalaryCostLabel(payload models.CreateSalaryCostLabel, userID int64) (*models.SalaryCostLabel, error) {
+func (m *MockIAPIService) CreateSalaryCostLabel(ctx context.Context, payload models.CreateSalaryCostLabel, userID int64) (*models.SalaryCostLabel, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "CreateSalaryCostLabel", payload, userID)
+	ret := m.ctrl.Call(m, "CreateSalaryCostLabel", ctx, payload, userID)
 	ret0, _ := ret[0].(*models.SalaryCostLabel)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
 
 // CreateSalaryCostLabel indicates an expected call of CreateSalaryCostLabel.
-func (mr *MockIAPIServiceMockRecorder) CreateSalaryCostLabel(payload, userID any) *gomock.Call {
+func (mr *MockIAPIServiceMockRecorder) CreateSalaryCostLabel(ctx, payload, userID any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CreateSalaryCostLabel", reflect.TypeOf((*MockIAPIService)(nil).CreateSalaryCostLabel), payload, userID)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CreateSalaryCostLabel", reflect.TypeOf((*MockIAPIService)(nil).CreateSalaryCostLabel), ctx, payload, userID)
 }
 
 // CreateTransaction mocks base method.
-func (m *MockIAPIService) CreateTransaction(payload models.CreateTransaction, userID int64) (*models.Transaction, error) {
+func (m *MockIAPIService) CreateTransaction(ctx context.Context, payload models.CreateTransaction, userID int64) (*models.Transaction, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "CreateTransaction", payload, userID)
+	ret := m.ctrl.Call(m, "CreateTransaction", ctx, payload, userID)
 	ret0, _ := ret[0].(*models.Transaction)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
 
 // CreateTransaction indicates an expected call of CreateTransaction.
-func (mr *MockIAPIServiceMockRecorder) CreateTransaction(payload, userID any) *gomock.Call {
+func (mr *MockIAPIServiceMockRecorder) CreateTransaction(ctx, payload, userID any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CreateTransaction", reflect.TypeOf((*MockIAPIService)(nil).CreateTransaction), payload, userID)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CreateTransaction", reflect.TypeOf((*MockIAPIService)(nil).CreateTransaction), ctx, payload, userID)
 }
 
 // CreateVat mocks base method.
-func (m *MockIAPIService) CreateVat(payload models.CreateVat, userID int64) (*models.Vat, error) {
+func (m *MockIAPIService) CreateVat(ctx context.Context, payload models.CreateVat, userID int64) (*models.Vat, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "CreateVat", payload, userID)
+	ret := m.ctrl.Call(m, "CreateVat", ctx, payload, userID)
 	ret0, _ := ret[0].(*models.Vat)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
 
 // CreateVat indicates an expected call of CreateVat.
-func (mr *MockIAPIServiceMockRecorder) CreateVat(payload, userID any) *gomock.Call {
+func (mr *MockIAPIServiceMockRecorder) CreateVat(ctx, payload, userID any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CreateVat", reflect.TypeOf((*MockIAPIService)(nil).CreateVat), payload, userID)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CreateVat", reflect.TypeOf((*MockIAPIService)(nil).CreateVat), ctx, payload, userID)
 }
 
 // CreateVatSetting mocks base method.
-func (m *MockIAPIService) CreateVatSetting(payload models.CreateVatSetting, userID int64) (*models.VatSetting, error) {
+func (m *MockIAPIService) CreateVatSetting(ctx context.Context, payload models.CreateVatSetting, userID int64) (*models.VatSetting, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "CreateVatSetting", payload, userID)
+	ret := m.ctrl.Call(m, "CreateVatSetting", ctx, payload, userID)
 	ret0, _ := ret[0].(*models.VatSetting)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
 
 // CreateVatSetting indicates an expected call of CreateVatSetting.
-func (mr *MockIAPIServiceMockRecorder) CreateVatSetting(payload, userID any) *gomock.Call {
+func (mr *MockIAPIServiceMockRecorder) CreateVatSetting(ctx, payload, userID any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CreateVatSetting", reflect.TypeOf((*MockIAPIService)(nil).CreateVatSetting), payload, userID)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CreateVatSetting", reflect.TypeOf((*MockIAPIService)(nil).CreateVatSetting), ctx, payload, userID)
 }
 
 // DeclineMyInvitation mocks base method.
-func (m *MockIAPIService) DeclineMyInvitation(userID, invitationID int64) error {
+func (m *MockIAPIService) DeclineMyInvitation(ctx context.Context, userID, invitationID int64) error {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "DeclineMyInvitation", userID, invitationID)
+	ret := m.ctrl.Call(m, "DeclineMyInvitation", ctx, userID, invitationID)
 	ret0, _ := ret[0].(error)
 	return ret0
 }
 
 // DeclineMyInvitation indicates an expected call of DeclineMyInvitation.
-func (mr *MockIAPIServiceMockRecorder) DeclineMyInvitation(userID, invitationID any) *gomock.Call {
+func (mr *MockIAPIServiceMockRecorder) DeclineMyInvitation(ctx, userID, invitationID any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "DeclineMyInvitation", reflect.TypeOf((*MockIAPIService)(nil).DeclineMyInvitation), userID, invitationID)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "DeclineMyInvitation", reflect.TypeOf((*MockIAPIService)(nil).DeclineMyInvitation), ctx, userID, invitationID)
 }
 
 // DeleteBankAccount mocks base method.
-func (m *MockIAPIService) DeleteBankAccount(userID, bankAccountID int64) error {
+func (m *MockIAPIService) DeleteBankAccount(ctx context.Context, userID, bankAccountID int64) error {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "DeleteBankAccount", userID, bankAccountID)
+	ret := m.ctrl.Call(m, "DeleteBankAccount", ctx, userID, bankAccountID)
 	ret0, _ := ret[0].(error)
 	return ret0
 }
 
 // DeleteBankAccount indicates an expected call of DeleteBankAccount.
-func (mr *MockIAPIServiceMockRecorder) DeleteBankAccount(userID, bankAccountID any) *gomock.Call {
+func (mr *MockIAPIServiceMockRecorder) DeleteBankAccount(ctx, userID, bankAccountID any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "DeleteBankAccount", reflect.TypeOf((*MockIAPIService)(nil).DeleteBankAccount), userID, bankAccountID)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "DeleteBankAccount", reflect.TypeOf((*MockIAPIService)(nil).DeleteBankAccount), ctx, userID, bankAccountID)
 }
 
 // DeleteCategory mocks base method.
-func (m *MockIAPIService) DeleteCategory(userID, categoryID int64) error {
+func (m *MockIAPIService) DeleteCategory(ctx context.Context, userID, categoryID int64) error {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "DeleteCategory", userID, categoryID)
+	ret := m.ctrl.Call(m, "DeleteCategory", ctx, userID, categoryID)
 	ret0, _ := ret[0].(error)
 	return ret0
 }
 
 // DeleteCategory indicates an expected call of DeleteCategory.
-func (mr *MockIAPIServiceMockRecorder) DeleteCategory(userID, categoryID any) *gomock.Call {
+func (mr *MockIAPIServiceMockRecorder) DeleteCategory(ctx, userID, categoryID any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "DeleteCategory", reflect.TypeOf((*MockIAPIService)(nil).DeleteCategory), userID, categoryID)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "DeleteCategory", reflect.TypeOf((*MockIAPIService)(nil).DeleteCategory), ctx, userID, categoryID)
 }
 
 // DeleteEmployee mocks base method.
-func (m *MockIAPIService) DeleteEmployee(userID, employeeID int64) error {
+func (m *MockIAPIService) DeleteEmployee(ctx context.Context, userID, employeeID int64) error {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "DeleteEmployee", userID, employeeID)
+	ret := m.ctrl.Call(m, "DeleteEmployee", ctx, userID, employeeID)
 	ret0, _ := ret[0].(error)
 	return ret0
 }
 
 // DeleteEmployee indicates an expected call of DeleteEmployee.
-func (mr *MockIAPIServiceMockRecorder) DeleteEmployee(userID, employeeID any) *gomock.Call {
+func (mr *MockIAPIServiceMockRecorder) DeleteEmployee(ctx, userID, employeeID any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "DeleteEmployee", reflect.TypeOf((*MockIAPIService)(nil).DeleteEmployee), userID, employeeID)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "DeleteEmployee", reflect.TypeOf((*MockIAPIService)(nil).DeleteEmployee), ctx, userID, employeeID)
 }
 
 // DeleteForecastExclusion mocks base method.
-func (m *MockIAPIService) DeleteForecastExclusion(payload models.CreateForecastExclusion, userID int64) (int64, error) {
+func (m *MockIAPIService) DeleteForecastExclusion(ctx context.Context, payload models.CreateForecastExclusion, userID int64) (int64, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "DeleteForecastExclusion", payload, userID)
+	ret := m.ctrl.Call(m, "DeleteForecastExclusion", ctx, payload, userID)
 	ret0, _ := ret[0].(int64)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
 
 // DeleteForecastExclusion indicates an expected call of DeleteForecastExclusion.
-func (mr *MockIAPIServiceMockRecorder) DeleteForecastExclusion(payload, userID any) *gomock.Call {
+func (mr *MockIAPIServiceMockRecorder) DeleteForecastExclusion(ctx, payload, userID any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "DeleteForecastExclusion", reflect.TypeOf((*MockIAPIService)(nil).DeleteForecastExclusion), payload, userID)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "DeleteForecastExclusion", reflect.TypeOf((*MockIAPIService)(nil).DeleteForecastExclusion), ctx, payload, userID)
 }
 
 // DeleteOrganisationInvitation mocks base method.
-func (m *MockIAPIService) DeleteOrganisationInvitation(userID, organisationID, invitationID int64) error {
+func (m *MockIAPIService) DeleteOrganisationInvitation(ctx context.Context, userID, organisationID, invitationID int64) error {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "DeleteOrganisationInvitation", userID, organisationID, invitationID)
+	ret := m.ctrl.Call(m, "DeleteOrganisationInvitation", ctx, userID, organisationID, invitationID)
 	ret0, _ := ret[0].(error)
 	return ret0
 }
 
 // DeleteOrganisationInvitation indicates an expected call of DeleteOrganisationInvitation.
-func (mr *MockIAPIServiceMockRecorder) DeleteOrganisationInvitation(userID, organisationID, invitationID any) *gomock.Call {
+func (mr *MockIAPIServiceMockRecorder) DeleteOrganisationInvitation(ctx, userID, organisationID, invitationID any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "DeleteOrganisationInvitation", reflect.TypeOf((*MockIAPIService)(nil).DeleteOrganisationInvitation), userID, organisationID, invitationID)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "DeleteOrganisationInvitation", reflect.TypeOf((*MockIAPIService)(nil).DeleteOrganisationInvitation), ctx, userID, organisationID, invitationID)
 }
 
 // DeleteRegistration mocks base method.
-func (m *MockIAPIService) DeleteRegistration(registrationID int64, email string) error {
+func (m *MockIAPIService) DeleteRegistration(ctx context.Context, registrationID int64, email string) error {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "DeleteRegistration", registrationID, email)
+	ret := m.ctrl.Call(m, "DeleteRegistration", ctx, registrationID, email)
 	ret0, _ := ret[0].(error)
 	return ret0
 }
 
 // DeleteRegistration indicates an expected call of DeleteRegistration.
-func (mr *MockIAPIServiceMockRecorder) DeleteRegistration(registrationID, email any) *gomock.Call {
+func (mr *MockIAPIServiceMockRecorder) DeleteRegistration(ctx, registrationID, email any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "DeleteRegistration", reflect.TypeOf((*MockIAPIService)(nil).DeleteRegistration), registrationID, email)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "DeleteRegistration", reflect.TypeOf((*MockIAPIService)(nil).DeleteRegistration), ctx, registrationID, email)
 }
 
 // DeleteSalary mocks base method.
-func (m *MockIAPIService) DeleteSalary(userID, salaryID int64) error {
+func (m *MockIAPIService) DeleteSalary(ctx context.Context, userID, salaryID int64) error {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "DeleteSalary", userID, salaryID)
+	ret := m.ctrl.Call(m, "DeleteSalary", ctx, userID, salaryID)
 	ret0, _ := ret[0].(error)
 	return ret0
 }
 
 // DeleteSalary indicates an expected call of DeleteSalary.
-func (mr *MockIAPIServiceMockRecorder) DeleteSalary(userID, salaryID any) *gomock.Call {
+func (mr *MockIAPIServiceMockRecorder) DeleteSalary(ctx, userID, salaryID any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "DeleteSalary", reflect.TypeOf((*MockIAPIService)(nil).DeleteSalary), userID, salaryID)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "DeleteSalary", reflect.TypeOf((*MockIAPIService)(nil).DeleteSalary), ctx, userID, salaryID)
 }
 
 // DeleteSalaryCost mocks base method.
-func (m *MockIAPIService) DeleteSalaryCost(userID, salaryCostID int64) error {
+func (m *MockIAPIService) DeleteSalaryCost(ctx context.Context, userID, salaryCostID int64) error {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "DeleteSalaryCost", userID, salaryCostID)
+	ret := m.ctrl.Call(m, "DeleteSalaryCost", ctx, userID, salaryCostID)
 	ret0, _ := ret[0].(error)
 	return ret0
 }
 
 // DeleteSalaryCost indicates an expected call of DeleteSalaryCost.
-func (mr *MockIAPIServiceMockRecorder) DeleteSalaryCost(userID, salaryCostID any) *gomock.Call {
+func (mr *MockIAPIServiceMockRecorder) DeleteSalaryCost(ctx, userID, salaryCostID any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "DeleteSalaryCost", reflect.TypeOf((*MockIAPIService)(nil).DeleteSalaryCost), userID, salaryCostID)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "DeleteSalaryCost", reflect.TypeOf((*MockIAPIService)(nil).DeleteSalaryCost), ctx, userID, salaryCostID)
 }
 
 // DeleteSalaryCostLabel mocks base method.
-func (m *MockIAPIService) DeleteSalaryCostLabel(userID, salaryCostLabelID int64) error {
+func (m *MockIAPIService) DeleteSalaryCostLabel(ctx context.Context, userID, salaryCostLabelID int64) error {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "DeleteSalaryCostLabel", userID, salaryCostLabelID)
+	ret := m.ctrl.Call(m, "DeleteSalaryCostLabel", ctx, userID, salaryCostLabelID)
 	ret0, _ := ret[0].(error)
 	return ret0
 }
 
 // DeleteSalaryCostLabel indicates an expected call of DeleteSalaryCostLabel.
-func (mr *MockIAPIServiceMockRecorder) DeleteSalaryCostLabel(userID, salaryCostLabelID any) *gomock.Call {
+func (mr *MockIAPIServiceMockRecorder) DeleteSalaryCostLabel(ctx, userID, salaryCostLabelID any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "DeleteSalaryCostLabel", reflect.TypeOf((*MockIAPIService)(nil).DeleteSalaryCostLabel), userID, salaryCostLabelID)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "DeleteSalaryCostLabel", reflect.TypeOf((*MockIAPIService)(nil).DeleteSalaryCostLabel), ctx, userID, salaryCostLabelID)
 }
 
 // DeleteTransaction mocks base method.
-func (m *MockIAPIService) DeleteTransaction(userID, transactionID int64) error {
+func (m *MockIAPIService) DeleteTransaction(ctx context.Context, userID, transactionID int64) error {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "DeleteTransaction", userID, transactionID)
+	ret := m.ctrl.Call(m, "DeleteTransaction", ctx, userID, transactionID)
 	ret0, _ := ret[0].(error)
 	return ret0
 }
 
 // DeleteTransaction indicates an expected call of DeleteTransaction.
-func (mr *MockIAPIServiceMockRecorder) DeleteTransaction(userID, transactionID any) *gomock.Call {
+func (mr *MockIAPIServiceMockRecorder) DeleteTransaction(ctx, userID, transactionID any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "DeleteTransaction", reflect.TypeOf((*MockIAPIService)(nil).DeleteTransaction), userID, transactionID)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "DeleteTransaction", reflect.TypeOf((*MockIAPIService)(nil).DeleteTransaction), ctx, userID, transactionID)
 }
 
 // DeleteVat mocks base method.
-func (m *MockIAPIService) DeleteVat(userID, vatID int64) error {
+func (m *MockIAPIService) DeleteVat(ctx context.Context, userID, vatID int64) error {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "DeleteVat", userID, vatID)
+	ret := m.ctrl.Call(m, "DeleteVat", ctx, userID, vatID)
 	ret0, _ := ret[0].(error)
 	return ret0
 }
 
 // DeleteVat indicates an expected call of DeleteVat.
-func (mr *MockIAPIServiceMockRecorder) DeleteVat(userID, vatID any) *gomock.Call {
+func (mr *MockIAPIServiceMockRecorder) DeleteVat(ctx, userID, vatID any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "DeleteVat", reflect.TypeOf((*MockIAPIService)(nil).DeleteVat), userID, vatID)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "DeleteVat", reflect.TypeOf((*MockIAPIService)(nil).DeleteVat), ctx, userID, vatID)
 }
 
 // DeleteVatSetting mocks base method.
-func (m *MockIAPIService) DeleteVatSetting(userID int64) error {
+func (m *MockIAPIService) DeleteVatSetting(ctx context.Context, userID int64) error {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "DeleteVatSetting", userID)
+	ret := m.ctrl.Call(m, "DeleteVatSetting", ctx, userID)
 	ret0, _ := ret[0].(error)
 	return ret0
 }
 
 // DeleteVatSetting indicates an expected call of DeleteVatSetting.
-func (mr *MockIAPIServiceMockRecorder) DeleteVatSetting(userID any) *gomock.Call {
+func (mr *MockIAPIServiceMockRecorder) DeleteVatSetting(ctx, userID any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "DeleteVatSetting", reflect.TypeOf((*MockIAPIService)(nil).DeleteVatSetting), userID)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "DeleteVatSetting", reflect.TypeOf((*MockIAPIService)(nil).DeleteVatSetting), ctx, userID)
 }
 
 // FinishRegistration mocks base method.
-func (m *MockIAPIService) FinishRegistration(payload models.FinishRegistration, deviceName string, validity time.Duration) (*models.User, *string, *time.Time, *string, *time.Time, error) {
+func (m *MockIAPIService) FinishRegistration(ctx context.Context, payload models.FinishRegistration, deviceName string, validity time.Duration) (*models.User, *string, *time.Time, *string, *time.Time, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "FinishRegistration", payload, deviceName, validity)
+	ret := m.ctrl.Call(m, "FinishRegistration", ctx, payload, deviceName, validity)
 	ret0, _ := ret[0].(*models.User)
 	ret1, _ := ret[1].(*string)
 	ret2, _ := ret[2].(*time.Time)
@@ -586,284 +587,284 @@ func (m *MockIAPIService) FinishRegistration(payload models.FinishRegistration, 
 }
 
 // FinishRegistration indicates an expected call of FinishRegistration.
-func (mr *MockIAPIServiceMockRecorder) FinishRegistration(payload, deviceName, validity any) *gomock.Call {
+func (mr *MockIAPIServiceMockRecorder) FinishRegistration(ctx, payload, deviceName, validity any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "FinishRegistration", reflect.TypeOf((*MockIAPIService)(nil).FinishRegistration), payload, deviceName, validity)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "FinishRegistration", reflect.TypeOf((*MockIAPIService)(nil).FinishRegistration), ctx, payload, deviceName, validity)
 }
 
 // ForgotPassword mocks base method.
-func (m *MockIAPIService) ForgotPassword(payload models.ForgotPassword, code string) error {
+func (m *MockIAPIService) ForgotPassword(ctx context.Context, payload models.ForgotPassword, code string) error {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "ForgotPassword", payload, code)
+	ret := m.ctrl.Call(m, "ForgotPassword", ctx, payload, code)
 	ret0, _ := ret[0].(error)
 	return ret0
 }
 
 // ForgotPassword indicates an expected call of ForgotPassword.
-func (mr *MockIAPIServiceMockRecorder) ForgotPassword(payload, code any) *gomock.Call {
+func (mr *MockIAPIServiceMockRecorder) ForgotPassword(ctx, payload, code any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ForgotPassword", reflect.TypeOf((*MockIAPIService)(nil).ForgotPassword), payload, code)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ForgotPassword", reflect.TypeOf((*MockIAPIService)(nil).ForgotPassword), ctx, payload, code)
 }
 
 // GetBankAccount mocks base method.
-func (m *MockIAPIService) GetBankAccount(userID, bankAccountID int64) (*models.BankAccount, error) {
+func (m *MockIAPIService) GetBankAccount(ctx context.Context, userID, bankAccountID int64) (*models.BankAccount, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "GetBankAccount", userID, bankAccountID)
+	ret := m.ctrl.Call(m, "GetBankAccount", ctx, userID, bankAccountID)
 	ret0, _ := ret[0].(*models.BankAccount)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
 
 // GetBankAccount indicates an expected call of GetBankAccount.
-func (mr *MockIAPIServiceMockRecorder) GetBankAccount(userID, bankAccountID any) *gomock.Call {
+func (mr *MockIAPIServiceMockRecorder) GetBankAccount(ctx, userID, bankAccountID any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetBankAccount", reflect.TypeOf((*MockIAPIService)(nil).GetBankAccount), userID, bankAccountID)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetBankAccount", reflect.TypeOf((*MockIAPIService)(nil).GetBankAccount), ctx, userID, bankAccountID)
 }
 
 // GetCategory mocks base method.
-func (m *MockIAPIService) GetCategory(userID, categoryID int64) (*models.Category, error) {
+func (m *MockIAPIService) GetCategory(ctx context.Context, userID, categoryID int64) (*models.Category, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "GetCategory", userID, categoryID)
+	ret := m.ctrl.Call(m, "GetCategory", ctx, userID, categoryID)
 	ret0, _ := ret[0].(*models.Category)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
 
 // GetCategory indicates an expected call of GetCategory.
-func (mr *MockIAPIServiceMockRecorder) GetCategory(userID, categoryID any) *gomock.Call {
+func (mr *MockIAPIServiceMockRecorder) GetCategory(ctx, userID, categoryID any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetCategory", reflect.TypeOf((*MockIAPIService)(nil).GetCategory), userID, categoryID)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetCategory", reflect.TypeOf((*MockIAPIService)(nil).GetCategory), ctx, userID, categoryID)
 }
 
 // GetCurrency mocks base method.
-func (m *MockIAPIService) GetCurrency(currencyID int64) (*models.Currency, error) {
+func (m *MockIAPIService) GetCurrency(ctx context.Context, currencyID int64) (*models.Currency, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "GetCurrency", currencyID)
+	ret := m.ctrl.Call(m, "GetCurrency", ctx, currencyID)
 	ret0, _ := ret[0].(*models.Currency)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
 
 // GetCurrency indicates an expected call of GetCurrency.
-func (mr *MockIAPIServiceMockRecorder) GetCurrency(currencyID any) *gomock.Call {
+func (mr *MockIAPIServiceMockRecorder) GetCurrency(ctx, currencyID any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetCurrency", reflect.TypeOf((*MockIAPIService)(nil).GetCurrency), currencyID)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetCurrency", reflect.TypeOf((*MockIAPIService)(nil).GetCurrency), ctx, currencyID)
 }
 
 // GetCurrentOrganisation mocks base method.
-func (m *MockIAPIService) GetCurrentOrganisation(userID int64) (*models.Organisation, error) {
+func (m *MockIAPIService) GetCurrentOrganisation(ctx context.Context, userID int64) (*models.Organisation, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "GetCurrentOrganisation", userID)
+	ret := m.ctrl.Call(m, "GetCurrentOrganisation", ctx, userID)
 	ret0, _ := ret[0].(*models.Organisation)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
 
 // GetCurrentOrganisation indicates an expected call of GetCurrentOrganisation.
-func (mr *MockIAPIServiceMockRecorder) GetCurrentOrganisation(userID any) *gomock.Call {
+func (mr *MockIAPIServiceMockRecorder) GetCurrentOrganisation(ctx, userID any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetCurrentOrganisation", reflect.TypeOf((*MockIAPIService)(nil).GetCurrentOrganisation), userID)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetCurrentOrganisation", reflect.TypeOf((*MockIAPIService)(nil).GetCurrentOrganisation), ctx, userID)
 }
 
 // GetEmployee mocks base method.
-func (m *MockIAPIService) GetEmployee(userID, employeeID int64) (*models.Employee, error) {
+func (m *MockIAPIService) GetEmployee(ctx context.Context, userID, employeeID int64) (*models.Employee, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "GetEmployee", userID, employeeID)
+	ret := m.ctrl.Call(m, "GetEmployee", ctx, userID, employeeID)
 	ret0, _ := ret[0].(*models.Employee)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
 
 // GetEmployee indicates an expected call of GetEmployee.
-func (mr *MockIAPIServiceMockRecorder) GetEmployee(userID, employeeID any) *gomock.Call {
+func (mr *MockIAPIServiceMockRecorder) GetEmployee(ctx, userID, employeeID any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetEmployee", reflect.TypeOf((*MockIAPIService)(nil).GetEmployee), userID, employeeID)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetEmployee", reflect.TypeOf((*MockIAPIService)(nil).GetEmployee), ctx, userID, employeeID)
 }
 
 // GetFiatRate mocks base method.
-func (m *MockIAPIService) GetFiatRate(base, target string) (*models.FiatRate, error) {
+func (m *MockIAPIService) GetFiatRate(ctx context.Context, base, target string) (*models.FiatRate, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "GetFiatRate", base, target)
+	ret := m.ctrl.Call(m, "GetFiatRate", ctx, base, target)
 	ret0, _ := ret[0].(*models.FiatRate)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
 
 // GetFiatRate indicates an expected call of GetFiatRate.
-func (mr *MockIAPIServiceMockRecorder) GetFiatRate(base, target any) *gomock.Call {
+func (mr *MockIAPIServiceMockRecorder) GetFiatRate(ctx, base, target any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetFiatRate", reflect.TypeOf((*MockIAPIService)(nil).GetFiatRate), base, target)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetFiatRate", reflect.TypeOf((*MockIAPIService)(nil).GetFiatRate), ctx, base, target)
 }
 
 // GetOrganisation mocks base method.
-func (m *MockIAPIService) GetOrganisation(userID, organisationID int64) (*models.Organisation, error) {
+func (m *MockIAPIService) GetOrganisation(ctx context.Context, userID, organisationID int64) (*models.Organisation, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "GetOrganisation", userID, organisationID)
+	ret := m.ctrl.Call(m, "GetOrganisation", ctx, userID, organisationID)
 	ret0, _ := ret[0].(*models.Organisation)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
 
 // GetOrganisation indicates an expected call of GetOrganisation.
-func (mr *MockIAPIServiceMockRecorder) GetOrganisation(userID, organisationID any) *gomock.Call {
+func (mr *MockIAPIServiceMockRecorder) GetOrganisation(ctx, userID, organisationID any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetOrganisation", reflect.TypeOf((*MockIAPIService)(nil).GetOrganisation), userID, organisationID)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetOrganisation", reflect.TypeOf((*MockIAPIService)(nil).GetOrganisation), ctx, userID, organisationID)
 }
 
 // GetProfile mocks base method.
-func (m *MockIAPIService) GetProfile(userID int64) (*models.User, error) {
+func (m *MockIAPIService) GetProfile(ctx context.Context, userID int64) (*models.User, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "GetProfile", userID)
+	ret := m.ctrl.Call(m, "GetProfile", ctx, userID)
 	ret0, _ := ret[0].(*models.User)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
 
 // GetProfile indicates an expected call of GetProfile.
-func (mr *MockIAPIServiceMockRecorder) GetProfile(userID any) *gomock.Call {
+func (mr *MockIAPIServiceMockRecorder) GetProfile(ctx, userID any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetProfile", reflect.TypeOf((*MockIAPIService)(nil).GetProfile), userID)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetProfile", reflect.TypeOf((*MockIAPIService)(nil).GetProfile), ctx, userID)
 }
 
 // GetSalary mocks base method.
-func (m *MockIAPIService) GetSalary(userID, salaryID int64) (*models.Salary, error) {
+func (m *MockIAPIService) GetSalary(ctx context.Context, userID, salaryID int64) (*models.Salary, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "GetSalary", userID, salaryID)
+	ret := m.ctrl.Call(m, "GetSalary", ctx, userID, salaryID)
 	ret0, _ := ret[0].(*models.Salary)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
 
 // GetSalary indicates an expected call of GetSalary.
-func (mr *MockIAPIServiceMockRecorder) GetSalary(userID, salaryID any) *gomock.Call {
+func (mr *MockIAPIServiceMockRecorder) GetSalary(ctx, userID, salaryID any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetSalary", reflect.TypeOf((*MockIAPIService)(nil).GetSalary), userID, salaryID)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetSalary", reflect.TypeOf((*MockIAPIService)(nil).GetSalary), ctx, userID, salaryID)
 }
 
 // GetSalaryCost mocks base method.
-func (m *MockIAPIService) GetSalaryCost(userID, salaryCostID int64, skipPrevious bool) (*models.SalaryCost, error) {
+func (m *MockIAPIService) GetSalaryCost(ctx context.Context, userID, salaryCostID int64, skipPrevious bool) (*models.SalaryCost, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "GetSalaryCost", userID, salaryCostID, skipPrevious)
+	ret := m.ctrl.Call(m, "GetSalaryCost", ctx, userID, salaryCostID, skipPrevious)
 	ret0, _ := ret[0].(*models.SalaryCost)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
 
 // GetSalaryCost indicates an expected call of GetSalaryCost.
-func (mr *MockIAPIServiceMockRecorder) GetSalaryCost(userID, salaryCostID, skipPrevious any) *gomock.Call {
+func (mr *MockIAPIServiceMockRecorder) GetSalaryCost(ctx, userID, salaryCostID, skipPrevious any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetSalaryCost", reflect.TypeOf((*MockIAPIService)(nil).GetSalaryCost), userID, salaryCostID, skipPrevious)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetSalaryCost", reflect.TypeOf((*MockIAPIService)(nil).GetSalaryCost), ctx, userID, salaryCostID, skipPrevious)
 }
 
 // GetSalaryCostLabel mocks base method.
-func (m *MockIAPIService) GetSalaryCostLabel(userID, salaryCostLabelID int64) (*models.SalaryCostLabel, error) {
+func (m *MockIAPIService) GetSalaryCostLabel(ctx context.Context, userID, salaryCostLabelID int64) (*models.SalaryCostLabel, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "GetSalaryCostLabel", userID, salaryCostLabelID)
+	ret := m.ctrl.Call(m, "GetSalaryCostLabel", ctx, userID, salaryCostLabelID)
 	ret0, _ := ret[0].(*models.SalaryCostLabel)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
 
 // GetSalaryCostLabel indicates an expected call of GetSalaryCostLabel.
-func (mr *MockIAPIServiceMockRecorder) GetSalaryCostLabel(userID, salaryCostLabelID any) *gomock.Call {
+func (mr *MockIAPIServiceMockRecorder) GetSalaryCostLabel(ctx, userID, salaryCostLabelID any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetSalaryCostLabel", reflect.TypeOf((*MockIAPIService)(nil).GetSalaryCostLabel), userID, salaryCostLabelID)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetSalaryCostLabel", reflect.TypeOf((*MockIAPIService)(nil).GetSalaryCostLabel), ctx, userID, salaryCostLabelID)
 }
 
 // GetTransaction mocks base method.
-func (m *MockIAPIService) GetTransaction(userID, transactionID int64) (*models.Transaction, error) {
+func (m *MockIAPIService) GetTransaction(ctx context.Context, userID, transactionID int64) (*models.Transaction, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "GetTransaction", userID, transactionID)
+	ret := m.ctrl.Call(m, "GetTransaction", ctx, userID, transactionID)
 	ret0, _ := ret[0].(*models.Transaction)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
 
 // GetTransaction indicates an expected call of GetTransaction.
-func (mr *MockIAPIServiceMockRecorder) GetTransaction(userID, transactionID any) *gomock.Call {
+func (mr *MockIAPIServiceMockRecorder) GetTransaction(ctx, userID, transactionID any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetTransaction", reflect.TypeOf((*MockIAPIService)(nil).GetTransaction), userID, transactionID)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetTransaction", reflect.TypeOf((*MockIAPIService)(nil).GetTransaction), ctx, userID, transactionID)
 }
 
 // GetUserOrganisationSetting mocks base method.
-func (m *MockIAPIService) GetUserOrganisationSetting(userID int64) (*models.UserOrganisationSetting, error) {
+func (m *MockIAPIService) GetUserOrganisationSetting(ctx context.Context, userID int64) (*models.UserOrganisationSetting, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "GetUserOrganisationSetting", userID)
+	ret := m.ctrl.Call(m, "GetUserOrganisationSetting", ctx, userID)
 	ret0, _ := ret[0].(*models.UserOrganisationSetting)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
 
 // GetUserOrganisationSetting indicates an expected call of GetUserOrganisationSetting.
-func (mr *MockIAPIServiceMockRecorder) GetUserOrganisationSetting(userID any) *gomock.Call {
+func (mr *MockIAPIServiceMockRecorder) GetUserOrganisationSetting(ctx, userID any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetUserOrganisationSetting", reflect.TypeOf((*MockIAPIService)(nil).GetUserOrganisationSetting), userID)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetUserOrganisationSetting", reflect.TypeOf((*MockIAPIService)(nil).GetUserOrganisationSetting), ctx, userID)
 }
 
 // GetUserSetting mocks base method.
-func (m *MockIAPIService) GetUserSetting(userID int64) (*models.UserSetting, error) {
+func (m *MockIAPIService) GetUserSetting(ctx context.Context, userID int64) (*models.UserSetting, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "GetUserSetting", userID)
+	ret := m.ctrl.Call(m, "GetUserSetting", ctx, userID)
 	ret0, _ := ret[0].(*models.UserSetting)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
 
 // GetUserSetting indicates an expected call of GetUserSetting.
-func (mr *MockIAPIServiceMockRecorder) GetUserSetting(userID any) *gomock.Call {
+func (mr *MockIAPIServiceMockRecorder) GetUserSetting(ctx, userID any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetUserSetting", reflect.TypeOf((*MockIAPIService)(nil).GetUserSetting), userID)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetUserSetting", reflect.TypeOf((*MockIAPIService)(nil).GetUserSetting), ctx, userID)
 }
 
 // GetVat mocks base method.
-func (m *MockIAPIService) GetVat(userID, vatID int64) (*models.Vat, error) {
+func (m *MockIAPIService) GetVat(ctx context.Context, userID, vatID int64) (*models.Vat, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "GetVat", userID, vatID)
+	ret := m.ctrl.Call(m, "GetVat", ctx, userID, vatID)
 	ret0, _ := ret[0].(*models.Vat)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
 
 // GetVat indicates an expected call of GetVat.
-func (mr *MockIAPIServiceMockRecorder) GetVat(userID, vatID any) *gomock.Call {
+func (mr *MockIAPIServiceMockRecorder) GetVat(ctx, userID, vatID any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetVat", reflect.TypeOf((*MockIAPIService)(nil).GetVat), userID, vatID)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetVat", reflect.TypeOf((*MockIAPIService)(nil).GetVat), ctx, userID, vatID)
 }
 
 // GetVatSetting mocks base method.
-func (m *MockIAPIService) GetVatSetting(userID int64) (*models.VatSetting, error) {
+func (m *MockIAPIService) GetVatSetting(ctx context.Context, userID int64) (*models.VatSetting, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "GetVatSetting", userID)
+	ret := m.ctrl.Call(m, "GetVatSetting", ctx, userID)
 	ret0, _ := ret[0].(*models.VatSetting)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
 
 // GetVatSetting indicates an expected call of GetVatSetting.
-func (mr *MockIAPIServiceMockRecorder) GetVatSetting(userID any) *gomock.Call {
+func (mr *MockIAPIServiceMockRecorder) GetVatSetting(ctx, userID any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetVatSetting", reflect.TypeOf((*MockIAPIService)(nil).GetVatSetting), userID)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetVatSetting", reflect.TypeOf((*MockIAPIService)(nil).GetVatSetting), ctx, userID)
 }
 
 // ListAllForecastExclusions mocks base method.
-func (m *MockIAPIService) ListAllForecastExclusions(userID int64) ([]models.ForecastExclusionInfo, error) {
+func (m *MockIAPIService) ListAllForecastExclusions(ctx context.Context, userID int64) ([]models.ForecastExclusionInfo, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "ListAllForecastExclusions", userID)
+	ret := m.ctrl.Call(m, "ListAllForecastExclusions", ctx, userID)
 	ret0, _ := ret[0].([]models.ForecastExclusionInfo)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
 
 // ListAllForecastExclusions indicates an expected call of ListAllForecastExclusions.
-func (mr *MockIAPIServiceMockRecorder) ListAllForecastExclusions(userID any) *gomock.Call {
+func (mr *MockIAPIServiceMockRecorder) ListAllForecastExclusions(ctx, userID any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ListAllForecastExclusions", reflect.TypeOf((*MockIAPIService)(nil).ListAllForecastExclusions), userID)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ListAllForecastExclusions", reflect.TypeOf((*MockIAPIService)(nil).ListAllForecastExclusions), ctx, userID)
 }
 
 // ListBankAccounts mocks base method.
-func (m *MockIAPIService) ListBankAccounts(userID, page, limit int64, sortBy, sortOrder, search string) ([]models.BankAccount, int64, error) {
+func (m *MockIAPIService) ListBankAccounts(ctx context.Context, userID, page, limit int64, sortBy, sortOrder, search string) ([]models.BankAccount, int64, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "ListBankAccounts", userID, page, limit, sortBy, sortOrder, search)
+	ret := m.ctrl.Call(m, "ListBankAccounts", ctx, userID, page, limit, sortBy, sortOrder, search)
 	ret0, _ := ret[0].([]models.BankAccount)
 	ret1, _ := ret[1].(int64)
 	ret2, _ := ret[2].(error)
@@ -871,15 +872,15 @@ func (m *MockIAPIService) ListBankAccounts(userID, page, limit int64, sortBy, so
 }
 
 // ListBankAccounts indicates an expected call of ListBankAccounts.
-func (mr *MockIAPIServiceMockRecorder) ListBankAccounts(userID, page, limit, sortBy, sortOrder, search any) *gomock.Call {
+func (mr *MockIAPIServiceMockRecorder) ListBankAccounts(ctx, userID, page, limit, sortBy, sortOrder, search any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ListBankAccounts", reflect.TypeOf((*MockIAPIService)(nil).ListBankAccounts), userID, page, limit, sortBy, sortOrder, search)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ListBankAccounts", reflect.TypeOf((*MockIAPIService)(nil).ListBankAccounts), ctx, userID, page, limit, sortBy, sortOrder, search)
 }
 
 // ListCategories mocks base method.
-func (m *MockIAPIService) ListCategories(userID, page, limit int64) ([]models.Category, int64, error) {
+func (m *MockIAPIService) ListCategories(ctx context.Context, userID, page, limit int64) ([]models.Category, int64, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "ListCategories", userID, page, limit)
+	ret := m.ctrl.Call(m, "ListCategories", ctx, userID, page, limit)
 	ret0, _ := ret[0].([]models.Category)
 	ret1, _ := ret[1].(int64)
 	ret2, _ := ret[2].(error)
@@ -887,30 +888,30 @@ func (m *MockIAPIService) ListCategories(userID, page, limit int64) ([]models.Ca
 }
 
 // ListCategories indicates an expected call of ListCategories.
-func (mr *MockIAPIServiceMockRecorder) ListCategories(userID, page, limit any) *gomock.Call {
+func (mr *MockIAPIServiceMockRecorder) ListCategories(ctx, userID, page, limit any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ListCategories", reflect.TypeOf((*MockIAPIService)(nil).ListCategories), userID, page, limit)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ListCategories", reflect.TypeOf((*MockIAPIService)(nil).ListCategories), ctx, userID, page, limit)
 }
 
 // ListCurrencies mocks base method.
-func (m *MockIAPIService) ListCurrencies(userID int64) ([]models.Currency, error) {
+func (m *MockIAPIService) ListCurrencies(ctx context.Context, userID int64) ([]models.Currency, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "ListCurrencies", userID)
+	ret := m.ctrl.Call(m, "ListCurrencies", ctx, userID)
 	ret0, _ := ret[0].([]models.Currency)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
 
 // ListCurrencies indicates an expected call of ListCurrencies.
-func (mr *MockIAPIServiceMockRecorder) ListCurrencies(userID any) *gomock.Call {
+func (mr *MockIAPIServiceMockRecorder) ListCurrencies(ctx, userID any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ListCurrencies", reflect.TypeOf((*MockIAPIService)(nil).ListCurrencies), userID)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ListCurrencies", reflect.TypeOf((*MockIAPIService)(nil).ListCurrencies), ctx, userID)
 }
 
 // ListEmployees mocks base method.
-func (m *MockIAPIService) ListEmployees(userID, page, limit int64, sortBy, sortOrder, search string, hideTerminated bool) ([]models.Employee, int64, error) {
+func (m *MockIAPIService) ListEmployees(ctx context.Context, userID, page, limit int64, sortBy, sortOrder, search string, hideTerminated bool) ([]models.Employee, int64, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "ListEmployees", userID, page, limit, sortBy, sortOrder, search, hideTerminated)
+	ret := m.ctrl.Call(m, "ListEmployees", ctx, userID, page, limit, sortBy, sortOrder, search, hideTerminated)
 	ret0, _ := ret[0].([]models.Employee)
 	ret1, _ := ret[1].(int64)
 	ret2, _ := ret[2].(error)
@@ -918,120 +919,120 @@ func (m *MockIAPIService) ListEmployees(userID, page, limit int64, sortBy, sortO
 }
 
 // ListEmployees indicates an expected call of ListEmployees.
-func (mr *MockIAPIServiceMockRecorder) ListEmployees(userID, page, limit, sortBy, sortOrder, search, hideTerminated any) *gomock.Call {
+func (mr *MockIAPIServiceMockRecorder) ListEmployees(ctx, userID, page, limit, sortBy, sortOrder, search, hideTerminated any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ListEmployees", reflect.TypeOf((*MockIAPIService)(nil).ListEmployees), userID, page, limit, sortBy, sortOrder, search, hideTerminated)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ListEmployees", reflect.TypeOf((*MockIAPIService)(nil).ListEmployees), ctx, userID, page, limit, sortBy, sortOrder, search, hideTerminated)
 }
 
 // ListFiatRates mocks base method.
-func (m *MockIAPIService) ListFiatRates(base string) ([]models.FiatRate, error) {
+func (m *MockIAPIService) ListFiatRates(ctx context.Context, base string) ([]models.FiatRate, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "ListFiatRates", base)
+	ret := m.ctrl.Call(m, "ListFiatRates", ctx, base)
 	ret0, _ := ret[0].([]models.FiatRate)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
 
 // ListFiatRates indicates an expected call of ListFiatRates.
-func (mr *MockIAPIServiceMockRecorder) ListFiatRates(base any) *gomock.Call {
+func (mr *MockIAPIServiceMockRecorder) ListFiatRates(ctx, base any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ListFiatRates", reflect.TypeOf((*MockIAPIService)(nil).ListFiatRates), base)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ListFiatRates", reflect.TypeOf((*MockIAPIService)(nil).ListFiatRates), ctx, base)
 }
 
 // ListForecastDetails mocks base method.
-func (m *MockIAPIService) ListForecastDetails(userID, limit int64) ([]models.ForecastDatabaseDetails, error) {
+func (m *MockIAPIService) ListForecastDetails(ctx context.Context, userID, limit int64) ([]models.ForecastDatabaseDetails, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "ListForecastDetails", userID, limit)
+	ret := m.ctrl.Call(m, "ListForecastDetails", ctx, userID, limit)
 	ret0, _ := ret[0].([]models.ForecastDatabaseDetails)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
 
 // ListForecastDetails indicates an expected call of ListForecastDetails.
-func (mr *MockIAPIServiceMockRecorder) ListForecastDetails(userID, limit any) *gomock.Call {
+func (mr *MockIAPIServiceMockRecorder) ListForecastDetails(ctx, userID, limit any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ListForecastDetails", reflect.TypeOf((*MockIAPIService)(nil).ListForecastDetails), userID, limit)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ListForecastDetails", reflect.TypeOf((*MockIAPIService)(nil).ListForecastDetails), ctx, userID, limit)
 }
 
 // ListForecastExclusions mocks base method.
-func (m *MockIAPIService) ListForecastExclusions(userID, relatedID int64, relatedTable string) (map[string]bool, error) {
+func (m *MockIAPIService) ListForecastExclusions(ctx context.Context, userID, relatedID int64, relatedTable string) (map[string]bool, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "ListForecastExclusions", userID, relatedID, relatedTable)
+	ret := m.ctrl.Call(m, "ListForecastExclusions", ctx, userID, relatedID, relatedTable)
 	ret0, _ := ret[0].(map[string]bool)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
 
 // ListForecastExclusions indicates an expected call of ListForecastExclusions.
-func (mr *MockIAPIServiceMockRecorder) ListForecastExclusions(userID, relatedID, relatedTable any) *gomock.Call {
+func (mr *MockIAPIServiceMockRecorder) ListForecastExclusions(ctx, userID, relatedID, relatedTable any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ListForecastExclusions", reflect.TypeOf((*MockIAPIService)(nil).ListForecastExclusions), userID, relatedID, relatedTable)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ListForecastExclusions", reflect.TypeOf((*MockIAPIService)(nil).ListForecastExclusions), ctx, userID, relatedID, relatedTable)
 }
 
 // ListForecasts mocks base method.
-func (m *MockIAPIService) ListForecasts(userID, limit int64) ([]models.Forecast, error) {
+func (m *MockIAPIService) ListForecasts(ctx context.Context, userID, limit int64) ([]models.Forecast, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "ListForecasts", userID, limit)
+	ret := m.ctrl.Call(m, "ListForecasts", ctx, userID, limit)
 	ret0, _ := ret[0].([]models.Forecast)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
 
 // ListForecasts indicates an expected call of ListForecasts.
-func (mr *MockIAPIServiceMockRecorder) ListForecasts(userID, limit any) *gomock.Call {
+func (mr *MockIAPIServiceMockRecorder) ListForecasts(ctx, userID, limit any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ListForecasts", reflect.TypeOf((*MockIAPIService)(nil).ListForecasts), userID, limit)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ListForecasts", reflect.TypeOf((*MockIAPIService)(nil).ListForecasts), ctx, userID, limit)
 }
 
 // ListMyPendingInvitations mocks base method.
-func (m *MockIAPIService) ListMyPendingInvitations(userID int64) ([]models.UserPendingInvitation, error) {
+func (m *MockIAPIService) ListMyPendingInvitations(ctx context.Context, userID int64) ([]models.UserPendingInvitation, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "ListMyPendingInvitations", userID)
+	ret := m.ctrl.Call(m, "ListMyPendingInvitations", ctx, userID)
 	ret0, _ := ret[0].([]models.UserPendingInvitation)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
 
 // ListMyPendingInvitations indicates an expected call of ListMyPendingInvitations.
-func (mr *MockIAPIServiceMockRecorder) ListMyPendingInvitations(userID any) *gomock.Call {
+func (mr *MockIAPIServiceMockRecorder) ListMyPendingInvitations(ctx, userID any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ListMyPendingInvitations", reflect.TypeOf((*MockIAPIService)(nil).ListMyPendingInvitations), userID)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ListMyPendingInvitations", reflect.TypeOf((*MockIAPIService)(nil).ListMyPendingInvitations), ctx, userID)
 }
 
 // ListOrganisationInvitations mocks base method.
-func (m *MockIAPIService) ListOrganisationInvitations(userID, organisationID int64) ([]models.Invitation, error) {
+func (m *MockIAPIService) ListOrganisationInvitations(ctx context.Context, userID, organisationID int64) ([]models.Invitation, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "ListOrganisationInvitations", userID, organisationID)
+	ret := m.ctrl.Call(m, "ListOrganisationInvitations", ctx, userID, organisationID)
 	ret0, _ := ret[0].([]models.Invitation)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
 
 // ListOrganisationInvitations indicates an expected call of ListOrganisationInvitations.
-func (mr *MockIAPIServiceMockRecorder) ListOrganisationInvitations(userID, organisationID any) *gomock.Call {
+func (mr *MockIAPIServiceMockRecorder) ListOrganisationInvitations(ctx, userID, organisationID any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ListOrganisationInvitations", reflect.TypeOf((*MockIAPIService)(nil).ListOrganisationInvitations), userID, organisationID)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ListOrganisationInvitations", reflect.TypeOf((*MockIAPIService)(nil).ListOrganisationInvitations), ctx, userID, organisationID)
 }
 
 // ListOrganisationMembers mocks base method.
-func (m *MockIAPIService) ListOrganisationMembers(userID, organisationID int64) ([]models.OrganisationMember, error) {
+func (m *MockIAPIService) ListOrganisationMembers(ctx context.Context, userID, organisationID int64) ([]models.OrganisationMember, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "ListOrganisationMembers", userID, organisationID)
+	ret := m.ctrl.Call(m, "ListOrganisationMembers", ctx, userID, organisationID)
 	ret0, _ := ret[0].([]models.OrganisationMember)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
 
 // ListOrganisationMembers indicates an expected call of ListOrganisationMembers.
-func (mr *MockIAPIServiceMockRecorder) ListOrganisationMembers(userID, organisationID any) *gomock.Call {
+func (mr *MockIAPIServiceMockRecorder) ListOrganisationMembers(ctx, userID, organisationID any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ListOrganisationMembers", reflect.TypeOf((*MockIAPIService)(nil).ListOrganisationMembers), userID, organisationID)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ListOrganisationMembers", reflect.TypeOf((*MockIAPIService)(nil).ListOrganisationMembers), ctx, userID, organisationID)
 }
 
 // ListOrganisations mocks base method.
-func (m *MockIAPIService) ListOrganisations(userID, page, limit int64) ([]models.Organisation, int64, error) {
+func (m *MockIAPIService) ListOrganisations(ctx context.Context, userID, page, limit int64) ([]models.Organisation, int64, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "ListOrganisations", userID, page, limit)
+	ret := m.ctrl.Call(m, "ListOrganisations", ctx, userID, page, limit)
 	ret0, _ := ret[0].([]models.Organisation)
 	ret1, _ := ret[1].(int64)
 	ret2, _ := ret[2].(error)
@@ -1039,15 +1040,15 @@ func (m *MockIAPIService) ListOrganisations(userID, page, limit int64) ([]models
 }
 
 // ListOrganisations indicates an expected call of ListOrganisations.
-func (mr *MockIAPIServiceMockRecorder) ListOrganisations(userID, page, limit any) *gomock.Call {
+func (mr *MockIAPIServiceMockRecorder) ListOrganisations(ctx, userID, page, limit any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ListOrganisations", reflect.TypeOf((*MockIAPIService)(nil).ListOrganisations), userID, page, limit)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ListOrganisations", reflect.TypeOf((*MockIAPIService)(nil).ListOrganisations), ctx, userID, page, limit)
 }
 
 // ListSalaries mocks base method.
-func (m *MockIAPIService) ListSalaries(userID, employeeID, page, limit int64) ([]models.Salary, int64, error) {
+func (m *MockIAPIService) ListSalaries(ctx context.Context, userID, employeeID, page, limit int64) ([]models.Salary, int64, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "ListSalaries", userID, employeeID, page, limit)
+	ret := m.ctrl.Call(m, "ListSalaries", ctx, userID, employeeID, page, limit)
 	ret0, _ := ret[0].([]models.Salary)
 	ret1, _ := ret[1].(int64)
 	ret2, _ := ret[2].(error)
@@ -1055,15 +1056,15 @@ func (m *MockIAPIService) ListSalaries(userID, employeeID, page, limit int64) ([
 }
 
 // ListSalaries indicates an expected call of ListSalaries.
-func (mr *MockIAPIServiceMockRecorder) ListSalaries(userID, employeeID, page, limit any) *gomock.Call {
+func (mr *MockIAPIServiceMockRecorder) ListSalaries(ctx, userID, employeeID, page, limit any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ListSalaries", reflect.TypeOf((*MockIAPIService)(nil).ListSalaries), userID, employeeID, page, limit)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ListSalaries", reflect.TypeOf((*MockIAPIService)(nil).ListSalaries), ctx, userID, employeeID, page, limit)
 }
 
 // ListSalaryCostLabels mocks base method.
-func (m *MockIAPIService) ListSalaryCostLabels(userID, page, limit int64) ([]models.SalaryCostLabel, int64, error) {
+func (m *MockIAPIService) ListSalaryCostLabels(ctx context.Context, userID, page, limit int64) ([]models.SalaryCostLabel, int64, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "ListSalaryCostLabels", userID, page, limit)
+	ret := m.ctrl.Call(m, "ListSalaryCostLabels", ctx, userID, page, limit)
 	ret0, _ := ret[0].([]models.SalaryCostLabel)
 	ret1, _ := ret[1].(int64)
 	ret2, _ := ret[2].(error)
@@ -1071,15 +1072,15 @@ func (m *MockIAPIService) ListSalaryCostLabels(userID, page, limit int64) ([]mod
 }
 
 // ListSalaryCostLabels indicates an expected call of ListSalaryCostLabels.
-func (mr *MockIAPIServiceMockRecorder) ListSalaryCostLabels(userID, page, limit any) *gomock.Call {
+func (mr *MockIAPIServiceMockRecorder) ListSalaryCostLabels(ctx, userID, page, limit any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ListSalaryCostLabels", reflect.TypeOf((*MockIAPIService)(nil).ListSalaryCostLabels), userID, page, limit)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ListSalaryCostLabels", reflect.TypeOf((*MockIAPIService)(nil).ListSalaryCostLabels), ctx, userID, page, limit)
 }
 
 // ListSalaryCosts mocks base method.
-func (m *MockIAPIService) ListSalaryCosts(userID, salaryID, page, limit int64, skipPrevious bool) ([]models.SalaryCost, int64, error) {
+func (m *MockIAPIService) ListSalaryCosts(ctx context.Context, userID, salaryID, page, limit int64, skipPrevious bool) ([]models.SalaryCost, int64, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "ListSalaryCosts", userID, salaryID, page, limit, skipPrevious)
+	ret := m.ctrl.Call(m, "ListSalaryCosts", ctx, userID, salaryID, page, limit, skipPrevious)
 	ret0, _ := ret[0].([]models.SalaryCost)
 	ret1, _ := ret[1].(int64)
 	ret2, _ := ret[2].(error)
@@ -1087,15 +1088,15 @@ func (m *MockIAPIService) ListSalaryCosts(userID, salaryID, page, limit int64, s
 }
 
 // ListSalaryCosts indicates an expected call of ListSalaryCosts.
-func (mr *MockIAPIServiceMockRecorder) ListSalaryCosts(userID, salaryID, page, limit, skipPrevious any) *gomock.Call {
+func (mr *MockIAPIServiceMockRecorder) ListSalaryCosts(ctx, userID, salaryID, page, limit, skipPrevious any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ListSalaryCosts", reflect.TypeOf((*MockIAPIService)(nil).ListSalaryCosts), userID, salaryID, page, limit, skipPrevious)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ListSalaryCosts", reflect.TypeOf((*MockIAPIService)(nil).ListSalaryCosts), ctx, userID, salaryID, page, limit, skipPrevious)
 }
 
 // ListTransactions mocks base method.
-func (m *MockIAPIService) ListTransactions(userID, page, limit int64, sortBy, sortOrder, search string, hideDisabled, hideExpired bool) ([]models.Transaction, int64, error) {
+func (m *MockIAPIService) ListTransactions(ctx context.Context, userID, page, limit int64, sortBy, sortOrder, search string, hideDisabled, hideExpired bool) ([]models.Transaction, int64, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "ListTransactions", userID, page, limit, sortBy, sortOrder, search, hideDisabled, hideExpired)
+	ret := m.ctrl.Call(m, "ListTransactions", ctx, userID, page, limit, sortBy, sortOrder, search, hideDisabled, hideExpired)
 	ret0, _ := ret[0].([]models.Transaction)
 	ret1, _ := ret[1].(int64)
 	ret2, _ := ret[2].(error)
@@ -1103,30 +1104,30 @@ func (m *MockIAPIService) ListTransactions(userID, page, limit int64, sortBy, so
 }
 
 // ListTransactions indicates an expected call of ListTransactions.
-func (mr *MockIAPIServiceMockRecorder) ListTransactions(userID, page, limit, sortBy, sortOrder, search, hideDisabled, hideExpired any) *gomock.Call {
+func (mr *MockIAPIServiceMockRecorder) ListTransactions(ctx, userID, page, limit, sortBy, sortOrder, search, hideDisabled, hideExpired any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ListTransactions", reflect.TypeOf((*MockIAPIService)(nil).ListTransactions), userID, page, limit, sortBy, sortOrder, search, hideDisabled, hideExpired)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ListTransactions", reflect.TypeOf((*MockIAPIService)(nil).ListTransactions), ctx, userID, page, limit, sortBy, sortOrder, search, hideDisabled, hideExpired)
 }
 
 // ListVats mocks base method.
-func (m *MockIAPIService) ListVats(userID int64) ([]models.Vat, error) {
+func (m *MockIAPIService) ListVats(ctx context.Context, userID int64) ([]models.Vat, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "ListVats", userID)
+	ret := m.ctrl.Call(m, "ListVats", ctx, userID)
 	ret0, _ := ret[0].([]models.Vat)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
 
 // ListVats indicates an expected call of ListVats.
-func (mr *MockIAPIServiceMockRecorder) ListVats(userID any) *gomock.Call {
+func (mr *MockIAPIServiceMockRecorder) ListVats(ctx, userID any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ListVats", reflect.TypeOf((*MockIAPIService)(nil).ListVats), userID)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ListVats", reflect.TypeOf((*MockIAPIService)(nil).ListVats), ctx, userID)
 }
 
 // Login mocks base method.
-func (m *MockIAPIService) Login(payload models.Login, deviceName, existingRefreshToken string) (*models.User, *string, *time.Time, *string, *time.Time, error) {
+func (m *MockIAPIService) Login(ctx context.Context, payload models.Login, deviceName, existingRefreshToken string) (*models.User, *string, *time.Time, *string, *time.Time, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "Login", payload, deviceName, existingRefreshToken)
+	ret := m.ctrl.Call(m, "Login", ctx, payload, deviceName, existingRefreshToken)
 	ret0, _ := ret[0].(*models.User)
 	ret1, _ := ret[1].(*string)
 	ret2, _ := ret[2].(*time.Time)
@@ -1137,78 +1138,78 @@ func (m *MockIAPIService) Login(payload models.Login, deviceName, existingRefres
 }
 
 // Login indicates an expected call of Login.
-func (mr *MockIAPIServiceMockRecorder) Login(payload, deviceName, existingRefreshToken any) *gomock.Call {
+func (mr *MockIAPIServiceMockRecorder) Login(ctx, payload, deviceName, existingRefreshToken any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Login", reflect.TypeOf((*MockIAPIService)(nil).Login), payload, deviceName, existingRefreshToken)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Login", reflect.TypeOf((*MockIAPIService)(nil).Login), ctx, payload, deviceName, existingRefreshToken)
 }
 
 // Logout mocks base method.
-func (m *MockIAPIService) Logout(existingRefreshToken string) {
+func (m *MockIAPIService) Logout(ctx context.Context, existingRefreshToken string) {
 	m.ctrl.T.Helper()
-	m.ctrl.Call(m, "Logout", existingRefreshToken)
+	m.ctrl.Call(m, "Logout", ctx, existingRefreshToken)
 }
 
 // Logout indicates an expected call of Logout.
-func (mr *MockIAPIServiceMockRecorder) Logout(existingRefreshToken any) *gomock.Call {
+func (mr *MockIAPIServiceMockRecorder) Logout(ctx, existingRefreshToken any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Logout", reflect.TypeOf((*MockIAPIService)(nil).Logout), existingRefreshToken)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Logout", reflect.TypeOf((*MockIAPIService)(nil).Logout), ctx, existingRefreshToken)
 }
 
 // ReassignCategoryTransactions mocks base method.
-func (m *MockIAPIService) ReassignCategoryTransactions(userID, fromCategoryID, toCategoryID int64) (int64, error) {
+func (m *MockIAPIService) ReassignCategoryTransactions(ctx context.Context, userID, fromCategoryID, toCategoryID int64) (int64, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "ReassignCategoryTransactions", userID, fromCategoryID, toCategoryID)
+	ret := m.ctrl.Call(m, "ReassignCategoryTransactions", ctx, userID, fromCategoryID, toCategoryID)
 	ret0, _ := ret[0].(int64)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
 
 // ReassignCategoryTransactions indicates an expected call of ReassignCategoryTransactions.
-func (mr *MockIAPIServiceMockRecorder) ReassignCategoryTransactions(userID, fromCategoryID, toCategoryID any) *gomock.Call {
+func (mr *MockIAPIServiceMockRecorder) ReassignCategoryTransactions(ctx, userID, fromCategoryID, toCategoryID any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ReassignCategoryTransactions", reflect.TypeOf((*MockIAPIService)(nil).ReassignCategoryTransactions), userID, fromCategoryID, toCategoryID)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ReassignCategoryTransactions", reflect.TypeOf((*MockIAPIService)(nil).ReassignCategoryTransactions), ctx, userID, fromCategoryID, toCategoryID)
 }
 
 // RemoveOrganisationMember mocks base method.
-func (m *MockIAPIService) RemoveOrganisationMember(userID, organisationID, memberUserID int64) error {
+func (m *MockIAPIService) RemoveOrganisationMember(ctx context.Context, userID, organisationID, memberUserID int64) error {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "RemoveOrganisationMember", userID, organisationID, memberUserID)
+	ret := m.ctrl.Call(m, "RemoveOrganisationMember", ctx, userID, organisationID, memberUserID)
 	ret0, _ := ret[0].(error)
 	return ret0
 }
 
 // RemoveOrganisationMember indicates an expected call of RemoveOrganisationMember.
-func (mr *MockIAPIServiceMockRecorder) RemoveOrganisationMember(userID, organisationID, memberUserID any) *gomock.Call {
+func (mr *MockIAPIServiceMockRecorder) RemoveOrganisationMember(ctx, userID, organisationID, memberUserID any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "RemoveOrganisationMember", reflect.TypeOf((*MockIAPIService)(nil).RemoveOrganisationMember), userID, organisationID, memberUserID)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "RemoveOrganisationMember", reflect.TypeOf((*MockIAPIService)(nil).RemoveOrganisationMember), ctx, userID, organisationID, memberUserID)
 }
 
 // ResendOrganisationInvitation mocks base method.
-func (m *MockIAPIService) ResendOrganisationInvitation(userID, organisationID, invitationID int64) error {
+func (m *MockIAPIService) ResendOrganisationInvitation(ctx context.Context, userID, organisationID, invitationID int64) error {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "ResendOrganisationInvitation", userID, organisationID, invitationID)
+	ret := m.ctrl.Call(m, "ResendOrganisationInvitation", ctx, userID, organisationID, invitationID)
 	ret0, _ := ret[0].(error)
 	return ret0
 }
 
 // ResendOrganisationInvitation indicates an expected call of ResendOrganisationInvitation.
-func (mr *MockIAPIServiceMockRecorder) ResendOrganisationInvitation(userID, organisationID, invitationID any) *gomock.Call {
+func (mr *MockIAPIServiceMockRecorder) ResendOrganisationInvitation(ctx, userID, organisationID, invitationID any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ResendOrganisationInvitation", reflect.TypeOf((*MockIAPIService)(nil).ResendOrganisationInvitation), userID, organisationID, invitationID)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ResendOrganisationInvitation", reflect.TypeOf((*MockIAPIService)(nil).ResendOrganisationInvitation), ctx, userID, organisationID, invitationID)
 }
 
 // ResetPassword mocks base method.
-func (m *MockIAPIService) ResetPassword(payload models.ResetPassword) error {
+func (m *MockIAPIService) ResetPassword(ctx context.Context, payload models.ResetPassword) error {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "ResetPassword", payload)
+	ret := m.ctrl.Call(m, "ResetPassword", ctx, payload)
 	ret0, _ := ret[0].(error)
 	return ret0
 }
 
 // ResetPassword indicates an expected call of ResetPassword.
-func (mr *MockIAPIServiceMockRecorder) ResetPassword(payload any) *gomock.Call {
+func (mr *MockIAPIServiceMockRecorder) ResetPassword(ctx, payload any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ResetPassword", reflect.TypeOf((*MockIAPIService)(nil).ResetPassword), payload)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ResetPassword", reflect.TypeOf((*MockIAPIService)(nil).ResetPassword), ctx, payload)
 }
 
 // SetEventHub mocks base method.
@@ -1224,281 +1225,281 @@ func (mr *MockIAPIServiceMockRecorder) SetEventHub(hub any) *gomock.Call {
 }
 
 // SetUserCurrentOrganisation mocks base method.
-func (m *MockIAPIService) SetUserCurrentOrganisation(payload models.UpdateUserCurrentOrganisation, userID int64) error {
+func (m *MockIAPIService) SetUserCurrentOrganisation(ctx context.Context, payload models.UpdateUserCurrentOrganisation, userID int64) error {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "SetUserCurrentOrganisation", payload, userID)
+	ret := m.ctrl.Call(m, "SetUserCurrentOrganisation", ctx, payload, userID)
 	ret0, _ := ret[0].(error)
 	return ret0
 }
 
 // SetUserCurrentOrganisation indicates an expected call of SetUserCurrentOrganisation.
-func (mr *MockIAPIServiceMockRecorder) SetUserCurrentOrganisation(payload, userID any) *gomock.Call {
+func (mr *MockIAPIServiceMockRecorder) SetUserCurrentOrganisation(ctx, payload, userID any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "SetUserCurrentOrganisation", reflect.TypeOf((*MockIAPIService)(nil).SetUserCurrentOrganisation), payload, userID)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "SetUserCurrentOrganisation", reflect.TypeOf((*MockIAPIService)(nil).SetUserCurrentOrganisation), ctx, payload, userID)
 }
 
 // UpdateBankAccount mocks base method.
-func (m *MockIAPIService) UpdateBankAccount(payload models.UpdateBankAccount, userID, bankAccountID int64) (*models.BankAccount, error) {
+func (m *MockIAPIService) UpdateBankAccount(ctx context.Context, payload models.UpdateBankAccount, userID, bankAccountID int64) (*models.BankAccount, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "UpdateBankAccount", payload, userID, bankAccountID)
+	ret := m.ctrl.Call(m, "UpdateBankAccount", ctx, payload, userID, bankAccountID)
 	ret0, _ := ret[0].(*models.BankAccount)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
 
 // UpdateBankAccount indicates an expected call of UpdateBankAccount.
-func (mr *MockIAPIServiceMockRecorder) UpdateBankAccount(payload, userID, bankAccountID any) *gomock.Call {
+func (mr *MockIAPIServiceMockRecorder) UpdateBankAccount(ctx, payload, userID, bankAccountID any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "UpdateBankAccount", reflect.TypeOf((*MockIAPIService)(nil).UpdateBankAccount), payload, userID, bankAccountID)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "UpdateBankAccount", reflect.TypeOf((*MockIAPIService)(nil).UpdateBankAccount), ctx, payload, userID, bankAccountID)
 }
 
 // UpdateCategory mocks base method.
-func (m *MockIAPIService) UpdateCategory(payload models.UpdateCategory, userID, categoryID int64) (*models.Category, error) {
+func (m *MockIAPIService) UpdateCategory(ctx context.Context, payload models.UpdateCategory, userID, categoryID int64) (*models.Category, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "UpdateCategory", payload, userID, categoryID)
+	ret := m.ctrl.Call(m, "UpdateCategory", ctx, payload, userID, categoryID)
 	ret0, _ := ret[0].(*models.Category)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
 
 // UpdateCategory indicates an expected call of UpdateCategory.
-func (mr *MockIAPIServiceMockRecorder) UpdateCategory(payload, userID, categoryID any) *gomock.Call {
+func (mr *MockIAPIServiceMockRecorder) UpdateCategory(ctx, payload, userID, categoryID any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "UpdateCategory", reflect.TypeOf((*MockIAPIService)(nil).UpdateCategory), payload, userID, categoryID)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "UpdateCategory", reflect.TypeOf((*MockIAPIService)(nil).UpdateCategory), ctx, payload, userID, categoryID)
 }
 
 // UpdateCurrency mocks base method.
-func (m *MockIAPIService) UpdateCurrency(payload models.UpdateCurrency, currencyID int64) (*models.Currency, error) {
+func (m *MockIAPIService) UpdateCurrency(ctx context.Context, payload models.UpdateCurrency, currencyID int64) (*models.Currency, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "UpdateCurrency", payload, currencyID)
+	ret := m.ctrl.Call(m, "UpdateCurrency", ctx, payload, currencyID)
 	ret0, _ := ret[0].(*models.Currency)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
 
 // UpdateCurrency indicates an expected call of UpdateCurrency.
-func (mr *MockIAPIServiceMockRecorder) UpdateCurrency(payload, currencyID any) *gomock.Call {
+func (mr *MockIAPIServiceMockRecorder) UpdateCurrency(ctx, payload, currencyID any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "UpdateCurrency", reflect.TypeOf((*MockIAPIService)(nil).UpdateCurrency), payload, currencyID)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "UpdateCurrency", reflect.TypeOf((*MockIAPIService)(nil).UpdateCurrency), ctx, payload, currencyID)
 }
 
 // UpdateEmployee mocks base method.
-func (m *MockIAPIService) UpdateEmployee(payload models.UpdateEmployee, userID, employeeID int64) (*models.Employee, error) {
+func (m *MockIAPIService) UpdateEmployee(ctx context.Context, payload models.UpdateEmployee, userID, employeeID int64) (*models.Employee, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "UpdateEmployee", payload, userID, employeeID)
+	ret := m.ctrl.Call(m, "UpdateEmployee", ctx, payload, userID, employeeID)
 	ret0, _ := ret[0].(*models.Employee)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
 
 // UpdateEmployee indicates an expected call of UpdateEmployee.
-func (mr *MockIAPIServiceMockRecorder) UpdateEmployee(payload, userID, employeeID any) *gomock.Call {
+func (mr *MockIAPIServiceMockRecorder) UpdateEmployee(ctx, payload, userID, employeeID any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "UpdateEmployee", reflect.TypeOf((*MockIAPIService)(nil).UpdateEmployee), payload, userID, employeeID)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "UpdateEmployee", reflect.TypeOf((*MockIAPIService)(nil).UpdateEmployee), ctx, payload, userID, employeeID)
 }
 
 // UpdateForecastExclusions mocks base method.
-func (m *MockIAPIService) UpdateForecastExclusions(payload models.UpdateForecastExclusions, userID int64) error {
+func (m *MockIAPIService) UpdateForecastExclusions(ctx context.Context, payload models.UpdateForecastExclusions, userID int64) error {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "UpdateForecastExclusions", payload, userID)
+	ret := m.ctrl.Call(m, "UpdateForecastExclusions", ctx, payload, userID)
 	ret0, _ := ret[0].(error)
 	return ret0
 }
 
 // UpdateForecastExclusions indicates an expected call of UpdateForecastExclusions.
-func (mr *MockIAPIServiceMockRecorder) UpdateForecastExclusions(payload, userID any) *gomock.Call {
+func (mr *MockIAPIServiceMockRecorder) UpdateForecastExclusions(ctx, payload, userID any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "UpdateForecastExclusions", reflect.TypeOf((*MockIAPIService)(nil).UpdateForecastExclusions), payload, userID)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "UpdateForecastExclusions", reflect.TypeOf((*MockIAPIService)(nil).UpdateForecastExclusions), ctx, payload, userID)
 }
 
 // UpdateOrganisation mocks base method.
-func (m *MockIAPIService) UpdateOrganisation(payload models.UpdateOrganisation, userID, organisationID int64) (*models.Organisation, error) {
+func (m *MockIAPIService) UpdateOrganisation(ctx context.Context, payload models.UpdateOrganisation, userID, organisationID int64) (*models.Organisation, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "UpdateOrganisation", payload, userID, organisationID)
+	ret := m.ctrl.Call(m, "UpdateOrganisation", ctx, payload, userID, organisationID)
 	ret0, _ := ret[0].(*models.Organisation)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
 
 // UpdateOrganisation indicates an expected call of UpdateOrganisation.
-func (mr *MockIAPIServiceMockRecorder) UpdateOrganisation(payload, userID, organisationID any) *gomock.Call {
+func (mr *MockIAPIServiceMockRecorder) UpdateOrganisation(ctx, payload, userID, organisationID any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "UpdateOrganisation", reflect.TypeOf((*MockIAPIService)(nil).UpdateOrganisation), payload, userID, organisationID)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "UpdateOrganisation", reflect.TypeOf((*MockIAPIService)(nil).UpdateOrganisation), ctx, payload, userID, organisationID)
 }
 
 // UpdateOrganisationMember mocks base method.
-func (m *MockIAPIService) UpdateOrganisationMember(payload models.UpdateMember, userID, organisationID, memberUserID int64) error {
+func (m *MockIAPIService) UpdateOrganisationMember(ctx context.Context, payload models.UpdateMember, userID, organisationID, memberUserID int64) error {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "UpdateOrganisationMember", payload, userID, organisationID, memberUserID)
+	ret := m.ctrl.Call(m, "UpdateOrganisationMember", ctx, payload, userID, organisationID, memberUserID)
 	ret0, _ := ret[0].(error)
 	return ret0
 }
 
 // UpdateOrganisationMember indicates an expected call of UpdateOrganisationMember.
-func (mr *MockIAPIServiceMockRecorder) UpdateOrganisationMember(payload, userID, organisationID, memberUserID any) *gomock.Call {
+func (mr *MockIAPIServiceMockRecorder) UpdateOrganisationMember(ctx, payload, userID, organisationID, memberUserID any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "UpdateOrganisationMember", reflect.TypeOf((*MockIAPIService)(nil).UpdateOrganisationMember), payload, userID, organisationID, memberUserID)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "UpdateOrganisationMember", reflect.TypeOf((*MockIAPIService)(nil).UpdateOrganisationMember), ctx, payload, userID, organisationID, memberUserID)
 }
 
 // UpdatePassword mocks base method.
-func (m *MockIAPIService) UpdatePassword(payload models.UpdateUserPassword, userID int64) error {
+func (m *MockIAPIService) UpdatePassword(ctx context.Context, payload models.UpdateUserPassword, userID int64) error {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "UpdatePassword", payload, userID)
+	ret := m.ctrl.Call(m, "UpdatePassword", ctx, payload, userID)
 	ret0, _ := ret[0].(error)
 	return ret0
 }
 
 // UpdatePassword indicates an expected call of UpdatePassword.
-func (mr *MockIAPIServiceMockRecorder) UpdatePassword(payload, userID any) *gomock.Call {
+func (mr *MockIAPIServiceMockRecorder) UpdatePassword(ctx, payload, userID any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "UpdatePassword", reflect.TypeOf((*MockIAPIService)(nil).UpdatePassword), payload, userID)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "UpdatePassword", reflect.TypeOf((*MockIAPIService)(nil).UpdatePassword), ctx, payload, userID)
 }
 
 // UpdateProfile mocks base method.
-func (m *MockIAPIService) UpdateProfile(payload models.UpdateUser, userID int64) (*models.User, error) {
+func (m *MockIAPIService) UpdateProfile(ctx context.Context, payload models.UpdateUser, userID int64) (*models.User, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "UpdateProfile", payload, userID)
+	ret := m.ctrl.Call(m, "UpdateProfile", ctx, payload, userID)
 	ret0, _ := ret[0].(*models.User)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
 
 // UpdateProfile indicates an expected call of UpdateProfile.
-func (mr *MockIAPIServiceMockRecorder) UpdateProfile(payload, userID any) *gomock.Call {
+func (mr *MockIAPIServiceMockRecorder) UpdateProfile(ctx, payload, userID any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "UpdateProfile", reflect.TypeOf((*MockIAPIService)(nil).UpdateProfile), payload, userID)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "UpdateProfile", reflect.TypeOf((*MockIAPIService)(nil).UpdateProfile), ctx, payload, userID)
 }
 
 // UpdateSalary mocks base method.
-func (m *MockIAPIService) UpdateSalary(payload models.UpdateSalary, userID, salaryID int64) (*models.Salary, error) {
+func (m *MockIAPIService) UpdateSalary(ctx context.Context, payload models.UpdateSalary, userID, salaryID int64) (*models.Salary, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "UpdateSalary", payload, userID, salaryID)
+	ret := m.ctrl.Call(m, "UpdateSalary", ctx, payload, userID, salaryID)
 	ret0, _ := ret[0].(*models.Salary)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
 
 // UpdateSalary indicates an expected call of UpdateSalary.
-func (mr *MockIAPIServiceMockRecorder) UpdateSalary(payload, userID, salaryID any) *gomock.Call {
+func (mr *MockIAPIServiceMockRecorder) UpdateSalary(ctx, payload, userID, salaryID any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "UpdateSalary", reflect.TypeOf((*MockIAPIService)(nil).UpdateSalary), payload, userID, salaryID)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "UpdateSalary", reflect.TypeOf((*MockIAPIService)(nil).UpdateSalary), ctx, payload, userID, salaryID)
 }
 
 // UpdateSalaryCost mocks base method.
-func (m *MockIAPIService) UpdateSalaryCost(payload models.CreateSalaryCost, userID, salaryCostID int64) (*models.SalaryCost, error) {
+func (m *MockIAPIService) UpdateSalaryCost(ctx context.Context, payload models.CreateSalaryCost, userID, salaryCostID int64) (*models.SalaryCost, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "UpdateSalaryCost", payload, userID, salaryCostID)
+	ret := m.ctrl.Call(m, "UpdateSalaryCost", ctx, payload, userID, salaryCostID)
 	ret0, _ := ret[0].(*models.SalaryCost)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
 
 // UpdateSalaryCost indicates an expected call of UpdateSalaryCost.
-func (mr *MockIAPIServiceMockRecorder) UpdateSalaryCost(payload, userID, salaryCostID any) *gomock.Call {
+func (mr *MockIAPIServiceMockRecorder) UpdateSalaryCost(ctx, payload, userID, salaryCostID any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "UpdateSalaryCost", reflect.TypeOf((*MockIAPIService)(nil).UpdateSalaryCost), payload, userID, salaryCostID)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "UpdateSalaryCost", reflect.TypeOf((*MockIAPIService)(nil).UpdateSalaryCost), ctx, payload, userID, salaryCostID)
 }
 
 // UpdateSalaryCostLabel mocks base method.
-func (m *MockIAPIService) UpdateSalaryCostLabel(payload models.CreateSalaryCostLabel, userID, salaryCostLabelID int64) (*models.SalaryCostLabel, error) {
+func (m *MockIAPIService) UpdateSalaryCostLabel(ctx context.Context, payload models.CreateSalaryCostLabel, userID, salaryCostLabelID int64) (*models.SalaryCostLabel, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "UpdateSalaryCostLabel", payload, userID, salaryCostLabelID)
+	ret := m.ctrl.Call(m, "UpdateSalaryCostLabel", ctx, payload, userID, salaryCostLabelID)
 	ret0, _ := ret[0].(*models.SalaryCostLabel)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
 
 // UpdateSalaryCostLabel indicates an expected call of UpdateSalaryCostLabel.
-func (mr *MockIAPIServiceMockRecorder) UpdateSalaryCostLabel(payload, userID, salaryCostLabelID any) *gomock.Call {
+func (mr *MockIAPIServiceMockRecorder) UpdateSalaryCostLabel(ctx, payload, userID, salaryCostLabelID any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "UpdateSalaryCostLabel", reflect.TypeOf((*MockIAPIService)(nil).UpdateSalaryCostLabel), payload, userID, salaryCostLabelID)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "UpdateSalaryCostLabel", reflect.TypeOf((*MockIAPIService)(nil).UpdateSalaryCostLabel), ctx, payload, userID, salaryCostLabelID)
 }
 
 // UpdateTransaction mocks base method.
-func (m *MockIAPIService) UpdateTransaction(payload models.UpdateTransaction, userID, transactionID int64) (*models.Transaction, error) {
+func (m *MockIAPIService) UpdateTransaction(ctx context.Context, payload models.UpdateTransaction, userID, transactionID int64) (*models.Transaction, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "UpdateTransaction", payload, userID, transactionID)
+	ret := m.ctrl.Call(m, "UpdateTransaction", ctx, payload, userID, transactionID)
 	ret0, _ := ret[0].(*models.Transaction)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
 
 // UpdateTransaction indicates an expected call of UpdateTransaction.
-func (mr *MockIAPIServiceMockRecorder) UpdateTransaction(payload, userID, transactionID any) *gomock.Call {
+func (mr *MockIAPIServiceMockRecorder) UpdateTransaction(ctx, payload, userID, transactionID any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "UpdateTransaction", reflect.TypeOf((*MockIAPIService)(nil).UpdateTransaction), payload, userID, transactionID)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "UpdateTransaction", reflect.TypeOf((*MockIAPIService)(nil).UpdateTransaction), ctx, payload, userID, transactionID)
 }
 
 // UpdateUserOrganisationSetting mocks base method.
-func (m *MockIAPIService) UpdateUserOrganisationSetting(payload models.UpdateUserOrganisationSetting, userID int64) (*models.UserOrganisationSetting, error) {
+func (m *MockIAPIService) UpdateUserOrganisationSetting(ctx context.Context, payload models.UpdateUserOrganisationSetting, userID int64) (*models.UserOrganisationSetting, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "UpdateUserOrganisationSetting", payload, userID)
+	ret := m.ctrl.Call(m, "UpdateUserOrganisationSetting", ctx, payload, userID)
 	ret0, _ := ret[0].(*models.UserOrganisationSetting)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
 
 // UpdateUserOrganisationSetting indicates an expected call of UpdateUserOrganisationSetting.
-func (mr *MockIAPIServiceMockRecorder) UpdateUserOrganisationSetting(payload, userID any) *gomock.Call {
+func (mr *MockIAPIServiceMockRecorder) UpdateUserOrganisationSetting(ctx, payload, userID any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "UpdateUserOrganisationSetting", reflect.TypeOf((*MockIAPIService)(nil).UpdateUserOrganisationSetting), payload, userID)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "UpdateUserOrganisationSetting", reflect.TypeOf((*MockIAPIService)(nil).UpdateUserOrganisationSetting), ctx, payload, userID)
 }
 
 // UpdateUserSetting mocks base method.
-func (m *MockIAPIService) UpdateUserSetting(payload models.UpdateUserSetting, userID int64) (*models.UserSetting, error) {
+func (m *MockIAPIService) UpdateUserSetting(ctx context.Context, payload models.UpdateUserSetting, userID int64) (*models.UserSetting, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "UpdateUserSetting", payload, userID)
+	ret := m.ctrl.Call(m, "UpdateUserSetting", ctx, payload, userID)
 	ret0, _ := ret[0].(*models.UserSetting)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
 
 // UpdateUserSetting indicates an expected call of UpdateUserSetting.
-func (mr *MockIAPIServiceMockRecorder) UpdateUserSetting(payload, userID any) *gomock.Call {
+func (mr *MockIAPIServiceMockRecorder) UpdateUserSetting(ctx, payload, userID any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "UpdateUserSetting", reflect.TypeOf((*MockIAPIService)(nil).UpdateUserSetting), payload, userID)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "UpdateUserSetting", reflect.TypeOf((*MockIAPIService)(nil).UpdateUserSetting), ctx, payload, userID)
 }
 
 // UpdateVat mocks base method.
-func (m *MockIAPIService) UpdateVat(payload models.UpdateVat, userID, vatID int64) (*models.Vat, error) {
+func (m *MockIAPIService) UpdateVat(ctx context.Context, payload models.UpdateVat, userID, vatID int64) (*models.Vat, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "UpdateVat", payload, userID, vatID)
+	ret := m.ctrl.Call(m, "UpdateVat", ctx, payload, userID, vatID)
 	ret0, _ := ret[0].(*models.Vat)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
 
 // UpdateVat indicates an expected call of UpdateVat.
-func (mr *MockIAPIServiceMockRecorder) UpdateVat(payload, userID, vatID any) *gomock.Call {
+func (mr *MockIAPIServiceMockRecorder) UpdateVat(ctx, payload, userID, vatID any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "UpdateVat", reflect.TypeOf((*MockIAPIService)(nil).UpdateVat), payload, userID, vatID)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "UpdateVat", reflect.TypeOf((*MockIAPIService)(nil).UpdateVat), ctx, payload, userID, vatID)
 }
 
 // UpdateVatSetting mocks base method.
-func (m *MockIAPIService) UpdateVatSetting(payload models.UpdateVatSetting, userID int64) (*models.VatSetting, error) {
+func (m *MockIAPIService) UpdateVatSetting(ctx context.Context, payload models.UpdateVatSetting, userID int64) (*models.VatSetting, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "UpdateVatSetting", payload, userID)
+	ret := m.ctrl.Call(m, "UpdateVatSetting", ctx, payload, userID)
 	ret0, _ := ret[0].(*models.VatSetting)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
 
 // UpdateVatSetting indicates an expected call of UpdateVatSetting.
-func (mr *MockIAPIServiceMockRecorder) UpdateVatSetting(payload, userID any) *gomock.Call {
+func (mr *MockIAPIServiceMockRecorder) UpdateVatSetting(ctx, payload, userID any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "UpdateVatSetting", reflect.TypeOf((*MockIAPIService)(nil).UpdateVatSetting), payload, userID)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "UpdateVatSetting", reflect.TypeOf((*MockIAPIService)(nil).UpdateVatSetting), ctx, payload, userID)
 }
 
 // UpsertFiatRate mocks base method.
-func (m *MockIAPIService) UpsertFiatRate(payload models.CreateFiatRate) error {
+func (m *MockIAPIService) UpsertFiatRate(ctx context.Context, payload models.CreateFiatRate) error {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "UpsertFiatRate", payload)
+	ret := m.ctrl.Call(m, "UpsertFiatRate", ctx, payload)
 	ret0, _ := ret[0].(error)
 	return ret0
 }
 
 // UpsertFiatRate indicates an expected call of UpsertFiatRate.
-func (mr *MockIAPIServiceMockRecorder) UpsertFiatRate(payload any) *gomock.Call {
+func (mr *MockIAPIServiceMockRecorder) UpsertFiatRate(ctx, payload any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "UpsertFiatRate", reflect.TypeOf((*MockIAPIService)(nil).UpsertFiatRate), payload)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "UpsertFiatRate", reflect.TypeOf((*MockIAPIService)(nil).UpsertFiatRate), ctx, payload)
 }

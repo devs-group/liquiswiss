@@ -34,7 +34,7 @@ func ListTransactions(apiService api_service.IAPIService, c *gin.Context) {
 	hideExpired := c.DefaultQuery("hideExpired", "false") == "true"
 
 	// Actions
-	transactions, totalCount, err := apiService.ListTransactions(userID, page, limit, sortBy, sortOrder, search, hideDisabled, hideExpired)
+	transactions, totalCount, err := apiService.ListTransactions(c.Request.Context(), userID, page, limit, sortBy, sortOrder, search, hideDisabled, hideExpired)
 	if err != nil {
 		c.Status(http.StatusInternalServerError)
 		return
@@ -61,7 +61,7 @@ func GetTransaction(apiService api_service.IAPIService, c *gin.Context) {
 	}
 
 	// Action
-	transaction, err := apiService.GetTransaction(userID, transactionID)
+	transaction, err := apiService.GetTransaction(c.Request.Context(), userID, transactionID)
 	if err != nil {
 		switch err {
 		case sql.ErrNoRows:
@@ -96,7 +96,7 @@ func CreateTransaction(apiService api_service.IAPIService, c *gin.Context) {
 	}
 
 	// Action
-	transaction, err := apiService.CreateTransaction(payload, userID)
+	transaction, err := apiService.CreateTransaction(c.Request.Context(), payload, userID)
 	if err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 		return
@@ -130,7 +130,7 @@ func UpdateTransaction(apiService api_service.IAPIService, c *gin.Context) {
 	}
 
 	// Action
-	transaction, err := apiService.UpdateTransaction(payload, userID, transactionID)
+	transaction, err := apiService.UpdateTransaction(c.Request.Context(), payload, userID, transactionID)
 	if err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 		return
@@ -154,7 +154,7 @@ func DeleteTransaction(apiService api_service.IAPIService, c *gin.Context) {
 	}
 
 	// Action
-	err = apiService.DeleteTransaction(userID, transactionID)
+	err = apiService.DeleteTransaction(c.Request.Context(), userID, transactionID)
 	if err != nil {
 		c.Status(http.StatusInternalServerError)
 		return

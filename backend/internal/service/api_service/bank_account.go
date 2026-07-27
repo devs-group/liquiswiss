@@ -1,13 +1,14 @@
 package api_service
 
 import (
+	"context"
 	"liquiswiss/internal/events"
 	"liquiswiss/pkg/logger"
 	"liquiswiss/pkg/models"
 	"liquiswiss/pkg/utils"
 )
 
-func (a *APIService) ListBankAccounts(userID int64, page int64, limit int64, sortBy string, sortOrder string, search string) ([]models.BankAccount, int64, error) {
+func (a *APIService) ListBankAccounts(ctx context.Context, userID int64, page int64, limit int64, sortBy string, sortOrder string, search string) ([]models.BankAccount, int64, error) {
 	bankAccounts, totalCount, err := a.dbService.ListBankAccounts(userID, page, limit, sortBy, sortOrder, search)
 	if err != nil {
 		logger.Logger.Error(err)
@@ -21,7 +22,7 @@ func (a *APIService) ListBankAccounts(userID int64, page int64, limit int64, sor
 	return bankAccounts, totalCount, nil
 }
 
-func (a *APIService) GetBankAccount(userID int64, bankAccountID int64) (*models.BankAccount, error) {
+func (a *APIService) GetBankAccount(ctx context.Context, userID int64, bankAccountID int64) (*models.BankAccount, error) {
 	bankAccount, err := a.dbService.GetBankAccount(userID, bankAccountID)
 	if err != nil {
 		logger.Logger.Error(err)
@@ -35,7 +36,7 @@ func (a *APIService) GetBankAccount(userID int64, bankAccountID int64) (*models.
 	return bankAccount, nil
 }
 
-func (a *APIService) CreateBankAccount(payload models.CreateBankAccount, userID int64) (*models.BankAccount, error) {
+func (a *APIService) CreateBankAccount(ctx context.Context, payload models.CreateBankAccount, userID int64) (*models.BankAccount, error) {
 	bankAccountID, err := a.dbService.CreateBankAccount(payload, userID)
 	if err != nil {
 		logger.Logger.Error(err)
@@ -51,11 +52,11 @@ func (a *APIService) CreateBankAccount(payload models.CreateBankAccount, userID 
 		logger.Logger.Error(err)
 		return nil, err
 	}
-	a.notifyChange(userID, "bank_account", events.ActionCreated, bankAccountID)
+	a.notifyChange(ctx, userID, "bank_account", events.ActionCreated, bankAccountID)
 	return bankAccount, nil
 }
 
-func (a *APIService) UpdateBankAccount(payload models.UpdateBankAccount, userID int64, bankAccountID int64) (*models.BankAccount, error) {
+func (a *APIService) UpdateBankAccount(ctx context.Context, payload models.UpdateBankAccount, userID int64, bankAccountID int64) (*models.BankAccount, error) {
 	_, err := a.dbService.GetBankAccount(userID, bankAccountID)
 	if err != nil {
 		logger.Logger.Error(err)
@@ -76,11 +77,11 @@ func (a *APIService) UpdateBankAccount(payload models.UpdateBankAccount, userID 
 		logger.Logger.Error(err)
 		return nil, err
 	}
-	a.notifyChange(userID, "bank_account", events.ActionUpdated, bankAccountID)
+	a.notifyChange(ctx, userID, "bank_account", events.ActionUpdated, bankAccountID)
 	return bankAccount, nil
 }
 
-func (a *APIService) DeleteBankAccount(userID int64, bankAccountID int64) error {
+func (a *APIService) DeleteBankAccount(ctx context.Context, userID int64, bankAccountID int64) error {
 	_, err := a.dbService.GetBankAccount(userID, bankAccountID)
 	if err != nil {
 		logger.Logger.Error(err)
@@ -91,6 +92,6 @@ func (a *APIService) DeleteBankAccount(userID int64, bankAccountID int64) error 
 		logger.Logger.Error(err)
 		return err
 	}
-	a.notifyChange(userID, "bank_account", events.ActionDeleted, bankAccountID)
+	a.notifyChange(ctx, userID, "bank_account", events.ActionDeleted, bankAccountID)
 	return nil
 }

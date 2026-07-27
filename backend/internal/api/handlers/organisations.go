@@ -30,7 +30,7 @@ func ListOrganisations(apiService api_service.IAPIService, c *gin.Context) {
 	}
 
 	// Action
-	organisations, totalCount, err := apiService.ListOrganisations(userID, page, limit)
+	organisations, totalCount, err := apiService.ListOrganisations(c.Request.Context(), userID, page, limit)
 	if err != nil {
 		c.Status(http.StatusInternalServerError)
 		return
@@ -57,7 +57,7 @@ func GetOrganisation(apiService api_service.IAPIService, c *gin.Context) {
 	}
 
 	// Action
-	organisation, err := apiService.GetOrganisation(userID, organisationID)
+	organisation, err := apiService.GetOrganisation(c.Request.Context(), userID, organisationID)
 	if err != nil {
 		switch err {
 		case sql.ErrNoRows:
@@ -93,7 +93,7 @@ func CreateOrganisation(apiService api_service.IAPIService, c *gin.Context) {
 	}
 
 	// Action
-	organisation, err := apiService.CreateOrganisation(payload, userID)
+	organisation, err := apiService.CreateOrganisation(c.Request.Context(), payload, userID)
 	if err != nil {
 		c.Status(http.StatusInternalServerError)
 		return
@@ -131,7 +131,7 @@ func UpdateOrganisation(apiService api_service.IAPIService, c *gin.Context) {
 	}
 
 	// Action
-	organisation, err := apiService.UpdateOrganisation(payload, userID, organisationID)
+	organisation, err := apiService.UpdateOrganisation(c.Request.Context(), payload, userID, organisationID)
 	if err != nil {
 		c.Status(http.StatusInternalServerError)
 		return

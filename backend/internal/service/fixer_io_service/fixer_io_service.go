@@ -2,6 +2,7 @@
 package fixer_io_service
 
 import (
+	"context"
 	"encoding/json"
 	"fmt"
 	"liquiswiss/config"
@@ -29,11 +30,11 @@ func NewFixerIOService(s *api_service.IAPIService) IFixerIOService {
 }
 
 func (f *FixerIOService) RequiresInitialFetch() (bool, error) {
-	totalCurrenciesInRates, err := f.apiService.CountUniqueCurrenciesInFiatRates()
+	totalCurrenciesInRates, err := f.apiService.CountUniqueCurrenciesInFiatRates(context.Background())
 	if err != nil {
 		return false, err
 	}
-	totalCurrencies, err := f.apiService.CountCurrencies()
+	totalCurrencies, err := f.apiService.CountCurrencies(context.Background())
 	if err != nil {
 		return false, err
 	}
@@ -41,7 +42,7 @@ func (f *FixerIOService) RequiresInitialFetch() (bool, error) {
 }
 
 func (f *FixerIOService) fetchFromFallback() {
-	if existing, err := f.apiService.ListFiatRates("CHF"); err == nil && len(existing) > 0 {
+	if existing, err := f.apiService.ListFiatRates(context.Background(), "CHF"); err == nil && len(existing) > 0 {
 		logger.Logger.Debug("Fixer.io API key not configured — fallback rates already loaded, skipping")
 		return
 	}
@@ -55,7 +56,7 @@ func (f *FixerIOService) fetchFromFallback() {
 	}
 
 	for _, r := range data.Rates {
-		err := f.apiService.UpsertFiatRate(models.CreateFiatRate{
+		err := f.apiService.UpsertFiatRate(context.Background(), models.CreateFiatRate{
 			Base:   r.Base,
 			Target: r.Target,
 			Rate:   r.Rate,
@@ -76,7 +77,7 @@ func (f *FixerIOService) FetchFiatRates() {
 	}
 
 	if !utils.IsProduction() {
-		fiatRates, err := f.apiService.ListFiatRates("CHF")
+		fiatRates, err := f.apiService.ListFiatRates(context.Background(), "CHF")
 		if err == nil && len(fiatRates) > 0 {
 			logger.Logger.Debug("Skipping Fixer.io fetch because we are not on Production and already have some Fiat Rates")
 			return
@@ -85,7 +86,7 @@ func (f *FixerIOService) FetchFiatRates() {
 
 	logger.Logger.Infof("Running Fixer.io Cronjob")
 
-	currencies, err := f.apiService.ListCurrencies(0)
+	currencies, err := f.apiService.ListCurrencies(context.Background(), 0)
 	if err != nil {
 		logger.Logger.Errorf("Failed to load currencies: %v", err)
 		return
@@ -128,7 +129,7 @@ func (f *FixerIOService) FetchFiatRates() {
 		}
 
 		for targetCurrency, rate := range *exchangeData.Rates {
-			err = f.apiService.UpsertFiatRate(models.CreateFiatRate{
+			err = f.apiService.UpsertFiatRate(context.Background(), models.CreateFiatRate{
 				Base:   baseCurrency,
 				Target: targetCurrency,
 				Rate:   rate,

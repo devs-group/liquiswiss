@@ -1,6 +1,7 @@
 package api_service
 
 import (
+	"context"
 	"errors"
 	"fmt"
 	"liquiswiss/internal/events"
@@ -16,7 +17,7 @@ var (
 	ErrCategoryInUse = errors.New("category is still used by transactions")
 )
 
-func (a *APIService) ListCategories(userID, page, limit int64) ([]models.Category, int64, error) {
+func (a *APIService) ListCategories(ctx context.Context, userID, page, limit int64) ([]models.Category, int64, error) {
 	categories, totalCount, err := a.dbService.ListCategories(userID, page, limit)
 	if err != nil {
 		logger.Logger.Error(err)
@@ -30,7 +31,7 @@ func (a *APIService) ListCategories(userID, page, limit int64) ([]models.Categor
 	return categories, totalCount, nil
 }
 
-func (a *APIService) GetCategory(userID int64, categoryID int64) (*models.Category, error) {
+func (a *APIService) GetCategory(ctx context.Context, userID int64, categoryID int64) (*models.Category, error) {
 	category, err := a.dbService.GetCategory(userID, categoryID)
 	if err != nil {
 		logger.Logger.Error(err)
@@ -44,7 +45,7 @@ func (a *APIService) GetCategory(userID int64, categoryID int64) (*models.Catego
 	return category, nil
 }
 
-func (a *APIService) CreateCategory(payload models.CreateCategory, userID *int64) (*models.Category, error) {
+func (a *APIService) CreateCategory(ctx context.Context, payload models.CreateCategory, userID *int64) (*models.Category, error) {
 	categoryID, err := a.dbService.CreateCategory(payload, userID)
 	if err != nil {
 		logger.Logger.Error(err)
@@ -67,12 +68,12 @@ func (a *APIService) CreateCategory(payload models.CreateCategory, userID *int64
 		return nil, err
 	}
 	if userID != nil {
-		a.notifyChange(*userID, "category", events.ActionCreated, categoryID)
+		a.notifyChange(ctx, *userID, "category", events.ActionCreated, categoryID)
 	}
 	return category, nil
 }
 
-func (a *APIService) UpdateCategory(payload models.UpdateCategory, userID int64, categoryID int64) (*models.Category, error) {
+func (a *APIService) UpdateCategory(ctx context.Context, payload models.UpdateCategory, userID int64, categoryID int64) (*models.Category, error) {
 	err := a.dbService.UpdateCategory(payload, userID, categoryID)
 	if err != nil {
 		logger.Logger.Error(err)
@@ -88,14 +89,14 @@ func (a *APIService) UpdateCategory(payload models.UpdateCategory, userID int64,
 		logger.Logger.Error(err)
 		return nil, err
 	}
-	a.notifyChange(userID, "category", events.ActionUpdated, categoryID)
+	a.notifyChange(ctx, userID, "category", events.ActionUpdated, categoryID)
 	return category, nil
 }
 
 // ReassignCategoryTransactions moves every transaction of the user's current
 // organisation from one category to another, typically right before the
 // source category gets deleted.
-func (a *APIService) ReassignCategoryTransactions(userID int64, fromCategoryID int64, toCategoryID int64) (int64, error) {
+func (a *APIService) ReassignCategoryTransactions(ctx context.Context, userID int64, fromCategoryID int64, toCategoryID int64) (int64, error) {
 	if fromCategoryID == toCategoryID {
 		return 0, fmt.Errorf("source and target category must differ")
 	}
@@ -114,15 +115,15 @@ func (a *APIService) ReassignCategoryTransactions(userID int64, fromCategoryID i
 		return 0, err
 	}
 	if affected > 0 {
-		if _, err := a.CalculateForecast(userID); err != nil {
+		if _, err := a.CalculateForecast(ctx, userID); err != nil {
 			logger.Logger.Error(err)
 		}
-		a.notifyChange(userID, "transaction", events.ActionUpdated, 0)
+		a.notifyChange(ctx, userID, "transaction", events.ActionUpdated, 0)
 	}
 	return affected, nil
 }
 
-func (a *APIService) DeleteCategory(userID int64, categoryID int64) error {
+func (a *APIService) DeleteCategory(ctx context.Context, userID int64, categoryID int64) error {
 	category, err := a.dbService.GetCategory(userID, categoryID)
 	if err != nil {
 		logger.Logger.Error(err)
@@ -144,6 +145,6 @@ func (a *APIService) DeleteCategory(userID int64, categoryID int64) error {
 		logger.Logger.Error(err)
 		return err
 	}
-	a.notifyChange(userID, "category", events.ActionDeleted, categoryID)
+	a.notifyChange(ctx, userID, "category", events.ActionDeleted, categoryID)
 	return nil
 }

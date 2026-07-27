@@ -25,7 +25,7 @@ func ListOrganisationMembers(apiService api_service.IAPIService, c *gin.Context)
 	}
 
 	// Action
-	members, err := apiService.ListOrganisationMembers(userID, organisationID)
+	members, err := apiService.ListOrganisationMembers(c.Request.Context(), userID, organisationID)
 	if err != nil {
 		c.Status(http.StatusInternalServerError)
 		return
@@ -68,7 +68,7 @@ func UpdateOrganisationMember(apiService api_service.IAPIService, c *gin.Context
 	}
 
 	// Action
-	err = apiService.UpdateOrganisationMember(payload, userID, organisationID, memberUserID)
+	err = apiService.UpdateOrganisationMember(c.Request.Context(), payload, userID, organisationID, memberUserID)
 	if err != nil {
 		if err.Error() == "permission denied" {
 			c.Status(http.StatusForbidden)
@@ -105,7 +105,7 @@ func RemoveOrganisationMember(apiService api_service.IAPIService, c *gin.Context
 	}
 
 	// Action
-	err = apiService.RemoveOrganisationMember(userID, organisationID, memberUserID)
+	err = apiService.RemoveOrganisationMember(c.Request.Context(), userID, organisationID, memberUserID)
 	if err != nil {
 		if err.Error() == "permission denied" {
 			c.Status(http.StatusForbidden)

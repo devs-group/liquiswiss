@@ -1,13 +1,14 @@
 package handlers_test
 
 import (
+	"context"
 	"database/sql"
 	"testing"
 
 	"github.com/stretchr/testify/require"
 
-	"liquiswiss/internal/adapter/db_adapter"
 	"liquiswiss/config"
+	"liquiswiss/internal/adapter/db_adapter"
 	"liquiswiss/internal/adapter/email_adapter"
 	"liquiswiss/internal/service/api_service"
 	"liquiswiss/pkg/models"
@@ -37,7 +38,7 @@ func TestListMembers_ShowsOwner(t *testing.T) {
 	conn, apiService, _, user, org := setupMemberDependencies(t)
 	defer conn.Close()
 
-	members, err := apiService.ListOrganisationMembers(user.ID, org.ID)
+	members, err := apiService.ListOrganisationMembers(context.Background(), user.ID, org.ID)
 	require.NoError(t, err)
 	require.Len(t, members, 1)
 	require.Equal(t, user.ID, members[0].UserID)
@@ -65,7 +66,7 @@ func TestListMembers_ShowsAllMembers(t *testing.T) {
 	require.NoError(t, err)
 
 	// List members
-	members, err := apiService.ListOrganisationMembers(user.ID, org.ID)
+	members, err := apiService.ListOrganisationMembers(context.Background(), user.ID, org.ID)
 	require.NoError(t, err)
 	require.Len(t, members, 4)
 
@@ -93,7 +94,7 @@ func TestListMembers_AnyMemberCanList(t *testing.T) {
 	require.NoError(t, err)
 
 	// Read-only member should be able to list members
-	members, err := apiService.ListOrganisationMembers(memberID, org.ID)
+	members, err := apiService.ListOrganisationMembers(context.Background(), memberID, org.ID)
 	require.NoError(t, err)
 	require.Len(t, members, 2)
 }
@@ -110,13 +111,13 @@ func TestUpdateMember_OwnerCanUpdateRole(t *testing.T) {
 
 	// Owner updates member role
 	newRole := "admin"
-	err = apiService.UpdateOrganisationMember(models.UpdateMember{
+	err = apiService.UpdateOrganisationMember(context.Background(), models.UpdateMember{
 		Role: &newRole,
 	}, user.ID, org.ID, memberID)
 	require.NoError(t, err)
 
 	// Verify role was updated
-	members, err := apiService.ListOrganisationMembers(user.ID, org.ID)
+	members, err := apiService.ListOrganisationMembers(context.Background(), user.ID, org.ID)
 	require.NoError(t, err)
 
 	for _, member := range members {
@@ -147,7 +148,7 @@ func TestUpdateMember_NonOwnerCannotUpdate(t *testing.T) {
 
 	// Admin tries to update member role - should fail
 	newRole := "read-only"
-	err = apiService.UpdateOrganisationMember(models.UpdateMember{
+	err = apiService.UpdateOrganisationMember(context.Background(), models.UpdateMember{
 		Role: &newRole,
 	}, adminID, org.ID, memberID)
 	require.Error(t, err)
@@ -160,7 +161,7 @@ func TestUpdateMember_CannotDemoteLastOwner(t *testing.T) {
 
 	// Try to demote the only owner
 	newRole := "admin"
-	err := apiService.UpdateOrganisationMember(models.UpdateMember{
+	err := apiService.UpdateOrganisationMember(context.Background(), models.UpdateMember{
 		Role: &newRole,
 	}, user.ID, org.ID, user.ID)
 	require.Error(t, err)
@@ -179,13 +180,13 @@ func TestUpdateMember_CanDemoteOwnerIfNotLast(t *testing.T) {
 
 	// Now we can demote one owner
 	newRole := "admin"
-	err = apiService.UpdateOrganisationMember(models.UpdateMember{
+	err = apiService.UpdateOrganisationMember(context.Background(), models.UpdateMember{
 		Role: &newRole,
 	}, user.ID, org.ID, owner2ID)
 	require.NoError(t, err)
 
 	// Verify role was updated
-	members, err := apiService.ListOrganisationMembers(user.ID, org.ID)
+	members, err := apiService.ListOrganisationMembers(context.Background(), user.ID, org.ID)
 	require.NoError(t, err)
 
 	for _, member := range members {
@@ -209,14 +210,14 @@ func TestUpdateMember_UpdatePermissions(t *testing.T) {
 	// Update permissions
 	canEdit := true
 	canDelete := true
-	err = apiService.UpdateOrganisationMember(models.UpdateMember{
+	err = apiService.UpdateOrganisationMember(context.Background(), models.UpdateMember{
 		CanEdit:   &canEdit,
 		CanDelete: &canDelete,
 	}, user.ID, org.ID, memberID)
 	require.NoError(t, err)
 
 	// Verify permissions were updated
-	members, err := apiService.ListOrganisationMembers(user.ID, org.ID)
+	members, err := apiService.ListOrganisationMembers(context.Background(), user.ID, org.ID)
 	require.NoError(t, err)
 
 	for _, member := range members {
@@ -241,11 +242,11 @@ func TestRemoveMember_OwnerCanRemove(t *testing.T) {
 	require.NoError(t, err)
 
 	// Remove the member
-	err = apiService.RemoveOrganisationMember(user.ID, org.ID, memberID)
+	err = apiService.RemoveOrganisationMember(context.Background(), user.ID, org.ID, memberID)
 	require.NoError(t, err)
 
 	// Verify member was removed
-	members, err := apiService.ListOrganisationMembers(user.ID, org.ID)
+	members, err := apiService.ListOrganisationMembers(context.Background(), user.ID, org.ID)
 	require.NoError(t, err)
 	require.Len(t, members, 1) // Only owner remains
 }
@@ -269,7 +270,7 @@ func TestRemoveMember_NonOwnerCannotRemove(t *testing.T) {
 	require.NoError(t, err)
 
 	// Admin tries to remove member - should fail
-	err = apiService.RemoveOrganisationMember(adminID, org.ID, memberID)
+	err = apiService.RemoveOrganisationMember(context.Background(), adminID, org.ID, memberID)
 	require.Error(t, err)
 	require.Contains(t, err.Error(), "permission denied")
 }
@@ -279,7 +280,7 @@ func TestRemoveMember_CannotRemoveLastOwner(t *testing.T) {
 	defer conn.Close()
 
 	// Try to remove the only owner
-	err := apiService.RemoveOrganisationMember(user.ID, org.ID, user.ID)
+	err := apiService.RemoveOrganisationMember(context.Background(), user.ID, org.ID, user.ID)
 	require.Error(t, err)
 	require.Contains(t, err.Error(), "cannot remove")
 }
@@ -295,7 +296,7 @@ func TestRemoveMember_CannotRemoveSelf(t *testing.T) {
 	require.NoError(t, err)
 
 	// Try to remove self
-	err = apiService.RemoveOrganisationMember(user.ID, org.ID, user.ID)
+	err = apiService.RemoveOrganisationMember(context.Background(), user.ID, org.ID, user.ID)
 	require.Error(t, err)
 	require.Contains(t, err.Error(), "cannot remove yourself")
 }
@@ -311,11 +312,11 @@ func TestRemoveMember_CanRemoveOwnerIfNotLast(t *testing.T) {
 	require.NoError(t, err)
 
 	// Remove the second owner
-	err = apiService.RemoveOrganisationMember(user.ID, org.ID, owner2ID)
+	err = apiService.RemoveOrganisationMember(context.Background(), user.ID, org.ID, owner2ID)
 	require.NoError(t, err)
 
 	// Verify they were removed
-	members, err := apiService.ListOrganisationMembers(user.ID, org.ID)
+	members, err := apiService.ListOrganisationMembers(context.Background(), user.ID, org.ID)
 	require.NoError(t, err)
 	require.Len(t, members, 1)
 	require.Equal(t, user.ID, members[0].UserID)
@@ -336,7 +337,7 @@ func TestListMembers_IncludesPermissions(t *testing.T) {
 	require.NoError(t, err)
 
 	// List members
-	members, err := apiService.ListOrganisationMembers(user.ID, org.ID)
+	members, err := apiService.ListOrganisationMembers(context.Background(), user.ID, org.ID)
 	require.NoError(t, err)
 
 	for _, member := range members {

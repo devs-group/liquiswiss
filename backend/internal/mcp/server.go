@@ -170,7 +170,7 @@ func registerOrganisationTools(server *sdk.Server, deps *toolDeps) {
 		if err != nil {
 			return nil, nil, err
 		}
-		org, err := deps.apiService.GetCurrentOrganisation(userID)
+		org, err := deps.apiService.GetCurrentOrganisation(ctx, userID)
 		if err != nil {
 			return nil, nil, err
 		}
@@ -185,14 +185,14 @@ func registerOrganisationTools(server *sdk.Server, deps *toolDeps) {
 		if err != nil {
 			return nil, nil, err
 		}
-		current, err := deps.apiService.GetCurrentOrganisation(userID)
+		current, err := deps.apiService.GetCurrentOrganisation(ctx, userID)
 		if err != nil {
 			return nil, nil, err
 		}
 		if err := validate(in); err != nil {
 			return nil, nil, err
 		}
-		org, err := deps.apiService.UpdateOrganisation(in, userID, current.ID)
+		org, err := deps.apiService.UpdateOrganisation(ctx, in, userID, current.ID)
 		if err != nil {
 			return nil, nil, err
 		}
@@ -207,7 +207,7 @@ func registerOrganisationTools(server *sdk.Server, deps *toolDeps) {
 		if err != nil {
 			return nil, nil, err
 		}
-		organisations, total, err := deps.apiService.ListOrganisations(userID, 1, 100)
+		organisations, total, err := deps.apiService.ListOrganisations(ctx, userID, 1, 100)
 		if err != nil {
 			return nil, nil, err
 		}
@@ -224,11 +224,11 @@ func registerOrganisationTools(server *sdk.Server, deps *toolDeps) {
 		if err != nil {
 			return nil, nil, err
 		}
-		err = deps.apiService.SetUserCurrentOrganisation(models.UpdateUserCurrentOrganisation{OrganisationID: in.OrganisationID}, userID)
+		err = deps.apiService.SetUserCurrentOrganisation(ctx, models.UpdateUserCurrentOrganisation{OrganisationID: in.OrganisationID}, userID)
 		if err != nil {
 			return nil, nil, err
 		}
-		org, err := deps.apiService.GetCurrentOrganisation(userID)
+		org, err := deps.apiService.GetCurrentOrganisation(ctx, userID)
 		if err != nil {
 			return nil, nil, err
 		}
@@ -243,11 +243,11 @@ func registerOrganisationTools(server *sdk.Server, deps *toolDeps) {
 		if err != nil {
 			return nil, nil, err
 		}
-		org, err := deps.apiService.GetCurrentOrganisation(userID)
+		org, err := deps.apiService.GetCurrentOrganisation(ctx, userID)
 		if err != nil {
 			return nil, nil, err
 		}
-		members, err := deps.apiService.ListOrganisationMembers(userID, org.ID)
+		members, err := deps.apiService.ListOrganisationMembers(ctx, userID, org.ID)
 		if err != nil {
 			return nil, nil, err
 		}
@@ -264,11 +264,11 @@ func registerOrganisationTools(server *sdk.Server, deps *toolDeps) {
 		if err != nil {
 			return nil, nil, err
 		}
-		org, err := deps.apiService.GetCurrentOrganisation(userID)
+		org, err := deps.apiService.GetCurrentOrganisation(ctx, userID)
 		if err != nil {
 			return nil, nil, err
 		}
-		if err := deps.apiService.RemoveOrganisationMember(userID, org.ID, in.UserID); err != nil {
+		if err := deps.apiService.RemoveOrganisationMember(ctx, userID, org.ID, in.UserID); err != nil {
 			return nil, nil, err
 		}
 		return nil, &deleteOutput{Deleted: true, ID: in.UserID}, nil
@@ -282,11 +282,11 @@ func registerOrganisationTools(server *sdk.Server, deps *toolDeps) {
 		if err != nil {
 			return nil, nil, err
 		}
-		org, err := deps.apiService.GetCurrentOrganisation(userID)
+		org, err := deps.apiService.GetCurrentOrganisation(ctx, userID)
 		if err != nil {
 			return nil, nil, err
 		}
-		invitations, err := deps.apiService.ListOrganisationInvitations(userID, org.ID)
+		invitations, err := deps.apiService.ListOrganisationInvitations(ctx, userID, org.ID)
 		if err != nil {
 			return nil, nil, err
 		}
@@ -301,14 +301,14 @@ func registerOrganisationTools(server *sdk.Server, deps *toolDeps) {
 		if err != nil {
 			return nil, nil, err
 		}
-		org, err := deps.apiService.GetCurrentOrganisation(userID)
+		org, err := deps.apiService.GetCurrentOrganisation(ctx, userID)
 		if err != nil {
 			return nil, nil, err
 		}
 		if err := validate(in); err != nil {
 			return nil, nil, err
 		}
-		invitation, err := deps.apiService.CreateOrganisationInvitation(in, userID, org.ID)
+		invitation, err := deps.apiService.CreateOrganisationInvitation(ctx, in, userID, org.ID)
 		if err != nil {
 			return nil, nil, err
 		}
@@ -323,11 +323,11 @@ func registerOrganisationTools(server *sdk.Server, deps *toolDeps) {
 		if err != nil {
 			return nil, nil, err
 		}
-		org, err := deps.apiService.GetCurrentOrganisation(userID)
+		org, err := deps.apiService.GetCurrentOrganisation(ctx, userID)
 		if err != nil {
 			return nil, nil, err
 		}
-		if err := deps.apiService.DeleteOrganisationInvitation(userID, org.ID, in.ID); err != nil {
+		if err := deps.apiService.DeleteOrganisationInvitation(ctx, userID, org.ID, in.ID); err != nil {
 			return nil, nil, notFound(err, "invitation")
 		}
 		return nil, &deleteOutput{Deleted: true, ID: in.ID}, nil
@@ -341,11 +341,11 @@ func registerOrganisationTools(server *sdk.Server, deps *toolDeps) {
 		if err != nil {
 			return nil, nil, err
 		}
-		org, err := deps.apiService.GetCurrentOrganisation(userID)
+		org, err := deps.apiService.GetCurrentOrganisation(ctx, userID)
 		if err != nil {
 			return nil, nil, err
 		}
-		if err := deps.apiService.ResendOrganisationInvitation(userID, org.ID, in.ID); err != nil {
+		if err := deps.apiService.ResendOrganisationInvitation(ctx, userID, org.ID, in.ID); err != nil {
 			return nil, nil, notFound(err, "invitation")
 		}
 		return nil, map[string]any{"resent": true, "id": in.ID}, nil
@@ -359,7 +359,7 @@ func registerOrganisationTools(server *sdk.Server, deps *toolDeps) {
 		if err != nil {
 			return nil, nil, err
 		}
-		setting, err := deps.apiService.GetVatSetting(userID)
+		setting, err := deps.apiService.GetVatSetting(ctx, userID)
 		if err != nil {
 			return nil, nil, errors.New("no VAT settings configured for this organisation")
 		}
@@ -380,9 +380,9 @@ func registerOrganisationTools(server *sdk.Server, deps *toolDeps) {
 		if err := validate(in); err != nil {
 			return nil, nil, err
 		}
-		existing, err := deps.apiService.GetVatSetting(userID)
+		existing, err := deps.apiService.GetVatSetting(ctx, userID)
 		if err == nil && existing != nil {
-			setting, err := deps.apiService.UpdateVatSetting(in, userID)
+			setting, err := deps.apiService.UpdateVatSetting(ctx, in, userID)
 			if err != nil {
 				return nil, nil, err
 			}
@@ -396,7 +396,7 @@ func registerOrganisationTools(server *sdk.Server, deps *toolDeps) {
 		if in.TransactionMonthOffset != nil {
 			offset = *in.TransactionMonthOffset
 		}
-		setting, err := deps.apiService.CreateVatSetting(models.CreateVatSetting{
+		setting, err := deps.apiService.CreateVatSetting(ctx, models.CreateVatSetting{
 			Enabled:                *in.Enabled,
 			BillingDate:            *in.BillingDate,
 			TransactionMonthOffset: offset,
@@ -418,7 +418,7 @@ func registerOrganisationTools(server *sdk.Server, deps *toolDeps) {
 		if err != nil {
 			return nil, nil, err
 		}
-		categories, _, err := deps.apiService.ListCategories(userID, 1, 1000)
+		categories, _, err := deps.apiService.ListCategories(ctx, userID, 1, 1000)
 		if err != nil {
 			return nil, nil, err
 		}
@@ -442,7 +442,7 @@ func registerOrganisationTools(server *sdk.Server, deps *toolDeps) {
 			return nil, nil, err
 		}
 		base := strings.ToUpper(in.Base)
-		rates, err := deps.apiService.ListFiatRates(base)
+		rates, err := deps.apiService.ListFiatRates(ctx, base)
 		if err != nil {
 			return nil, nil, err
 		}
@@ -466,7 +466,7 @@ func registerOrganisationTools(server *sdk.Server, deps *toolDeps) {
 		if err := validate(in); err != nil {
 			return nil, nil, err
 		}
-		category, err := deps.apiService.CreateCategory(in, &userID)
+		category, err := deps.apiService.CreateCategory(ctx, in, &userID)
 		if err != nil {
 			return nil, nil, err
 		}
@@ -490,14 +490,14 @@ func registerOrganisationTools(server *sdk.Server, deps *toolDeps) {
 		if err := validate(in.UpdateCategory); err != nil {
 			return nil, nil, err
 		}
-		existing, err := deps.apiService.GetCategory(userID, in.ID)
+		existing, err := deps.apiService.GetCategory(ctx, userID, in.ID)
 		if err != nil {
 			return nil, nil, errors.New("category not found")
 		}
 		if !existing.CanEdit {
 			return nil, nil, errors.New("this category is a global preset and cannot be modified")
 		}
-		category, err := deps.apiService.UpdateCategory(in.UpdateCategory, userID, in.ID)
+		category, err := deps.apiService.UpdateCategory(ctx, in.UpdateCategory, userID, in.ID)
 		if err != nil {
 			return nil, nil, err
 		}
@@ -515,7 +515,7 @@ func registerOrganisationTools(server *sdk.Server, deps *toolDeps) {
 		if err := deps.requireEditor(userID); err != nil {
 			return nil, nil, err
 		}
-		if err := deps.apiService.DeleteCategory(userID, in.ID); err != nil {
+		if err := deps.apiService.DeleteCategory(ctx, userID, in.ID); err != nil {
 			return nil, nil, err
 		}
 		return nil, &deleteOutput{Deleted: true, ID: in.ID}, nil
@@ -535,7 +535,7 @@ func registerOrganisationTools(server *sdk.Server, deps *toolDeps) {
 		if err := deps.requireEditor(userID); err != nil {
 			return nil, nil, err
 		}
-		affected, err := deps.apiService.ReassignCategoryTransactions(userID, in.FromID, in.ToID)
+		affected, err := deps.apiService.ReassignCategoryTransactions(ctx, userID, in.FromID, in.ToID)
 		if err != nil {
 			return nil, nil, err
 		}
@@ -552,7 +552,7 @@ func registerOrganisationTools(server *sdk.Server, deps *toolDeps) {
 		if err != nil {
 			return nil, nil, err
 		}
-		currencies, err := deps.apiService.ListCurrencies(userID)
+		currencies, err := deps.apiService.ListCurrencies(ctx, userID)
 		if err != nil {
 			return nil, nil, err
 		}
@@ -583,7 +583,7 @@ func registerOrganisationTools(server *sdk.Server, deps *toolDeps) {
 		if err != nil {
 			return nil, nil, err
 		}
-		vats, err := deps.apiService.ListVats(userID)
+		vats, err := deps.apiService.ListVats(ctx, userID)
 		if err != nil {
 			return nil, nil, err
 		}
@@ -604,7 +604,7 @@ func registerOrganisationTools(server *sdk.Server, deps *toolDeps) {
 		if err := validate(in); err != nil {
 			return nil, nil, err
 		}
-		vat, err := deps.apiService.CreateVat(in, userID)
+		vat, err := deps.apiService.CreateVat(ctx, in, userID)
 		if err != nil {
 			return nil, nil, err
 		}
@@ -628,14 +628,14 @@ func registerOrganisationTools(server *sdk.Server, deps *toolDeps) {
 		if err := validate(in.UpdateVat); err != nil {
 			return nil, nil, err
 		}
-		existing, err := deps.apiService.GetVat(userID, in.ID)
+		existing, err := deps.apiService.GetVat(ctx, userID, in.ID)
 		if err != nil {
 			return nil, nil, errors.New("vat not found")
 		}
 		if !existing.CanEdit {
 			return nil, nil, errors.New("this VAT rate is global and cannot be modified")
 		}
-		vat, err := deps.apiService.UpdateVat(in.UpdateVat, userID, in.ID)
+		vat, err := deps.apiService.UpdateVat(ctx, in.UpdateVat, userID, in.ID)
 		if err != nil {
 			return nil, nil, err
 		}
@@ -653,14 +653,14 @@ func registerOrganisationTools(server *sdk.Server, deps *toolDeps) {
 		if err := deps.requireEditor(userID); err != nil {
 			return nil, nil, err
 		}
-		existing, err := deps.apiService.GetVat(userID, in.ID)
+		existing, err := deps.apiService.GetVat(ctx, userID, in.ID)
 		if err != nil {
 			return nil, nil, errors.New("vat not found")
 		}
 		if !existing.CanEdit {
 			return nil, nil, errors.New("this VAT rate is global and cannot be deleted")
 		}
-		if err := deps.apiService.DeleteVat(userID, in.ID); err != nil {
+		if err := deps.apiService.DeleteVat(ctx, userID, in.ID); err != nil {
 			return nil, nil, err
 		}
 		return nil, &deleteOutput{Deleted: true, ID: in.ID}, nil
@@ -683,7 +683,7 @@ func registerBankAccountTools(server *sdk.Server, deps *toolDeps) {
 		if in.Search != "" {
 			backendSearch, page, limit = "", 1, 10000
 		}
-		accounts, total, err := deps.apiService.ListBankAccounts(userID, page, limit, "name", "ASC", backendSearch)
+		accounts, total, err := deps.apiService.ListBankAccounts(ctx, userID, page, limit, "name", "ASC", backendSearch)
 		if err != nil {
 			return nil, nil, err
 		}
@@ -714,7 +714,7 @@ func registerBankAccountTools(server *sdk.Server, deps *toolDeps) {
 		if err := validate(in); err != nil {
 			return nil, nil, err
 		}
-		account, err := deps.apiService.CreateBankAccount(in, userID)
+		account, err := deps.apiService.CreateBankAccount(ctx, in, userID)
 		if err != nil {
 			return nil, nil, err
 		}
@@ -738,7 +738,7 @@ func registerBankAccountTools(server *sdk.Server, deps *toolDeps) {
 		if err := validate(in.UpdateBankAccount); err != nil {
 			return nil, nil, err
 		}
-		account, err := deps.apiService.UpdateBankAccount(in.UpdateBankAccount, userID, in.ID)
+		account, err := deps.apiService.UpdateBankAccount(ctx, in.UpdateBankAccount, userID, in.ID)
 		if err != nil {
 			return nil, nil, err
 		}
@@ -756,7 +756,7 @@ func registerBankAccountTools(server *sdk.Server, deps *toolDeps) {
 		if err := deps.requireEditor(userID); err != nil {
 			return nil, nil, err
 		}
-		if err := deps.apiService.DeleteBankAccount(userID, in.ID); err != nil {
+		if err := deps.apiService.DeleteBankAccount(ctx, userID, in.ID); err != nil {
 			return nil, nil, notFound(err, "bank account")
 		}
 		return nil, &deleteOutput{Deleted: true, ID: in.ID}, nil
@@ -812,7 +812,7 @@ func registerTransactionTools(server *sdk.Server, deps *toolDeps) {
 			page, limit = 1, 10000
 		}
 		backendSearch := ""
-		transactions, total, err := deps.apiService.ListTransactions(userID, page, limit, "name", "ASC", backendSearch, in.HideDisabled, in.HideExpired)
+		transactions, total, err := deps.apiService.ListTransactions(ctx, userID, page, limit, "name", "ASC", backendSearch, in.HideDisabled, in.HideExpired)
 		if err != nil {
 			return nil, nil, err
 		}
@@ -853,7 +853,7 @@ func registerTransactionTools(server *sdk.Server, deps *toolDeps) {
 		if err != nil {
 			return nil, nil, err
 		}
-		transaction, err := deps.apiService.GetTransaction(userID, in.ID)
+		transaction, err := deps.apiService.GetTransaction(ctx, userID, in.ID)
 		if err != nil {
 			return nil, nil, notFound(err, "transaction")
 		}
@@ -874,7 +874,7 @@ func registerTransactionTools(server *sdk.Server, deps *toolDeps) {
 		if err := validate(in); err != nil {
 			return nil, nil, err
 		}
-		transaction, err := deps.apiService.CreateTransaction(in, userID)
+		transaction, err := deps.apiService.CreateTransaction(ctx, in, userID)
 		if err != nil {
 			return nil, nil, err
 		}
@@ -898,7 +898,7 @@ func registerTransactionTools(server *sdk.Server, deps *toolDeps) {
 		if err := validate(in.UpdateTransaction); err != nil {
 			return nil, nil, err
 		}
-		transaction, err := deps.apiService.UpdateTransaction(in.UpdateTransaction, userID, in.ID)
+		transaction, err := deps.apiService.UpdateTransaction(ctx, in.UpdateTransaction, userID, in.ID)
 		if err != nil {
 			return nil, nil, err
 		}
@@ -916,7 +916,7 @@ func registerTransactionTools(server *sdk.Server, deps *toolDeps) {
 		if err := deps.requireEditor(userID); err != nil {
 			return nil, nil, err
 		}
-		if err := deps.apiService.DeleteTransaction(userID, in.ID); err != nil {
+		if err := deps.apiService.DeleteTransaction(ctx, userID, in.ID); err != nil {
 			return nil, nil, notFound(err, "transaction")
 		}
 		return nil, &deleteOutput{Deleted: true, ID: in.ID}, nil
@@ -944,7 +944,7 @@ func registerEmployeeTools(server *sdk.Server, deps *toolDeps) {
 		if in.Search != "" {
 			backendSearch, page, limit = "", 1, 10000
 		}
-		employees, total, err := deps.apiService.ListEmployees(userID, page, limit, "name", "ASC", backendSearch, in.HideTerminated)
+		employees, total, err := deps.apiService.ListEmployees(ctx, userID, page, limit, "name", "ASC", backendSearch, in.HideTerminated)
 		if err != nil {
 			return nil, nil, err
 		}
@@ -969,7 +969,7 @@ func registerEmployeeTools(server *sdk.Server, deps *toolDeps) {
 		if err != nil {
 			return nil, nil, err
 		}
-		employee, err := deps.apiService.GetEmployee(userID, in.ID)
+		employee, err := deps.apiService.GetEmployee(ctx, userID, in.ID)
 		if err != nil {
 			return nil, nil, notFound(err, "employee")
 		}
@@ -990,7 +990,7 @@ func registerEmployeeTools(server *sdk.Server, deps *toolDeps) {
 		if err := validate(in); err != nil {
 			return nil, nil, err
 		}
-		employee, err := deps.apiService.CreateEmployee(in, userID)
+		employee, err := deps.apiService.CreateEmployee(ctx, in, userID)
 		if err != nil {
 			return nil, nil, err
 		}
@@ -1014,7 +1014,7 @@ func registerEmployeeTools(server *sdk.Server, deps *toolDeps) {
 		if err := validate(in.UpdateEmployee); err != nil {
 			return nil, nil, err
 		}
-		employee, err := deps.apiService.UpdateEmployee(in.UpdateEmployee, userID, in.ID)
+		employee, err := deps.apiService.UpdateEmployee(ctx, in.UpdateEmployee, userID, in.ID)
 		if err != nil {
 			return nil, nil, err
 		}
@@ -1032,7 +1032,7 @@ func registerEmployeeTools(server *sdk.Server, deps *toolDeps) {
 		if err := deps.requireEditor(userID); err != nil {
 			return nil, nil, err
 		}
-		if err := deps.apiService.DeleteEmployee(userID, in.ID); err != nil {
+		if err := deps.apiService.DeleteEmployee(ctx, userID, in.ID); err != nil {
 			return nil, nil, notFound(err, "employee")
 		}
 		return nil, &deleteOutput{Deleted: true, ID: in.ID}, nil
@@ -1048,7 +1048,7 @@ func registerEmployeeTools(server *sdk.Server, deps *toolDeps) {
 		if err != nil {
 			return nil, nil, err
 		}
-		salaries, total, err := deps.apiService.ListSalaries(userID, in.EmployeeID, 1, 1000)
+		salaries, total, err := deps.apiService.ListSalaries(ctx, userID, in.EmployeeID, 1, 1000)
 		if err != nil {
 			return nil, nil, err
 		}
@@ -1063,7 +1063,7 @@ func registerEmployeeTools(server *sdk.Server, deps *toolDeps) {
 		if err != nil {
 			return nil, nil, err
 		}
-		salary, err := deps.apiService.GetSalary(userID, in.ID)
+		salary, err := deps.apiService.GetSalary(ctx, userID, in.ID)
 		if err != nil {
 			return nil, nil, notFound(err, "salary")
 		}
@@ -1087,7 +1087,7 @@ func registerEmployeeTools(server *sdk.Server, deps *toolDeps) {
 		if err := validate(in.CreateSalary); err != nil {
 			return nil, nil, err
 		}
-		salary, err := deps.apiService.CreateSalary(in.CreateSalary, userID, in.EmployeeID)
+		salary, err := deps.apiService.CreateSalary(ctx, in.CreateSalary, userID, in.EmployeeID)
 		if err != nil {
 			return nil, nil, err
 		}
@@ -1111,7 +1111,7 @@ func registerEmployeeTools(server *sdk.Server, deps *toolDeps) {
 		if err := validate(in.UpdateSalary); err != nil {
 			return nil, nil, err
 		}
-		salary, err := deps.apiService.UpdateSalary(in.UpdateSalary, userID, in.ID)
+		salary, err := deps.apiService.UpdateSalary(ctx, in.UpdateSalary, userID, in.ID)
 		if err != nil {
 			return nil, nil, err
 		}
@@ -1128,7 +1128,7 @@ func registerEmployeeTools(server *sdk.Server, deps *toolDeps) {
 		if err != nil {
 			return nil, nil, err
 		}
-		costs, total, err := deps.apiService.ListSalaryCosts(userID, in.SalaryID, 1, 1000, false)
+		costs, total, err := deps.apiService.ListSalaryCosts(ctx, userID, in.SalaryID, 1, 1000, false)
 		if err != nil {
 			return nil, nil, err
 		}
@@ -1163,7 +1163,7 @@ func registerEmployeeTools(server *sdk.Server, deps *toolDeps) {
 		if err := validateCostTargetDate(in.CreateSalaryCost); err != nil {
 			return nil, nil, err
 		}
-		cost, err := deps.apiService.CreateSalaryCost(in.CreateSalaryCost, userID, in.SalaryID)
+		cost, err := deps.apiService.CreateSalaryCost(ctx, in.CreateSalaryCost, userID, in.SalaryID)
 		if err != nil {
 			return nil, nil, notFound(err, "salary")
 		}
@@ -1190,7 +1190,7 @@ func registerEmployeeTools(server *sdk.Server, deps *toolDeps) {
 		if err := validateCostTargetDate(in.CreateSalaryCost); err != nil {
 			return nil, nil, err
 		}
-		cost, err := deps.apiService.UpdateSalaryCost(in.CreateSalaryCost, userID, in.ID)
+		cost, err := deps.apiService.UpdateSalaryCost(ctx, in.CreateSalaryCost, userID, in.ID)
 		if err != nil {
 			return nil, nil, notFound(err, "salary cost")
 		}
@@ -1208,7 +1208,7 @@ func registerEmployeeTools(server *sdk.Server, deps *toolDeps) {
 		if err := deps.requireEditor(userID); err != nil {
 			return nil, nil, err
 		}
-		if err := deps.apiService.DeleteSalaryCost(userID, in.ID); err != nil {
+		if err := deps.apiService.DeleteSalaryCost(ctx, userID, in.ID); err != nil {
 			return nil, nil, notFound(err, "salary cost")
 		}
 		return nil, &deleteOutput{Deleted: true, ID: in.ID}, nil
@@ -1231,10 +1231,10 @@ func registerEmployeeTools(server *sdk.Server, deps *toolDeps) {
 		if err := validate(in.CopySalaryCosts); err != nil {
 			return nil, nil, err
 		}
-		if err := deps.apiService.CopySalaryCosts(in.CopySalaryCosts, userID, in.SalaryID); err != nil {
+		if err := deps.apiService.CopySalaryCosts(ctx, in.CopySalaryCosts, userID, in.SalaryID); err != nil {
 			return nil, nil, err
 		}
-		costs, total, err := deps.apiService.ListSalaryCosts(userID, in.SalaryID, 1, 1000, false)
+		costs, total, err := deps.apiService.ListSalaryCosts(ctx, userID, in.SalaryID, 1, 1000, false)
 		if err != nil {
 			return nil, nil, err
 		}
@@ -1255,7 +1255,7 @@ func registerEmployeeTools(server *sdk.Server, deps *toolDeps) {
 		if err := deps.requireEditor(userID); err != nil {
 			return nil, nil, err
 		}
-		source, err := deps.apiService.GetSalary(userID, in.ID)
+		source, err := deps.apiService.GetSalary(ctx, userID, in.ID)
 		if err != nil {
 			return nil, nil, notFound(err, "salary")
 		}
@@ -1273,11 +1273,11 @@ func registerEmployeeTools(server *sdk.Server, deps *toolDeps) {
 		if err := validate(payload); err != nil {
 			return nil, nil, err
 		}
-		salary, err := deps.apiService.CreateSalary(payload, userID, source.EmployeeID)
+		salary, err := deps.apiService.CreateSalary(ctx, payload, userID, source.EmployeeID)
 		if err != nil {
 			return nil, nil, err
 		}
-		if err := deps.apiService.CopySalaryCosts(models.CopySalaryCosts{
+		if err := deps.apiService.CopySalaryCosts(ctx, models.CopySalaryCosts{
 			SourceSalaryID: &in.ID,
 		}, userID, salary.ID); err != nil {
 			return nil, nil, fmt.Errorf("salary created (id %d) but copying costs failed: %w", salary.ID, err)
@@ -1295,7 +1295,7 @@ func registerEmployeeTools(server *sdk.Server, deps *toolDeps) {
 		if err != nil {
 			return nil, nil, err
 		}
-		labels, _, err := deps.apiService.ListSalaryCostLabels(userID, 1, 1000)
+		labels, _, err := deps.apiService.ListSalaryCostLabels(ctx, userID, 1, 1000)
 		if err != nil {
 			return nil, nil, err
 		}
@@ -1323,7 +1323,7 @@ func registerEmployeeTools(server *sdk.Server, deps *toolDeps) {
 		if err := validate(in); err != nil {
 			return nil, nil, err
 		}
-		label, err := deps.apiService.CreateSalaryCostLabel(in, userID)
+		label, err := deps.apiService.CreateSalaryCostLabel(ctx, in, userID)
 		if err != nil {
 			return nil, nil, err
 		}
@@ -1348,7 +1348,7 @@ func registerEmployeeTools(server *sdk.Server, deps *toolDeps) {
 		if err := validate(payload); err != nil {
 			return nil, nil, err
 		}
-		label, err := deps.apiService.UpdateSalaryCostLabel(payload, userID, in.ID)
+		label, err := deps.apiService.UpdateSalaryCostLabel(ctx, payload, userID, in.ID)
 		if err != nil {
 			return nil, nil, err
 		}
@@ -1366,7 +1366,7 @@ func registerEmployeeTools(server *sdk.Server, deps *toolDeps) {
 		if err := deps.requireEditor(userID); err != nil {
 			return nil, nil, err
 		}
-		if err := deps.apiService.DeleteSalaryCostLabel(userID, in.ID); err != nil {
+		if err := deps.apiService.DeleteSalaryCostLabel(ctx, userID, in.ID); err != nil {
 			return nil, nil, err
 		}
 		return nil, &deleteOutput{Deleted: true, ID: in.ID}, nil
@@ -1383,7 +1383,7 @@ func registerEmployeeTools(server *sdk.Server, deps *toolDeps) {
 		if err := deps.requireEditor(userID); err != nil {
 			return nil, nil, err
 		}
-		if err := deps.apiService.DeleteSalary(userID, in.ID); err != nil {
+		if err := deps.apiService.DeleteSalary(ctx, userID, in.ID); err != nil {
 			return nil, nil, notFound(err, "salary")
 		}
 		return nil, &deleteOutput{Deleted: true, ID: in.ID}, nil
@@ -1414,17 +1414,17 @@ func registerForecastTools(server *sdk.Server, deps *toolDeps) {
 			months = int64(utils.MaxForecastYears) * 12
 		}
 
-		if _, err := deps.apiService.CalculateForecast(userID); err != nil {
+		if _, err := deps.apiService.CalculateForecast(ctx, userID); err != nil {
 			return nil, nil, fmt.Errorf("forecast calculation failed: %w", err)
 		}
-		forecasts, err := deps.apiService.ListForecasts(userID, months)
+		forecasts, err := deps.apiService.ListForecasts(ctx, userID, months)
 		if err != nil {
 			return nil, nil, err
 		}
 
 		result := map[string]any{"months": forecasts}
 		if in.IncludeDetails {
-			details, err := deps.apiService.ListForecastDetails(userID, months)
+			details, err := deps.apiService.ListForecastDetails(ctx, userID, months)
 			if err != nil {
 				return nil, nil, err
 			}
@@ -1447,7 +1447,7 @@ func registerForecastTools(server *sdk.Server, deps *toolDeps) {
 		if err := validate(in); err != nil {
 			return nil, nil, err
 		}
-		if err := deps.apiService.UpdateForecastExclusions(in, userID); err != nil {
+		if err := deps.apiService.UpdateForecastExclusions(ctx, in, userID); err != nil {
 			return nil, nil, err
 		}
 		return nil, map[string]any{"updated": len(in.Updates)}, nil
@@ -1464,7 +1464,7 @@ func registerForecastTools(server *sdk.Server, deps *toolDeps) {
 		if err != nil {
 			return nil, nil, err
 		}
-		exclusions, err := deps.apiService.ListAllForecastExclusions(userID)
+		exclusions, err := deps.apiService.ListAllForecastExclusions(ctx, userID)
 		if err != nil {
 			return nil, nil, err
 		}
@@ -1492,7 +1492,7 @@ func registerForecastTools(server *sdk.Server, deps *toolDeps) {
 		if err != nil {
 			return nil, nil, err
 		}
-		setting, err := deps.apiService.GetUserOrganisationSetting(userID)
+		setting, err := deps.apiService.GetUserOrganisationSetting(ctx, userID)
 		if err != nil {
 			return nil, nil, err
 		}
@@ -1520,7 +1520,7 @@ func registerForecastTools(server *sdk.Server, deps *toolDeps) {
 		if err := validate(payload); err != nil {
 			return nil, nil, err
 		}
-		setting, err := deps.apiService.UpdateUserOrganisationSetting(payload, userID)
+		setting, err := deps.apiService.UpdateUserOrganisationSetting(ctx, payload, userID)
 		if err != nil {
 			return nil, nil, err
 		}

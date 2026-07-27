@@ -1,6 +1,7 @@
 package api_service_test
 
 import (
+	"context"
 	"errors"
 	"testing"
 	"time"
@@ -152,7 +153,7 @@ func TestCalculateForecast_SkipsDisabledTransactions(t *testing.T) {
 			}, nil
 		})
 
-	results, err := service.CalculateForecast(userID)
+	results, err := service.CalculateForecast(context.Background(), userID)
 	require.NoError(t, err)
 
 	require.Equal(t, enabledStart.Format("2006-01"), capturedForecast.Month)
@@ -313,7 +314,7 @@ func TestCalculateForecast_SkipsDisabledSalariesOnly(t *testing.T) {
 			}, nil
 		})
 
-	results, err := service.CalculateForecast(userID)
+	results, err := service.CalculateForecast(context.Background(), userID)
 	require.NoError(t, err)
 
 	require.Equal(t, activeFrom.Format("2006-01"), capturedForecast.Month)
@@ -493,7 +494,7 @@ func TestCalculateForecast_CountsBothSalaryCostsTwice(t *testing.T) {
 			}, nil
 		})
 
-	results, err := service.CalculateForecast(userID)
+	results, err := service.CalculateForecast(context.Background(), userID)
 	require.NoError(t, err)
 
 	expectedExpense := -int64(grossAmount) - int64(bothShare*2)
@@ -547,7 +548,7 @@ func TestUpdateForecastExclusions_Success(t *testing.T) {
 			Return(int64(1), nil),
 	)
 
-	err := service.UpdateForecastExclusions(payload, userID)
+	err := service.UpdateForecastExclusions(context.Background(), payload, userID)
 	require.NoError(t, err)
 }
 
@@ -581,6 +582,6 @@ func TestUpdateForecastExclusions_PropagatesError(t *testing.T) {
 		}, userID).
 		Return(int64(0), expectedErr)
 
-	err := service.UpdateForecastExclusions(payload, userID)
+	err := service.UpdateForecastExclusions(context.Background(), payload, userID)
 	require.ErrorIs(t, err, expectedErr)
 }

@@ -30,7 +30,7 @@ func ListCategories(apiServce api_service.IAPIService, c *gin.Context) {
 	}
 
 	// Action
-	categories, totalCount, err := apiServce.ListCategories(userID, page, limit)
+	categories, totalCount, err := apiServce.ListCategories(c.Request.Context(), userID, page, limit)
 	if err != nil {
 		c.Status(http.StatusInternalServerError)
 		return
@@ -57,7 +57,7 @@ func GetCategory(apiService api_service.IAPIService, c *gin.Context) {
 	}
 
 	// Action
-	category, err := apiService.GetCategory(userID, categoryID)
+	category, err := apiService.GetCategory(c.Request.Context(), userID, categoryID)
 	if err != nil {
 		c.Status(http.StatusInternalServerError)
 		return
@@ -86,7 +86,7 @@ func CreateCategory(apiService api_service.IAPIService, c *gin.Context) {
 	}
 
 	// Action
-	category, err := apiService.CreateCategory(payload, &userID)
+	category, err := apiService.CreateCategory(c.Request.Context(), payload, &userID)
 	if err != nil {
 		c.Status(http.StatusInternalServerError)
 		return
@@ -120,7 +120,7 @@ func UpdateCategory(apiService api_service.IAPIService, c *gin.Context) {
 	}
 
 	// Action
-	category, err := apiService.UpdateCategory(payload, userID, categoryID)
+	category, err := apiService.UpdateCategory(c.Request.Context(), payload, userID, categoryID)
 	if err != nil {
 		c.Status(http.StatusInternalServerError)
 		return
@@ -154,7 +154,7 @@ func ReassignCategory(apiService api_service.IAPIService, c *gin.Context) {
 		return
 	}
 
-	affected, err := apiService.ReassignCategoryTransactions(userID, categoryID, payload.TargetID)
+	affected, err := apiService.ReassignCategoryTransactions(c.Request.Context(), userID, categoryID, payload.TargetID)
 	if err != nil {
 		c.Status(http.StatusInternalServerError)
 		return
@@ -176,7 +176,7 @@ func DeleteCategory(apiService api_service.IAPIService, c *gin.Context) {
 	}
 
 	// Action
-	if err := apiService.DeleteCategory(userID, categoryID); err != nil {
+	if err := apiService.DeleteCategory(c.Request.Context(), userID, categoryID); err != nil {
 		switch {
 		case errors.Is(err, api_service.ErrCategoryInUse):
 			c.JSON(http.StatusConflict, gin.H{"error": "Diese Kategorie wird noch von Transaktionen verwendet und kann nicht gelöscht werden"})

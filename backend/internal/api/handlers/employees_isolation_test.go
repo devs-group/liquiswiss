@@ -1,6 +1,7 @@
 package handlers_test
 
 import (
+	"context"
 	"testing"
 
 	"github.com/stretchr/testify/require"
@@ -25,7 +26,7 @@ func TestListEmployees_CrossOrgIsolation(t *testing.T) {
 	require.NoError(t, err)
 
 	// User A should only see their own employees
-	employeesA, totalA, err := env.APIService.ListEmployees(env.UserA.ID, 1, 100, "name", "ASC", "", false)
+	employeesA, totalA, err := env.APIService.ListEmployees(context.Background(), env.UserA.ID, 1, 100, "name", "ASC", "", false)
 	require.NoError(t, err)
 	require.Equal(t, int64(2), totalA)
 	require.Len(t, employeesA, 2)
@@ -36,7 +37,7 @@ func TestListEmployees_CrossOrgIsolation(t *testing.T) {
 	require.NotContains(t, employeeIDs, employeeB1.ID)
 
 	// User B should only see their own employees
-	employeesB, totalB, err := env.APIService.ListEmployees(env.UserB.ID, 1, 100, "name", "ASC", "", false)
+	employeesB, totalB, err := env.APIService.ListEmployees(context.Background(), env.UserB.ID, 1, 100, "name", "ASC", "", false)
 	require.NoError(t, err)
 	require.Equal(t, int64(1), totalB)
 	require.Len(t, employeesB, 1)
@@ -54,13 +55,13 @@ func TestGetEmployee_CrossOrgIsolation(t *testing.T) {
 	require.NoError(t, err)
 
 	// User A can get their own employee
-	fetchedEmployee, err := env.APIService.GetEmployee(env.UserA.ID, employeeA.ID)
+	fetchedEmployee, err := env.APIService.GetEmployee(context.Background(), env.UserA.ID, employeeA.ID)
 	require.NoError(t, err)
 	require.Equal(t, employeeA.ID, fetchedEmployee.ID)
 	require.Equal(t, "Employee A", fetchedEmployee.Name)
 
 	// User B cannot get User A's employee (should return an error)
-	_, err = env.APIService.GetEmployee(env.UserB.ID, employeeA.ID)
+	_, err = env.APIService.GetEmployee(context.Background(), env.UserB.ID, employeeA.ID)
 	require.Error(t, err)
 }
 
@@ -82,7 +83,7 @@ func TestUpdateEmployee_CrossOrgIsolation(t *testing.T) {
 	require.NoError(t, err)
 
 	// Verify the update worked
-	updatedEmployee, err := env.APIService.GetEmployee(env.UserA.ID, employeeA.ID)
+	updatedEmployee, err := env.APIService.GetEmployee(context.Background(), env.UserA.ID, employeeA.ID)
 	require.NoError(t, err)
 	require.Equal(t, "Employee A Updated By A", updatedEmployee.Name)
 
@@ -95,7 +96,7 @@ func TestUpdateEmployee_CrossOrgIsolation(t *testing.T) {
 	// We need to verify the employee was NOT actually updated
 
 	// Verify Employee A's name was NOT changed by User B
-	employeeAfterAttempt, err := env.APIService.GetEmployee(env.UserA.ID, employeeA.ID)
+	employeeAfterAttempt, err := env.APIService.GetEmployee(context.Background(), env.UserA.ID, employeeA.ID)
 	require.NoError(t, err)
 	require.Equal(t, "Employee A Updated By A", employeeAfterAttempt.Name)
 	require.NotEqual(t, "Hacked By B", employeeAfterAttempt.Name)
@@ -116,7 +117,7 @@ func TestDeleteEmployee_CrossOrgIsolation(t *testing.T) {
 	// The delete should not return an error but should affect 0 rows
 
 	// Verify Employee A still exists and was NOT deleted
-	employeeAfterDelete, err := env.APIService.GetEmployee(env.UserA.ID, employeeA.ID)
+	employeeAfterDelete, err := env.APIService.GetEmployee(context.Background(), env.UserA.ID, employeeA.ID)
 	require.NoError(t, err)
 	require.NotNil(t, employeeAfterDelete)
 	require.Equal(t, employeeA.ID, employeeAfterDelete.ID)
@@ -126,6 +127,6 @@ func TestDeleteEmployee_CrossOrgIsolation(t *testing.T) {
 	require.NoError(t, err)
 
 	// Verify Employee A is now deleted
-	_, err = env.APIService.GetEmployee(env.UserA.ID, employeeA.ID)
+	_, err = env.APIService.GetEmployee(context.Background(), env.UserA.ID, employeeA.ID)
 	require.Error(t, err)
 }

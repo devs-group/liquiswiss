@@ -1,6 +1,7 @@
 package handlers_test
 
 import (
+	"context"
 	"database/sql"
 	"testing"
 	"time"
@@ -41,7 +42,7 @@ func TestCreateInvitation_Success(t *testing.T) {
 	conn, apiService, _, user, org := setupInvitationDependencies(t)
 	defer conn.Close()
 
-	invitation, err := apiService.CreateOrganisationInvitation(models.CreateInvitation{
+	invitation, err := apiService.CreateOrganisationInvitation(context.Background(), models.CreateInvitation{
 		Email: "newuser@test.com",
 		Role:  "editor",
 	}, user.ID, org.ID)
@@ -66,7 +67,7 @@ func TestCreateInvitation_AlreadyMember(t *testing.T) {
 	require.NoError(t, err)
 
 	// Try to invite the existing member
-	_, err = apiService.CreateOrganisationInvitation(models.CreateInvitation{
+	_, err = apiService.CreateOrganisationInvitation(context.Background(), models.CreateInvitation{
 		Email: "member@test.com",
 		Role:  "editor",
 	}, user.ID, org.ID)
@@ -90,7 +91,7 @@ func TestCreateInvitation_NonOwnerCannotInvite(t *testing.T) {
 	require.NoError(t, err)
 
 	// Try to invite as read-only member
-	_, err = apiService.CreateOrganisationInvitation(models.CreateInvitation{
+	_, err = apiService.CreateOrganisationInvitation(context.Background(), models.CreateInvitation{
 		Email: "newuser@test.com",
 		Role:  "editor",
 	}, memberID, org.ID)
@@ -114,7 +115,7 @@ func TestCreateInvitation_AdminCanInvite(t *testing.T) {
 	require.NoError(t, err)
 
 	// Admin should be able to invite; empty SMTP host -> no email send, no error
-	_, err = apiService.CreateOrganisationInvitation(models.CreateInvitation{
+	_, err = apiService.CreateOrganisationInvitation(context.Background(), models.CreateInvitation{
 		Email: "newuser@test.com",
 		Role:  "editor",
 	}, adminID, org.ID)
@@ -137,7 +138,7 @@ func TestListInvitations_OwnerCanList(t *testing.T) {
 	require.NoError(t, err)
 
 	// List invitations
-	invitations, err := apiService.ListOrganisationInvitations(user.ID, org.ID)
+	invitations, err := apiService.ListOrganisationInvitations(context.Background(), user.ID, org.ID)
 	require.NoError(t, err)
 	require.Len(t, invitations, 2)
 }
@@ -163,7 +164,7 @@ func TestListInvitations_AdminCanList(t *testing.T) {
 	require.NoError(t, err)
 
 	// Admin should be able to list
-	invitations, err := apiService.ListOrganisationInvitations(adminID, org.ID)
+	invitations, err := apiService.ListOrganisationInvitations(context.Background(), adminID, org.ID)
 	require.NoError(t, err)
 	require.Len(t, invitations, 1)
 }
@@ -183,7 +184,7 @@ func TestListInvitations_EditorCannotList(t *testing.T) {
 	require.NoError(t, err)
 
 	// Editor should not be able to list
-	_, err = apiService.ListOrganisationInvitations(editorID, org.ID)
+	_, err = apiService.ListOrganisationInvitations(context.Background(), editorID, org.ID)
 	require.Error(t, err)
 	require.Contains(t, err.Error(), "permission denied")
 }
@@ -199,11 +200,11 @@ func TestDeleteInvitation_Success(t *testing.T) {
 	require.NoError(t, err)
 
 	// Delete the invitation
-	err = apiService.DeleteOrganisationInvitation(user.ID, org.ID, invitationID)
+	err = apiService.DeleteOrganisationInvitation(context.Background(), user.ID, org.ID, invitationID)
 	require.NoError(t, err)
 
 	// Verify it's deleted
-	invitations, err := apiService.ListOrganisationInvitations(user.ID, org.ID)
+	invitations, err := apiService.ListOrganisationInvitations(context.Background(), user.ID, org.ID)
 	require.NoError(t, err)
 	require.Len(t, invitations, 0)
 }
@@ -229,7 +230,7 @@ func TestDeleteInvitation_NonOwnerCannotDelete(t *testing.T) {
 	require.NoError(t, err)
 
 	// Editor should not be able to delete
-	err = apiService.DeleteOrganisationInvitation(editorID, org.ID, invitationID)
+	err = apiService.DeleteOrganisationInvitation(context.Background(), editorID, org.ID, invitationID)
 	require.Error(t, err)
 	require.Contains(t, err.Error(), "permission denied")
 }
@@ -251,7 +252,7 @@ func TestResendOrganisationInvitation_AntiSpamWindow(t *testing.T) {
 	require.NoError(t, err)
 
 	// Resend immediately should be blocked by the anti-spam window.
-	err = apiService.ResendOrganisationInvitation(user.ID, org.ID, invitationID)
+	err = apiService.ResendOrganisationInvitation(context.Background(), user.ID, org.ID, invitationID)
 	require.Error(t, err)
 	require.Contains(t, err.Error(), "warten", "expected German anti-spam message containing 'warten'")
 
@@ -281,7 +282,7 @@ func TestResendOrganisationInvitation_UpdatesLastSentAtAfterDelay(t *testing.T) 
 	require.NoError(t, err)
 
 	// Resend should succeed and advance last_sent_at to "now".
-	err = apiService.ResendOrganisationInvitation(user.ID, org.ID, invitationID)
+	err = apiService.ResendOrganisationInvitation(context.Background(), user.ID, org.ID, invitationID)
 	require.NoError(t, err)
 
 	after, err := dbAdapter.GetInvitationByID(org.ID, invitationID)
@@ -301,7 +302,7 @@ func TestCheckInvitation_ValidToken(t *testing.T) {
 	require.NoError(t, err)
 
 	// Check the invitation
-	response, err := apiService.CheckInvitation(token)
+	response, err := apiService.CheckInvitation(context.Background(), token)
 	require.NoError(t, err)
 	require.Equal(t, "check@test.com", response.Email)
 	require.Equal(t, org.Name, response.OrganisationName)
@@ -319,7 +320,7 @@ func TestCheckInvitation_ExpiredToken(t *testing.T) {
 	require.NoError(t, err)
 
 	// Check the invitation - should fail
-	_, err = apiService.CheckInvitation(token)
+	_, err = apiService.CheckInvitation(context.Background(), token)
 	require.Error(t, err)
 	require.Contains(t, err.Error(), "expired")
 }
@@ -329,7 +330,7 @@ func TestCheckInvitation_InvalidToken(t *testing.T) {
 	defer conn.Close()
 
 	// Check non-existent token
-	_, err := apiService.CheckInvitation("non-existent-token")
+	_, err := apiService.CheckInvitation(context.Background(), "non-existent-token")
 	require.Error(t, err)
 }
 
@@ -348,7 +349,7 @@ func TestCheckInvitation_ExistingUser(t *testing.T) {
 	require.NoError(t, err)
 
 	// Check the invitation
-	response, err := apiService.CheckInvitation(token)
+	response, err := apiService.CheckInvitation(context.Background(), token)
 	require.NoError(t, err)
 	require.Equal(t, "existing@test.com", response.Email)
 	require.True(t, response.ExistingUser)
@@ -366,7 +367,7 @@ func TestAcceptInvitation_NewUser(t *testing.T) {
 
 	// Accept the invitation with password
 	password := "SecurePassword123"
-	acceptedUser, accessToken, _, refreshToken, _, err := apiService.AcceptInvitation(models.AcceptInvitation{
+	acceptedUser, accessToken, _, refreshToken, _, err := apiService.AcceptInvitation(context.Background(), models.AcceptInvitation{
 		Token:    token,
 		Password: &password,
 	}, "Test Device", 0)
@@ -378,7 +379,7 @@ func TestAcceptInvitation_NewUser(t *testing.T) {
 	require.NotNil(t, refreshToken)
 
 	// Verify user is now a member of the organisation
-	members, err := apiService.ListOrganisationMembers(user.ID, org.ID)
+	members, err := apiService.ListOrganisationMembers(context.Background(), user.ID, org.ID)
 	require.NoError(t, err)
 
 	found := false
@@ -392,7 +393,7 @@ func TestAcceptInvitation_NewUser(t *testing.T) {
 	require.True(t, found, "New user should be a member of the organisation")
 
 	// Verify new user also got a personal default organisation, mirroring FinishRegistration.
-	orgs, _, err := apiService.ListOrganisations(acceptedUser.ID, 1, 50)
+	orgs, _, err := apiService.ListOrganisations(context.Background(), acceptedUser.ID, 1, 50)
 	require.NoError(t, err)
 
 	var defaultOrg *models.Organisation
@@ -418,7 +419,7 @@ func TestAcceptInvitation_ExistingUser(t *testing.T) {
 	require.NoError(t, err)
 
 	// Create a different org for them
-	existingOrg, err := apiService.CreateOrganisation(models.CreateOrganisation{
+	existingOrg, err := apiService.CreateOrganisation(context.Background(), models.CreateOrganisation{
 		Name: "Existing User Org",
 	}, existingUserID)
 	require.NoError(t, err)
@@ -434,7 +435,7 @@ func TestAcceptInvitation_ExistingUser(t *testing.T) {
 
 	// Accept the invitation with correct password
 	plainPassword := "password"
-	acceptedUser, accessToken, _, refreshToken, _, err := apiService.AcceptInvitation(models.AcceptInvitation{
+	acceptedUser, accessToken, _, refreshToken, _, err := apiService.AcceptInvitation(context.Background(), models.AcceptInvitation{
 		Token:    token,
 		Password: &plainPassword,
 	}, "Test Device", 0)
@@ -446,7 +447,7 @@ func TestAcceptInvitation_ExistingUser(t *testing.T) {
 	require.NotNil(t, refreshToken)
 
 	// Verify user is now a member of the new organisation
-	members, err := apiService.ListOrganisationMembers(user.ID, org.ID)
+	members, err := apiService.ListOrganisationMembers(context.Background(), user.ID, org.ID)
 	require.NoError(t, err)
 
 	found := false
@@ -474,7 +475,7 @@ func TestAcceptInvitation_ExistingUserWithoutPassword(t *testing.T) {
 	_, err = dbAdapter.CreateInvitation(org.ID, "existing-no-pw@test.com", "admin", token, user.ID, expiresAt)
 	require.NoError(t, err)
 
-	_, _, _, _, _, err = apiService.AcceptInvitation(models.AcceptInvitation{
+	_, _, _, _, _, err = apiService.AcceptInvitation(context.Background(), models.AcceptInvitation{
 		Token: token,
 	}, "Test Device", 0)
 	require.Error(t, err)
@@ -496,7 +497,7 @@ func TestAcceptInvitation_ExistingUserWrongPassword(t *testing.T) {
 	require.NoError(t, err)
 
 	wrongPassword := "wrong-password"
-	_, _, _, _, _, err = apiService.AcceptInvitation(models.AcceptInvitation{
+	_, _, _, _, _, err = apiService.AcceptInvitation(context.Background(), models.AcceptInvitation{
 		Token:    token,
 		Password: &wrongPassword,
 	}, "Test Device", 0)
@@ -518,7 +519,7 @@ func TestAcceptInvitation_AuthenticatedExistingUserSkipsPassword(t *testing.T) {
 	_, err = dbAdapter.CreateInvitation(org.ID, "authuser@test.com", "admin", token, user.ID, expiresAt)
 	require.NoError(t, err)
 
-	acceptedUser, accessToken, _, refreshToken, _, err := apiService.AcceptInvitation(models.AcceptInvitation{
+	acceptedUser, accessToken, _, refreshToken, _, err := apiService.AcceptInvitation(context.Background(), models.AcceptInvitation{
 		Token: token,
 	}, "Test Device", existingUserID)
 	require.NoError(t, err)
@@ -543,7 +544,7 @@ func TestAcceptInvitation_AuthenticatedDifferentUserRequiresPassword(t *testing.
 	require.NoError(t, err)
 
 	// Different authenticated userID must not bypass password check.
-	_, _, _, _, _, err = apiService.AcceptInvitation(models.AcceptInvitation{
+	_, _, _, _, _, err = apiService.AcceptInvitation(context.Background(), models.AcceptInvitation{
 		Token: token,
 	}, "Test Device", user.ID)
 	require.Error(t, err)
@@ -561,7 +562,7 @@ func TestAcceptInvitation_NewUserWithoutPassword(t *testing.T) {
 	require.NoError(t, err)
 
 	// Try to accept without password - should fail for new user
-	_, _, _, _, _, err = apiService.AcceptInvitation(models.AcceptInvitation{
+	_, _, _, _, _, err = apiService.AcceptInvitation(context.Background(), models.AcceptInvitation{
 		Token: token,
 	}, "Test Device", 0)
 	require.Error(t, err)
@@ -579,7 +580,7 @@ func TestAcceptInvitation_ExpiredToken(t *testing.T) {
 	require.NoError(t, err)
 
 	password := "SecurePassword123"
-	_, _, _, _, _, err = apiService.AcceptInvitation(models.AcceptInvitation{
+	_, _, _, _, _, err = apiService.AcceptInvitation(context.Background(), models.AcceptInvitation{
 		Token:    token,
 		Password: &password,
 	}, "Test Device", 0)
@@ -592,7 +593,7 @@ func TestAcceptInvitation_InvalidToken(t *testing.T) {
 	defer conn.Close()
 
 	password := "SecurePassword123"
-	_, _, _, _, _, err := apiService.AcceptInvitation(models.AcceptInvitation{
+	_, _, _, _, _, err := apiService.AcceptInvitation(context.Background(), models.AcceptInvitation{
 		Token:    "invalid-token",
 		Password: &password,
 	}, "Test Device", 0)

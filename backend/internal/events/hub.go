@@ -22,6 +22,13 @@ type Event struct {
 	ParentID int64 `json:"parentId,omitempty"`
 	// OrganisationID is used server-side for delivery filtering and is not serialized
 	OrganisationID int64 `json:"-"`
+	// Origin identifies who caused the change (user + browser tab). Used
+	// server-side to compute Own per connection; never serialized to clients.
+	OriginUserID   int64  `json:"-"`
+	OriginClientID string `json:"-"`
+	// Own is set at delivery time per connection: true when this exact
+	// connection (user + client id) caused the change
+	Own bool `json:"own"`
 }
 
 // subscriberBuffer bounds the per-connection channel; slow consumers miss

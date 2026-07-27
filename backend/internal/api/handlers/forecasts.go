@@ -24,7 +24,7 @@ func ListForecasts(apiService api_service.IAPIService, c *gin.Context) {
 	}
 
 	// Action
-	forecasts, err := apiService.ListForecasts(userID, limit)
+	forecasts, err := apiService.ListForecasts(c.Request.Context(), userID, limit)
 	if err != nil {
 		c.Status(http.StatusInternalServerError)
 		return
@@ -48,7 +48,7 @@ func ListForecastDetails(apiService api_service.IAPIService, c *gin.Context) {
 	}
 
 	// Action
-	forecastDetails, err := apiService.ListForecastDetails(userID, limit)
+	forecastDetails, err := apiService.ListForecastDetails(c.Request.Context(), userID, limit)
 	if err != nil {
 		c.Status(http.StatusInternalServerError)
 		return
@@ -67,7 +67,7 @@ func CalculateForecasts(apiService api_service.IAPIService, c *gin.Context) {
 	}
 
 	// Action
-	foreCasts, err := apiService.CalculateForecast(userID)
+	foreCasts, err := apiService.CalculateForecast(c.Request.Context(), userID)
 	if err != nil {
 		c.Status(http.StatusInternalServerError)
 		return
@@ -96,7 +96,7 @@ func ListForecastExclusions(apiService api_service.IAPIService, c *gin.Context) 
 	}
 
 	// Action
-	forecastExclusions, err := apiService.ListForecastExclusions(userID, relatedID, relatedTable)
+	forecastExclusions, err := apiService.ListForecastExclusions(c.Request.Context(), userID, relatedID, relatedTable)
 	if err != nil {
 		c.Status(http.StatusInternalServerError)
 		return
@@ -125,7 +125,7 @@ func CreateForecastExclusion(apiService api_service.IAPIService, c *gin.Context)
 	}
 
 	// Action
-	_, err := apiService.CreateForecastExclusion(payload, userID)
+	_, err := apiService.CreateForecastExclusion(c.Request.Context(), payload, userID)
 	if err != nil {
 		switch err {
 		case sql.ErrNoRows:
@@ -162,7 +162,7 @@ func UpdateForecastExclusions(apiService api_service.IAPIService, c *gin.Context
 		return
 	}
 
-	if err := apiService.UpdateForecastExclusions(payload, userID); err != nil {
+	if err := apiService.UpdateForecastExclusions(c.Request.Context(), payload, userID); err != nil {
 		switch err {
 		case sql.ErrNoRows:
 			c.Status(http.StatusNotFound)
@@ -195,7 +195,7 @@ func DeleteForecastExclusion(apiService api_service.IAPIService, c *gin.Context)
 	}
 
 	// Action
-	_, err := apiService.DeleteForecastExclusion(payload, userID)
+	_, err := apiService.DeleteForecastExclusion(c.Request.Context(), payload, userID)
 	if err != nil {
 		c.Status(http.StatusInternalServerError)
 		return

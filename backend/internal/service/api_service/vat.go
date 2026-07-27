@@ -1,13 +1,14 @@
 package api_service
 
 import (
+	"context"
 	"liquiswiss/internal/events"
 	"liquiswiss/pkg/logger"
 	"liquiswiss/pkg/models"
 	"liquiswiss/pkg/utils"
 )
 
-func (a *APIService) ListVats(userID int64) ([]models.Vat, error) {
+func (a *APIService) ListVats(ctx context.Context, userID int64) ([]models.Vat, error) {
 	vats, err := a.dbService.ListVats(userID)
 	if err != nil {
 		logger.Logger.Error(err)
@@ -21,7 +22,7 @@ func (a *APIService) ListVats(userID int64) ([]models.Vat, error) {
 	return vats, nil
 }
 
-func (a *APIService) GetVat(userID int64, vatID int64) (*models.Vat, error) {
+func (a *APIService) GetVat(ctx context.Context, userID int64, vatID int64) (*models.Vat, error) {
 	vat, err := a.dbService.GetVat(userID, vatID)
 	if err != nil {
 		logger.Logger.Error(err)
@@ -35,7 +36,7 @@ func (a *APIService) GetVat(userID int64, vatID int64) (*models.Vat, error) {
 	return vat, nil
 }
 
-func (a *APIService) CreateVat(payload models.CreateVat, userID int64) (*models.Vat, error) {
+func (a *APIService) CreateVat(ctx context.Context, payload models.CreateVat, userID int64) (*models.Vat, error) {
 	vatID, err := a.dbService.CreateVat(payload, userID)
 	if err != nil {
 		logger.Logger.Error(err)
@@ -51,11 +52,11 @@ func (a *APIService) CreateVat(payload models.CreateVat, userID int64) (*models.
 		logger.Logger.Error(err)
 		return nil, err
 	}
-	a.notifyChange(userID, "vat", events.ActionCreated, vatID)
+	a.notifyChange(ctx, userID, "vat", events.ActionCreated, vatID)
 	return vat, nil
 }
 
-func (a *APIService) UpdateVat(payload models.UpdateVat, userID int64, vatID int64) (*models.Vat, error) {
+func (a *APIService) UpdateVat(ctx context.Context, payload models.UpdateVat, userID int64, vatID int64) (*models.Vat, error) {
 	_, err := a.dbService.GetVat(userID, vatID)
 	if err != nil {
 		logger.Logger.Error(err)
@@ -76,11 +77,11 @@ func (a *APIService) UpdateVat(payload models.UpdateVat, userID int64, vatID int
 		logger.Logger.Error(err)
 		return nil, err
 	}
-	a.notifyChange(userID, "vat", events.ActionUpdated, vatID)
+	a.notifyChange(ctx, userID, "vat", events.ActionUpdated, vatID)
 	return vat, nil
 }
 
-func (a *APIService) DeleteVat(userID int64, vatID int64) error {
+func (a *APIService) DeleteVat(ctx context.Context, userID int64, vatID int64) error {
 	_, err := a.dbService.GetVat(userID, vatID)
 	if err != nil {
 		logger.Logger.Error(err)
@@ -91,6 +92,6 @@ func (a *APIService) DeleteVat(userID int64, vatID int64) error {
 		logger.Logger.Error(err)
 		return err
 	}
-	a.notifyChange(userID, "vat", events.ActionDeleted, vatID)
+	a.notifyChange(ctx, userID, "vat", events.ActionDeleted, vatID)
 	return nil
 }

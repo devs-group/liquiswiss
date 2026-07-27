@@ -15,7 +15,7 @@ func ListFiatRates(apiService api_service.IAPIService, c *gin.Context) {
 	}
 
 	// Action
-	fiatRates, err := apiService.ListFiatRates(base)
+	fiatRates, err := apiService.ListFiatRates(c.Request.Context(), base)
 	if err != nil {
 		c.Status(http.StatusInternalServerError)
 		return
@@ -39,7 +39,7 @@ func GetFiatRate(apiService api_service.IAPIService, c *gin.Context) {
 	}
 
 	// Action
-	fiatRate, err := apiService.GetFiatRate(base, target)
+	fiatRate, err := apiService.GetFiatRate(c.Request.Context(), base, target)
 	if err != nil {
 		c.Status(http.StatusInternalServerError)
 		return

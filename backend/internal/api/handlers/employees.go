@@ -34,7 +34,7 @@ func ListEmployees(apiService api_service.IAPIService, c *gin.Context) {
 	hideTerminated := c.DefaultQuery("hideTerminated", "false") == "true"
 
 	// Action
-	employees, totalCount, err := apiService.ListEmployees(userID, page, limit, sortBy, sortOrder, search, hideTerminated)
+	employees, totalCount, err := apiService.ListEmployees(c.Request.Context(), userID, page, limit, sortBy, sortOrder, search, hideTerminated)
 	if err != nil {
 		c.Status(http.StatusInternalServerError)
 		return
@@ -61,7 +61,7 @@ func GetEmployee(apiService api_service.IAPIService, c *gin.Context) {
 	}
 
 	// Action
-	employee, err := apiService.GetEmployee(userID, employeeID)
+	employee, err := apiService.GetEmployee(c.Request.Context(), userID, employeeID)
 	if err != nil {
 		switch err {
 		case sql.ErrNoRows:
@@ -96,7 +96,7 @@ func CreateEmployee(apiService api_service.IAPIService, c *gin.Context) {
 	}
 
 	// Action
-	employee, err := apiService.CreateEmployee(payload, userID)
+	employee, err := apiService.CreateEmployee(c.Request.Context(), payload, userID)
 	if err != nil {
 		c.Status(http.StatusInternalServerError)
 		return
@@ -130,7 +130,7 @@ func UpdateEmployee(apiService api_service.IAPIService, c *gin.Context) {
 	}
 
 	// Action
-	employee, err := apiService.UpdateEmployee(payload, userID, employeeID)
+	employee, err := apiService.UpdateEmployee(c.Request.Context(), payload, userID, employeeID)
 	if err != nil {
 		c.Status(http.StatusInternalServerError)
 		return
@@ -153,7 +153,7 @@ func DeleteEmployee(apiService api_service.IAPIService, c *gin.Context) {
 	}
 
 	// Action
-	err = apiService.DeleteEmployee(userID, employeeID)
+	err = apiService.DeleteEmployee(c.Request.Context(), userID, employeeID)
 	if err != nil {
 		c.Status(http.StatusInternalServerError)
 		return
@@ -182,7 +182,7 @@ func GetEmployeesPagination(apiService api_service.IAPIService, c *gin.Context) 
 	}
 
 	// Action
-	totalCount, err := apiService.CountEmployees(userID, page, limit)
+	totalCount, err := apiService.CountEmployees(c.Request.Context(), userID, page, limit)
 	if err != nil {
 		return
 	}

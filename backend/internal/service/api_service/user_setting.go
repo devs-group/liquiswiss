@@ -1,12 +1,13 @@
 package api_service
 
 import (
+	"context"
 	"liquiswiss/pkg/logger"
 	"liquiswiss/pkg/models"
 	"liquiswiss/pkg/utils"
 )
 
-func (a *APIService) GetUserSetting(userID int64) (*models.UserSetting, error) {
+func (a *APIService) GetUserSetting(ctx context.Context, userID int64) (*models.UserSetting, error) {
 	setting, err := a.dbService.GetUserSetting(userID)
 	if err != nil {
 		logger.Logger.Error(err)
@@ -35,9 +36,9 @@ func (a *APIService) GetUserSetting(userID int64) (*models.UserSetting, error) {
 	return setting, nil
 }
 
-func (a *APIService) UpdateUserSetting(payload models.UpdateUserSetting, userID int64) (*models.UserSetting, error) {
+func (a *APIService) UpdateUserSetting(ctx context.Context, payload models.UpdateUserSetting, userID int64) (*models.UserSetting, error) {
 	// Ensure setting exists (creates with defaults if not)
-	_, err := a.GetUserSetting(userID)
+	_, err := a.GetUserSetting(ctx, userID)
 	if err != nil {
 		logger.Logger.Error(err)
 		return nil, err

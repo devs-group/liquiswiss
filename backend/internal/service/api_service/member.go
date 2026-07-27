@@ -1,6 +1,7 @@
 package api_service
 
 import (
+	"context"
 	"database/sql"
 	"errors"
 	"liquiswiss/internal/events"
@@ -8,7 +9,7 @@ import (
 	"liquiswiss/pkg/models"
 )
 
-func (a *APIService) ListOrganisationMembers(userID int64, organisationID int64) ([]models.OrganisationMember, error) {
+func (a *APIService) ListOrganisationMembers(ctx context.Context, userID int64, organisationID int64) ([]models.OrganisationMember, error) {
 	// Check if user belongs to the organisation
 	_, err := a.dbService.GetOrganisation(userID, organisationID)
 	if err != nil {
@@ -37,7 +38,7 @@ func (a *APIService) ListOrganisationMembers(userID int64, organisationID int64)
 	return members, nil
 }
 
-func (a *APIService) UpdateOrganisationMember(payload models.UpdateMember, userID int64, organisationID int64, memberUserID int64) error {
+func (a *APIService) UpdateOrganisationMember(ctx context.Context, payload models.UpdateMember, userID int64, organisationID int64, memberUserID int64) error {
 	// Check if user belongs to the organisation
 	organisation, err := a.dbService.GetOrganisation(userID, organisationID)
 	if err != nil {
@@ -117,11 +118,11 @@ func (a *APIService) UpdateOrganisationMember(payload models.UpdateMember, userI
 
 	// Role/permission changed: drop the member's streams so they re-authenticate
 	a.closeUserStreams(memberUserID)
-	a.notifyOrganisationChange(organisationID, "member", events.ActionUpdated, memberUserID)
+	a.notifyOrganisationChange(ctx, userID, organisationID, "member", events.ActionUpdated, memberUserID)
 	return nil
 }
 
-func (a *APIService) RemoveOrganisationMember(userID int64, organisationID int64, memberUserID int64) error {
+func (a *APIService) RemoveOrganisationMember(ctx context.Context, userID int64, organisationID int64, memberUserID int64) error {
 	// Check if user belongs to the organisation
 	organisation, err := a.dbService.GetOrganisation(userID, organisationID)
 	if err != nil {
@@ -185,7 +186,7 @@ func (a *APIService) RemoveOrganisationMember(userID int64, organisationID int64
 	// values as NULL.
 	// Membership ended: terminate the removed member's streams immediately
 	a.closeUserStreams(memberUserID)
-	a.notifyOrganisationChange(organisationID, "member", events.ActionDeleted, memberUserID)
+	a.notifyOrganisationChange(ctx, userID, organisationID, "member", events.ActionDeleted, memberUserID)
 
 	remainingOrgs, _, listErr := a.dbService.ListOrganisations(memberUserID, 1, 1)
 	if listErr != nil {

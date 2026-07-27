@@ -2,6 +2,7 @@ package handlers_test
 
 import (
 	"bufio"
+	"context"
 	"net/http"
 	"net/http/httptest"
 	"strings"
@@ -20,6 +21,7 @@ import (
 	"liquiswiss/internal/service/api_service"
 	"liquiswiss/pkg/auth"
 	"liquiswiss/pkg/models"
+	"liquiswiss/pkg/reqctx"
 	"liquiswiss/pkg/utils"
 )
 
@@ -73,13 +75,17 @@ func setupEventsTestEnvironment(t *testing.T) *eventsTestEnv {
 	}
 }
 
-func (env *eventsTestEnv) openStream(t *testing.T, user *models.User) (*http.Response, *bufio.Reader) {
+func (env *eventsTestEnv) openStream(t *testing.T, user *models.User, clientID ...string) (*http.Response, *bufio.Reader) {
 	t.Helper()
 	accessToken, expiration, _, err := auth.GenerateAccessToken(*user)
 	require.NoError(t, err)
 	cookie := auth.GenerateCookie(utils.AccessTokenName, accessToken, expiration)
 
-	req, err := http.NewRequest(http.MethodGet, env.Server.URL+"/api/events", nil)
+	url := env.Server.URL + "/api/events"
+	if len(clientID) > 0 {
+		url += "?client=" + clientID[0]
+	}
+	req, err := http.NewRequest(http.MethodGet, url, nil)
 	require.NoError(t, err)
 	req.AddCookie(&cookie)
 
@@ -121,7 +127,7 @@ func TestEventsStreamReceivesOwnOrganisationEvents(t *testing.T) {
 	env := setupEventsTestEnvironment(t)
 	_, reader := env.openStream(t, env.UserA)
 
-	_, err := env.APIService.CreateBankAccount(models.CreateBankAccount{
+	_, err := env.APIService.CreateBankAccount(context.Background(), models.CreateBankAccount{
 		Name:     "Eventkonto",
 		Amount:   1000,
 		Currency: env.CurrencyID,
@@ -133,12 +139,49 @@ func TestEventsStreamReceivesOwnOrganisationEvents(t *testing.T) {
 	require.Contains(t, payload, `"action":"created"`)
 }
 
+// The acting tab (matching user + client id) sees own=true; every other
+// connection of the same user sees own=false.
+func TestEventsStreamOwnFlagForActingTab(t *testing.T) {
+	env := setupEventsTestEnvironment(t)
+	_, actingReader := env.openStream(t, env.UserA, "tab-1")
+	_, otherTabReader := env.openStream(t, env.UserA, "tab-2")
+	_, noClientReader := env.openStream(t, env.UserA)
+
+	ctx := reqctx.WithClientID(context.Background(), "tab-1")
+	_, err := env.APIService.CreateBankAccount(ctx, models.CreateBankAccount{
+		Name:     "Eigenes Konto",
+		Amount:   100,
+		Currency: env.CurrencyID,
+	}, env.UserA.ID)
+	require.NoError(t, err)
+
+	require.Contains(t, readEventLine(actingReader, 3*time.Second), `"own":true`)
+	require.Contains(t, readEventLine(otherTabReader, 3*time.Second), `"own":false`)
+	require.Contains(t, readEventLine(noClientReader, 3*time.Second), `"own":false`)
+}
+
+// Mutations without a client id (MCP, background jobs) are own=false for
+// every tab: exactly these changes must trigger notifications.
+func TestEventsStreamMCPMutationsAreNeverOwn(t *testing.T) {
+	env := setupEventsTestEnvironment(t)
+	_, reader := env.openStream(t, env.UserA, "tab-1")
+
+	_, err := env.APIService.CreateBankAccount(context.Background(), models.CreateBankAccount{
+		Name:     "MCP Konto",
+		Amount:   200,
+		Currency: env.CurrencyID,
+	}, env.UserA.ID)
+	require.NoError(t, err)
+
+	require.Contains(t, readEventLine(reader, 3*time.Second), `"own":false`)
+}
+
 func TestEventsStreamDoesNotLeakAcrossOrganisations(t *testing.T) {
 	env := setupEventsTestEnvironment(t)
 	_, reader := env.openStream(t, env.UserB)
 
 	// Mutation happens in user A's organisation; user B must not see it
-	_, err := env.APIService.CreateBankAccount(models.CreateBankAccount{
+	_, err := env.APIService.CreateBankAccount(context.Background(), models.CreateBankAccount{
 		Name:     "Fremdes Konto",
 		Amount:   500,
 		Currency: env.CurrencyID,
@@ -220,7 +263,7 @@ func TestEventsStreamClosedOnOrganisationSwitch(t *testing.T) {
 	env := setupEventsTestEnvironment(t)
 
 	// Give user A a second organisation to switch to
-	organisation, err := env.APIService.CreateOrganisation(models.CreateOrganisation{
+	organisation, err := env.APIService.CreateOrganisation(context.Background(), models.CreateOrganisation{
 		Name: "Zweite Org",
 	}, env.UserA.ID)
 	require.NoError(t, err)
@@ -228,7 +271,7 @@ func TestEventsStreamClosedOnOrganisationSwitch(t *testing.T) {
 	resp, reader := env.openStream(t, env.UserA)
 	_ = resp
 
-	err = env.APIService.SetUserCurrentOrganisation(models.UpdateUserCurrentOrganisation{
+	err = env.APIService.SetUserCurrentOrganisation(context.Background(), models.UpdateUserCurrentOrganisation{
 		OrganisationID: organisation.ID,
 	}, env.UserA.ID)
 	require.NoError(t, err)

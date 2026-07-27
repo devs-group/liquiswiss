@@ -1,6 +1,7 @@
 package handlers_test
 
 import (
+	"context"
 	"testing"
 
 	"github.com/stretchr/testify/require"
@@ -15,7 +16,7 @@ func TestGetVatSetting_CrossOrgIsolation(t *testing.T) {
 	defer env.Conn.Close()
 
 	// Create VAT setting for User A's organisation
-	_, err := env.APIService.CreateVatSetting(models.CreateVatSetting{
+	_, err := env.APIService.CreateVatSetting(context.Background(), models.CreateVatSetting{
 		Enabled:                true,
 		BillingDate:            "2025-01-15",
 		TransactionMonthOffset: 1,
@@ -24,19 +25,19 @@ func TestGetVatSetting_CrossOrgIsolation(t *testing.T) {
 	require.NoError(t, err)
 
 	// User A can get their own VAT setting
-	vatSettingA, err := env.APIService.GetVatSetting(env.UserA.ID)
+	vatSettingA, err := env.APIService.GetVatSetting(context.Background(), env.UserA.ID)
 	require.NoError(t, err)
 	require.NotNil(t, vatSettingA)
 	require.True(t, vatSettingA.Enabled)
 	require.Equal(t, "quarterly", vatSettingA.Interval)
 
 	// User B gets their own (non-existent) VAT setting - should return nil
-	vatSettingB, err := env.APIService.GetVatSetting(env.UserB.ID)
+	vatSettingB, err := env.APIService.GetVatSetting(context.Background(), env.UserB.ID)
 	require.NoError(t, err)
 	require.Nil(t, vatSettingB) // No VAT setting for User B
 
 	// Create VAT setting for User B with different settings
-	_, err = env.APIService.CreateVatSetting(models.CreateVatSetting{
+	_, err = env.APIService.CreateVatSetting(context.Background(), models.CreateVatSetting{
 		Enabled:                false,
 		BillingDate:            "2025-02-01",
 		TransactionMonthOffset: 0,
@@ -45,14 +46,14 @@ func TestGetVatSetting_CrossOrgIsolation(t *testing.T) {
 	require.NoError(t, err)
 
 	// Verify User B gets their own settings, not User A's
-	vatSettingB, err = env.APIService.GetVatSetting(env.UserB.ID)
+	vatSettingB, err = env.APIService.GetVatSetting(context.Background(), env.UserB.ID)
 	require.NoError(t, err)
 	require.NotNil(t, vatSettingB)
 	require.False(t, vatSettingB.Enabled)
 	require.Equal(t, "monthly", vatSettingB.Interval)
 
 	// Verify User A still gets their own settings
-	vatSettingAVerify, err := env.APIService.GetVatSetting(env.UserA.ID)
+	vatSettingAVerify, err := env.APIService.GetVatSetting(context.Background(), env.UserA.ID)
 	require.NoError(t, err)
 	require.NotNil(t, vatSettingAVerify)
 	require.True(t, vatSettingAVerify.Enabled)
@@ -66,7 +67,7 @@ func TestUpdateVatSetting_CrossOrgIsolation(t *testing.T) {
 	defer env.Conn.Close()
 
 	// Create VAT settings for both users
-	_, err := env.APIService.CreateVatSetting(models.CreateVatSetting{
+	_, err := env.APIService.CreateVatSetting(context.Background(), models.CreateVatSetting{
 		Enabled:                true,
 		BillingDate:            "2025-01-15",
 		TransactionMonthOffset: 1,
@@ -74,7 +75,7 @@ func TestUpdateVatSetting_CrossOrgIsolation(t *testing.T) {
 	}, env.UserA.ID)
 	require.NoError(t, err)
 
-	_, err = env.APIService.CreateVatSetting(models.CreateVatSetting{
+	_, err = env.APIService.CreateVatSetting(context.Background(), models.CreateVatSetting{
 		Enabled:                false,
 		BillingDate:            "2025-02-01",
 		TransactionMonthOffset: 0,
@@ -84,21 +85,21 @@ func TestUpdateVatSetting_CrossOrgIsolation(t *testing.T) {
 
 	// User B updates their settings
 	enabled := true
-	_, err = env.APIService.UpdateVatSetting(models.UpdateVatSetting{
+	_, err = env.APIService.UpdateVatSetting(context.Background(), models.UpdateVatSetting{
 		Enabled: &enabled,
 	}, env.UserB.ID)
 	require.NoError(t, err)
 
 	// Verify User A's settings were NOT affected
-	vatSettingA, err := env.APIService.GetVatSetting(env.UserA.ID)
+	vatSettingA, err := env.APIService.GetVatSetting(context.Background(), env.UserA.ID)
 	require.NoError(t, err)
 	require.True(t, vatSettingA.Enabled)
 	require.Equal(t, "quarterly", vatSettingA.Interval)
 
 	// Verify User B's settings were updated
-	vatSettingB, err := env.APIService.GetVatSetting(env.UserB.ID)
+	vatSettingB, err := env.APIService.GetVatSetting(context.Background(), env.UserB.ID)
 	require.NoError(t, err)
-	require.True(t, vatSettingB.Enabled) // Changed from false to true
+	require.True(t, vatSettingB.Enabled)              // Changed from false to true
 	require.Equal(t, "monthly", vatSettingB.Interval) // Unchanged
 }
 
@@ -109,7 +110,7 @@ func TestDeleteVatSetting_CrossOrgIsolation(t *testing.T) {
 	defer env.Conn.Close()
 
 	// Create VAT settings for both users
-	_, err := env.APIService.CreateVatSetting(models.CreateVatSetting{
+	_, err := env.APIService.CreateVatSetting(context.Background(), models.CreateVatSetting{
 		Enabled:                true,
 		BillingDate:            "2025-01-15",
 		TransactionMonthOffset: 1,
@@ -117,7 +118,7 @@ func TestDeleteVatSetting_CrossOrgIsolation(t *testing.T) {
 	}, env.UserA.ID)
 	require.NoError(t, err)
 
-	_, err = env.APIService.CreateVatSetting(models.CreateVatSetting{
+	_, err = env.APIService.CreateVatSetting(context.Background(), models.CreateVatSetting{
 		Enabled:                false,
 		BillingDate:            "2025-02-01",
 		TransactionMonthOffset: 0,
@@ -126,17 +127,17 @@ func TestDeleteVatSetting_CrossOrgIsolation(t *testing.T) {
 	require.NoError(t, err)
 
 	// User B deletes their settings
-	err = env.APIService.DeleteVatSetting(env.UserB.ID)
+	err = env.APIService.DeleteVatSetting(context.Background(), env.UserB.ID)
 	require.NoError(t, err)
 
 	// Verify User A's settings still exist
-	vatSettingA, err := env.APIService.GetVatSetting(env.UserA.ID)
+	vatSettingA, err := env.APIService.GetVatSetting(context.Background(), env.UserA.ID)
 	require.NoError(t, err)
 	require.NotNil(t, vatSettingA)
 	require.True(t, vatSettingA.Enabled)
 
 	// Verify User B's settings are deleted
-	vatSettingB, err := env.APIService.GetVatSetting(env.UserB.ID)
+	vatSettingB, err := env.APIService.GetVatSetting(context.Background(), env.UserB.ID)
 	require.NoError(t, err)
 	require.Nil(t, vatSettingB)
 }

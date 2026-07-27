@@ -1,9 +1,10 @@
 package handlers_test
 
 import (
+	"context"
 	"github.com/stretchr/testify/assert"
-	"liquiswiss/internal/adapter/db_adapter"
 	"liquiswiss/config"
+	"liquiswiss/internal/adapter/db_adapter"
 	"liquiswiss/internal/adapter/email_adapter"
 	"liquiswiss/internal/service/api_service"
 	"liquiswiss/pkg/models"
@@ -37,7 +38,7 @@ func TestMonthlySalaryAtTheEndOfMonthWithoutToDate(t *testing.T) {
 	assert.NoError(t, err)
 
 	// Tests
-	salary, err := apiService.CreateSalary(models.CreateSalary{
+	salary, err := apiService.CreateSalary(context.Background(), models.CreateSalary{
 		HoursPerMonth:       160,
 		Amount:              10000_00,
 		Cycle:               "monthly",
@@ -571,16 +572,16 @@ func TestMonthlySalaryAtTheEndOfMonthWithoutToDate(t *testing.T) {
 				utils.DefaultClock.SetFixedTime(nil)
 			}()
 
-			salaryCost, err := apiService.CreateSalaryCost(testCase.CreateData, user.ID, salary.ID)
+			salaryCost, err := apiService.CreateSalaryCost(context.Background(), testCase.CreateData, user.ID, salary.ID)
 			assert.NoError(t, err)
 
 			// Check deduction
-			updatedSalary, err := apiService.GetSalary(user.ID, salary.ID)
+			updatedSalary, err := apiService.GetSalary(context.Background(), user.ID, salary.ID)
 			assert.NoError(t, err)
 
 			assert.Equal(t, int64(testCase.ExpectedEmployeeDeductions), int64(updatedSalary.EmployeeDeductions), "updatedSalary.EmployeeDeductions")
 
-			err = apiService.DeleteSalaryCost(user.ID, salaryCost.ID)
+			err = apiService.DeleteSalaryCost(context.Background(), user.ID, salaryCost.ID)
 			assert.NoError(t, err)
 
 			assert.Equal(t, int64(testCase.ExpectedCalculatedAmount), int64(salaryCost.CalculatedAmount), "salaryCost.CalculatedAmount")
@@ -615,7 +616,7 @@ func TestPercentageSalaryCostBasedOnOtherCost(t *testing.T) {
 	employee, err := CreateEmployee(apiService, user.ID, "Alice Base")
 	assert.NoError(t, err)
 
-	salary, err := apiService.CreateSalary(models.CreateSalary{
+	salary, err := apiService.CreateSalary(context.Background(), models.CreateSalary{
 		HoursPerMonth: 160,
 		Amount:        8000 * 100,
 		Cycle:         utils.CycleMonthly,
@@ -630,7 +631,7 @@ func TestPercentageSalaryCostBasedOnOtherCost(t *testing.T) {
 	}, user.ID, employee.ID)
 	assert.NoError(t, err)
 
-	baseCost, err := apiService.CreateSalaryCost(models.CreateSalaryCost{
+	baseCost, err := apiService.CreateSalaryCost(context.Background(), models.CreateSalaryCost{
 		Cycle:            utils.CycleMonthly,
 		AmountType:       "fixed",
 		Amount:           2000_00,
@@ -639,7 +640,7 @@ func TestPercentageSalaryCostBasedOnOtherCost(t *testing.T) {
 	}, user.ID, salary.ID)
 	assert.NoError(t, err)
 
-	secondBaseCost, err := apiService.CreateSalaryCost(models.CreateSalaryCost{
+	secondBaseCost, err := apiService.CreateSalaryCost(context.Background(), models.CreateSalaryCost{
 		Cycle:            utils.CycleMonthly,
 		AmountType:       "fixed",
 		Amount:           1000_00,
@@ -649,7 +650,7 @@ func TestPercentageSalaryCostBasedOnOtherCost(t *testing.T) {
 	assert.NoError(t, err)
 
 	baseID := baseCost.ID
-	percentageCost, err := apiService.CreateSalaryCost(models.CreateSalaryCost{
+	percentageCost, err := apiService.CreateSalaryCost(context.Background(), models.CreateSalaryCost{
 		Cycle:             utils.CycleMonthly,
 		AmountType:        "percentage",
 		Amount:            10_000,
@@ -662,7 +663,7 @@ func TestPercentageSalaryCostBasedOnOtherCost(t *testing.T) {
 	assert.Equal(t, uint64(200_00), percentageCost.CalculatedNextCost)
 
 	multiBaseIDs := []int64{baseID, secondBaseCost.ID}
-	percentageCostMulti, err := apiService.CreateSalaryCost(models.CreateSalaryCost{
+	percentageCostMulti, err := apiService.CreateSalaryCost(context.Background(), models.CreateSalaryCost{
 		Cycle:             utils.CycleMonthly,
 		AmountType:        "percentage",
 		Amount:            10_000,
@@ -675,13 +676,13 @@ func TestPercentageSalaryCostBasedOnOtherCost(t *testing.T) {
 	assert.Equal(t, uint64(300_00), percentageCostMulti.CalculatedAmount)
 	assert.Equal(t, uint64(300_00), percentageCostMulti.CalculatedNextCost)
 
-	err = apiService.DeleteSalaryCost(user.ID, percentageCost.ID)
+	err = apiService.DeleteSalaryCost(context.Background(), user.ID, percentageCost.ID)
 	assert.NoError(t, err)
-	err = apiService.DeleteSalaryCost(user.ID, percentageCostMulti.ID)
+	err = apiService.DeleteSalaryCost(context.Background(), user.ID, percentageCostMulti.ID)
 	assert.NoError(t, err)
-	err = apiService.DeleteSalaryCost(user.ID, secondBaseCost.ID)
+	err = apiService.DeleteSalaryCost(context.Background(), user.ID, secondBaseCost.ID)
 	assert.NoError(t, err)
-	err = apiService.DeleteSalaryCost(user.ID, baseCost.ID)
+	err = apiService.DeleteSalaryCost(context.Background(), user.ID, baseCost.ID)
 	assert.NoError(t, err)
 }
 
@@ -704,7 +705,7 @@ func TestPercentageSalaryCostBasedOnBothDistribution(t *testing.T) {
 	employee, err := CreateEmployee(apiService, user.ID, "Jordan Both")
 	assert.NoError(t, err)
 
-	salary, err := apiService.CreateSalary(models.CreateSalary{
+	salary, err := apiService.CreateSalary(context.Background(), models.CreateSalary{
 		HoursPerMonth: 160,
 		Amount:        10000 * 100,
 		Cycle:         utils.CycleMonthly,
@@ -719,7 +720,7 @@ func TestPercentageSalaryCostBasedOnBothDistribution(t *testing.T) {
 	}, user.ID, employee.ID)
 	assert.NoError(t, err)
 
-	baseCost, err := apiService.CreateSalaryCost(models.CreateSalaryCost{
+	baseCost, err := apiService.CreateSalaryCost(context.Background(), models.CreateSalaryCost{
 		Cycle:            utils.CycleMonthly,
 		AmountType:       "percentage",
 		Amount:           5_100,
@@ -729,7 +730,7 @@ func TestPercentageSalaryCostBasedOnBothDistribution(t *testing.T) {
 	assert.NoError(t, err)
 	assert.EqualValues(t, 51_000, baseCost.CalculatedAmount)
 
-	dependentCost, err := apiService.CreateSalaryCost(models.CreateSalaryCost{
+	dependentCost, err := apiService.CreateSalaryCost(context.Background(), models.CreateSalaryCost{
 		Cycle:             utils.CycleMonthly,
 		AmountType:        "percentage",
 		Amount:            10_000,
@@ -742,9 +743,9 @@ func TestPercentageSalaryCostBasedOnBothDistribution(t *testing.T) {
 	assert.EqualValues(t, 10_200, dependentCost.CalculatedAmount)
 	assert.EqualValues(t, 10_200, dependentCost.CalculatedNextCost)
 
-	err = apiService.DeleteSalaryCost(user.ID, dependentCost.ID)
+	err = apiService.DeleteSalaryCost(context.Background(), user.ID, dependentCost.ID)
 	assert.NoError(t, err)
-	err = apiService.DeleteSalaryCost(user.ID, baseCost.ID)
+	err = apiService.DeleteSalaryCost(context.Background(), user.ID, baseCost.ID)
 	assert.NoError(t, err)
 }
 
@@ -767,7 +768,7 @@ func TestSalaryCostBaseRequiresPercentageAmountType(t *testing.T) {
 	employee, err := CreateEmployee(apiService, user.ID, "Bob Invalid")
 	assert.NoError(t, err)
 
-	salary, err := apiService.CreateSalary(models.CreateSalary{
+	salary, err := apiService.CreateSalary(context.Background(), models.CreateSalary{
 		HoursPerMonth: 160,
 		Amount:        8000 * 100,
 		Cycle:         utils.CycleMonthly,
@@ -782,7 +783,7 @@ func TestSalaryCostBaseRequiresPercentageAmountType(t *testing.T) {
 	}, user.ID, employee.ID)
 	assert.NoError(t, err)
 
-	baseCost, err := apiService.CreateSalaryCost(models.CreateSalaryCost{
+	baseCost, err := apiService.CreateSalaryCost(context.Background(), models.CreateSalaryCost{
 		Cycle:            utils.CycleMonthly,
 		AmountType:       "fixed",
 		Amount:           1500_00,
@@ -792,7 +793,7 @@ func TestSalaryCostBaseRequiresPercentageAmountType(t *testing.T) {
 	assert.NoError(t, err)
 
 	baseID := baseCost.ID
-	_, err = apiService.CreateSalaryCost(models.CreateSalaryCost{
+	_, err = apiService.CreateSalaryCost(context.Background(), models.CreateSalaryCost{
 		Cycle:             utils.CycleMonthly,
 		AmountType:        "fixed",
 		Amount:            500_00,
@@ -802,7 +803,7 @@ func TestSalaryCostBaseRequiresPercentageAmountType(t *testing.T) {
 	}, user.ID, salary.ID)
 	assert.Error(t, err)
 
-	err = apiService.DeleteSalaryCost(user.ID, baseCost.ID)
+	err = apiService.DeleteSalaryCost(context.Background(), user.ID, baseCost.ID)
 	assert.NoError(t, err)
 }
 
@@ -830,7 +831,7 @@ func TestMonthlySalaryAtTheEndOfMonthWithToDate(t *testing.T) {
 	assert.NoError(t, err)
 
 	// Tests
-	salary, err := apiService.CreateSalary(models.CreateSalary{
+	salary, err := apiService.CreateSalary(context.Background(), models.CreateSalary{
 		HoursPerMonth: 160,
 		// SalaryAmount of 10'000.00 CHF
 		Amount:              10000 * 100,
@@ -1132,16 +1133,16 @@ func TestMonthlySalaryAtTheEndOfMonthWithToDate(t *testing.T) {
 				utils.DefaultClock.SetFixedTime(nil)
 			}()
 
-			salaryCost, err := apiService.CreateSalaryCost(testCase.CreateData, user.ID, salary.ID)
+			salaryCost, err := apiService.CreateSalaryCost(context.Background(), testCase.CreateData, user.ID, salary.ID)
 			assert.NoError(t, err)
 
 			// Check deduction
-			updatedSalary, err := apiService.GetSalary(user.ID, salary.ID)
+			updatedSalary, err := apiService.GetSalary(context.Background(), user.ID, salary.ID)
 			assert.NoError(t, err)
 
 			assert.Equal(t, int64(testCase.ExpectedEmployeeDeductions), int64(updatedSalary.EmployeeDeductions), "updatedSalary.EmployeeDeductions")
 
-			err = apiService.DeleteSalaryCost(user.ID, salaryCost.ID)
+			err = apiService.DeleteSalaryCost(context.Background(), user.ID, salaryCost.ID)
 			assert.NoError(t, err)
 
 			assert.Equal(t, int64(testCase.ExpectedCalculatedAmount), int64(salaryCost.CalculatedAmount), "salaryCost.CalculatedAmount")
@@ -1181,7 +1182,7 @@ func TestMultipleSalaryAtTheEndOfMonthCases(t *testing.T) {
 	assert.NoError(t, err)
 
 	// Tests
-	salary1, err := apiService.CreateSalary(models.CreateSalary{
+	salary1, err := apiService.CreateSalary(context.Background(), models.CreateSalary{
 		HoursPerMonth:       160,
 		Amount:              7_500 * 100,
 		Cycle:               "monthly",
@@ -1192,7 +1193,7 @@ func TestMultipleSalaryAtTheEndOfMonthCases(t *testing.T) {
 	}, user.ID, employee.ID)
 	assert.NoError(t, err)
 
-	salary2, err := apiService.CreateSalary(models.CreateSalary{
+	salary2, err := apiService.CreateSalary(context.Background(), models.CreateSalary{
 		HoursPerMonth:       160,
 		Amount:              10_000 * 100,
 		Cycle:               "monthly",
@@ -1287,16 +1288,16 @@ func TestMultipleSalaryAtTheEndOfMonthCases(t *testing.T) {
 				utils.DefaultClock.SetFixedTime(nil)
 			}()
 
-			salaryCost, err := apiService.CreateSalaryCost(testCase.CreateData, user.ID, salary1.ID)
+			salaryCost, err := apiService.CreateSalaryCost(context.Background(), testCase.CreateData, user.ID, salary1.ID)
 			assert.NoError(t, err)
 
 			// Check deduction
-			updatedSalary, err := apiService.GetSalary(user.ID, salary1.ID)
+			updatedSalary, err := apiService.GetSalary(context.Background(), user.ID, salary1.ID)
 			assert.NoError(t, err)
 
 			assert.Equal(t, int64(testCase.ExpectedEmployeeDeductions), int64(updatedSalary.EmployeeDeductions), "updatedSalary.EmployeeDeductions")
 
-			err = apiService.DeleteSalaryCost(user.ID, salaryCost.ID)
+			err = apiService.DeleteSalaryCost(context.Background(), user.ID, salaryCost.ID)
 			assert.NoError(t, err)
 
 			assert.Equal(t, int64(testCase.ExpectedCalculatedAmount), int64(salaryCost.CalculatedAmount), "salaryCost.CalculatedAmount")
@@ -1324,16 +1325,16 @@ func TestMultipleSalaryAtTheEndOfMonthCases(t *testing.T) {
 				utils.DefaultClock.SetFixedTime(nil)
 			}()
 
-			salaryCost, err := apiService.CreateSalaryCost(testCase.CreateData, user.ID, salary2.ID)
+			salaryCost, err := apiService.CreateSalaryCost(context.Background(), testCase.CreateData, user.ID, salary2.ID)
 			assert.NoError(t, err)
 
 			// Check deduction
-			updatedSalary, err := apiService.GetSalary(user.ID, salary2.ID)
+			updatedSalary, err := apiService.GetSalary(context.Background(), user.ID, salary2.ID)
 			assert.NoError(t, err)
 
 			assert.Equal(t, int64(testCase.ExpectedEmployeeDeductions), int64(updatedSalary.EmployeeDeductions), "updatedSalary.EmployeeDeductions")
 
-			err = apiService.DeleteSalaryCost(user.ID, salaryCost.ID)
+			err = apiService.DeleteSalaryCost(context.Background(), user.ID, salaryCost.ID)
 			assert.NoError(t, err)
 
 			assert.Equal(t, int64(testCase.ExpectedCalculatedAmount), int64(salaryCost.CalculatedAmount), "salaryCost.CalculatedAmount")
@@ -1373,7 +1374,7 @@ func TestLongOffsetScenariosAtTheEndOfMonth(t *testing.T) {
 	assert.NoError(t, err)
 
 	// Tests
-	salary, err := apiService.CreateSalary(models.CreateSalary{
+	salary, err := apiService.CreateSalary(context.Background(), models.CreateSalary{
 		HoursPerMonth:       160,
 		Amount:              10000_00,
 		Cycle:               "monthly",
@@ -1468,16 +1469,16 @@ func TestLongOffsetScenariosAtTheEndOfMonth(t *testing.T) {
 				utils.DefaultClock.SetFixedTime(nil)
 			}()
 
-			salaryCost, err := apiService.CreateSalaryCost(testCase.CreateData, user.ID, salary.ID)
+			salaryCost, err := apiService.CreateSalaryCost(context.Background(), testCase.CreateData, user.ID, salary.ID)
 			assert.NoError(t, err)
 
 			// Check deduction
-			updatedSalary, err := apiService.GetSalary(user.ID, salary.ID)
+			updatedSalary, err := apiService.GetSalary(context.Background(), user.ID, salary.ID)
 			assert.NoError(t, err)
 
 			assert.Equal(t, int64(testCase.ExpectedEmployeeDeductions), int64(updatedSalary.EmployeeDeductions), "updatedSalary.EmployeeDeductions")
 
-			err = apiService.DeleteSalaryCost(user.ID, salaryCost.ID)
+			err = apiService.DeleteSalaryCost(context.Background(), user.ID, salaryCost.ID)
 			assert.NoError(t, err)
 
 			assert.Equal(t, int64(testCase.ExpectedCalculatedAmount), int64(salaryCost.CalculatedAmount), "salaryCost.CalculatedAmount")
@@ -1512,7 +1513,7 @@ func TestSalaryCostWithPastPaymentsRelativeOffset(t *testing.T) {
 	employee, err := CreateEmployee(apiService, user.ID, "Past Offset Employee")
 	assert.NoError(t, err)
 
-	salary, err := apiService.CreateSalary(models.CreateSalary{
+	salary, err := apiService.CreateSalary(context.Background(), models.CreateSalary{
 		HoursPerMonth:       160,
 		Amount:              10000_00,
 		Cycle:               "monthly",
@@ -1543,7 +1544,7 @@ func TestSalaryCostWithPastPaymentsRelativeOffset(t *testing.T) {
 		LabelID:          nil,
 	}
 
-	salaryCost, err := apiService.CreateSalaryCost(createPayload, user.ID, salary.ID)
+	salaryCost, err := apiService.CreateSalaryCost(context.Background(), createPayload, user.ID, salary.ID)
 	assert.NoError(t, err)
 
 	assert.GreaterOrEqual(t, len(salaryCost.CalculatedCostDetails), 2)
@@ -1564,21 +1565,21 @@ func TestSalaryCostWithPastPaymentsRelativeOffset(t *testing.T) {
 	assert.Equal(t, "2026-09-01", salaryCost.CalculatedNextExecutionDate.ToFormattedTime(utils.InternalDateFormat))
 
 	// When including past salary payments, the next execution should point to the current block.
-	costIncludingPast, err := apiService.GetSalaryCost(user.ID, salaryCost.ID, false)
+	costIncludingPast, err := apiService.GetSalaryCost(context.Background(), user.ID, salaryCost.ID, false)
 	assert.NoError(t, err)
 	assert.Equal(t, "2026-03-01", costIncludingPast.CalculatedNextExecutionDate.ToFormattedTime(utils.InternalDateFormat))
 	assert.Equal(t, int64(450_00), int64(costIncludingPast.CalculatedAmount))
 	assert.Equal(t, int64(450_00*6), int64(costIncludingPast.CalculatedNextCost))
 	assert.True(t, costIncludingPast.CalculatedCostDetails[0].IsExtraMonth)
 
-	listWithPast, _, err := apiService.ListSalaryCosts(user.ID, salary.ID, 1, 10, false)
+	listWithPast, _, err := apiService.ListSalaryCosts(context.Background(), user.ID, salary.ID, 1, 10, false)
 	assert.NoError(t, err)
 	if assert.Len(t, listWithPast, 1) {
 		assert.Equal(t, "2026-03-01", listWithPast[0].CalculatedNextExecutionDate.ToFormattedTime(utils.InternalDateFormat))
 		assert.Equal(t, int64(450_00*6), int64(listWithPast[0].CalculatedNextCost))
 	}
 
-	err = apiService.DeleteSalaryCost(user.ID, salaryCost.ID)
+	err = apiService.DeleteSalaryCost(context.Background(), user.ID, salaryCost.ID)
 	assert.NoError(t, err)
 }
 
@@ -1601,7 +1602,7 @@ func TestSalaryCostWithPastPaymentsAndTargetDate(t *testing.T) {
 	employee, err := CreateEmployee(apiService, user.ID, "Target Date Employee")
 	assert.NoError(t, err)
 
-	salary, err := apiService.CreateSalary(models.CreateSalary{
+	salary, err := apiService.CreateSalary(context.Background(), models.CreateSalary{
 		HoursPerMonth:       160,
 		Amount:              10000_00,
 		Cycle:               "monthly",
@@ -1632,7 +1633,7 @@ func TestSalaryCostWithPastPaymentsAndTargetDate(t *testing.T) {
 		LabelID:          nil,
 	}
 
-	salaryCost, err := apiService.CreateSalaryCost(createPayload, user.ID, salary.ID)
+	salaryCost, err := apiService.CreateSalaryCost(context.Background(), createPayload, user.ID, salary.ID)
 	assert.NoError(t, err)
 
 	assert.GreaterOrEqual(t, len(salaryCost.CalculatedCostDetails), 2)
@@ -1646,19 +1647,19 @@ func TestSalaryCostWithPastPaymentsAndTargetDate(t *testing.T) {
 	assert.Equal(t, int64(300_00*12), int64(salaryCost.CalculatedNextCost))
 	assert.Equal(t, "2027-01-01", salaryCost.CalculatedNextExecutionDate.ToFormattedTime(utils.InternalDateFormat))
 
-	costIncludingPast, err := apiService.GetSalaryCost(user.ID, salaryCost.ID, false)
+	costIncludingPast, err := apiService.GetSalaryCost(context.Background(), user.ID, salaryCost.ID, false)
 	assert.NoError(t, err)
 	assert.Equal(t, "2026-01-01", costIncludingPast.CalculatedNextExecutionDate.ToFormattedTime(utils.InternalDateFormat))
 	assert.Equal(t, int64(300_00*12), int64(costIncludingPast.CalculatedNextCost))
 
-	listWithPast, _, err := apiService.ListSalaryCosts(user.ID, salary.ID, 1, 10, false)
+	listWithPast, _, err := apiService.ListSalaryCosts(context.Background(), user.ID, salary.ID, 1, 10, false)
 	assert.NoError(t, err)
 	if assert.Len(t, listWithPast, 1) {
 		assert.Equal(t, "2026-01-01", listWithPast[0].CalculatedNextExecutionDate.ToFormattedTime(utils.InternalDateFormat))
 		assert.Equal(t, int64(300_00*12), int64(listWithPast[0].CalculatedNextCost))
 	}
 
-	err = apiService.DeleteSalaryCost(user.ID, salaryCost.ID)
+	err = apiService.DeleteSalaryCost(context.Background(), user.ID, salaryCost.ID)
 	assert.NoError(t, err)
 }
 
@@ -1681,7 +1682,7 @@ func TestSalaryCostTargetDateLeapYearMonthly(t *testing.T) {
 	employee, err := CreateEmployee(apiService, user.ID, "Leap Monthly Employee")
 	assert.NoError(t, err)
 
-	salary, err := apiService.CreateSalary(models.CreateSalary{
+	salary, err := apiService.CreateSalary(context.Background(), models.CreateSalary{
 		HoursPerMonth:       160,
 		Amount:              10000_00,
 		Cycle:               "monthly",
@@ -1712,7 +1713,7 @@ func TestSalaryCostTargetDateLeapYearMonthly(t *testing.T) {
 		LabelID:          nil,
 	}
 
-	salaryCost, err := apiService.CreateSalaryCost(createPayload, user.ID, salary.ID)
+	salaryCost, err := apiService.CreateSalaryCost(context.Background(), createPayload, user.ID, salary.ID)
 	assert.NoError(t, err)
 
 	if assert.NotNil(t, salaryCost.CalculatedNextExecutionDate) {
@@ -1739,7 +1740,7 @@ func TestSalaryCostTargetDateLeapYearMonthly(t *testing.T) {
 	}
 	assert.True(t, foundFebNonLeap, "expected a detail for February in the non-leap year 2025")
 
-	costIncludingPast, err := apiService.GetSalaryCost(user.ID, salaryCost.ID, false)
+	costIncludingPast, err := apiService.GetSalaryCost(context.Background(), user.ID, salaryCost.ID, false)
 	assert.NoError(t, err)
 	if assert.NotNil(t, costIncludingPast.CalculatedNextExecutionDate) {
 		assert.Equal(t, "2024-02-01", costIncludingPast.CalculatedNextExecutionDate.ToFormattedTime(utils.InternalDateFormat))
@@ -1747,7 +1748,7 @@ func TestSalaryCostTargetDateLeapYearMonthly(t *testing.T) {
 	assert.Equal(t, int64(275_00), int64(costIncludingPast.CalculatedAmount))
 	assert.Equal(t, int64(275_00), int64(costIncludingPast.CalculatedNextCost))
 
-	err = apiService.DeleteSalaryCost(user.ID, salaryCost.ID)
+	err = apiService.DeleteSalaryCost(context.Background(), user.ID, salaryCost.ID)
 	assert.NoError(t, err)
 }
 
@@ -1770,7 +1771,7 @@ func TestSalaryCostTargetDateLeapYearAnnualOffset(t *testing.T) {
 	employee, err := CreateEmployee(apiService, user.ID, "Leap Annual Employee")
 	assert.NoError(t, err)
 
-	salary, err := apiService.CreateSalary(models.CreateSalary{
+	salary, err := apiService.CreateSalary(context.Background(), models.CreateSalary{
 		HoursPerMonth:       160,
 		Amount:              10000_00,
 		Cycle:               "monthly",
@@ -1801,7 +1802,7 @@ func TestSalaryCostTargetDateLeapYearAnnualOffset(t *testing.T) {
 		LabelID:          nil,
 	}
 
-	salaryCost, err := apiService.CreateSalaryCost(createPayload, user.ID, salary.ID)
+	salaryCost, err := apiService.CreateSalaryCost(context.Background(), createPayload, user.ID, salary.ID)
 	assert.NoError(t, err)
 
 	assert.GreaterOrEqual(t, len(salaryCost.CalculatedCostDetails), 2)
@@ -1822,7 +1823,7 @@ func TestSalaryCostTargetDateLeapYearAnnualOffset(t *testing.T) {
 	assert.Equal(t, int64(3600_00), int64(salaryCost.CalculatedAmount))
 	assert.Equal(t, int64(3600_00*12), int64(salaryCost.CalculatedNextCost))
 
-	costIncludingPast, err := apiService.GetSalaryCost(user.ID, salaryCost.ID, false)
+	costIncludingPast, err := apiService.GetSalaryCost(context.Background(), user.ID, salaryCost.ID, false)
 	assert.NoError(t, err)
 	if assert.NotNil(t, costIncludingPast.CalculatedNextExecutionDate) {
 		assert.Equal(t, "2025-02-01", costIncludingPast.CalculatedNextExecutionDate.ToFormattedTime(utils.InternalDateFormat))
@@ -1830,7 +1831,7 @@ func TestSalaryCostTargetDateLeapYearAnnualOffset(t *testing.T) {
 	assert.Equal(t, int64(3600_00), int64(costIncludingPast.CalculatedAmount))
 	assert.Equal(t, int64(3600_00*12), int64(costIncludingPast.CalculatedNextCost))
 
-	err = apiService.DeleteSalaryCost(user.ID, salaryCost.ID)
+	err = apiService.DeleteSalaryCost(context.Background(), user.ID, salaryCost.ID)
 	assert.NoError(t, err)
 }
 
@@ -1860,7 +1861,7 @@ func TestSalaryCostPersistsAfterSalaryTransition(t *testing.T) {
 	assert.NoError(t, err)
 	utils.DefaultClock.SetFixedTime(&parsedDatabaseTime)
 
-	salary1, err := apiService.CreateSalary(models.CreateSalary{
+	salary1, err := apiService.CreateSalary(context.Background(), models.CreateSalary{
 		HoursPerMonth:       160,
 		Amount:              9000_00,
 		Cycle:               "monthly",
@@ -1871,7 +1872,7 @@ func TestSalaryCostPersistsAfterSalaryTransition(t *testing.T) {
 	}, user.ID, employee.ID)
 	assert.NoError(t, err)
 
-	initialCost, err := apiService.CreateSalaryCost(models.CreateSalaryCost{
+	initialCost, err := apiService.CreateSalaryCost(context.Background(), models.CreateSalaryCost{
 		Cycle:            "monthly",
 		AmountType:       "fixed",
 		Amount:           400_00,
@@ -1882,7 +1883,7 @@ func TestSalaryCostPersistsAfterSalaryTransition(t *testing.T) {
 	}, user.ID, salary1.ID)
 	assert.NoError(t, err)
 
-	preTransitionCost, err := apiService.GetSalaryCost(user.ID, initialCost.ID, false)
+	preTransitionCost, err := apiService.GetSalaryCost(context.Background(), user.ID, initialCost.ID, false)
 	assert.NoError(t, err)
 	assert.GreaterOrEqual(t, len(preTransitionCost.CalculatedCostDetails), 2)
 	assert.Equal(t, "2025-03", preTransitionCost.CalculatedCostDetails[0].Month)
@@ -1896,7 +1897,7 @@ func TestSalaryCostPersistsAfterSalaryTransition(t *testing.T) {
 	assert.NoError(t, err)
 	utils.DefaultClock.SetFixedTime(&nextParsedDatabaseTime)
 
-	salary2, err := apiService.CreateSalary(models.CreateSalary{
+	salary2, err := apiService.CreateSalary(context.Background(), models.CreateSalary{
 		HoursPerMonth:       165,
 		Amount:              9500_00,
 		Cycle:               "monthly",
@@ -1918,7 +1919,7 @@ func TestSalaryCostPersistsAfterSalaryTransition(t *testing.T) {
 		utils.DefaultClock.SetFixedTime(nil)
 	}()
 
-	postTransitionCost, err := apiService.GetSalaryCost(user.ID, initialCost.ID, false)
+	postTransitionCost, err := apiService.GetSalaryCost(context.Background(), user.ID, initialCost.ID, false)
 	assert.NoError(t, err)
 
 	if assert.NotNil(t, postTransitionCost.CalculatedNextExecutionDate) {
@@ -1942,7 +1943,7 @@ func TestSalaryCostPersistsAfterSalaryTransition(t *testing.T) {
 		assert.Equal(t, int64(400_00*3), int64(juneDetail.Amount))
 	}
 
-	err = apiService.DeleteSalaryCost(user.ID, initialCost.ID)
+	err = apiService.DeleteSalaryCost(context.Background(), user.ID, initialCost.ID)
 	assert.NoError(t, err)
 }
 
@@ -1968,7 +1969,7 @@ func TestCopySalaryCostsAcrossEmployees(t *testing.T) {
 	targetEmployee, err := CreateEmployee(apiService, user.ID, "Target Employee")
 	assert.NoError(t, err)
 
-	sourceSalary, err := apiService.CreateSalary(models.CreateSalary{
+	sourceSalary, err := apiService.CreateSalary(context.Background(), models.CreateSalary{
 		HoursPerMonth:       160,
 		Amount:              7000_00,
 		Cycle:               "monthly",
@@ -1979,7 +1980,7 @@ func TestCopySalaryCostsAcrossEmployees(t *testing.T) {
 	}, user.ID, sourceEmployee.ID)
 	assert.NoError(t, err)
 
-	targetSalary, err := apiService.CreateSalary(models.CreateSalary{
+	targetSalary, err := apiService.CreateSalary(context.Background(), models.CreateSalary{
 		HoursPerMonth:       160,
 		Amount:              6500_00,
 		Cycle:               "monthly",
@@ -1991,7 +1992,7 @@ func TestCopySalaryCostsAcrossEmployees(t *testing.T) {
 	assert.NoError(t, err)
 
 	// Existing cost on target salary should be replaced
-	originalTargetCost, err := apiService.CreateSalaryCost(models.CreateSalaryCost{
+	originalTargetCost, err := apiService.CreateSalaryCost(context.Background(), models.CreateSalaryCost{
 		Cycle:            "monthly",
 		AmountType:       "fixed",
 		Amount:           999_00,
@@ -2002,7 +2003,7 @@ func TestCopySalaryCostsAcrossEmployees(t *testing.T) {
 	}, user.ID, targetSalary.ID)
 	assert.NoError(t, err)
 
-	createdCost, err := apiService.CreateSalaryCost(models.CreateSalaryCost{
+	createdCost, err := apiService.CreateSalaryCost(context.Background(), models.CreateSalaryCost{
 		Cycle:            "monthly",
 		AmountType:       "fixed",
 		Amount:           250_00,
@@ -2014,12 +2015,12 @@ func TestCopySalaryCostsAcrossEmployees(t *testing.T) {
 	assert.NoError(t, err)
 
 	sourceSalaryID := sourceSalary.ID
-	err = apiService.CopySalaryCosts(models.CopySalaryCosts{
+	err = apiService.CopySalaryCosts(context.Background(), models.CopySalaryCosts{
 		SourceSalaryID: &sourceSalaryID,
 	}, user.ID, targetSalary.ID)
 	assert.NoError(t, err)
 
-	copiedCosts, _, err := apiService.ListSalaryCosts(user.ID, targetSalary.ID, 1, 10, true)
+	copiedCosts, _, err := apiService.ListSalaryCosts(context.Background(), user.ID, targetSalary.ID, 1, 10, true)
 	assert.NoError(t, err)
 	assert.Len(t, copiedCosts, 1)
 	assert.NotEqual(t, createdCost.ID, copiedCosts[0].ID)
@@ -2053,7 +2054,7 @@ func TestMonthlySalaryInBetweenMonthWithoutToDate(t *testing.T) {
 	assert.NoError(t, err)
 
 	// Tests
-	salary, err := apiService.CreateSalary(models.CreateSalary{
+	salary, err := apiService.CreateSalary(context.Background(), models.CreateSalary{
 		HoursPerMonth:       160,
 		Amount:              10000_00,
 		Cycle:               "monthly",
@@ -2587,16 +2588,16 @@ func TestMonthlySalaryInBetweenMonthWithoutToDate(t *testing.T) {
 				utils.DefaultClock.SetFixedTime(nil)
 			}()
 
-			salaryCost, err := apiService.CreateSalaryCost(testCase.CreateData, user.ID, salary.ID)
+			salaryCost, err := apiService.CreateSalaryCost(context.Background(), testCase.CreateData, user.ID, salary.ID)
 			assert.NoError(t, err)
 
 			// Check deduction
-			updatedSalary, err := apiService.GetSalary(user.ID, salary.ID)
+			updatedSalary, err := apiService.GetSalary(context.Background(), user.ID, salary.ID)
 			assert.NoError(t, err)
 
 			assert.Equal(t, int64(testCase.ExpectedEmployeeDeductions), int64(updatedSalary.EmployeeDeductions), "updatedSalary.EmployeeDeductions")
 
-			err = apiService.DeleteSalaryCost(user.ID, salaryCost.ID)
+			err = apiService.DeleteSalaryCost(context.Background(), user.ID, salaryCost.ID)
 			assert.NoError(t, err)
 
 			assert.Equal(t, int64(testCase.ExpectedCalculatedAmount), int64(salaryCost.CalculatedAmount), "salaryCost.CalculatedAmount")
@@ -2636,7 +2637,7 @@ func TestMonthlySalaryInBetweenMonthWithToDate(t *testing.T) {
 	assert.NoError(t, err)
 
 	// Tests
-	salary, err := apiService.CreateSalary(models.CreateSalary{
+	salary, err := apiService.CreateSalary(context.Background(), models.CreateSalary{
 		HoursPerMonth: 160,
 		// SalaryAmount of 10'000.00 CHF
 		Amount:              10000 * 100,
@@ -2938,16 +2939,16 @@ func TestMonthlySalaryInBetweenMonthWithToDate(t *testing.T) {
 				utils.DefaultClock.SetFixedTime(nil)
 			}()
 
-			salaryCost, err := apiService.CreateSalaryCost(testCase.CreateData, user.ID, salary.ID)
+			salaryCost, err := apiService.CreateSalaryCost(context.Background(), testCase.CreateData, user.ID, salary.ID)
 			assert.NoError(t, err)
 
 			// Check deduction
-			updatedSalary, err := apiService.GetSalary(user.ID, salary.ID)
+			updatedSalary, err := apiService.GetSalary(context.Background(), user.ID, salary.ID)
 			assert.NoError(t, err)
 
 			assert.Equal(t, int64(testCase.ExpectedEmployeeDeductions), int64(updatedSalary.EmployeeDeductions), "updatedSalary.EmployeeDeductions")
 
-			err = apiService.DeleteSalaryCost(user.ID, salaryCost.ID)
+			err = apiService.DeleteSalaryCost(context.Background(), user.ID, salaryCost.ID)
 			assert.NoError(t, err)
 
 			assert.Equal(t, int64(testCase.ExpectedCalculatedAmount), int64(salaryCost.CalculatedAmount), "salaryCost.CalculatedAmount")
@@ -2987,7 +2988,7 @@ func TestMultipleSalaryInBetweenMonthCases(t *testing.T) {
 	assert.NoError(t, err)
 
 	// Tests
-	salary1, err := apiService.CreateSalary(models.CreateSalary{
+	salary1, err := apiService.CreateSalary(context.Background(), models.CreateSalary{
 		HoursPerMonth:       160,
 		Amount:              7_500 * 100,
 		Cycle:               "monthly",
@@ -2998,7 +2999,7 @@ func TestMultipleSalaryInBetweenMonthCases(t *testing.T) {
 	}, user.ID, employee.ID)
 	assert.NoError(t, err)
 
-	salary2, err := apiService.CreateSalary(models.CreateSalary{
+	salary2, err := apiService.CreateSalary(context.Background(), models.CreateSalary{
 		HoursPerMonth:       160,
 		Amount:              10_000 * 100,
 		Cycle:               "monthly",
@@ -3093,16 +3094,16 @@ func TestMultipleSalaryInBetweenMonthCases(t *testing.T) {
 				utils.DefaultClock.SetFixedTime(nil)
 			}()
 
-			salaryCost, err := apiService.CreateSalaryCost(testCase.CreateData, user.ID, salary1.ID)
+			salaryCost, err := apiService.CreateSalaryCost(context.Background(), testCase.CreateData, user.ID, salary1.ID)
 			assert.NoError(t, err)
 
 			// Check deduction
-			updatedSalary, err := apiService.GetSalary(user.ID, salary1.ID)
+			updatedSalary, err := apiService.GetSalary(context.Background(), user.ID, salary1.ID)
 			assert.NoError(t, err)
 
 			assert.Equal(t, int64(testCase.ExpectedEmployeeDeductions), int64(updatedSalary.EmployeeDeductions), "updatedSalary.EmployeeDeductions")
 
-			err = apiService.DeleteSalaryCost(user.ID, salaryCost.ID)
+			err = apiService.DeleteSalaryCost(context.Background(), user.ID, salaryCost.ID)
 			assert.NoError(t, err)
 
 			assert.Equal(t, int64(testCase.ExpectedCalculatedAmount), int64(salaryCost.CalculatedAmount), "salaryCost.CalculatedAmount")
@@ -3130,16 +3131,16 @@ func TestMultipleSalaryInBetweenMonthCases(t *testing.T) {
 				utils.DefaultClock.SetFixedTime(nil)
 			}()
 
-			salaryCost, err := apiService.CreateSalaryCost(testCase.CreateData, user.ID, salary2.ID)
+			salaryCost, err := apiService.CreateSalaryCost(context.Background(), testCase.CreateData, user.ID, salary2.ID)
 			assert.NoError(t, err)
 
 			// Check deduction
-			updatedSalary, err := apiService.GetSalary(user.ID, salary2.ID)
+			updatedSalary, err := apiService.GetSalary(context.Background(), user.ID, salary2.ID)
 			assert.NoError(t, err)
 
 			assert.Equal(t, int64(testCase.ExpectedEmployeeDeductions), int64(updatedSalary.EmployeeDeductions), "updatedSalary.EmployeeDeductions")
 
-			err = apiService.DeleteSalaryCost(user.ID, salaryCost.ID)
+			err = apiService.DeleteSalaryCost(context.Background(), user.ID, salaryCost.ID)
 			assert.NoError(t, err)
 
 			assert.Equal(t, int64(testCase.ExpectedCalculatedAmount), int64(salaryCost.CalculatedAmount), "salaryCost.CalculatedAmount")
@@ -3179,7 +3180,7 @@ func TestLongOffsetScenariosInBetweenMonth(t *testing.T) {
 	assert.NoError(t, err)
 
 	// Tests
-	salary, err := apiService.CreateSalary(models.CreateSalary{
+	salary, err := apiService.CreateSalary(context.Background(), models.CreateSalary{
 		HoursPerMonth:       160,
 		Amount:              10000_00,
 		Cycle:               "monthly",
@@ -3274,16 +3275,16 @@ func TestLongOffsetScenariosInBetweenMonth(t *testing.T) {
 				utils.DefaultClock.SetFixedTime(nil)
 			}()
 
-			salaryCost, err := apiService.CreateSalaryCost(testCase.CreateData, user.ID, salary.ID)
+			salaryCost, err := apiService.CreateSalaryCost(context.Background(), testCase.CreateData, user.ID, salary.ID)
 			assert.NoError(t, err)
 
 			// Check deduction
-			updatedSalary, err := apiService.GetSalary(user.ID, salary.ID)
+			updatedSalary, err := apiService.GetSalary(context.Background(), user.ID, salary.ID)
 			assert.NoError(t, err)
 
 			assert.Equal(t, int64(testCase.ExpectedEmployeeDeductions), int64(updatedSalary.EmployeeDeductions), "updatedSalary.EmployeeDeductions")
 
-			err = apiService.DeleteSalaryCost(user.ID, salaryCost.ID)
+			err = apiService.DeleteSalaryCost(context.Background(), user.ID, salaryCost.ID)
 			assert.NoError(t, err)
 
 			assert.Equal(t, int64(testCase.ExpectedCalculatedAmount), int64(salaryCost.CalculatedAmount), "salaryCost.CalculatedAmount")

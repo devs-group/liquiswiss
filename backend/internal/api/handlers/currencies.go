@@ -19,7 +19,7 @@ func ListCurrencies(apiService api_service.IAPIService, c *gin.Context) {
 	}
 
 	// Action
-	currencies, err := apiService.ListCurrencies(userID)
+	currencies, err := apiService.ListCurrencies(c.Request.Context(), userID)
 	if err != nil {
 		c.Status(http.StatusInternalServerError)
 		return
@@ -38,7 +38,7 @@ func GetCurrency(apiService api_service.IAPIService, c *gin.Context) {
 	}
 
 	// Action
-	currency, err := apiService.GetCurrency(currencyID)
+	currency, err := apiService.GetCurrency(c.Request.Context(), currencyID)
 	if err != nil {
 		c.Status(http.StatusInternalServerError)
 		return
@@ -62,7 +62,7 @@ func CreateCurrency(apiService api_service.IAPIService, c *gin.Context) {
 	}
 
 	// Action
-	currency, err := apiService.CreateCurrency(payload)
+	currency, err := apiService.CreateCurrency(c.Request.Context(), payload)
 	if err != nil {
 		c.Status(http.StatusInternalServerError)
 		return
@@ -91,7 +91,7 @@ func UpdateCurrency(apiService api_service.IAPIService, c *gin.Context) {
 	}
 
 	// Action
-	currency, err := apiService.UpdateCurrency(payload, currencyID)
+	currency, err := apiService.UpdateCurrency(c.Request.Context(), payload, currencyID)
 	if err != nil {
 		c.Status(http.StatusInternalServerError)
 		return

@@ -1,6 +1,7 @@
 package api_service
 
 import (
+	"context"
 	"errors"
 	"liquiswiss/internal/events"
 	"liquiswiss/pkg/logger"
@@ -9,7 +10,7 @@ import (
 	"slices"
 )
 
-func (a *APIService) ListOrganisations(userID int64, page int64, limit int64) ([]models.Organisation, int64, error) {
+func (a *APIService) ListOrganisations(ctx context.Context, userID int64, page int64, limit int64) ([]models.Organisation, int64, error) {
 	organisations, totalCount, err := a.dbService.ListOrganisations(userID, page, limit)
 	if err != nil {
 		logger.Logger.Error(err)
@@ -23,7 +24,7 @@ func (a *APIService) ListOrganisations(userID int64, page int64, limit int64) ([
 	return organisations, totalCount, nil
 }
 
-func (a *APIService) GetOrganisation(userID int64, organisationID int64) (*models.Organisation, error) {
+func (a *APIService) GetOrganisation(ctx context.Context, userID int64, organisationID int64) (*models.Organisation, error) {
 	organisation, err := a.dbService.GetOrganisation(userID, organisationID)
 	if err != nil {
 		logger.Logger.Error(err)
@@ -37,7 +38,7 @@ func (a *APIService) GetOrganisation(userID int64, organisationID int64) (*model
 	return organisation, nil
 }
 
-func (a *APIService) CreateOrganisation(payload models.CreateOrganisation, userID int64) (*models.Organisation, error) {
+func (a *APIService) CreateOrganisation(ctx context.Context, payload models.CreateOrganisation, userID int64) (*models.Organisation, error) {
 	organisationID, err := a.dbService.CreateOrganisation(payload.Name)
 	if err != nil {
 		logger.Logger.Error(err)
@@ -61,7 +62,7 @@ func (a *APIService) CreateOrganisation(payload models.CreateOrganisation, userI
 	return organisation, nil
 }
 
-func (a *APIService) UpdateOrganisation(payload models.UpdateOrganisation, userID int64, organisationID int64) (*models.Organisation, error) {
+func (a *APIService) UpdateOrganisation(ctx context.Context, payload models.UpdateOrganisation, userID int64, organisationID int64) (*models.Organisation, error) {
 	existingOrganisation, err := a.dbService.GetOrganisation(userID, organisationID)
 	if err != nil {
 		logger.Logger.Error(err)
@@ -88,7 +89,7 @@ func (a *APIService) UpdateOrganisation(payload models.UpdateOrganisation, userI
 		logger.Logger.Error(err)
 		return nil, err
 	}
-	a.notifyChange(userID, "organisation", events.ActionUpdated, organisationID)
+	a.notifyChange(ctx, userID, "organisation", events.ActionUpdated, organisationID)
 	return organisation, err
 }
 

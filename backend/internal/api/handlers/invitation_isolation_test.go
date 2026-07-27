@@ -1,6 +1,7 @@
 package handlers_test
 
 import (
+	"context"
 	"testing"
 	"time"
 
@@ -28,13 +29,13 @@ func TestListInvitations_OnlyShowsOwnOrganisation(t *testing.T) {
 	require.NoError(t, err)
 
 	// User A should only see Org A's invitations
-	invitationsA, err := env.APIService.ListOrganisationInvitations(env.UserA.ID, env.OrgA.ID)
+	invitationsA, err := env.APIService.ListOrganisationInvitations(context.Background(), env.UserA.ID, env.OrgA.ID)
 	require.NoError(t, err)
 	require.Len(t, invitationsA, 1)
 	require.Equal(t, "inviteA@test.com", invitationsA[0].Email)
 
 	// User B should only see Org B's invitations
-	invitationsB, err := env.APIService.ListOrganisationInvitations(env.UserB.ID, env.OrgB.ID)
+	invitationsB, err := env.APIService.ListOrganisationInvitations(context.Background(), env.UserB.ID, env.OrgB.ID)
 	require.NoError(t, err)
 	require.Len(t, invitationsB, 1)
 	require.Equal(t, "inviteB@test.com", invitationsB[0].Email)
@@ -53,11 +54,11 @@ func TestListInvitations_CannotAccessOtherOrganisation(t *testing.T) {
 	require.NoError(t, err)
 
 	// User B tries to list Org A's invitations - should fail
-	_, err = env.APIService.ListOrganisationInvitations(env.UserB.ID, env.OrgA.ID)
+	_, err = env.APIService.ListOrganisationInvitations(context.Background(), env.UserB.ID, env.OrgA.ID)
 	require.Error(t, err)
 
 	// User A tries to list Org B's invitations - should fail
-	_, err = env.APIService.ListOrganisationInvitations(env.UserA.ID, env.OrgB.ID)
+	_, err = env.APIService.ListOrganisationInvitations(context.Background(), env.UserA.ID, env.OrgB.ID)
 	require.Error(t, err)
 }
 
@@ -68,14 +69,14 @@ func TestCreateInvitation_CannotCreateInOtherOrganisation(t *testing.T) {
 	defer env.Conn.Close()
 
 	// User B tries to create invitation in Org A - should fail
-	_, err := env.APIService.CreateOrganisationInvitation(models.CreateInvitation{
+	_, err := env.APIService.CreateOrganisationInvitation(context.Background(), models.CreateInvitation{
 		Email: "malicious@test.com",
 		Role:  "admin",
 	}, env.UserB.ID, env.OrgA.ID)
 	require.Error(t, err)
 
 	// Verify no invitation was created
-	invitations, err := env.APIService.ListOrganisationInvitations(env.UserA.ID, env.OrgA.ID)
+	invitations, err := env.APIService.ListOrganisationInvitations(context.Background(), env.UserA.ID, env.OrgA.ID)
 	require.NoError(t, err)
 	require.Len(t, invitations, 0)
 }
@@ -93,11 +94,11 @@ func TestDeleteInvitation_CannotDeleteFromOtherOrganisation(t *testing.T) {
 	require.NoError(t, err)
 
 	// User B tries to delete Org A's invitation - should fail
-	err = env.APIService.DeleteOrganisationInvitation(env.UserB.ID, env.OrgA.ID, invitationID)
+	err = env.APIService.DeleteOrganisationInvitation(context.Background(), env.UserB.ID, env.OrgA.ID, invitationID)
 	require.Error(t, err)
 
 	// Verify invitation still exists
-	invitations, err := env.APIService.ListOrganisationInvitations(env.UserA.ID, env.OrgA.ID)
+	invitations, err := env.APIService.ListOrganisationInvitations(context.Background(), env.UserA.ID, env.OrgA.ID)
 	require.NoError(t, err)
 	require.Len(t, invitations, 1)
 }
@@ -115,7 +116,7 @@ func TestResendInvitation_CannotResendFromOtherOrganisation(t *testing.T) {
 	require.NoError(t, err)
 
 	// User B tries to resend Org A's invitation - should fail
-	err = env.APIService.ResendOrganisationInvitation(env.UserB.ID, env.OrgA.ID, invitationID)
+	err = env.APIService.ResendOrganisationInvitation(context.Background(), env.UserB.ID, env.OrgA.ID, invitationID)
 	require.Error(t, err)
 }
 
@@ -133,7 +134,7 @@ func TestAcceptInvitation_JoinsCorrectOrganisation(t *testing.T) {
 
 	// Accept the invitation
 	password := "SecurePassword123"
-	acceptedUser, _, _, _, _, err := env.APIService.AcceptInvitation(models.AcceptInvitation{
+	acceptedUser, _, _, _, _, err := env.APIService.AcceptInvitation(context.Background(), models.AcceptInvitation{
 		Token:    token,
 		Password: &password,
 	}, "Test Device", 0)
@@ -141,7 +142,7 @@ func TestAcceptInvitation_JoinsCorrectOrganisation(t *testing.T) {
 	require.NotNil(t, acceptedUser)
 
 	// User should be a member of Org A
-	membersA, err := env.APIService.ListOrganisationMembers(env.UserA.ID, env.OrgA.ID)
+	membersA, err := env.APIService.ListOrganisationMembers(context.Background(), env.UserA.ID, env.OrgA.ID)
 	require.NoError(t, err)
 
 	found := false
@@ -155,7 +156,7 @@ func TestAcceptInvitation_JoinsCorrectOrganisation(t *testing.T) {
 	require.True(t, found, "User should be a member of Org A")
 
 	// User should NOT be a member of Org B
-	membersB, err := env.APIService.ListOrganisationMembers(env.UserB.ID, env.OrgB.ID)
+	membersB, err := env.APIService.ListOrganisationMembers(context.Background(), env.UserB.ID, env.OrgB.ID)
 	require.NoError(t, err)
 
 	for _, member := range membersB {
@@ -183,13 +184,13 @@ func TestInvitation_SameEmailDifferentOrganisations(t *testing.T) {
 	require.NoError(t, err)
 
 	// Both organisations should have their own invitation
-	invitationsA, err := env.APIService.ListOrganisationInvitations(env.UserA.ID, env.OrgA.ID)
+	invitationsA, err := env.APIService.ListOrganisationInvitations(context.Background(), env.UserA.ID, env.OrgA.ID)
 	require.NoError(t, err)
 	require.Len(t, invitationsA, 1)
 	require.Equal(t, email, invitationsA[0].Email)
 	require.Equal(t, "editor", invitationsA[0].Role)
 
-	invitationsB, err := env.APIService.ListOrganisationInvitations(env.UserB.ID, env.OrgB.ID)
+	invitationsB, err := env.APIService.ListOrganisationInvitations(context.Background(), env.UserB.ID, env.OrgB.ID)
 	require.NoError(t, err)
 	require.Len(t, invitationsB, 1)
 	require.Equal(t, email, invitationsB[0].Email)

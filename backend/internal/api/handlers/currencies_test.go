@@ -2,8 +2,8 @@ package handlers_test
 
 import (
 	"github.com/stretchr/testify/assert"
-	"liquiswiss/internal/adapter/db_adapter"
 	"liquiswiss/config"
+	"liquiswiss/internal/adapter/db_adapter"
 	"liquiswiss/internal/adapter/email_adapter"
 	"liquiswiss/internal/service/api_service"
 	"liquiswiss/pkg/models"

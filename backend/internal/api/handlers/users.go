@@ -18,7 +18,7 @@ func GetProfile(apiService api_service.IAPIService, c *gin.Context) {
 	}
 
 	// Action
-	user, err := apiService.GetProfile(userID)
+	user, err := apiService.GetProfile(c.Request.Context(), userID)
 	if err != nil {
 		switch err {
 		case sql.ErrNoRows:
@@ -53,7 +53,7 @@ func UpdateProfile(apiService api_service.IAPIService, c *gin.Context) {
 	}
 
 	// Action
-	user, err := apiService.UpdateProfile(payload, userID)
+	user, err := apiService.UpdateProfile(c.Request.Context(), payload, userID)
 	if err != nil {
 		c.Status(http.StatusInternalServerError)
 		return
@@ -82,7 +82,7 @@ func UpdatePassword(apiService api_service.IAPIService, c *gin.Context) {
 	}
 
 	// Action
-	err := apiService.UpdatePassword(payload, userID)
+	err := apiService.UpdatePassword(c.Request.Context(), payload, userID)
 	if err != nil {
 		c.Status(http.StatusInternalServerError)
 		return
@@ -112,7 +112,7 @@ func SetUserCurrentOrganisation(apiService api_service.IAPIService, c *gin.Conte
 	}
 
 	// Action
-	err := apiService.SetUserCurrentOrganisation(payload, userID)
+	err := apiService.SetUserCurrentOrganisation(c.Request.Context(), payload, userID)
 	if err != nil {
 		c.Status(http.StatusInternalServerError)
 		return
@@ -131,7 +131,7 @@ func GetUserCurrentOrganisation(apiService api_service.IAPIService, c *gin.Conte
 	}
 
 	// Action
-	organisation, err := apiService.GetCurrentOrganisation(userID)
+	organisation, err := apiService.GetCurrentOrganisation(c.Request.Context(), userID)
 	if err != nil {
 		c.Status(http.StatusBadRequest)
 		return

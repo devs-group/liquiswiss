@@ -1,6 +1,7 @@
 package api_service
 
 import (
+	"context"
 	"database/sql"
 	"errors"
 	"fmt"
@@ -15,7 +16,7 @@ import (
 	"golang.org/x/crypto/bcrypt"
 )
 
-func (a *APIService) ListOrganisationInvitations(userID int64, organisationID int64) ([]models.Invitation, error) {
+func (a *APIService) ListOrganisationInvitations(ctx context.Context, userID int64, organisationID int64) ([]models.Invitation, error) {
 	// Check if user belongs to the organisation
 	organisation, err := a.dbService.GetOrganisation(userID, organisationID)
 	if err != nil {
@@ -39,7 +40,7 @@ func (a *APIService) ListOrganisationInvitations(userID int64, organisationID in
 	return invitations, nil
 }
 
-func (a *APIService) CreateOrganisationInvitation(payload models.CreateInvitation, userID int64, organisationID int64) (*models.Invitation, error) {
+func (a *APIService) CreateOrganisationInvitation(ctx context.Context, payload models.CreateInvitation, userID int64, organisationID int64) (*models.Invitation, error) {
 	// Check if user belongs to the organisation
 	organisation, err := a.dbService.GetOrganisation(userID, organisationID)
 	if err != nil {
@@ -112,11 +113,11 @@ func (a *APIService) CreateOrganisationInvitation(payload models.CreateInvitatio
 		return nil, err
 	}
 
-	a.notifyOrganisationChange(organisationID, "invitation", events.ActionCreated, invitationID)
+	a.notifyOrganisationChange(ctx, userID, organisationID, "invitation", events.ActionCreated, invitationID)
 	return invitation, nil
 }
 
-func (a *APIService) DeleteOrganisationInvitation(userID int64, organisationID int64, invitationID int64) error {
+func (a *APIService) DeleteOrganisationInvitation(ctx context.Context, userID int64, organisationID int64, invitationID int64) error {
 	// Check if user belongs to the organisation
 	organisation, err := a.dbService.GetOrganisation(userID, organisationID)
 	if err != nil {
@@ -138,11 +139,11 @@ func (a *APIService) DeleteOrganisationInvitation(userID int64, organisationID i
 		return err
 	}
 
-	a.notifyOrganisationChange(organisationID, "invitation", events.ActionDeleted, invitationID)
+	a.notifyOrganisationChange(ctx, userID, organisationID, "invitation", events.ActionDeleted, invitationID)
 	return nil
 }
 
-func (a *APIService) ResendOrganisationInvitation(userID int64, organisationID int64, invitationID int64) error {
+func (a *APIService) ResendOrganisationInvitation(ctx context.Context, userID int64, organisationID int64, invitationID int64) error {
 	// Check if user belongs to the organisation
 	organisation, err := a.dbService.GetOrganisation(userID, organisationID)
 	if err != nil {
@@ -198,11 +199,11 @@ func (a *APIService) ResendOrganisationInvitation(userID int64, organisationID i
 		logger.Logger.Error(err)
 	}
 
-	a.notifyOrganisationChange(organisationID, "invitation", events.ActionUpdated, invitationID)
+	a.notifyOrganisationChange(ctx, userID, organisationID, "invitation", events.ActionUpdated, invitationID)
 	return nil
 }
 
-func (a *APIService) CheckInvitation(token string) (*models.CheckInvitationResponse, error) {
+func (a *APIService) CheckInvitation(ctx context.Context, token string) (*models.CheckInvitationResponse, error) {
 	invitation, err := a.dbService.GetInvitationByToken(token)
 	if err != nil {
 		logger.Logger.Error(err)
@@ -235,7 +236,7 @@ func (a *APIService) CheckInvitation(token string) (*models.CheckInvitationRespo
 	}, nil
 }
 
-func (a *APIService) DeclineMyInvitation(userID int64, invitationID int64) error {
+func (a *APIService) DeclineMyInvitation(ctx context.Context, userID int64, invitationID int64) error {
 	profile, err := a.dbService.GetProfile(userID)
 	if err != nil {
 		logger.Logger.Error(err)
@@ -263,11 +264,11 @@ func (a *APIService) DeclineMyInvitation(userID int64, invitationID int64) error
 		logger.Logger.Error(err)
 		return err
 	}
-	a.notifyOrganisationChange(target.OrganisationID, "invitation", events.ActionDeleted, target.ID)
+	a.notifyOrganisationChange(ctx, userID, target.OrganisationID, "invitation", events.ActionDeleted, target.ID)
 	return nil
 }
 
-func (a *APIService) ListMyPendingInvitations(userID int64) ([]models.UserPendingInvitation, error) {
+func (a *APIService) ListMyPendingInvitations(ctx context.Context, userID int64) ([]models.UserPendingInvitation, error) {
 	profile, err := a.dbService.GetProfile(userID)
 	if err != nil {
 		logger.Logger.Error(err)
@@ -283,7 +284,7 @@ func (a *APIService) ListMyPendingInvitations(userID int64) ([]models.UserPendin
 	return invitations, nil
 }
 
-func (a *APIService) AcceptInvitation(payload models.AcceptInvitation, deviceName string, authenticatedUserID int64) (*models.User, *string, *time.Time, *string, *time.Time, error) {
+func (a *APIService) AcceptInvitation(ctx context.Context, payload models.AcceptInvitation, deviceName string, authenticatedUserID int64) (*models.User, *string, *time.Time, *string, *time.Time, error) {
 	// Get invitation by token
 	invitation, err := a.dbService.GetInvitationByToken(payload.Token)
 	if err != nil {
@@ -400,8 +401,8 @@ func (a *APIService) AcceptInvitation(payload models.AcceptInvitation, deviceNam
 	}
 
 	// Accepted: invitation gone, new member joined
-	a.notifyOrganisationChange(invitation.OrganisationID, "invitation", events.ActionDeleted, invitation.ID)
-	a.notifyOrganisationChange(invitation.OrganisationID, "member", events.ActionCreated, userID)
+	a.notifyOrganisationChange(ctx, userID, invitation.OrganisationID, "invitation", events.ActionDeleted, invitation.ID)
+	a.notifyOrganisationChange(ctx, userID, invitation.OrganisationID, "member", events.ActionCreated, userID)
 
 	// Get user profile
 	user, err := a.dbService.GetProfile(userID)

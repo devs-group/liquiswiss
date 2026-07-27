@@ -35,7 +35,7 @@ func ListSalaryCosts(apiService api_service.IAPIService, c *gin.Context) {
 	}
 
 	// Action
-	salaryCosts, totalCount, err := apiService.ListSalaryCosts(userID, salaryID, page, limit, true)
+	salaryCosts, totalCount, err := apiService.ListSalaryCosts(c.Request.Context(), userID, salaryID, page, limit, true)
 	if err != nil {
 		c.Status(http.StatusInternalServerError)
 		return
@@ -62,7 +62,7 @@ func GetSalaryCost(apiService api_service.IAPIService, c *gin.Context) {
 	}
 
 	// Action
-	salaryCost, err := apiService.GetSalaryCost(userID, salaryCostID, true)
+	salaryCost, err := apiService.GetSalaryCost(c.Request.Context(), userID, salaryCostID, true)
 	if err != nil {
 		switch err {
 		case sql.ErrNoRows:
@@ -102,7 +102,7 @@ func CreateSalaryCost(apiService api_service.IAPIService, c *gin.Context) {
 	}
 
 	// Action
-	salaryCost, err := apiService.CreateSalaryCost(payload, userID, salaryID)
+	salaryCost, err := apiService.CreateSalaryCost(c.Request.Context(), payload, userID, salaryID)
 	if err != nil {
 		switch err {
 		case sql.ErrNoRows:
@@ -143,7 +143,7 @@ func UpdateSalaryCost(apiService api_service.IAPIService, c *gin.Context) {
 	}
 
 	// Action
-	salaryCost, err := apiService.UpdateSalaryCost(payload, userID, salaryCostID)
+	salaryCost, err := apiService.UpdateSalaryCost(c.Request.Context(), payload, userID, salaryCostID)
 	if err != nil {
 		c.Status(http.StatusInternalServerError)
 		return
@@ -167,7 +167,7 @@ func DeleteSalaryCost(apiService api_service.IAPIService, c *gin.Context) {
 	}
 
 	// Action
-	err = apiService.DeleteSalaryCost(userID, salaryCostID)
+	err = apiService.DeleteSalaryCost(c.Request.Context(), userID, salaryCostID)
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 		return
@@ -206,7 +206,7 @@ func CopySalaryCosts(apiService api_service.IAPIService, c *gin.Context) {
 	}
 
 	// Action
-	err = apiService.CopySalaryCosts(payload, userID, salaryID)
+	err = apiService.CopySalaryCosts(c.Request.Context(), payload, userID, salaryID)
 	if err != nil {
 		switch err {
 		case sql.ErrNoRows:

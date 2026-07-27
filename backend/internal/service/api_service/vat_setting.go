@@ -1,13 +1,14 @@
 package api_service
 
 import (
+	"context"
 	"liquiswiss/internal/events"
 	"liquiswiss/pkg/logger"
 	"liquiswiss/pkg/models"
 	"liquiswiss/pkg/utils"
 )
 
-func (a *APIService) GetVatSetting(userID int64) (*models.VatSetting, error) {
+func (a *APIService) GetVatSetting(ctx context.Context, userID int64) (*models.VatSetting, error) {
 	vatSetting, err := a.dbService.GetVatSetting(userID)
 	if err != nil {
 		logger.Logger.Error(err)
@@ -24,7 +25,7 @@ func (a *APIService) GetVatSetting(userID int64) (*models.VatSetting, error) {
 	return vatSetting, nil
 }
 
-func (a *APIService) CreateVatSetting(payload models.CreateVatSetting, userID int64) (*models.VatSetting, error) {
+func (a *APIService) CreateVatSetting(ctx context.Context, payload models.CreateVatSetting, userID int64) (*models.VatSetting, error) {
 	// Check if a VAT setting already exists for this organization
 	existingSetting, err := a.dbService.GetVatSetting(userID)
 	if err != nil {
@@ -39,7 +40,7 @@ func (a *APIService) CreateVatSetting(payload models.CreateVatSetting, userID in
 			TransactionMonthOffset: &payload.TransactionMonthOffset,
 			Interval:               &payload.Interval,
 		}
-		return a.UpdateVatSetting(updatePayload, userID)
+		return a.UpdateVatSetting(ctx, updatePayload, userID)
 	}
 
 	_, err = a.dbService.CreateVatSetting(payload, userID)
@@ -57,11 +58,11 @@ func (a *APIService) CreateVatSetting(payload models.CreateVatSetting, userID in
 		logger.Logger.Error(err)
 		return nil, err
 	}
-	a.notifyChange(userID, "vat_setting", events.ActionCreated, vatSetting.ID)
+	a.notifyChange(ctx, userID, "vat_setting", events.ActionCreated, vatSetting.ID)
 	return vatSetting, nil
 }
 
-func (a *APIService) UpdateVatSetting(payload models.UpdateVatSetting, userID int64) (*models.VatSetting, error) {
+func (a *APIService) UpdateVatSetting(ctx context.Context, payload models.UpdateVatSetting, userID int64) (*models.VatSetting, error) {
 	_, err := a.dbService.GetVatSetting(userID)
 	if err != nil {
 		logger.Logger.Error(err)
@@ -82,11 +83,11 @@ func (a *APIService) UpdateVatSetting(payload models.UpdateVatSetting, userID in
 		logger.Logger.Error(err)
 		return nil, err
 	}
-	a.notifyChange(userID, "vat_setting", events.ActionUpdated, vatSetting.ID)
+	a.notifyChange(ctx, userID, "vat_setting", events.ActionUpdated, vatSetting.ID)
 	return vatSetting, nil
 }
 
-func (a *APIService) DeleteVatSetting(userID int64) error {
+func (a *APIService) DeleteVatSetting(ctx context.Context, userID int64) error {
 	_, err := a.dbService.GetVatSetting(userID)
 	if err != nil {
 		logger.Logger.Error(err)
@@ -97,6 +98,6 @@ func (a *APIService) DeleteVatSetting(userID int64) error {
 		logger.Logger.Error(err)
 		return err
 	}
-	a.notifyChange(userID, "vat_setting", events.ActionDeleted, 0)
+	a.notifyChange(ctx, userID, "vat_setting", events.ActionDeleted, 0)
 	return nil
 }

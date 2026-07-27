@@ -33,7 +33,7 @@ func ListBankAccounts(apiService api_service.IAPIService, c *gin.Context) {
 	search := c.Query("search")
 
 	// Action
-	bankAccounts, totalCount, err := apiService.ListBankAccounts(userID, page, limit, sortBy, sortOrder, search)
+	bankAccounts, totalCount, err := apiService.ListBankAccounts(c.Request.Context(), userID, page, limit, sortBy, sortOrder, search)
 	if err != nil {
 		c.Status(http.StatusInternalServerError)
 		return
@@ -60,7 +60,7 @@ func GetBankAccount(apiService api_service.IAPIService, c *gin.Context) {
 	}
 
 	// Action
-	bankAccount, err := apiService.GetBankAccount(userID, bankAccountID)
+	bankAccount, err := apiService.GetBankAccount(c.Request.Context(), userID, bankAccountID)
 	if err != nil {
 		switch err {
 		case sql.ErrNoRows:
@@ -95,7 +95,7 @@ func CreateBankAccount(apiService api_service.IAPIService, c *gin.Context) {
 	}
 
 	// Action
-	bankAccount, err := apiService.CreateBankAccount(payload, userID)
+	bankAccount, err := apiService.CreateBankAccount(c.Request.Context(), payload, userID)
 	if err != nil {
 		c.Status(http.StatusInternalServerError)
 		return
@@ -129,7 +129,7 @@ func UpdateBankAccount(apiService api_service.IAPIService, c *gin.Context) {
 	}
 
 	// Create
-	bankAccount, err := apiService.UpdateBankAccount(payload, userID, bankAccountID)
+	bankAccount, err := apiService.UpdateBankAccount(c.Request.Context(), payload, userID, bankAccountID)
 	if err != nil {
 		c.Status(http.StatusInternalServerError)
 		return
@@ -153,7 +153,7 @@ func DeleteBankAccount(apiService api_service.IAPIService, c *gin.Context) {
 	}
 
 	// Create
-	err = apiService.DeleteBankAccount(userID, bankAccountID)
+	err = apiService.DeleteBankAccount(c.Request.Context(), userID, bankAccountID)
 	if err != nil {
 		c.Status(http.StatusInternalServerError)
 		return

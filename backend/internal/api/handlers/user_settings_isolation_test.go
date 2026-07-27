@@ -1,6 +1,7 @@
 package handlers_test
 
 import (
+	"context"
 	"encoding/json"
 	"testing"
 
@@ -16,7 +17,7 @@ func TestGetUserSetting_AutoCreation(t *testing.T) {
 	defer env.Conn.Close()
 
 	// User A gets their settings (should auto-create)
-	settingA, err := env.APIService.GetUserSetting(env.UserA.ID)
+	settingA, err := env.APIService.GetUserSetting(context.Background(), env.UserA.ID)
 	require.NoError(t, err)
 	require.NotNil(t, settingA)
 	require.Equal(t, env.UserA.ID, settingA.UserID)
@@ -30,11 +31,11 @@ func TestGetUserSetting_Isolation(t *testing.T) {
 	defer env.Conn.Close()
 
 	// Get settings for both users (auto-creates with defaults)
-	settingA, err := env.APIService.GetUserSetting(env.UserA.ID)
+	settingA, err := env.APIService.GetUserSetting(context.Background(), env.UserA.ID)
 	require.NoError(t, err)
 	require.NotNil(t, settingA)
 
-	settingB, err := env.APIService.GetUserSetting(env.UserB.ID)
+	settingB, err := env.APIService.GetUserSetting(context.Background(), env.UserB.ID)
 	require.NoError(t, err)
 	require.NotNil(t, settingB)
 
@@ -51,28 +52,28 @@ func TestUpdateUserSetting_Isolation(t *testing.T) {
 	defer env.Conn.Close()
 
 	// Get settings for both users (auto-creates)
-	_, err := env.APIService.GetUserSetting(env.UserA.ID)
+	_, err := env.APIService.GetUserSetting(context.Background(), env.UserA.ID)
 	require.NoError(t, err)
-	_, err = env.APIService.GetUserSetting(env.UserB.ID)
+	_, err = env.APIService.GetUserSetting(context.Background(), env.UserB.ID)
 	require.NoError(t, err)
 
 	// User A updates their settings
 	newTab := "settings/automation"
 	skipQuestion := true
-	_, err = env.APIService.UpdateUserSetting(models.UpdateUserSetting{
+	_, err = env.APIService.UpdateUserSetting(context.Background(), models.UpdateUserSetting{
 		SettingsTab:                    &newTab,
 		SkipOrganisationSwitchQuestion: &skipQuestion,
 	}, env.UserA.ID)
 	require.NoError(t, err)
 
 	// Verify User A's settings were updated
-	settingA, err := env.APIService.GetUserSetting(env.UserA.ID)
+	settingA, err := env.APIService.GetUserSetting(context.Background(), env.UserA.ID)
 	require.NoError(t, err)
 	require.Equal(t, "settings/automation", settingA.SettingsTab)
 	require.True(t, settingA.SkipOrganisationSwitchQuestion)
 
 	// Verify User B's settings were NOT affected
-	settingB, err := env.APIService.GetUserSetting(env.UserB.ID)
+	settingB, err := env.APIService.GetUserSetting(context.Background(), env.UserB.ID)
 	require.NoError(t, err)
 	require.Equal(t, "settings/profile", settingB.SettingsTab)
 	require.False(t, settingB.SkipOrganisationSwitchQuestion)
@@ -85,7 +86,7 @@ func TestGetUserOrganisationSetting_AutoCreation(t *testing.T) {
 	defer env.Conn.Close()
 
 	// User A gets their organisation settings (should auto-create)
-	setting, err := env.APIService.GetUserOrganisationSetting(env.UserA.ID)
+	setting, err := env.APIService.GetUserOrganisationSetting(context.Background(), env.UserA.ID)
 	require.NoError(t, err)
 	require.NotNil(t, setting)
 	require.Equal(t, env.UserA.ID, setting.UserID)
@@ -111,11 +112,11 @@ func TestGetUserOrganisationSetting_CrossOrgIsolation(t *testing.T) {
 	defer env.Conn.Close()
 
 	// Get organisation settings for both users
-	settingA, err := env.APIService.GetUserOrganisationSetting(env.UserA.ID)
+	settingA, err := env.APIService.GetUserOrganisationSetting(context.Background(), env.UserA.ID)
 	require.NoError(t, err)
 	require.NotNil(t, settingA)
 
-	settingB, err := env.APIService.GetUserOrganisationSetting(env.UserB.ID)
+	settingB, err := env.APIService.GetUserOrganisationSetting(context.Background(), env.UserB.ID)
 	require.NoError(t, err)
 	require.NotNil(t, settingB)
 
@@ -131,9 +132,9 @@ func TestUpdateUserOrganisationSetting_CrossOrgIsolation(t *testing.T) {
 	defer env.Conn.Close()
 
 	// Get settings for both users (auto-creates)
-	_, err := env.APIService.GetUserOrganisationSetting(env.UserA.ID)
+	_, err := env.APIService.GetUserOrganisationSetting(context.Background(), env.UserA.ID)
 	require.NoError(t, err)
-	_, err = env.APIService.GetUserOrganisationSetting(env.UserB.ID)
+	_, err = env.APIService.GetUserOrganisationSetting(context.Background(), env.UserB.ID)
 	require.NoError(t, err)
 
 	// User A updates their organisation settings
@@ -141,7 +142,7 @@ func TestUpdateUserOrganisationSetting_CrossOrgIsolation(t *testing.T) {
 	newPerformance := 80
 	newDisplay := "list"
 	childDetails := json.RawMessage(`["child1","child2"]`)
-	_, err = env.APIService.UpdateUserOrganisationSetting(models.UpdateUserOrganisationSetting{
+	_, err = env.APIService.UpdateUserOrganisationSetting(context.Background(), models.UpdateUserOrganisationSetting{
 		ForecastMonths:       &newMonths,
 		ForecastPerformance:  &newPerformance,
 		EmployeeDisplay:      &newDisplay,
@@ -150,7 +151,7 @@ func TestUpdateUserOrganisationSetting_CrossOrgIsolation(t *testing.T) {
 	require.NoError(t, err)
 
 	// Verify User A's settings were updated
-	settingA, err := env.APIService.GetUserOrganisationSetting(env.UserA.ID)
+	settingA, err := env.APIService.GetUserOrganisationSetting(context.Background(), env.UserA.ID)
 	require.NoError(t, err)
 	require.Equal(t, 24, settingA.ForecastMonths)
 	require.Equal(t, 80, settingA.ForecastPerformance)
@@ -158,7 +159,7 @@ func TestUpdateUserOrganisationSetting_CrossOrgIsolation(t *testing.T) {
 	require.JSONEq(t, `["child1","child2"]`, string(settingA.ForecastChildDetails))
 
 	// Verify User B's settings were NOT affected
-	settingB, err := env.APIService.GetUserOrganisationSetting(env.UserB.ID)
+	settingB, err := env.APIService.GetUserOrganisationSetting(context.Background(), env.UserB.ID)
 	require.NoError(t, err)
 	require.Equal(t, 13, settingB.ForecastMonths)
 	require.Equal(t, 100, settingB.ForecastPerformance)
@@ -172,7 +173,7 @@ func TestUpdateUserOrganisationSetting_AllFields(t *testing.T) {
 	defer env.Conn.Close()
 
 	// Get settings (auto-creates)
-	_, err := env.APIService.GetUserOrganisationSetting(env.UserA.ID)
+	_, err := env.APIService.GetUserOrganisationSetting(context.Background(), env.UserA.ID)
 	require.NoError(t, err)
 
 	// Update all fields
@@ -193,7 +194,7 @@ func TestUpdateUserOrganisationSetting_AllFields(t *testing.T) {
 	baSortBy := "balance"
 	baSortOrder := "DESC"
 
-	_, err = env.APIService.UpdateUserOrganisationSetting(models.UpdateUserOrganisationSetting{
+	_, err = env.APIService.UpdateUserOrganisationSetting(context.Background(), models.UpdateUserOrganisationSetting{
 		ForecastMonths:          &months,
 		ForecastPerformance:     &performance,
 		ForecastRevenueDetails:  &revenueDetails,
@@ -214,7 +215,7 @@ func TestUpdateUserOrganisationSetting_AllFields(t *testing.T) {
 	require.NoError(t, err)
 
 	// Verify all fields were updated
-	setting, err := env.APIService.GetUserOrganisationSetting(env.UserA.ID)
+	setting, err := env.APIService.GetUserOrganisationSetting(context.Background(), env.UserA.ID)
 	require.NoError(t, err)
 	require.Equal(t, 36, setting.ForecastMonths)
 	require.Equal(t, 150, setting.ForecastPerformance)

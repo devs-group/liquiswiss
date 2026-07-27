@@ -1,12 +1,13 @@
 package api_service
 
 import (
+	"context"
 	"liquiswiss/pkg/logger"
 	"liquiswiss/pkg/models"
 	"liquiswiss/pkg/utils"
 )
 
-func (a *APIService) ListCurrencies(userID int64) ([]models.Currency, error) {
+func (a *APIService) ListCurrencies(ctx context.Context, userID int64) ([]models.Currency, error) {
 	currencies, err := a.dbService.ListCurrencies(userID)
 	if err != nil {
 		logger.Logger.Error(err)
@@ -20,7 +21,7 @@ func (a *APIService) ListCurrencies(userID int64) ([]models.Currency, error) {
 	return currencies, nil
 }
 
-func (a *APIService) GetCurrency(currencyID int64) (*models.Currency, error) {
+func (a *APIService) GetCurrency(ctx context.Context, currencyID int64) (*models.Currency, error) {
 	currency, err := a.dbService.GetCurrency(currencyID)
 	if err != nil {
 		logger.Logger.Error(err)
@@ -34,7 +35,7 @@ func (a *APIService) GetCurrency(currencyID int64) (*models.Currency, error) {
 	return currency, nil
 }
 
-func (a *APIService) CreateCurrency(payload models.CreateCurrency) (*models.Currency, error) {
+func (a *APIService) CreateCurrency(ctx context.Context, payload models.CreateCurrency) (*models.Currency, error) {
 	currencyID, err := a.dbService.CreateCurrency(payload)
 	if err != nil {
 		logger.Logger.Error(err)
@@ -53,7 +54,7 @@ func (a *APIService) CreateCurrency(payload models.CreateCurrency) (*models.Curr
 	return currency, nil
 }
 
-func (a *APIService) UpdateCurrency(payload models.UpdateCurrency, currencyID int64) (*models.Currency, error) {
+func (a *APIService) UpdateCurrency(ctx context.Context, payload models.UpdateCurrency, currencyID int64) (*models.Currency, error) {
 	err := a.dbService.UpdateCurrency(payload, currencyID)
 	if err != nil {
 		logger.Logger.Error(err)
@@ -72,7 +73,7 @@ func (a *APIService) UpdateCurrency(payload models.UpdateCurrency, currencyID in
 	return currency, nil
 }
 
-func (a *APIService) CountCurrencies() (int64, error) {
+func (a *APIService) CountCurrencies(ctx context.Context) (int64, error) {
 	totalCount, err := a.dbService.CountCurrencies()
 	if err != nil {
 		return 0, err

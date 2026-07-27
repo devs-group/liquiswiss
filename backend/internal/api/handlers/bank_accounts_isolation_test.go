@@ -1,6 +1,7 @@
 package handlers_test
 
 import (
+	"context"
 	"database/sql"
 	"testing"
 
@@ -16,14 +17,14 @@ func TestListBankAccounts_CrossOrgIsolation(t *testing.T) {
 	defer env.Conn.Close()
 
 	// Create bank accounts for User A's organisation
-	baA1, err := env.APIService.CreateBankAccount(models.CreateBankAccount{
+	baA1, err := env.APIService.CreateBankAccount(context.Background(), models.CreateBankAccount{
 		Name:     "Account A1",
 		Amount:   100000,
 		Currency: *env.Currency.ID,
 	}, env.UserA.ID)
 	require.NoError(t, err)
 
-	baA2, err := env.APIService.CreateBankAccount(models.CreateBankAccount{
+	baA2, err := env.APIService.CreateBankAccount(context.Background(), models.CreateBankAccount{
 		Name:     "Account A2",
 		Amount:   200000,
 		Currency: *env.Currency.ID,
@@ -31,7 +32,7 @@ func TestListBankAccounts_CrossOrgIsolation(t *testing.T) {
 	require.NoError(t, err)
 
 	// Create bank accounts for User B's organisation
-	baB1, err := env.APIService.CreateBankAccount(models.CreateBankAccount{
+	baB1, err := env.APIService.CreateBankAccount(context.Background(), models.CreateBankAccount{
 		Name:     "Account B1",
 		Amount:   300000,
 		Currency: *env.Currency.ID,
@@ -39,7 +40,7 @@ func TestListBankAccounts_CrossOrgIsolation(t *testing.T) {
 	require.NoError(t, err)
 
 	// User A should only see their own bank accounts
-	accountsA, totalA, err := env.APIService.ListBankAccounts(env.UserA.ID, 1, 100, "name", "ASC", "")
+	accountsA, totalA, err := env.APIService.ListBankAccounts(context.Background(), env.UserA.ID, 1, 100, "name", "ASC", "")
 	require.NoError(t, err)
 	require.Equal(t, int64(2), totalA)
 	require.Len(t, accountsA, 2)
@@ -50,7 +51,7 @@ func TestListBankAccounts_CrossOrgIsolation(t *testing.T) {
 	require.NotContains(t, accountIDs, baB1.ID)
 
 	// User B should only see their own bank accounts
-	accountsB, totalB, err := env.APIService.ListBankAccounts(env.UserB.ID, 1, 100, "name", "ASC", "")
+	accountsB, totalB, err := env.APIService.ListBankAccounts(context.Background(), env.UserB.ID, 1, 100, "name", "ASC", "")
 	require.NoError(t, err)
 	require.Equal(t, int64(1), totalB)
 	require.Len(t, accountsB, 1)
@@ -64,7 +65,7 @@ func TestGetBankAccount_CrossOrgIsolation(t *testing.T) {
 	defer env.Conn.Close()
 
 	// Create bank account for User A's organisation
-	baA, err := env.APIService.CreateBankAccount(models.CreateBankAccount{
+	baA, err := env.APIService.CreateBankAccount(context.Background(), models.CreateBankAccount{
 		Name:     "Account A",
 		Amount:   100000,
 		Currency: *env.Currency.ID,
@@ -72,13 +73,13 @@ func TestGetBankAccount_CrossOrgIsolation(t *testing.T) {
 	require.NoError(t, err)
 
 	// User A can get their own bank account
-	fetchedBA, err := env.APIService.GetBankAccount(env.UserA.ID, baA.ID)
+	fetchedBA, err := env.APIService.GetBankAccount(context.Background(), env.UserA.ID, baA.ID)
 	require.NoError(t, err)
 	require.Equal(t, baA.ID, fetchedBA.ID)
 	require.Equal(t, "Account A", fetchedBA.Name)
 
 	// User B cannot get User A's bank account (should return sql.ErrNoRows)
-	_, err = env.APIService.GetBankAccount(env.UserB.ID, baA.ID)
+	_, err = env.APIService.GetBankAccount(context.Background(), env.UserB.ID, baA.ID)
 	require.Error(t, err)
 	require.ErrorIs(t, err, sql.ErrNoRows)
 }
@@ -90,7 +91,7 @@ func TestUpdateBankAccount_CrossOrgIsolation(t *testing.T) {
 	defer env.Conn.Close()
 
 	// Create bank account for User A's organisation
-	baA, err := env.APIService.CreateBankAccount(models.CreateBankAccount{
+	baA, err := env.APIService.CreateBankAccount(context.Background(), models.CreateBankAccount{
 		Name:     "Account A Original",
 		Amount:   100000,
 		Currency: *env.Currency.ID,
@@ -99,26 +100,26 @@ func TestUpdateBankAccount_CrossOrgIsolation(t *testing.T) {
 
 	// User A can update their own bank account
 	newNameA := "Account A Updated By A"
-	_, err = env.APIService.UpdateBankAccount(models.UpdateBankAccount{
+	_, err = env.APIService.UpdateBankAccount(context.Background(), models.UpdateBankAccount{
 		Name: &newNameA,
 	}, env.UserA.ID, baA.ID)
 	require.NoError(t, err)
 
 	// Verify the update worked
-	updatedBA, err := env.APIService.GetBankAccount(env.UserA.ID, baA.ID)
+	updatedBA, err := env.APIService.GetBankAccount(context.Background(), env.UserA.ID, baA.ID)
 	require.NoError(t, err)
 	require.Equal(t, "Account A Updated By A", updatedBA.Name)
 
 	// User B attempts to update User A's bank account (should fail with ErrNoRows)
 	maliciousName := "Hacked By B"
-	_, err = env.APIService.UpdateBankAccount(models.UpdateBankAccount{
+	_, err = env.APIService.UpdateBankAccount(context.Background(), models.UpdateBankAccount{
 		Name: &maliciousName,
 	}, env.UserB.ID, baA.ID)
 	require.Error(t, err)
 	require.ErrorIs(t, err, sql.ErrNoRows)
 
 	// Verify Bank Account A's name was NOT changed by User B
-	baAfterAttempt, err := env.APIService.GetBankAccount(env.UserA.ID, baA.ID)
+	baAfterAttempt, err := env.APIService.GetBankAccount(context.Background(), env.UserA.ID, baA.ID)
 	require.NoError(t, err)
 	require.Equal(t, "Account A Updated By A", baAfterAttempt.Name)
 	require.NotEqual(t, "Hacked By B", baAfterAttempt.Name)
@@ -131,7 +132,7 @@ func TestDeleteBankAccount_CrossOrgIsolation(t *testing.T) {
 	defer env.Conn.Close()
 
 	// Create bank account for User A's organisation
-	baA, err := env.APIService.CreateBankAccount(models.CreateBankAccount{
+	baA, err := env.APIService.CreateBankAccount(context.Background(), models.CreateBankAccount{
 		Name:     "Account A To Delete",
 		Amount:   100000,
 		Currency: *env.Currency.ID,
@@ -143,7 +144,7 @@ func TestDeleteBankAccount_CrossOrgIsolation(t *testing.T) {
 	// The delete should not return an error but should affect 0 rows
 
 	// Verify Bank Account A still exists and was NOT deleted
-	baAfterDelete, err := env.APIService.GetBankAccount(env.UserA.ID, baA.ID)
+	baAfterDelete, err := env.APIService.GetBankAccount(context.Background(), env.UserA.ID, baA.ID)
 	require.NoError(t, err)
 	require.NotNil(t, baAfterDelete)
 	require.Equal(t, baA.ID, baAfterDelete.ID)
@@ -153,7 +154,7 @@ func TestDeleteBankAccount_CrossOrgIsolation(t *testing.T) {
 	require.NoError(t, err)
 
 	// Verify Bank Account A is now deleted
-	_, err = env.APIService.GetBankAccount(env.UserA.ID, baA.ID)
+	_, err = env.APIService.GetBankAccount(context.Background(), env.UserA.ID, baA.ID)
 	require.Error(t, err)
 	require.ErrorIs(t, err, sql.ErrNoRows)
 }

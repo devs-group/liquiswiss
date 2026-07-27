@@ -1,13 +1,14 @@
 package handlers_test
 
 import (
+	"context"
 	"testing"
 	"time"
 
 	"github.com/stretchr/testify/require"
 
-	"liquiswiss/internal/adapter/db_adapter"
 	"liquiswiss/config"
+	"liquiswiss/internal/adapter/db_adapter"
 	"liquiswiss/internal/adapter/email_adapter"
 	"liquiswiss/internal/service/api_service"
 	"liquiswiss/pkg/models"
@@ -55,13 +56,13 @@ func TestCalculateForecast_VATSettlement_DBIntegration(t *testing.T) {
 	// Ensure organisation uses CHF to match test data.
 	require.Equal(t, *currencyCHF.Code, *organisation.Currency.Code)
 
-	category, err := apiService.CreateCategory(models.CreateCategory{Name: "Sales"}, &user.ID)
+	category, err := apiService.CreateCategory(context.Background(), models.CreateCategory{Name: "Sales"}, &user.ID)
 	require.NoError(t, err)
 
-	vat, err := apiService.CreateVat(models.CreateVat{Value: 810}, user.ID)
+	vat, err := apiService.CreateVat(context.Background(), models.CreateVat{Value: 810}, user.ID)
 	require.NoError(t, err)
 
-	vatSetting, err := apiService.CreateVatSetting(models.CreateVatSetting{
+	vatSetting, err := apiService.CreateVatSetting(context.Background(), models.CreateVatSetting{
 		Enabled:                true,
 		BillingDate:            "2026-01-01",
 		TransactionMonthOffset: 1, // 1 month after billing date (January 2026 -> February 2026)
@@ -162,12 +163,12 @@ func TestCalculateForecast_VATSettlement_DBIntegration(t *testing.T) {
 
 	for _, sc := range scenarios {
 		// Update interval per scenario
-		_, err := apiService.UpdateVatSetting(models.UpdateVatSetting{
+		_, err := apiService.UpdateVatSetting(context.Background(), models.UpdateVatSetting{
 			Interval: &sc.interval,
 		}, user.ID)
 		require.NoError(t, err, sc.name)
 
-		results, err := apiService.CalculateForecast(user.ID)
+		results, err := apiService.CalculateForecast(context.Background(), user.ID)
 		require.NoError(t, err, sc.name)
 		require.NotEmpty(t, results, sc.name)
 
@@ -208,10 +209,10 @@ func TestCalculateForecast_VATSettlement_MonthEndDates(t *testing.T) {
 	require.NoError(t, err)
 	require.Equal(t, *currencyCHF.Code, *organisation.Currency.Code)
 
-	category, err := apiService.CreateCategory(models.CreateCategory{Name: "Sales"}, &user.ID)
+	category, err := apiService.CreateCategory(context.Background(), models.CreateCategory{Name: "Sales"}, &user.ID)
 	require.NoError(t, err)
 
-	vat, err := apiService.CreateVat(models.CreateVat{Value: 810}, user.ID)
+	vat, err := apiService.CreateVat(context.Background(), models.CreateVat{Value: 810}, user.ID)
 	require.NoError(t, err)
 
 	// Test scenarios with different billing dates at month-end
@@ -250,7 +251,7 @@ func TestCalculateForecast_VATSettlement_MonthEndDates(t *testing.T) {
 	for _, sc := range scenarios {
 		t.Run(sc.name, func(t *testing.T) {
 			// Create VAT setting with specific billing date and offset
-			vatSetting, err := apiService.CreateVatSetting(models.CreateVatSetting{
+			vatSetting, err := apiService.CreateVatSetting(context.Background(), models.CreateVatSetting{
 				Enabled:                true,
 				BillingDate:            sc.billingDate,
 				TransactionMonthOffset: sc.offset,
@@ -276,7 +277,7 @@ func TestCalculateForecast_VATSettlement_MonthEndDates(t *testing.T) {
 			)
 
 			// Calculate forecast
-			results, err := apiService.CalculateForecast(user.ID)
+			results, err := apiService.CalculateForecast(context.Background(), user.ID)
 			require.NoError(t, err)
 			require.NotEmpty(t, results)
 
@@ -293,7 +294,7 @@ func TestCalculateForecast_VATSettlement_MonthEndDates(t *testing.T) {
 			require.Less(t, resultMap[sc.expectMonth].Expense, int64(0), "Settlement should be negative (expense)")
 
 			// Clean up for next test
-			err = apiService.DeleteVatSetting(user.ID)
+			err = apiService.DeleteVatSetting(context.Background(), user.ID)
 			require.NoError(t, err)
 		})
 	}
@@ -315,12 +316,12 @@ func TestCalculateForecast_VATSettlement_MonthEndDates(t *testing.T) {
 // 	require.NoError(t, err)
 // 	user, _, err := CreateUserWithOrganisation(apiService, dbAdapter, "vat.past@example.com", "test", "VAT Past Org")
 // 	require.NoError(t, err)
-// 	category, err := apiService.CreateCategory(models.CreateCategory{Name: "Sales"}, &user.ID)
+// 	category, err := apiService.CreateCategory(context.Background(), models.CreateCategory{Name: "Sales"}, &user.ID)
 // 	require.NoError(t, err)
 //
-// 	vat, err := apiService.CreateVat(models.CreateVat{Value: 1000}, user.ID)
+// 	vat, err := apiService.CreateVat(context.Background(), models.CreateVat{Value: 1000}, user.ID)
 // 	require.NoError(t, err)
-// 	_, err = apiService.CreateVatSetting(models.CreateVatSetting{
+// 	_, err = apiService.CreateVatSetting(context.Background(), models.CreateVatSetting{
 // 		Enabled:         true,
 // 		BillingDate:     "2024-01-01",
 // 		TransactionDate: "2024-01-15",
@@ -338,7 +339,7 @@ func TestCalculateForecast_VATSettlement_MonthEndDates(t *testing.T) {
 // 		p.Vat = &vat.ID
 // 	})
 //
-// 	results, err := apiService.CalculateForecast(user.ID)
+// 	results, err := apiService.CalculateForecast(context.Background(), user.ID)
 // 	require.NoError(t, err)
 // 	require.Empty(t, results, "Past billing/transaction dates should not create future VAT settlements")
 // }

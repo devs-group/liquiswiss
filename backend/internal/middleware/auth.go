@@ -5,6 +5,7 @@ import (
 	"liquiswiss/pkg/auth"
 	"liquiswiss/pkg/logger"
 	"liquiswiss/pkg/models"
+	"liquiswiss/pkg/reqctx"
 	"liquiswiss/pkg/utils"
 	"net/http"
 
@@ -90,6 +91,11 @@ func AuthMiddleware(c *gin.Context) {
 
 	// Pass the user ID to the next middleware or handler
 	c.Set("userID", accessClaims.UserID)
+	// Carry the browser tab's client id into the service layer so published
+	// events can be tagged with their origin (server-computed "own" flag)
+	if clientID := c.GetHeader("X-Client-ID"); clientID != "" {
+		c.Request = c.Request.WithContext(reqctx.WithClientID(c.Request.Context(), clientID))
+	}
 	// Long-lived streams (SSE) bound their lifetime to the access token expiry
 	if accessClaims.ExpiresAt != nil {
 		c.Set("tokenExpiry", accessClaims.ExpiresAt.Time)

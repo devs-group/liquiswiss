@@ -1,6 +1,7 @@
 package handlers_test
 
 import (
+	"context"
 	"testing"
 
 	"github.com/stretchr/testify/require"
@@ -15,13 +16,13 @@ func TestListMembers_OnlyShowsOwnOrganisation(t *testing.T) {
 	defer env.Conn.Close()
 
 	// User A should only see Org A's members (just themselves)
-	membersA, err := env.APIService.ListOrganisationMembers(env.UserA.ID, env.OrgA.ID)
+	membersA, err := env.APIService.ListOrganisationMembers(context.Background(), env.UserA.ID, env.OrgA.ID)
 	require.NoError(t, err)
 	require.Len(t, membersA, 1)
 	require.Equal(t, env.UserA.ID, membersA[0].UserID)
 
 	// User B should only see Org B's members (just themselves)
-	membersB, err := env.APIService.ListOrganisationMembers(env.UserB.ID, env.OrgB.ID)
+	membersB, err := env.APIService.ListOrganisationMembers(context.Background(), env.UserB.ID, env.OrgB.ID)
 	require.NoError(t, err)
 	require.Len(t, membersB, 1)
 	require.Equal(t, env.UserB.ID, membersB[0].UserID)
@@ -34,11 +35,11 @@ func TestListMembers_CannotAccessOtherOrganisation(t *testing.T) {
 	defer env.Conn.Close()
 
 	// User A tries to list Org B's members - should fail
-	_, err := env.APIService.ListOrganisationMembers(env.UserA.ID, env.OrgB.ID)
+	_, err := env.APIService.ListOrganisationMembers(context.Background(), env.UserA.ID, env.OrgB.ID)
 	require.Error(t, err)
 
 	// User B tries to list Org A's members - should fail
-	_, err = env.APIService.ListOrganisationMembers(env.UserB.ID, env.OrgA.ID)
+	_, err = env.APIService.ListOrganisationMembers(context.Background(), env.UserB.ID, env.OrgA.ID)
 	require.Error(t, err)
 }
 
@@ -50,13 +51,13 @@ func TestUpdateMember_CannotUpdateInOtherOrganisation(t *testing.T) {
 
 	// User B tries to update User A's role in Org A - should fail
 	newRole := "read-only"
-	err := env.APIService.UpdateOrganisationMember(models.UpdateMember{
+	err := env.APIService.UpdateOrganisationMember(context.Background(), models.UpdateMember{
 		Role: &newRole,
 	}, env.UserB.ID, env.OrgA.ID, env.UserA.ID)
 	require.Error(t, err)
 
 	// Verify User A's role is still owner
-	membersA, err := env.APIService.ListOrganisationMembers(env.UserA.ID, env.OrgA.ID)
+	membersA, err := env.APIService.ListOrganisationMembers(context.Background(), env.UserA.ID, env.OrgA.ID)
 	require.NoError(t, err)
 	require.Len(t, membersA, 1)
 	require.Equal(t, "owner", membersA[0].Role)
@@ -75,11 +76,11 @@ func TestRemoveMember_CannotRemoveFromOtherOrganisation(t *testing.T) {
 	require.NoError(t, err)
 
 	// User B tries to remove that member from Org A - should fail
-	err = env.APIService.RemoveOrganisationMember(env.UserB.ID, env.OrgA.ID, memberID)
+	err = env.APIService.RemoveOrganisationMember(context.Background(), env.UserB.ID, env.OrgA.ID, memberID)
 	require.Error(t, err)
 
 	// Verify member still exists
-	membersA, err := env.APIService.ListOrganisationMembers(env.UserA.ID, env.OrgA.ID)
+	membersA, err := env.APIService.ListOrganisationMembers(context.Background(), env.UserA.ID, env.OrgA.ID)
 	require.NoError(t, err)
 	require.Len(t, membersA, 2)
 }
@@ -95,7 +96,7 @@ func TestMember_CrossOrgMembershipIndependence(t *testing.T) {
 	require.NoError(t, err)
 
 	// Make them an owner of a new org
-	newOrg, err := env.APIService.CreateOrganisation(models.CreateOrganisation{
+	newOrg, err := env.APIService.CreateOrganisation(context.Background(), models.CreateOrganisation{
 		Name: "Shared User Org",
 	}, sharedUserID)
 	require.NoError(t, err)
@@ -110,13 +111,13 @@ func TestMember_CrossOrgMembershipIndependence(t *testing.T) {
 
 	// They should NOT be able to update members in Org A (where they're only read-only)
 	newRole := "admin"
-	err = env.APIService.UpdateOrganisationMember(models.UpdateMember{
+	err = env.APIService.UpdateOrganisationMember(context.Background(), models.UpdateMember{
 		Role: &newRole,
 	}, sharedUserID, env.OrgA.ID, env.UserA.ID)
 	require.Error(t, err)
 
 	// But they CAN list members in Org A (any member can list)
-	members, err := env.APIService.ListOrganisationMembers(sharedUserID, env.OrgA.ID)
+	members, err := env.APIService.ListOrganisationMembers(context.Background(), sharedUserID, env.OrgA.ID)
 	require.NoError(t, err)
 	require.GreaterOrEqual(t, len(members), 2) // Owner + shared user
 }
@@ -140,7 +141,7 @@ func TestMember_UserInMultipleOrgs_CorrectMembershipPerOrg(t *testing.T) {
 	require.NoError(t, err)
 
 	// Check their role in Org A
-	membersA, err := env.APIService.ListOrganisationMembers(env.UserA.ID, env.OrgA.ID)
+	membersA, err := env.APIService.ListOrganisationMembers(context.Background(), env.UserA.ID, env.OrgA.ID)
 	require.NoError(t, err)
 	for _, member := range membersA {
 		if member.UserID == dualUserID {
@@ -150,7 +151,7 @@ func TestMember_UserInMultipleOrgs_CorrectMembershipPerOrg(t *testing.T) {
 	}
 
 	// Check their role in Org B
-	membersB, err := env.APIService.ListOrganisationMembers(env.UserB.ID, env.OrgB.ID)
+	membersB, err := env.APIService.ListOrganisationMembers(context.Background(), env.UserB.ID, env.OrgB.ID)
 	require.NoError(t, err)
 	for _, member := range membersB {
 		if member.UserID == dualUserID {
@@ -183,7 +184,7 @@ func TestMember_PermissionsAreOrgSpecific(t *testing.T) {
 	require.NoError(t, err)
 
 	// Check permissions in Org A
-	membersA, err := env.APIService.ListOrganisationMembers(env.UserA.ID, env.OrgA.ID)
+	membersA, err := env.APIService.ListOrganisationMembers(context.Background(), env.UserA.ID, env.OrgA.ID)
 	require.NoError(t, err)
 	for _, member := range membersA {
 		if member.UserID == sharedUserID {
@@ -196,7 +197,7 @@ func TestMember_PermissionsAreOrgSpecific(t *testing.T) {
 	}
 
 	// Check permissions in Org B
-	membersB, err := env.APIService.ListOrganisationMembers(env.UserB.ID, env.OrgB.ID)
+	membersB, err := env.APIService.ListOrganisationMembers(context.Background(), env.UserB.ID, env.OrgB.ID)
 	require.NoError(t, err)
 	for _, member := range membersB {
 		if member.UserID == sharedUserID {

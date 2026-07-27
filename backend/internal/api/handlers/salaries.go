@@ -35,7 +35,7 @@ func ListSalaries(apiService api_service.IAPIService, c *gin.Context) {
 	}
 
 	// Action
-	salaries, totalCount, err := apiService.ListSalaries(userID, employeeID, page, limit)
+	salaries, totalCount, err := apiService.ListSalaries(c.Request.Context(), userID, employeeID, page, limit)
 	if err != nil {
 		c.Status(http.StatusInternalServerError)
 		return
@@ -62,7 +62,7 @@ func GetSalary(apiService api_service.IAPIService, c *gin.Context) {
 	}
 
 	// Action
-	salary, err := apiService.GetSalary(userID, salaryID)
+	salary, err := apiService.GetSalary(c.Request.Context(), userID, salaryID)
 	if err != nil {
 		switch err {
 		case sql.ErrNoRows:
@@ -102,7 +102,7 @@ func CreateSalary(apiService api_service.IAPIService, c *gin.Context) {
 	}
 
 	// Action
-	salary, err := apiService.CreateSalary(payload, userID, employeeID)
+	salary, err := apiService.CreateSalary(c.Request.Context(), payload, userID, employeeID)
 	if err != nil {
 		switch err {
 		case sql.ErrNoRows:
@@ -142,7 +142,7 @@ func UpdateSalary(apiService api_service.IAPIService, c *gin.Context) {
 	}
 
 	// Action
-	salary, err := apiService.UpdateSalary(payload, userID, salaryID)
+	salary, err := apiService.UpdateSalary(c.Request.Context(), payload, userID, salaryID)
 	if err != nil {
 		c.Status(http.StatusInternalServerError)
 		return
@@ -166,7 +166,7 @@ func DeleteSalary(apiService api_service.IAPIService, c *gin.Context) {
 	}
 
 	// Action
-	err = apiService.DeleteSalary(userID, salaryID)
+	err = apiService.DeleteSalary(c.Request.Context(), userID, salaryID)
 	if err != nil {
 		c.Status(http.StatusInternalServerError)
 		return

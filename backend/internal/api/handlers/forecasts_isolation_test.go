@@ -1,6 +1,7 @@
 package handlers_test
 
 import (
+	"context"
 	"testing"
 	"time"
 
@@ -26,10 +27,10 @@ func TestListForecasts_CrossOrgIsolation(t *testing.T) {
 	defer utils.DefaultClock.SetFixedTime(nil)
 
 	// Create transactions for User A (to generate forecast data)
-	categoryA, err := env.APIService.CreateCategory(models.CreateCategory{Name: "Category A"}, &env.UserA.ID)
+	categoryA, err := env.APIService.CreateCategory(context.Background(), models.CreateCategory{Name: "Category A"}, &env.UserA.ID)
 	require.NoError(t, err)
 
-	_, err = env.APIService.CreateTransaction(models.CreateTransaction{
+	_, err = env.APIService.CreateTransaction(context.Background(), models.CreateTransaction{
 		Name:        "Transaction A",
 		Amount:      1000_00,
 		Type:        "single",
@@ -41,10 +42,10 @@ func TestListForecasts_CrossOrgIsolation(t *testing.T) {
 	require.NoError(t, err)
 
 	// Create transactions for User B
-	categoryB, err := env.APIService.CreateCategory(models.CreateCategory{Name: "Category B"}, &env.UserB.ID)
+	categoryB, err := env.APIService.CreateCategory(context.Background(), models.CreateCategory{Name: "Category B"}, &env.UserB.ID)
 	require.NoError(t, err)
 
-	_, err = env.APIService.CreateTransaction(models.CreateTransaction{
+	_, err = env.APIService.CreateTransaction(context.Background(), models.CreateTransaction{
 		Name:        "Transaction B",
 		Amount:      2000_00,
 		Type:        "single",
@@ -56,14 +57,14 @@ func TestListForecasts_CrossOrgIsolation(t *testing.T) {
 	require.NoError(t, err)
 
 	// Calculate forecasts for both users
-	_, err = env.APIService.CalculateForecast(env.UserA.ID)
+	_, err = env.APIService.CalculateForecast(context.Background(), env.UserA.ID)
 	require.NoError(t, err)
 
-	_, err = env.APIService.CalculateForecast(env.UserB.ID)
+	_, err = env.APIService.CalculateForecast(context.Background(), env.UserB.ID)
 	require.NoError(t, err)
 
 	// User A should only see their own forecasts
-	forecastsA, err := env.APIService.ListForecasts(env.UserA.ID, 12)
+	forecastsA, err := env.APIService.ListForecasts(context.Background(), env.UserA.ID, 12)
 	require.NoError(t, err)
 	require.NotEmpty(t, forecastsA)
 
@@ -80,7 +81,7 @@ func TestListForecasts_CrossOrgIsolation(t *testing.T) {
 	require.True(t, hasUserAData, "User A should have forecast data")
 
 	// User B should only see their own forecasts
-	forecastsB, err := env.APIService.ListForecasts(env.UserB.ID, 12)
+	forecastsB, err := env.APIService.ListForecasts(context.Background(), env.UserB.ID, 12)
 	require.NoError(t, err)
 	require.NotEmpty(t, forecastsB)
 
@@ -113,10 +114,10 @@ func TestCalculateForecast_OnlyUsesOwnOrgData(t *testing.T) {
 	defer utils.DefaultClock.SetFixedTime(nil)
 
 	// Create large transaction for User A
-	categoryA, err := env.APIService.CreateCategory(models.CreateCategory{Name: "Category A"}, &env.UserA.ID)
+	categoryA, err := env.APIService.CreateCategory(context.Background(), models.CreateCategory{Name: "Category A"}, &env.UserA.ID)
 	require.NoError(t, err)
 
-	_, err = env.APIService.CreateTransaction(models.CreateTransaction{
+	_, err = env.APIService.CreateTransaction(context.Background(), models.CreateTransaction{
 		Name:        "Large Transaction A",
 		Amount:      100000_00, // 100,000.00
 		Type:        "single",
@@ -128,10 +129,10 @@ func TestCalculateForecast_OnlyUsesOwnOrgData(t *testing.T) {
 	require.NoError(t, err)
 
 	// Create small transaction for User B
-	categoryB, err := env.APIService.CreateCategory(models.CreateCategory{Name: "Category B"}, &env.UserB.ID)
+	categoryB, err := env.APIService.CreateCategory(context.Background(), models.CreateCategory{Name: "Category B"}, &env.UserB.ID)
 	require.NoError(t, err)
 
-	_, err = env.APIService.CreateTransaction(models.CreateTransaction{
+	_, err = env.APIService.CreateTransaction(context.Background(), models.CreateTransaction{
 		Name:        "Small Transaction B",
 		Amount:      100_00, // 100.00
 		Type:        "single",
@@ -143,17 +144,17 @@ func TestCalculateForecast_OnlyUsesOwnOrgData(t *testing.T) {
 	require.NoError(t, err)
 
 	// Calculate forecasts
-	_, err = env.APIService.CalculateForecast(env.UserA.ID)
+	_, err = env.APIService.CalculateForecast(context.Background(), env.UserA.ID)
 	require.NoError(t, err)
 
-	_, err = env.APIService.CalculateForecast(env.UserB.ID)
+	_, err = env.APIService.CalculateForecast(context.Background(), env.UserB.ID)
 	require.NoError(t, err)
 
 	// Get forecasts
-	forecastsA, err := env.APIService.ListForecasts(env.UserA.ID, 12)
+	forecastsA, err := env.APIService.ListForecasts(context.Background(), env.UserA.ID, 12)
 	require.NoError(t, err)
 
-	forecastsB, err := env.APIService.ListForecasts(env.UserB.ID, 12)
+	forecastsB, err := env.APIService.ListForecasts(context.Background(), env.UserB.ID, 12)
 	require.NoError(t, err)
 
 	// Find the February 2025 forecast for both users
@@ -198,7 +199,7 @@ func TestListForecastDetails_CrossOrgIsolation(t *testing.T) {
 	empA, err := CreateEmployee(env.APIService, env.UserA.ID, "Employee A")
 	require.NoError(t, err)
 
-	_, err = env.APIService.CreateSalary(models.CreateSalary{
+	_, err = env.APIService.CreateSalary(context.Background(), models.CreateSalary{
 		HoursPerMonth:       160,
 		Amount:              5000_00,
 		Cycle:               utils.CycleMonthly,
@@ -213,7 +214,7 @@ func TestListForecastDetails_CrossOrgIsolation(t *testing.T) {
 	empB, err := CreateEmployee(env.APIService, env.UserB.ID, "Employee B")
 	require.NoError(t, err)
 
-	_, err = env.APIService.CreateSalary(models.CreateSalary{
+	_, err = env.APIService.CreateSalary(context.Background(), models.CreateSalary{
 		HoursPerMonth:       160,
 		Amount:              6000_00,
 		Cycle:               utils.CycleMonthly,
@@ -225,17 +226,17 @@ func TestListForecastDetails_CrossOrgIsolation(t *testing.T) {
 	_ = empB // Mark as used
 
 	// Calculate forecasts for both users
-	_, err = env.APIService.CalculateForecast(env.UserA.ID)
+	_, err = env.APIService.CalculateForecast(context.Background(), env.UserA.ID)
 	require.NoError(t, err)
 
-	_, err = env.APIService.CalculateForecast(env.UserB.ID)
+	_, err = env.APIService.CalculateForecast(context.Background(), env.UserB.ID)
 	require.NoError(t, err)
 
 	// Get forecast details
-	detailsA, err := env.APIService.ListForecastDetails(env.UserA.ID, 12)
+	detailsA, err := env.APIService.ListForecastDetails(context.Background(), env.UserA.ID, 12)
 	require.NoError(t, err)
 
-	detailsB, err := env.APIService.ListForecastDetails(env.UserB.ID, 12)
+	detailsB, err := env.APIService.ListForecastDetails(context.Background(), env.UserB.ID, 12)
 	require.NoError(t, err)
 
 	// Verify that each user gets their own forecast details (not empty)

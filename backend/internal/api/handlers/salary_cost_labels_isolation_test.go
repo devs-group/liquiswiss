@@ -1,6 +1,7 @@
 package handlers_test
 
 import (
+	"context"
 	"database/sql"
 	"testing"
 
@@ -27,7 +28,7 @@ func TestListSalaryCostLabels_CrossOrgIsolation(t *testing.T) {
 	require.NoError(t, err)
 
 	// User A should only see their own labels
-	labelsA, totalA, err := env.APIService.ListSalaryCostLabels(env.UserA.ID, 1, 100)
+	labelsA, totalA, err := env.APIService.ListSalaryCostLabels(context.Background(), env.UserA.ID, 1, 100)
 	require.NoError(t, err)
 	require.Equal(t, int64(2), totalA)
 	require.Len(t, labelsA, 2)
@@ -38,7 +39,7 @@ func TestListSalaryCostLabels_CrossOrgIsolation(t *testing.T) {
 	require.NotContains(t, labelIDs, labelB1.ID)
 
 	// User B should only see their own labels
-	labelsB, totalB, err := env.APIService.ListSalaryCostLabels(env.UserB.ID, 1, 100)
+	labelsB, totalB, err := env.APIService.ListSalaryCostLabels(context.Background(), env.UserB.ID, 1, 100)
 	require.NoError(t, err)
 	require.Equal(t, int64(1), totalB)
 	require.Len(t, labelsB, 1)
@@ -56,13 +57,13 @@ func TestGetSalaryCostLabel_CrossOrgIsolation(t *testing.T) {
 	require.NoError(t, err)
 
 	// User A can get their own label
-	fetchedLabel, err := env.APIService.GetSalaryCostLabel(env.UserA.ID, labelA.ID)
+	fetchedLabel, err := env.APIService.GetSalaryCostLabel(context.Background(), env.UserA.ID, labelA.ID)
 	require.NoError(t, err)
 	require.Equal(t, labelA.ID, fetchedLabel.ID)
 	require.Equal(t, "Label A", fetchedLabel.Name)
 
 	// User B cannot get User A's label (should return sql.ErrNoRows)
-	_, err = env.APIService.GetSalaryCostLabel(env.UserB.ID, labelA.ID)
+	_, err = env.APIService.GetSalaryCostLabel(context.Background(), env.UserB.ID, labelA.ID)
 	require.Error(t, err)
 	require.ErrorIs(t, err, sql.ErrNoRows)
 }
@@ -78,25 +79,25 @@ func TestUpdateSalaryCostLabel_CrossOrgIsolation(t *testing.T) {
 	require.NoError(t, err)
 
 	// User A can update their own label
-	_, err = env.APIService.UpdateSalaryCostLabel(models.CreateSalaryCostLabel{
+	_, err = env.APIService.UpdateSalaryCostLabel(context.Background(), models.CreateSalaryCostLabel{
 		Name: "Label A Updated By A",
 	}, env.UserA.ID, labelA.ID)
 	require.NoError(t, err)
 
 	// Verify the update worked
-	updatedLabel, err := env.APIService.GetSalaryCostLabel(env.UserA.ID, labelA.ID)
+	updatedLabel, err := env.APIService.GetSalaryCostLabel(context.Background(), env.UserA.ID, labelA.ID)
 	require.NoError(t, err)
 	require.Equal(t, "Label A Updated By A", updatedLabel.Name)
 
 	// User B attempts to update User A's label (should fail with ErrNoRows)
-	_, err = env.APIService.UpdateSalaryCostLabel(models.CreateSalaryCostLabel{
+	_, err = env.APIService.UpdateSalaryCostLabel(context.Background(), models.CreateSalaryCostLabel{
 		Name: "Hacked By B",
 	}, env.UserB.ID, labelA.ID)
 	require.Error(t, err)
 	require.ErrorIs(t, err, sql.ErrNoRows)
 
 	// Verify label was NOT changed by User B
-	labelAfterAttempt, err := env.APIService.GetSalaryCostLabel(env.UserA.ID, labelA.ID)
+	labelAfterAttempt, err := env.APIService.GetSalaryCostLabel(context.Background(), env.UserA.ID, labelA.ID)
 	require.NoError(t, err)
 	require.Equal(t, "Label A Updated By A", labelAfterAttempt.Name)
 	require.NotEqual(t, "Hacked By B", labelAfterAttempt.Name)
@@ -113,21 +114,21 @@ func TestDeleteSalaryCostLabel_CrossOrgIsolation(t *testing.T) {
 	require.NoError(t, err)
 
 	// User B attempts to delete User A's label
-	err = env.APIService.DeleteSalaryCostLabel(env.UserB.ID, labelA.ID)
+	err = env.APIService.DeleteSalaryCostLabel(context.Background(), env.UserB.ID, labelA.ID)
 	// The delete should fail or affect 0 rows
 
 	// Verify label still exists and was NOT deleted
-	labelAfterDelete, err := env.APIService.GetSalaryCostLabel(env.UserA.ID, labelA.ID)
+	labelAfterDelete, err := env.APIService.GetSalaryCostLabel(context.Background(), env.UserA.ID, labelA.ID)
 	require.NoError(t, err)
 	require.NotNil(t, labelAfterDelete)
 	require.Equal(t, labelA.ID, labelAfterDelete.ID)
 
 	// User A can successfully delete their own label
-	err = env.APIService.DeleteSalaryCostLabel(env.UserA.ID, labelA.ID)
+	err = env.APIService.DeleteSalaryCostLabel(context.Background(), env.UserA.ID, labelA.ID)
 	require.NoError(t, err)
 
 	// Verify label is now deleted
-	_, err = env.APIService.GetSalaryCostLabel(env.UserA.ID, labelA.ID)
+	_, err = env.APIService.GetSalaryCostLabel(context.Background(), env.UserA.ID, labelA.ID)
 	require.Error(t, err)
 	require.ErrorIs(t, err, sql.ErrNoRows)
 }
@@ -146,7 +147,7 @@ func TestCreateSalaryCost_WithCrossOrgLabel(t *testing.T) {
 	employeeB, err := CreateEmployee(env.APIService, env.UserB.ID, "Employee B")
 	require.NoError(t, err)
 
-	salaryB, err := env.APIService.CreateSalary(models.CreateSalary{
+	salaryB, err := env.APIService.CreateSalary(context.Background(), models.CreateSalary{
 		HoursPerMonth:       160,
 		Amount:              5000_00,
 		Cycle:               "monthly",
@@ -158,7 +159,7 @@ func TestCreateSalaryCost_WithCrossOrgLabel(t *testing.T) {
 
 	// User B attempts to create a salary cost using User A's label
 	labelAID := labelA.ID
-	_, err = env.APIService.CreateSalaryCost(models.CreateSalaryCost{
+	_, err = env.APIService.CreateSalaryCost(context.Background(), models.CreateSalaryCost{
 		Cycle:            "monthly",
 		AmountType:       "fixed",
 		Amount:           100_00,

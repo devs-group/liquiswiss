@@ -16,7 +16,7 @@ func GetUserSetting(apiService api_service.IAPIService, c *gin.Context) {
 		return
 	}
 
-	setting, err := apiService.GetUserSetting(userID)
+	setting, err := apiService.GetUserSetting(c.Request.Context(), userID)
 	if err != nil {
 		c.Status(http.StatusInternalServerError)
 		return
@@ -44,7 +44,7 @@ func UpdateUserSetting(apiService api_service.IAPIService, c *gin.Context) {
 		return
 	}
 
-	setting, err := apiService.UpdateUserSetting(payload, userID)
+	setting, err := apiService.UpdateUserSetting(c.Request.Context(), payload, userID)
 	if err != nil {
 		c.Status(http.StatusInternalServerError)
 		return
@@ -60,7 +60,7 @@ func GetUserOrganisationSetting(apiService api_service.IAPIService, c *gin.Conte
 		return
 	}
 
-	setting, err := apiService.GetUserOrganisationSetting(userID)
+	setting, err := apiService.GetUserOrganisationSetting(c.Request.Context(), userID)
 	if err != nil {
 		c.Status(http.StatusInternalServerError)
 		return
@@ -88,7 +88,7 @@ func UpdateUserOrganisationSetting(apiService api_service.IAPIService, c *gin.Co
 		return
 	}
 
-	setting, err := apiService.UpdateUserOrganisationSetting(payload, userID)
+	setting, err := apiService.UpdateUserOrganisationSetting(c.Request.Context(), payload, userID)
 	if err != nil {
 		c.Status(http.StatusInternalServerError)
 		return

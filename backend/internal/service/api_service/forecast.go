@@ -1,6 +1,7 @@
 package api_service
 
 import (
+	"context"
 	"liquiswiss/internal/events"
 	"liquiswiss/pkg/logger"
 	"liquiswiss/pkg/models"
@@ -35,7 +36,7 @@ func addMonthsStable(date time.Time, months int) time.Time {
 	return time.Date(targetYear, targetMonth, targetDay, date.Hour(), date.Minute(), date.Second(), date.Nanosecond(), date.Location())
 }
 
-func (a *APIService) ListForecasts(userID int64, limit int64) ([]models.Forecast, error) {
+func (a *APIService) ListForecasts(ctx context.Context, userID int64, limit int64) ([]models.Forecast, error) {
 	forecasts, err := a.dbService.ListForecasts(userID, limit)
 	if err != nil {
 		logger.Logger.Error(err)
@@ -49,7 +50,7 @@ func (a *APIService) ListForecasts(userID int64, limit int64) ([]models.Forecast
 	return forecasts, nil
 }
 
-func (a *APIService) ListForecastDetails(userID int64, limit int64) ([]models.ForecastDatabaseDetails, error) {
+func (a *APIService) ListForecastDetails(ctx context.Context, userID int64, limit int64) ([]models.ForecastDatabaseDetails, error) {
 	forecastDetails, err := a.dbService.ListForecastDetails(userID, limit)
 	if err != nil {
 		logger.Logger.Error(err)
@@ -63,7 +64,7 @@ func (a *APIService) ListForecastDetails(userID int64, limit int64) ([]models.Fo
 	return forecastDetails, nil
 }
 
-func (a *APIService) ListForecastExclusions(userID int64, relatedID int64, relatedTable string) (map[string]bool, error) {
+func (a *APIService) ListForecastExclusions(ctx context.Context, userID int64, relatedID int64, relatedTable string) (map[string]bool, error) {
 	forecastExclusions, err := a.dbService.ListForecastExclusions(userID, relatedID, relatedTable)
 	if err != nil {
 		logger.Logger.Error(err)
@@ -77,7 +78,7 @@ func (a *APIService) ListForecastExclusions(userID int64, relatedID int64, relat
 	return forecastExclusions, nil
 }
 
-func (a *APIService) CreateForecastExclusion(payload models.CreateForecastExclusion, userID int64) (int64, error) {
+func (a *APIService) CreateForecastExclusion(ctx context.Context, payload models.CreateForecastExclusion, userID int64) (int64, error) {
 	excludeID, err := a.dbService.CreateForecastExclusion(payload, userID)
 	if err != nil {
 		logger.Logger.Error(err)
@@ -87,11 +88,11 @@ func (a *APIService) CreateForecastExclusion(payload models.CreateForecastExclus
 		logger.Logger.Error(err)
 		return 0, err
 	}
-	a.notifyChange(userID, "forecast_exclusion", events.ActionCreated, excludeID)
+	a.notifyChange(ctx, userID, "forecast_exclusion", events.ActionCreated, excludeID)
 	return excludeID, nil
 }
 
-func (a *APIService) DeleteForecastExclusion(payload models.CreateForecastExclusion, userID int64) (int64, error) {
+func (a *APIService) DeleteForecastExclusion(ctx context.Context, payload models.CreateForecastExclusion, userID int64) (int64, error) {
 	affected, err := a.dbService.DeleteForecastExclusion(payload, userID)
 	if err != nil {
 		logger.Logger.Error(err)
@@ -101,11 +102,11 @@ func (a *APIService) DeleteForecastExclusion(payload models.CreateForecastExclus
 		logger.Logger.Error(err)
 		return 0, err
 	}
-	a.notifyChange(userID, "forecast_exclusion", events.ActionDeleted, payload.RelatedID)
+	a.notifyChange(ctx, userID, "forecast_exclusion", events.ActionDeleted, payload.RelatedID)
 	return affected, nil
 }
 
-func (a *APIService) UpdateForecastExclusions(payload models.UpdateForecastExclusions, userID int64) error {
+func (a *APIService) UpdateForecastExclusions(ctx context.Context, payload models.UpdateForecastExclusions, userID int64) error {
 	for _, update := range payload.Updates {
 		request := models.CreateForecastExclusion{
 			Month:        update.Month,
@@ -126,17 +127,17 @@ func (a *APIService) UpdateForecastExclusions(payload models.UpdateForecastExclu
 		}
 	}
 
-	a.notifyChange(userID, "forecast_exclusion", events.ActionUpdated, 0)
+	a.notifyChange(ctx, userID, "forecast_exclusion", events.ActionUpdated, 0)
 	return nil
 }
 
-func (a *APIService) CalculateForecast(userID int64) ([]models.Forecast, error) {
+func (a *APIService) CalculateForecast(ctx context.Context, userID int64) ([]models.Forecast, error) {
 	page := int64(1)
 	limit := int64(100000)
 	sortBy := "name"
 	sortOrder := "ASC"
 
-	organisation, err := a.GetCurrentOrganisation(userID)
+	organisation, err := a.GetCurrentOrganisation(ctx, userID)
 	if err != nil {
 		return nil, err
 	}
@@ -144,12 +145,12 @@ func (a *APIService) CalculateForecast(userID int64) ([]models.Forecast, error) 
 	// Set the organisation wide default currency as base
 	baseCurrency := *organisation.Currency.Code
 
-	transactions, _, err := a.ListTransactions(userID, page, limit, sortBy, sortOrder, "", true, false)
+	transactions, _, err := a.ListTransactions(ctx, userID, page, limit, sortBy, sortOrder, "", true, false)
 	if err != nil {
 		return nil, err
 	}
 
-	fiatRates, err := a.ListFiatRates(baseCurrency)
+	fiatRates, err := a.ListFiatRates(ctx, baseCurrency)
 	if err != nil {
 		return nil, err
 	}
@@ -173,7 +174,7 @@ func (a *APIService) CalculateForecast(userID int64) ([]models.Forecast, error) 
 		}
 		isRevenue := amount > 0
 
-		exclusions, err := a.ListForecastExclusions(userID, transaction.ID, utils.TransactionsTableName)
+		exclusions, err := a.ListForecastExclusions(ctx, userID, transaction.ID, utils.TransactionsTableName)
 		if err != nil {
 			return nil, err
 		}
@@ -381,12 +382,12 @@ func (a *APIService) CalculateForecast(userID int64) ([]models.Forecast, error) 
 	}
 
 	// Collect the employee expenses now
-	employees, _, err := a.ListEmployees(userID, page, limit, sortBy, sortOrder, "", false)
+	employees, _, err := a.ListEmployees(ctx, userID, page, limit, sortBy, sortOrder, "", false)
 	if err != nil {
 		return nil, err
 	}
 	for _, employee := range employees {
-		salaries, _, err := a.ListSalaries(userID, employee.ID, page, limit)
+		salaries, _, err := a.ListSalaries(ctx, userID, employee.ID, page, limit)
 		if err != nil {
 			return nil, err
 		}
@@ -405,7 +406,7 @@ func (a *APIService) CalculateForecast(userID int64) ([]models.Forecast, error) 
 			netAmount := salary.Amount - salary.EmployeeDeductions
 			amount := -models.CalculateAmountWithFiatRate(int64(netAmount), fiatRate)
 
-			salaryExclusions, err := a.ListForecastExclusions(userID, salary.ID, utils.SalariesTableName)
+			salaryExclusions, err := a.ListForecastExclusions(ctx, userID, salary.ID, utils.SalariesTableName)
 			if err != nil {
 				return nil, err
 			}
@@ -502,13 +503,13 @@ func (a *APIService) CalculateForecast(userID int64) ([]models.Forecast, error) 
 			}
 
 			// Always calculate the separate costs; salaries without definitions return an empty list.
-			salaryCosts, _, err := a.ListSalaryCosts(userID, salary.ID, 1, 1000, false)
+			salaryCosts, _, err := a.ListSalaryCosts(ctx, userID, salary.ID, 1, 1000, false)
 			if err != nil {
 				return nil, err
 			}
 
 			for _, salaryCost := range salaryCosts {
-				salaryCostExclusions, err := a.ListForecastExclusions(userID, salaryCost.ID, utils.SalaryCostsTableName)
+				salaryCostExclusions, err := a.ListForecastExclusions(ctx, userID, salaryCost.ID, utils.SalaryCostsTableName)
 				if err != nil {
 					return nil, err
 				}
@@ -660,7 +661,7 @@ func (a *APIService) CalculateForecast(userID int64) ([]models.Forecast, error) 
 	}
 
 	// VAT Settlement Calculation
-	vatSetting, err := a.GetVatSetting(userID)
+	vatSetting, err := a.GetVatSetting(ctx, userID)
 	if err != nil {
 		logger.Logger.Error(err)
 		// Don't fail the forecast if VAT settings can't be retrieved
@@ -829,7 +830,7 @@ func (a *APIService) CalculateForecast(userID int64) ([]models.Forecast, error) 
 		}
 	}
 
-	forecasts, err := a.ListForecasts(userID, int64(utils.GetTotalMonthsForMaxForecastYears()))
+	forecasts, err := a.ListForecasts(ctx, userID, int64(utils.GetTotalMonthsForMaxForecastYears()))
 	if err != nil {
 		return nil, err
 	}
@@ -952,7 +953,7 @@ func addOffset(costCycle string, fromDate time.Time, current time.Time, relative
 	return current
 }
 
-func (a *APIService) ListAllForecastExclusions(userID int64) ([]models.ForecastExclusionInfo, error) {
+func (a *APIService) ListAllForecastExclusions(ctx context.Context, userID int64) ([]models.ForecastExclusionInfo, error) {
 	exclusions, err := a.dbService.ListAllForecastExclusions(userID)
 	if err != nil {
 		logger.Logger.Error(err)

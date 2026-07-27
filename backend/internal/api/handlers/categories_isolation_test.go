@@ -1,6 +1,7 @@
 package handlers_test
 
 import (
+	"context"
 	"database/sql"
 	"testing"
 
@@ -17,18 +18,18 @@ func TestListCategories_ShowsSystemAndOwnOrg(t *testing.T) {
 	defer env.Conn.Close()
 
 	// Create org-specific categories for User A
-	catA1, err := env.APIService.CreateCategory(models.CreateCategory{Name: "Category A1"}, &env.UserA.ID)
+	catA1, err := env.APIService.CreateCategory(context.Background(), models.CreateCategory{Name: "Category A1"}, &env.UserA.ID)
 	require.NoError(t, err)
 
-	catA2, err := env.APIService.CreateCategory(models.CreateCategory{Name: "Category A2"}, &env.UserA.ID)
+	catA2, err := env.APIService.CreateCategory(context.Background(), models.CreateCategory{Name: "Category A2"}, &env.UserA.ID)
 	require.NoError(t, err)
 
 	// Create org-specific category for User B
-	catB1, err := env.APIService.CreateCategory(models.CreateCategory{Name: "Category B1"}, &env.UserB.ID)
+	catB1, err := env.APIService.CreateCategory(context.Background(), models.CreateCategory{Name: "Category B1"}, &env.UserB.ID)
 	require.NoError(t, err)
 
 	// User A should see their own categories (and any pre-existing system categories)
-	catsA, totalA, err := env.APIService.ListCategories(env.UserA.ID, 1, 100)
+	catsA, totalA, err := env.APIService.ListCategories(context.Background(), env.UserA.ID, 1, 100)
 	require.NoError(t, err)
 	require.GreaterOrEqual(t, totalA, int64(2)) // At least 2 own
 
@@ -41,7 +42,7 @@ func TestListCategories_ShowsSystemAndOwnOrg(t *testing.T) {
 	require.NotContains(t, catAIDs, catB1.ID)
 
 	// User B should see their own categories (and any pre-existing system categories)
-	catsB, totalB, err := env.APIService.ListCategories(env.UserB.ID, 1, 100)
+	catsB, totalB, err := env.APIService.ListCategories(context.Background(), env.UserB.ID, 1, 100)
 	require.NoError(t, err)
 	require.GreaterOrEqual(t, totalB, int64(1)) // At least 1 own
 
@@ -61,17 +62,17 @@ func TestGetCategory_CrossOrgIsolation(t *testing.T) {
 	defer env.Conn.Close()
 
 	// Create org-specific category for User A
-	catA, err := env.APIService.CreateCategory(models.CreateCategory{Name: "Category A"}, &env.UserA.ID)
+	catA, err := env.APIService.CreateCategory(context.Background(), models.CreateCategory{Name: "Category A"}, &env.UserA.ID)
 	require.NoError(t, err)
 
 	// User A can get their own category
-	fetchedCat, err := env.APIService.GetCategory(env.UserA.ID, catA.ID)
+	fetchedCat, err := env.APIService.GetCategory(context.Background(), env.UserA.ID, catA.ID)
 	require.NoError(t, err)
 	require.Equal(t, catA.ID, fetchedCat.ID)
 	require.Equal(t, "Category A", fetchedCat.Name)
 
 	// User B cannot get User A's category (should return sql.ErrNoRows)
-	_, err = env.APIService.GetCategory(env.UserB.ID, catA.ID)
+	_, err = env.APIService.GetCategory(context.Background(), env.UserB.ID, catA.ID)
 	require.Error(t, err)
 	require.ErrorIs(t, err, sql.ErrNoRows)
 }
@@ -83,27 +84,27 @@ func TestUpdateCategory_CrossOrgIsolation(t *testing.T) {
 	defer env.Conn.Close()
 
 	// Create org-specific category for User A
-	catA, err := env.APIService.CreateCategory(models.CreateCategory{Name: "Category A Original"}, &env.UserA.ID)
+	catA, err := env.APIService.CreateCategory(context.Background(), models.CreateCategory{Name: "Category A Original"}, &env.UserA.ID)
 	require.NoError(t, err)
 
 	// User A can update their own category
 	newNameA := "Category A Updated"
-	_, err = env.APIService.UpdateCategory(models.UpdateCategory{Name: &newNameA}, env.UserA.ID, catA.ID)
+	_, err = env.APIService.UpdateCategory(context.Background(), models.UpdateCategory{Name: &newNameA}, env.UserA.ID, catA.ID)
 	require.NoError(t, err)
 
 	// Verify the update worked
-	updatedCat, err := env.APIService.GetCategory(env.UserA.ID, catA.ID)
+	updatedCat, err := env.APIService.GetCategory(context.Background(), env.UserA.ID, catA.ID)
 	require.NoError(t, err)
 	require.Equal(t, "Category A Updated", updatedCat.Name)
 
 	// User B attempts to update User A's category (should fail with ErrNoRows)
 	maliciousName := "Hacked By B"
-	_, err = env.APIService.UpdateCategory(models.UpdateCategory{Name: &maliciousName}, env.UserB.ID, catA.ID)
+	_, err = env.APIService.UpdateCategory(context.Background(), models.UpdateCategory{Name: &maliciousName}, env.UserB.ID, catA.ID)
 	require.Error(t, err)
 	require.ErrorIs(t, err, sql.ErrNoRows)
 
 	// Verify category was NOT changed by User B
-	catAfterAttempt, err := env.APIService.GetCategory(env.UserA.ID, catA.ID)
+	catAfterAttempt, err := env.APIService.GetCategory(context.Background(), env.UserA.ID, catA.ID)
 	require.NoError(t, err)
 	require.Equal(t, "Category A Updated", catAfterAttempt.Name)
 	require.NotEqual(t, "Hacked By B", catAfterAttempt.Name)
@@ -116,15 +117,15 @@ func TestDeleteCategory_SentinelErrors(t *testing.T) {
 	defer env.Conn.Close()
 
 	// Global preset (no owner organisation) must not be deletable
-	globalCat, err := env.APIService.CreateCategory(models.CreateCategory{Name: "Global Preset"}, nil)
+	globalCat, err := env.APIService.CreateCategory(context.Background(), models.CreateCategory{Name: "Global Preset"}, nil)
 	require.NoError(t, err)
-	err = env.APIService.DeleteCategory(env.UserA.ID, globalCat.ID)
+	err = env.APIService.DeleteCategory(context.Background(), env.UserA.ID, globalCat.ID)
 	require.ErrorIs(t, err, api_service.ErrCategoryGlobal)
 
 	// Own category still used by a transaction must not be deletable
-	ownCat, err := env.APIService.CreateCategory(models.CreateCategory{Name: "In Use"}, &env.UserA.ID)
+	ownCat, err := env.APIService.CreateCategory(context.Background(), models.CreateCategory{Name: "In Use"}, &env.UserA.ID)
 	require.NoError(t, err)
-	transaction, err := env.APIService.CreateTransaction(models.CreateTransaction{
+	transaction, err := env.APIService.CreateTransaction(context.Background(), models.CreateTransaction{
 		Name:        "Uses Category",
 		Amount:      100_00,
 		Type:        "single",
@@ -134,13 +135,13 @@ func TestDeleteCategory_SentinelErrors(t *testing.T) {
 		VatIncluded: false,
 	}, env.UserA.ID)
 	require.NoError(t, err)
-	err = env.APIService.DeleteCategory(env.UserA.ID, ownCat.ID)
+	err = env.APIService.DeleteCategory(context.Background(), env.UserA.ID, ownCat.ID)
 	require.ErrorIs(t, err, api_service.ErrCategoryInUse)
 
 	// After removing the transaction the category can be deleted
-	err = env.APIService.DeleteTransaction(env.UserA.ID, transaction.ID)
+	err = env.APIService.DeleteTransaction(context.Background(), env.UserA.ID, transaction.ID)
 	require.NoError(t, err)
-	err = env.APIService.DeleteCategory(env.UserA.ID, ownCat.ID)
+	err = env.APIService.DeleteCategory(context.Background(), env.UserA.ID, ownCat.ID)
 	require.NoError(t, err)
 }
 
@@ -150,13 +151,13 @@ func TestReassignCategoryTransactions(t *testing.T) {
 	env := SetupCrossOrgTestEnvironment(t)
 	defer env.Conn.Close()
 
-	source, err := env.APIService.CreateCategory(models.CreateCategory{Name: "Reassign Source"}, &env.UserA.ID)
+	source, err := env.APIService.CreateCategory(context.Background(), models.CreateCategory{Name: "Reassign Source"}, &env.UserA.ID)
 	require.NoError(t, err)
-	target, err := env.APIService.CreateCategory(models.CreateCategory{Name: "Reassign Target"}, &env.UserA.ID)
+	target, err := env.APIService.CreateCategory(context.Background(), models.CreateCategory{Name: "Reassign Target"}, &env.UserA.ID)
 	require.NoError(t, err)
 
 	for i := range 2 {
-		_, err = env.APIService.CreateTransaction(models.CreateTransaction{
+		_, err = env.APIService.CreateTransaction(context.Background(), models.CreateTransaction{
 			Name:        "Reassign TX",
 			Amount:      int64(100_00 + i),
 			Type:        "single",
@@ -169,15 +170,15 @@ func TestReassignCategoryTransactions(t *testing.T) {
 	}
 
 	// User B must not be able to touch User A's categories
-	_, err = env.APIService.ReassignCategoryTransactions(env.UserB.ID, source.ID, target.ID)
+	_, err = env.APIService.ReassignCategoryTransactions(context.Background(), env.UserB.ID, source.ID, target.ID)
 	require.Error(t, err)
 
 	// Same source and target is rejected
-	_, err = env.APIService.ReassignCategoryTransactions(env.UserA.ID, source.ID, source.ID)
+	_, err = env.APIService.ReassignCategoryTransactions(context.Background(), env.UserA.ID, source.ID, source.ID)
 	require.Error(t, err)
 
 	// Happy path: both transactions move, then the source can be deleted
-	affected, err := env.APIService.ReassignCategoryTransactions(env.UserA.ID, source.ID, target.ID)
+	affected, err := env.APIService.ReassignCategoryTransactions(context.Background(), env.UserA.ID, source.ID, target.ID)
 	require.NoError(t, err)
 	require.Equal(t, int64(2), affected)
 
@@ -188,5 +189,5 @@ func TestReassignCategoryTransactions(t *testing.T) {
 	require.NoError(t, err)
 	require.Equal(t, int64(2), count)
 
-	require.NoError(t, env.APIService.DeleteCategory(env.UserA.ID, source.ID))
+	require.NoError(t, env.APIService.DeleteCategory(context.Background(), env.UserA.ID, source.ID))
 }

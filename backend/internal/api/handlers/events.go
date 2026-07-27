@@ -32,6 +32,10 @@ func StreamEvents(hub *events.Hub, apiService api_service.IAPIService, c *gin.Co
 		return
 	}
 
+	// Identifies this browser tab; used to compute the per-connection "own"
+	// flag on delivered events. MCP and other clients never send one.
+	clientID := c.Query("client")
+
 	// At the connection cap the hub evicts the user's oldest stream
 	sub := hub.Subscribe(userID)
 	defer sub.Close()
@@ -62,7 +66,7 @@ func StreamEvents(hub *events.Hub, apiService api_service.IAPIService, c *gin.Co
 		if time.Since(cachedOrgAt) < orgCacheTTL && cachedOrgID != 0 {
 			return cachedOrgID, true
 		}
-		organisation, err := apiService.GetCurrentOrganisation(userID)
+		organisation, err := apiService.GetCurrentOrganisation(c.Request.Context(), userID)
 		if err != nil {
 			return 0, false
 		}
@@ -94,6 +98,10 @@ func StreamEvents(hub *events.Hub, apiService api_service.IAPIService, c *gin.Co
 			if !ok || orgID != event.OrganisationID {
 				continue
 			}
+			// Own is per connection: only the exact tab (user + client id)
+			// that caused the change sees own=true. MCP mutations carry no
+			// client id, so every tab gets own=false and shows notifications.
+			event.Own = clientID != "" && event.OriginUserID == userID && event.OriginClientID == clientID
 			c.SSEvent("change", event)
 			c.Writer.Flush()
 		}
