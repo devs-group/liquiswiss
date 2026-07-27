@@ -167,8 +167,10 @@ export default defineNuxtPlugin((nuxtApp) => {
     // Deletes blink red IMMEDIATELY while the element is still in the DOM;
     // the refresh (and page watchers via lastChange) waits until the blink is
     // done so nothing removes the element early
+    // Own events refresh data but never blink or toast: the acting tab
+    // already sees its change directly
     let deleteFlashed = false
-    if (event.action === 'deleted' && event.id) {
+    if (!event.own && event.action === 'deleted' && event.id) {
       deleteFlashed = flashDeletes(event.entity, new Set([event.id]))
     }
     const notifyDelay = deleteFlashed ? DELETE_FLASH_MS : 0
@@ -179,11 +181,11 @@ export default defineNuxtPlugin((nuxtApp) => {
       if (!refresh) return
       // Debounce per entity so bulk MCP operations trigger one refetch;
       // collect all changed ids in the meantime for targeted highlighting
-      if (event.action !== 'deleted') {
+      if (!event.own && event.action !== 'deleted') {
         if (!pendingIDs.has(event.entity)) pendingIDs.set(event.entity, new Set())
         if (event.id) pendingIDs.get(event.entity)!.add(event.id)
       }
-      if (event.parentId) {
+      if (!event.own && event.parentId) {
         if (!pendingParentIDs.has(event.entity)) pendingParentIDs.set(event.entity, new Set())
         pendingParentIDs.get(event.entity)!.add(event.parentId)
       }

@@ -481,6 +481,9 @@ onNuxtReady(() => {
 // changes via MCP or another member; highlighting is handled by the SSE plugin
 const { onEntityChange } = useRealtimeChanges()
 onEntityChange(['employee', 'salary', 'salary_cost', 'salary_cost_label'], async (change) => {
+  // Own changes are already handled by the local submit/dialog flows;
+  // refetching here can race them and reset the form to stale data
+  if (change.own) return
   const isOwnEmployee = change.entity === 'employee' && change.id === employeeID
   if (change.entity === 'employee' && !isOwnEmployee) return
   if (isOwnEmployee && change.action === 'deleted') {

@@ -680,6 +680,10 @@ const [vatInterval, vatIntervalProps] = defineVatField('vatInterval')
 const { getVatSetting } = useVatSettings()
 const { onEntityChange } = useRealtimeChanges()
 onEntityChange(['organisation', 'member', 'invitation', 'vat_setting'], async (change) => {
+  // Own changes are already handled by the submit/dialog flows; refetching
+  // here races with their in-flight refresh (Nuxt cancels the older request)
+  // and can reset the form to stale data
+  if (change.own) return
   switch (change.entity) {
     case 'organisation': {
       const previousName = organisation.value?.name
