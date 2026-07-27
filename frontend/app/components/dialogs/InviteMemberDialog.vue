@@ -47,7 +47,7 @@
 
     <div class="flex justify-end gap-2 col-span-full">
       <Button
-        :disabled="!meta.valid || isLoading"
+        :disabled="!meta.dirty || !meta.valid || isLoading"
         :loading="isLoading"
         label="Einladen"
         icon="pi pi-send"

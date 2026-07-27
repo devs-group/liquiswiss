@@ -320,7 +320,7 @@
 
     <div class="flex justify-end gap-2 col-span-full">
       <Button
-        :disabled="!meta.valid || isLoading"
+        :disabled="(!meta.dirty && !isClone) || !meta.valid || isLoading"
         :loading="isLoading"
         label="Speichern"
         icon="pi pi-save"
