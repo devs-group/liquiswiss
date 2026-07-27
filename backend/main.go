@@ -33,6 +33,13 @@ var staticMigrations embed.FS
 //go:embed internal/db/migrations/dynamic/*.sql
 var dynamicMigrations embed.FS
 
+// E2E fixtures create accounts with well-known credentials. They live in their
+// own directory and are only ever applied when TESTING_ENVIRONMENT is set, so
+// they can never be seeded into a real environment.
+//
+//go:embed internal/db/migrations/testing/*.sql
+var testingFixtures embed.FS
+
 func main() {
 	flag.Parse()
 
@@ -77,11 +84,19 @@ func runApp() {
 		}
 	}
 
-	// Always run dynamic migrations (functions, views, fixtures)
+	// Always run dynamic migrations (functions, views, base fixtures)
 	err = runDynamicMigrations()
 	if err != nil {
 		logger.Logger.Error(err)
 		os.Exit(1)
+	}
+
+	// Test-only fixtures, never in a real environment
+	if os.Getenv("TESTING_ENVIRONMENT") != "" {
+		if err := runTestingFixtures(); err != nil {
+			logger.Logger.Error(err)
+			os.Exit(1)
+		}
 	}
 
 	cfg := config.GetConfig()
@@ -231,6 +246,38 @@ func runDynamicMigrations() error {
 
 	err = gooseConn.Close()
 	if err != nil {
+		return errors.Wrapf(err, "failed to close temporary Goose DB connection")
+	}
+	return nil
+}
+
+// runTestingFixtures seeds the E2E test accounts. Callers must ensure this only
+// happens in a testing environment: the fixtures use well-known credentials.
+func runTestingFixtures() error {
+	logger.Logger.Info("Running testing fixtures (TESTING_ENVIRONMENT set)...")
+
+	goose.SetBaseFS(testingFixtures)
+
+	if err := goose.SetDialect(string(goose.DialectMySQL)); err != nil {
+		return errors.Wrapf(err, `failed to set goose dialect to "%s"`, goose.DialectMySQL)
+	}
+
+	gooseConn, err := db.Connect()
+	if err != nil {
+		return errors.Wrapf(err, "failed to connect to database as SQL for Goose")
+	}
+
+	goose.SetLogger(goose.NopLogger())
+	if err := goose.DownTo(gooseConn, "internal/db/migrations/testing", 0, goose.WithNoVersioning()); err != nil {
+		return errors.Wrapf(err, "failed to revert testing fixtures")
+	}
+
+	goose.SetLogger(logger.StdLogger{})
+	if err := goose.Up(gooseConn, "internal/db/migrations/testing", goose.WithNoVersioning()); err != nil {
+		return errors.Wrapf(err, "failed to apply testing fixtures")
+	}
+
+	if err := gooseConn.Close(); err != nil {
 		return errors.Wrapf(err, "failed to close temporary Goose DB connection")
 	}
 	return nil
