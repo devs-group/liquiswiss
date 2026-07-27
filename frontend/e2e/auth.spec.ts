@@ -219,9 +219,11 @@ test.describe('Authentication', () => {
 
       // Should be redirected to login
       await expect(page).toHaveURL(/\/auth/)
-      await page.waitForLoadState('networkidle')
 
-      // Session expired toast SHOULD appear on login page (info severity)
+      // Session expired toast SHOULD appear on login page (info severity).
+      // No networkidle wait here on purpose: the toast auto-dismisses after
+      // TOAST_LIFE_TIME, so waiting for the network to settle first can miss it
+      // entirely on a slow runner.
       await expect(page.locator('.p-toast-message-info')).toBeVisible({ timeout: 10000 })
       await expect(page.getByText('Sitzung abgelaufen')).toBeVisible()
     })
@@ -236,9 +238,11 @@ test.describe('Authentication', () => {
 
       // Should be redirected to login
       await expect(page).toHaveURL(/\/auth/)
-      await page.waitForLoadState('networkidle')
 
-      // Session expired toast SHOULD appear on login page (info severity)
+      // Session expired toast SHOULD appear on login page (info severity).
+      // No networkidle wait here on purpose: the toast auto-dismisses after
+      // TOAST_LIFE_TIME, so waiting for the network to settle first can miss it
+      // entirely on a slow runner.
       await expect(page.locator('.p-toast-message-info')).toBeVisible({ timeout: 10000 })
       await expect(page.getByText('Sitzung abgelaufen')).toBeVisible()
     })
