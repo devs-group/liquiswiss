@@ -211,7 +211,7 @@ services:
           cpus: "1"
           memory: 1G
     environment:
-      PMA_ARBITRARY: ${PMA_ARBITRARY:-1}
+      PMA_ARBITRARY: ${PMA_ARBITRARY:-0}
       PMA_HOST: ${PMA_HOST:-database-app}
       PMA_PORT: ${PMA_PORT:-3306}
       PMA_PMADB: ${PMA_PMADB:-phpmyadmin}
@@ -226,7 +226,7 @@ services:
       - "traefik.http.routers.liquiswiss-phpmyadmin.entrypoints=https"
       - "traefik.http.routers.liquiswiss-phpmyadmin.tls=true"
       - "traefik.http.routers.liquiswiss-phpmyadmin.tls.certresolver=le"
-      - "traefik.http.routers.liquiswiss-phpmyadmin.middlewares=auth-admin"
+      - "traefik.http.routers.liquiswiss-phpmyadmin.middlewares=ip-allowlist-admin@file,rate-limit-admin@file,auth-admin@file"
       - "traefik.http.services.liquiswiss-phpmyadmin.loadbalancer.server.port=80"
       - "traefik.http.routers.liquiswiss-phpmyadmin-www.rule=Host(`www.config.liquiswiss.ch`)"
       - "traefik.http.routers.liquiswiss-phpmyadmin-www.entrypoints=https"
