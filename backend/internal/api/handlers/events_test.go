@@ -8,6 +8,7 @@ import (
 	"testing"
 	"time"
 
+	"github.com/golang-jwt/jwt/v5"
 	"github.com/stretchr/testify/require"
 
 	"liquiswiss/config"
@@ -169,6 +170,49 @@ func TestEventsStreamConnectionCapEvictsOldest(t *testing.T) {
 	case <-done:
 	case <-time.After(3 * time.Second):
 		t.Fatal("oldest stream not evicted at connection cap")
+	}
+}
+
+func TestEventsStreamClosedAtTokenExpiry(t *testing.T) {
+	env := setupEventsTestEnvironment(t)
+
+	// Craft an access token that expires almost immediately; the stream
+	// deadline must follow the token expiry, not maxStreamLifetime
+	expirationTime := time.Now().Add(1500 * time.Millisecond)
+	claims := &auth.Claims{
+		UserID: env.UserA.ID,
+		RegisteredClaims: jwt.RegisteredClaims{
+			IssuedAt:  jwt.NewNumericDate(time.Now()),
+			ExpiresAt: jwt.NewNumericDate(expirationTime),
+		},
+	}
+	token := jwt.NewWithClaims(jwt.SigningMethodHS256, claims)
+	tokenString, err := token.SignedString(config.GetConfig().JWTKey)
+	require.NoError(t, err)
+	cookie := auth.GenerateCookie(utils.AccessTokenName, tokenString, expirationTime)
+
+	req, err := http.NewRequest(http.MethodGet, env.Server.URL+"/api/events", nil)
+	require.NoError(t, err)
+	req.AddCookie(&cookie)
+	resp, err := env.Server.Client().Do(req)
+	require.NoError(t, err)
+	t.Cleanup(func() { resp.Body.Close() })
+	require.Equal(t, http.StatusOK, resp.StatusCode)
+	reader := bufio.NewReader(resp.Body)
+
+	done := make(chan struct{})
+	go func() {
+		for {
+			if _, err := reader.ReadString('\n'); err != nil {
+				close(done)
+				return
+			}
+		}
+	}()
+	select {
+	case <-done:
+	case <-time.After(4 * time.Second):
+		t.Fatal("stream not closed at access token expiry")
 	}
 }
 

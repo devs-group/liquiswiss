@@ -30,13 +30,13 @@ Status: feature deployed to production (pipeline green, commit 765b4da).
 duplicate_salary, update_organisation, update_vat_setting,
 list/create/delete/resend_invitation, remove_organisation_member
 
-## Open behavior tests (security/lifecycle)
+## Behavior tests (security/lifecycle) - verified 2026-07-27
 
-- [ ] Org switch kills stream instantly (no cross-org events)
-- [ ] Logout kills stream instantly
-- [ ] Token expiry after 20 min: stream closes, EventSource reconnects silently
-- [ ] Second member of same org receives events (and own-suppression stays per-tab)
-- [ ] Read-only member receives refresh triggers (data via REST unchanged)
+- [x] Org switch kills stream instantly (<1s, curl SSE probe; cross-org leak covered by Go test TestEventsStreamDoesNotLeakAcrossOrganisations)
+- [x] Logout kills stream instantly (<1s, curl SSE probe)
+- [x] Token expiry: stream closes at access token expiry (new Go test TestEventsStreamClosedAtTokenExpiry with short-lived token); EventSource reconnects silently (server-side kill via org switch, browser reconnected, events flowed again, no console errors)
+- [x] Second member of same org receives events (editor user via invitation flow; ralph tab flashed exactly transaction:183, per-element only)
+- [x] Read-only member receives refresh triggers (SSE event delivered; REST GET 200, PATCH 403 unchanged)
 
 ## Follow-ups
 
