@@ -472,6 +472,8 @@ const [labelID, labelIDProps] = defineField('labelID')
 const { onEntityChange, useExternalChangeBanner } = useRealtimeChanges()
 const externalChange = useExternalChangeBanner('salary_cost', () => isCreate ? undefined : salaryCost?.id)
 onEntityChange('salary_cost_label', async (change) => {
+  // Own label edits never blink (rule: no visual effects for own changes)
+  if (change.own) return
   if (!change.id || change.id !== labelID.value) return
   await nextTick()
   flashRealtimeSelector('[data-realtime-field="cost-label-select"]')
