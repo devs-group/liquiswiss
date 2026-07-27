@@ -8,6 +8,9 @@ interface ChangeEvent {
   action: string
   id?: number
   parentId?: number
+  // Server-computed per connection: true when this exact tab (user +
+  // X-Client-ID) caused the change. MCP mutations are always own=false.
+  own: boolean
 }
 
 // Sub-entities highlight their owning parent element when they have no own
@@ -28,66 +31,10 @@ export interface SseChangeState {
   own: boolean
 }
 
-// Maps an SSE entity to the API paths its mutations run against; order
-// matters, the FIRST matching entry decides the entity for a path.
-// Covered mutation paths (see composables):
-//   /api/transactions[...]                    -> transaction
-//   /api/bank-accounts[...]                   -> bank_account
-//   /api/employees/salary/costs/labels[...]   -> salary_cost_label
-//   /api/employees/salary/<id>/costs[/copy]   -> salary_cost
-//   /api/employees/salary/costs/<id>          -> salary_cost
-//   /api/employees/<id>/salary                -> salary
-//   /api/employees/salary/<id>                -> salary
-//   /api/employees[...]                       -> employee
-//   /api/vat-settings                         -> vat_setting
-//   /api/vats[...]                            -> vat
-//   /api/categories[...]                      -> category
-//   /api/organisations/<id>/invitations[...]  -> invitation
-//   /api/me/invitations/<id>                  -> invitation
-//   /api/organisations/<id>/members/<id>      -> member
-//   /api/organisations[...]                   -> organisation
-//   /api/forecasts/exclude                    -> forecast_exclusion
-const ENTITY_PATH_MATCHERS: [string, (path: string) => boolean][] = [
-  ['transaction', p => p.startsWith('/api/transactions')],
-  ['bank_account', p => p.startsWith('/api/bank-accounts')],
-  ['salary_cost_label', p => p.includes('/costs/labels')],
-  ['salary_cost', p => p.includes('/costs')],
-  ['salary', p => p.includes('/salary')],
-  ['employee', p => p.startsWith('/api/employees')],
-  ['vat_setting', p => p.startsWith('/api/vat-settings')],
-  ['vat', p => p.startsWith('/api/vats')],
-  ['category', p => p.startsWith('/api/categories')],
-  ['invitation', p => p.includes('/invitations')],
-  ['member', p => p.includes('/members')],
-  ['organisation', p => p.startsWith('/api/organisations')],
-  ['forecast_exclusion', p => p.startsWith('/api/forecasts/exclude')],
-]
-
-// Own mutations are recorded at request START (see fetchInterceptor), which
-// deterministically precedes the SSE event; the window only bounds how long
-// a recording stays relevant.
-const OWN_MUTATION_WINDOW_MS = 10000
-
 export default defineNuxtPlugin((nuxtApp) => {
   const { isAuthenticated } = useAuth()
   // Pages with local state (e.g. employee detail) watch this to refetch
   const lastChange = useState<SseChangeState | null>('sse-last-change', () => null)
-  const ownMutations = useState<{ path: string, ts: number }[]>('sse-own-mutations', () => [])
-
-  // True when this tab performed a matching mutation just before the event
-  // arrived: own actions must not trigger extra toasts or banners
-  const isOwnChange = (entity: string) => {
-    const now = Date.now()
-    const matcherEntity = entity === 'forecast' ? null : entity
-    return ownMutations.value.some((mutation) => {
-      if (now - mutation.ts > OWN_MUTATION_WINDOW_MS) return false
-      if (!matcherEntity) return true
-      for (const [candidate, matches] of ENTITY_PATH_MATCHERS) {
-        if (matches(mutation.path)) return candidate === matcherEntity
-      }
-      return false
-    })
-  }
 
   let source: EventSource | null = null
   const timers = new Map<string, ReturnType<typeof setTimeout>>()
@@ -227,7 +174,7 @@ export default defineNuxtPlugin((nuxtApp) => {
     const notifyDelay = deleteFlashed ? DELETE_FLASH_MS : 0
 
     setTimeout(() => {
-      lastChange.value = { ...event, ts: Date.now(), own: isOwnChange(event.entity) }
+      lastChange.value = { ...event, ts: Date.now() }
       const refresh = refreshers[event.entity]
       if (!refresh) return
       // Debounce per entity so bulk MCP operations trigger one refetch;
@@ -261,9 +208,9 @@ export default defineNuxtPlugin((nuxtApp) => {
             // nothing addressable exists at all, fall back to a toast.
             setTimeout(() => {
               const secondMatched = flash(event.entity, ids, parentIDs)
-              // own-check happens as late as possible: by now the HTTP
-              // response of an own mutation is guaranteed to be recorded
-              if (!matched && !secondMatched && !deleteFlashed && !isOwnChange(event.entity)) {
+              // own events (server-computed) never toast: the acting tab
+              // already sees its change
+              if (!matched && !secondMatched && !deleteFlashed && !event.own) {
                 showUpdateToast(event.entity)
               }
             }, 800)
@@ -275,7 +222,9 @@ export default defineNuxtPlugin((nuxtApp) => {
 
   const connect = () => {
     if (source) return
-    source = new EventSource('/api/events')
+    // The client id lets the backend compute own=true for events this exact
+    // tab caused (EventSource cannot send custom headers, hence the query)
+    source = new EventSource(`/api/events?client=${getRealtimeClientId()}`)
     source.addEventListener('change', (message: MessageEvent) => {
       try {
         dispatch(JSON.parse(message.data) as ChangeEvent)
