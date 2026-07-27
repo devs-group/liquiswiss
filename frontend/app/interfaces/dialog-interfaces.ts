@@ -3,6 +3,7 @@ import type { EmployeeResponse, SalaryCostLabelResponse, SalaryCostResponse, Sal
 import type { BankAccountResponse } from '~/models/bank-account'
 import type { VatResponse } from '~/models/vat'
 import type { OrganisationResponse } from '~/models/organisation'
+import type { CategoryResponse } from '~/models/category'
 
 export interface IEmployeeFormDialog {
   close: () => object
@@ -106,6 +107,26 @@ export interface ISalaryCostLabelFormDialog {
     close: (salaryCostID?: number) => number | undefined
     data: {
       employeeCostLabelToEdit?: SalaryCostLabelResponse
+    }
+  }
+}
+
+export interface ICategoryFormDialog {
+  close: () => object
+  value: {
+    close: (categoryID?: number) => number | undefined
+    data: {
+      categoryToEdit?: CategoryResponse
+    }
+  }
+}
+
+export interface ICategoryReassignDialog {
+  close: () => object
+  value: {
+    close: (deleted?: boolean) => boolean | undefined
+    data: {
+      categoryToDelete?: CategoryResponse
     }
   }
 }

@@ -80,7 +80,52 @@
         placeholder="Bitte wählen"
         :class="{ 'p-invalid': errors['category']?.length }"
         type="text"
-      />
+      >
+        <template #option="slotProps">
+          <div class="flex items-center w-full justify-between">
+            <p>{{ slotProps.option.name }}</p>
+            <div
+              v-if="slotProps.option.canEdit"
+              class="flex gap-2 justify-end"
+            >
+              <Button
+                size="small"
+                icon="pi pi-pencil"
+                outlined
+                rounded
+                @click.stop="onEditCategory(slotProps.option)"
+              />
+              <Button
+                size="small"
+                severity="danger"
+                icon="pi pi-trash"
+                outlined
+                rounded
+                @click.stop="onDeleteCategory(slotProps.option)"
+              />
+            </div>
+            <i
+              v-else
+              v-tooltip.top="'System-Kategorie. Kann nicht bearbeitet bzw. gelöscht werden.'"
+              class="pi pi-info-circle text-liqui-blue"
+            />
+          </div>
+        </template>
+
+        <template #footer>
+          <div class="p-1 pt-0">
+            <Button
+              label="Hinzufügen"
+              fluid
+              severity="secondary"
+              text
+              size="small"
+              icon="pi pi-plus"
+              @click="onCreateCategory"
+            />
+          </div>
+        </template>
+      </Select>
       <small class="text-liqui-red">{{ errors["category"] || '&nbsp;' }}</small>
     </div>
 
@@ -424,6 +469,9 @@ import AmountInvertButton from '~/components/AmountInvertButton.vue'
 import { ModalConfig } from '~/config/dialog-props'
 import VatDialog from '~/components/dialogs/VatDialog.vue'
 import type { VatResponse } from '~/models/vat'
+import CategoryDialog from '~/components/dialogs/CategoryDialog.vue'
+import CategoryReassignDialog from '~/components/dialogs/CategoryReassignDialog.vue'
+import type { CategoryResponse } from '~/models/category'
 import { selectAllOnFocus } from '~/utils/element-helper'
 
 const dialogRef = inject<ITransactionFormDialog>('dialogRef')!
@@ -433,6 +481,7 @@ const { getTransaction, createTransaction, updateTransaction, deleteTransaction 
 const { employees, listEmployees } = useEmployees()
 const { vats, listVats, deleteVat } = useVat()
 const { categories, currencies, getCurrencyLabel, convertAmountToRate } = useGlobalData()
+const { deleteCategory } = useCategories()
 const confirm = useConfirm()
 const dialog = useDialog()
 const route = useRoute()
@@ -713,6 +762,152 @@ onMounted(() => {
   }
   onEditVat(vat)
 })
+
+// Keep the open category dialog in the URL so it survives page reloads
+// (?category=new | <id>, on top of ?transaction=...)
+const setCategoryQuery = (value: string | null) => {
+  const query = { ...route.query }
+  if (value === null) delete query.category
+  else query.category = value
+  router.replace({ query })
+}
+
+const onCreateCategory = () => {
+  setCategoryQuery('new')
+  dialog.open(CategoryDialog, {
+    props: {
+      header: 'Neue Kategorie',
+      ...ModalConfig,
+    },
+    onClose: (options) => {
+      setCategoryQuery(null)
+      if (options?.data) {
+        setFieldValue('category', options.data)
+      }
+    },
+  })
+}
+
+const onEditCategory = (categoryToEdit: CategoryResponse) => {
+  setCategoryQuery(String(categoryToEdit.id))
+  dialog.open(CategoryDialog, {
+    props: {
+      header: 'Kategorie bearbeiten',
+      ...ModalConfig,
+    },
+    data: {
+      categoryToEdit,
+    },
+    onClose: (options) => {
+      setCategoryQuery(null)
+      if (options?.data) {
+        setFieldValue('category', options.data)
+      }
+    },
+  })
+}
+
+// Keep the open reassign dialog in the URL (?categoryReassign=<id>)
+const setCategoryReassignQuery = (value: string | null) => {
+  const query = { ...route.query }
+  if (value === null) delete query.categoryReassign
+  else query.categoryReassign = value
+  router.replace({ query })
+}
+
+const onOpenCategoryReassignDialog = (categoryToDelete: CategoryResponse) => {
+  setCategoryReassignQuery(String(categoryToDelete.id))
+  dialog.open(CategoryReassignDialog, {
+    props: {
+      header: 'Kategorie ersetzen und löschen',
+      ...ModalConfig,
+      pt: { root: { class: 'dialog-compact' } },
+    },
+    data: {
+      categoryToDelete,
+    },
+    onClose: (options) => {
+      setCategoryReassignQuery(null)
+      if (options?.data && categoryToDelete.id === category.value) {
+        setFieldValue('category', undefined)
+      }
+    },
+  })
+}
+
+// Restore the category dialogs after a page reload
+onMounted(() => {
+  const reassignParam = route.query.categoryReassign
+  if (typeof reassignParam === 'string' && reassignParam.length) {
+    const categoryToDelete = categories.value.find(c => c.id === Number(reassignParam))
+    if (categoryToDelete?.canEdit) onOpenCategoryReassignDialog(categoryToDelete)
+    else setCategoryReassignQuery(null)
+  }
+  const categoryParam = route.query.category
+  if (typeof categoryParam !== 'string' || !categoryParam.length) return
+  if (categoryParam === 'new') {
+    onCreateCategory()
+    return
+  }
+  const id = Number(categoryParam)
+  if (Number.isNaN(id)) return
+  const categoryToEdit = categories.value.find(c => c.id === id)
+  if (!categoryToEdit?.canEdit) {
+    setCategoryQuery(null)
+    return
+  }
+  onEditCategory(categoryToEdit)
+})
+
+const onDeleteCategory = (categoryToDelete: CategoryResponse) => {
+  // In-use categories skip the plain confirm: deleting requires reassigning
+  // the linked transactions anyway, so go straight to the replace dialog
+  if (categoryToDelete.inUse) {
+    onOpenCategoryReassignDialog(categoryToDelete)
+    return
+  }
+  confirm.require({
+    header: 'Löschen',
+    message: `Kategorie "${categoryToDelete.name}" vollständig löschen?`,
+    icon: 'pi pi-exclamation-triangle',
+    rejectLabel: 'Nein',
+    acceptLabel: 'Ja',
+    accept: () => {
+      isLoading.value = true
+      deleteCategory(categoryToDelete.id)
+        .then(() => {
+          if (categoryToDelete.id === category.value) {
+            setFieldValue('category', undefined)
+          }
+          toast.add({
+            summary: 'Erfolg',
+            detail: `Kategorie "${categoryToDelete.name}" wurde gelöscht`,
+            severity: 'success',
+            life: Config.TOAST_LIFE_TIME,
+          })
+        })
+        .catch((err: { status?: number, message: string }) => {
+          // Still used by transactions: offer relinking them to another
+          // category before deleting
+          if (err.status === 409) {
+            onOpenCategoryReassignDialog(categoryToDelete)
+            return
+          }
+          toast.add({
+            summary: 'Fehler',
+            detail: err.message,
+            severity: 'error',
+            life: Config.TOAST_LIFE_TIME,
+          })
+        })
+        .finally(() => {
+          isLoading.value = false
+        })
+    },
+    reject: () => {
+    },
+  })
+}
 
 const onDeleteVat = (vatToDelete: VatResponse) => {
   confirm.require({

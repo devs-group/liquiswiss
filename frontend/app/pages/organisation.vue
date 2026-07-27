@@ -272,6 +272,110 @@
         </form>
       </Panel>
 
+      <!-- Categories Section -->
+      <Panel
+        :pt="{ root: { class: 'shadow-md' } }"
+        data-testid="categories-panel"
+      >
+        <template #header>
+          <div class="flex items-center gap-2">
+            <span class="font-bold">Kategorien</span>
+            <Tag
+              :value="categories.length.toString()"
+              severity="secondary"
+              rounded
+            />
+            <i
+              v-tooltip.top="'Kategorien für Transaktionen. System-Kategorien sind fix, eigene Kategorien gelten nur für diese Organisation'"
+              class="pi pi-info-circle"
+            />
+          </div>
+        </template>
+        <template #icons>
+          <Button
+            v-if="canEdit"
+            label="Neue Kategorie"
+            icon="pi pi-plus"
+            size="small"
+            data-testid="create-category-button"
+            @click="onOpenCategoryDialog()"
+          />
+        </template>
+
+        <div class="flex items-center gap-2 mb-4">
+          <label
+            class="text-sm font-bold"
+            for="show-system-categories"
+          >System-Kategorien anzeigen:</label>
+          <ToggleSwitch
+            id="show-system-categories"
+            v-model="showSystemCategories"
+            class="scale-[0.65] origin-left"
+            data-testid="show-system-categories-toggle"
+          />
+        </div>
+
+        <div
+          class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-2"
+          data-testid="categories-grid"
+        >
+          <div
+            v-for="category in sortedCategories"
+            :key="category.id"
+            :data-realtime-id="`category:${category.id}`"
+            class="flex items-center justify-between gap-2 rounded border border-surface-200 dark:border-surface-700 px-3 py-2"
+            data-testid="category-row"
+          >
+            <div class="flex flex-col gap-1 min-w-0">
+              <div class="flex items-center gap-2 min-w-0">
+                <span class="truncate">{{ category.name }}</span>
+                <Tag
+                  v-if="!category.canEdit"
+                  value="System"
+                  severity="secondary"
+                  rounded
+                />
+              </div>
+              <Tag
+                v-if="category.inUse"
+                v-tooltip.top="'Wird von Transaktionen verwendet'"
+                value="In Verwendung"
+                severity="info"
+                rounded
+                class="self-start !text-[10px] !px-2 !py-0.5 leading-none"
+              />
+            </div>
+            <div
+              v-if="canEdit && category.canEdit"
+              class="flex gap-1 shrink-0"
+            >
+              <Button
+                icon="pi pi-pencil"
+                size="small"
+                text
+                severity="secondary"
+                data-testid="edit-category-button"
+                @click="onOpenCategoryDialog(category)"
+              />
+              <Button
+                icon="pi pi-trash"
+                size="small"
+                text
+                severity="danger"
+                data-testid="delete-category-button"
+                @click="onDeleteCategory(category)"
+              />
+            </div>
+          </div>
+        </div>
+        <p
+          v-if="!sortedCategories.length"
+          class="text-gray-500"
+        >
+          Noch keine eigenen Kategorien
+        </p>
+      </Panel>
+
       <!-- Members Section -->
       <Panel
         :pt="{ root: { class: 'shadow-md' } }"
@@ -368,6 +472,9 @@ import type { InvitationResponse } from '~/models/invitation'
 import type { VatSettingFormData } from '~/models/vat-setting'
 import { ModalConfig } from '~/config/dialog-props'
 import InviteMemberDialog from '~/components/dialogs/InviteMemberDialog.vue'
+import CategoryDialog from '~/components/dialogs/CategoryDialog.vue'
+import CategoryReassignDialog from '~/components/dialogs/CategoryReassignDialog.vue'
+import type { CategoryResponse } from '~/models/category'
 import { Config } from '~/config/config'
 import { DateToApiFormat } from '~/utils/format-helper'
 
@@ -378,6 +485,7 @@ const { calculateForecast } = useForecasts()
 const { members, setMembers, setRefreshMembers, removeMember } = useMembers()
 const { invitations, setInvitations, setRefreshInvitations, deleteInvitation } = useInvitations()
 const { useFetchGetVatSetting, saveVatSetting } = useVatSettings()
+const { categories, deleteCategory } = useCategories()
 
 const dialog = useDialog()
 const confirm = useConfirm()
@@ -449,11 +557,39 @@ onMounted(() => {
   })
 })
 
-// Reopen the invite dialog after a page reload (?invite=1);
+// Own categories first, system presets after; alphabetical within each group
+const showSystemCategories = ref(false)
+const sortedCategories = computed(() =>
+  categories.value
+    .filter(category => showSystemCategories.value || category.canEdit)
+    .sort((a, b) => {
+      if (a.canEdit !== b.canEdit) return a.canEdit ? -1 : 1
+      return a.name.localeCompare(b.name, 'de')
+    }),
+)
+
+// Reopen dialogs after a page reload (?invite=1, ?category=new|<id>);
 // onNuxtReady guarantees the dialog host is mounted
 onNuxtReady(() => {
   if (route.query.invite === '1' && canInvite.value) {
     onOpenInviteDialog()
+  }
+  const categoryQuery = route.query.category
+  if (typeof categoryQuery === 'string' && canEdit.value) {
+    if (categoryQuery === 'new') {
+      onOpenCategoryDialog()
+    }
+    else {
+      const category = categories.value.find(c => c.id === Number(categoryQuery))
+      if (category?.canEdit) onOpenCategoryDialog(category)
+      else setCategoryQuery(null)
+    }
+  }
+  const reassignQuery = route.query.categoryReassign
+  if (typeof reassignQuery === 'string' && canEdit.value) {
+    const category = categories.value.find(c => c.id === Number(reassignQuery))
+    if (category?.canEdit) onOpenCategoryReassignDialog(category)
+    else setCategoryReassignQuery(null)
   }
 })
 
@@ -686,6 +822,102 @@ const setInviteQuery = (value: string | null) => {
   if (value === null) delete query.invite
   else query.invite = value
   router.replace({ query })
+}
+
+// Keep the open category dialog in the URL (?category=new|<id>)
+const setCategoryQuery = (value: string | null) => {
+  const query = { ...route.query }
+  if (value === null) delete query.category
+  else query.category = value
+  router.replace({ query })
+}
+
+const onOpenCategoryDialog = (category?: CategoryResponse) => {
+  setCategoryQuery(category ? String(category.id) : 'new')
+  dialog.open(CategoryDialog, {
+    props: {
+      header: category ? 'Kategorie bearbeiten' : 'Neue Kategorie',
+      ...ModalConfig,
+    },
+    data: {
+      categoryToEdit: category,
+    },
+    onClose: () => {
+      setCategoryQuery(null)
+    },
+  })
+}
+
+const onDeleteCategory = (category: CategoryResponse) => {
+  // In-use categories skip the plain confirm: deleting requires reassigning
+  // the linked transactions anyway, so go straight to the replace dialog
+  if (category.inUse) {
+    onOpenCategoryReassignDialog(category)
+    return
+  }
+  confirm.require({
+    message: `Möchten Sie die Kategorie "${category.name}" wirklich löschen?`,
+    header: 'Kategorie löschen',
+    icon: 'pi pi-exclamation-triangle',
+    rejectProps: {
+      label: 'Abbrechen',
+      severity: 'secondary',
+    },
+    acceptProps: {
+      label: 'Löschen',
+      severity: 'danger',
+    },
+    accept: () => {
+      deleteCategory(category.id)
+        .then(() => {
+          toast.add({
+            summary: 'Erfolg',
+            detail: 'Kategorie wurde gelöscht',
+            severity: 'success',
+            life: Config.TOAST_LIFE_TIME,
+          })
+        })
+        .catch((err: { status?: number, message: string }) => {
+          // Still used by transactions: offer relinking them to another
+          // category before deleting
+          if (err.status === 409) {
+            onOpenCategoryReassignDialog(category)
+            return
+          }
+          toast.add({
+            summary: 'Fehler',
+            detail: err.message,
+            severity: 'error',
+            life: Config.TOAST_LIFE_TIME,
+          })
+        })
+    },
+  })
+}
+
+// Keep the open reassign dialog in the URL (?categoryReassign=<id>)
+const setCategoryReassignQuery = (value: string | null) => {
+  const query = { ...route.query }
+  if (value === null) delete query.categoryReassign
+  else query.categoryReassign = value
+  router.replace({ query })
+}
+
+const onOpenCategoryReassignDialog = (category: CategoryResponse) => {
+  setCategoryReassignQuery(String(category.id))
+  dialog.open(CategoryReassignDialog, {
+    props: {
+      header: 'Kategorie ersetzen und löschen',
+      ...ModalConfig,
+      pt: { root: { class: 'dialog-compact' } },
+    },
+    data: {
+      categoryToDelete: category,
+    },
+    onClose: () => {
+      setCategoryReassignQuery(null)
+    },
+  })
 }
 
 // Member/Invitation handlers

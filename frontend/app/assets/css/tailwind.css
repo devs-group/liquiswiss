@@ -1,6 +1,15 @@
 @layer tailwind-base, primevue, liquiswiss, tailwind-utilities;
 
 @layer liquiswiss {
+    /* Chips/tags are informational, never clickable */
+    .p-tag {
+        cursor: default;
+    }
+    /* Small confirm-style dialogs: width fits content, height stays auto */
+    .dialog-compact {
+        width: 28rem !important;
+        max-width: 95vw !important;
+    }
     .max-dialog-maximized-mobile {
         width: 65vw !important;
         height: 96vh !important;

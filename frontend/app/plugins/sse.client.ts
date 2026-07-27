@@ -113,7 +113,12 @@ export default defineNuxtPlugin((nuxtApp) => {
   }
 
   const refreshers: Record<string, () => Promise<unknown>> = {
-    transaction: () => useTransactions().listTransactions(false),
+    // Categories piggyback on transaction changes: their inUse flag depends
+    // on which transactions reference them
+    transaction: () => Promise.allSettled([
+      useTransactions().listTransactions(false),
+      refreshCategories(),
+    ]),
     employee: () => useEmployees().listEmployees(false),
     salary: () => useEmployees().listEmployees(false),
     salary_cost: () => useEmployees().listEmployees(false),
@@ -173,7 +178,7 @@ export default defineNuxtPlugin((nuxtApp) => {
   const SILENT_ENTITIES = new Set(['forecast'])
   // Pages with their own field-level handling suppress the toast while open
   const selfHandled = (entity: string) => {
-    if (['organisation', 'vat_setting', 'member', 'invitation'].includes(entity)) {
+    if (['organisation', 'vat_setting', 'member', 'invitation', 'category'].includes(entity)) {
       return useRoute().path.startsWith('/organisation')
     }
     return false

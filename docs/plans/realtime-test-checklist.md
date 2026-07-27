@@ -42,4 +42,4 @@ list/create/delete/resend_invitation, remove_organisation_member
 
 - Issue #28: server-computed `own` flag (context plumbing through service layer)
 - Issue #27: close after lifecycle tests pass
-- category: no management UI yet (issue #26), events + toast wired
+- category: management UI done 2026-07-27 (organisation page panel, dialog with query-param persistence + external-change banner, per-row blink, System filter toggle; issue #26 closable)

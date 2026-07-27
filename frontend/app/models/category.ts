@@ -26,6 +26,14 @@ export interface Strapi_PostResponse_Category extends Strapi_Meta {
 export interface CategoryResponse {
   id: number
   name: string
+  canEdit: boolean
+  // Referenced by transactions of the current organisation
+  inUse: boolean
+}
+
+export interface CategoryFormData {
+  id?: number
+  name: string
 }
 
 export interface ListCategoryResponse {
