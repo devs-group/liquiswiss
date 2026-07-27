@@ -240,7 +240,7 @@
 
     <div class="flex items-center justify-end gap-2 col-span-full">
       <Button
-        :disabled="(!meta.dirty && !isClone) || !meta.valid || isLoading"
+        :disabled="(!isDirty && !isClone) || !meta.valid || isLoading"
         :loading="isLoading"
         :label="isClone ? 'Klonen' : 'Speichern'"
         icon="pi pi-save"
@@ -402,9 +402,11 @@ const { defineField, errors, handleSubmit, meta, resetForm, values: formValues, 
   } as SalaryPUTFormData,
 })
 
+const isDirty = useTrimmedDirty(meta, formValues)
+
 // Escape/X close with dirty-confirm; unsaved entries survive reloads
 const { requestClose, close } = useDialogGuard({
-  dirty: () => meta.value.dirty,
+  dirty: () => isDirty.value,
   close: payload => dialogRef.value.close(payload),
   draft: {
     key: `salary:${isCreate.value ? 'new' : salary.value?.id}`,

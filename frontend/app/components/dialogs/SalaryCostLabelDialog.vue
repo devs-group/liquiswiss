@@ -55,7 +55,7 @@
 
     <div class="flex justify-end gap-2 col-span-full">
       <Button
-        :disabled="!meta.dirty || !meta.valid || isLoading"
+        :disabled="!isDirty || !meta.valid || isLoading"
         :loading="isLoading"
         label="Speichern"
         icon="pi pi-save"
@@ -101,9 +101,11 @@ const { defineField, errors, handleSubmit, meta, resetForm, values: formValues, 
 
 // Real-time: warn when the cost label being edited was changed or deleted
 // externally (form values stay untouched, saving would overwrite)
+const isDirty = useTrimmedDirty(meta, formValues)
+
 // Escape/X close with dirty-confirm; unsaved entries survive reloads
 const { requestClose, close } = useDialogGuard({
-  dirty: () => meta.value.dirty,
+  dirty: () => isDirty.value,
   close: payload => dialogRef.value.close(payload),
   draft: {
     key: `salary_cost_label:${salaryCost.value?.id ?? 'new'}`,

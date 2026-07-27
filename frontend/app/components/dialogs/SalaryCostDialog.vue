@@ -320,7 +320,7 @@
 
     <div class="flex justify-end gap-2 col-span-full">
       <Button
-        :disabled="(!meta.dirty && !isClone) || !meta.valid || isLoading"
+        :disabled="(!isDirty && !isClone) || !meta.valid || isLoading"
         :loading="isLoading"
         label="Speichern"
         icon="pi pi-save"
@@ -469,9 +469,11 @@ const [labelID, labelIDProps] = defineField('labelID')
 // elsewhere (options themselves update via shared state); warn when the cost
 // being edited was changed or deleted externally (form values stay untouched,
 // saving would overwrite the external change)
+const isDirty = useTrimmedDirty(meta, formValues)
+
 // Escape/X close with dirty-confirm; unsaved entries survive reloads
 const { requestClose, close } = useDialogGuard({
-  dirty: () => meta.value.dirty,
+  dirty: () => isDirty.value,
   close: payload => dialogRef.value.close(payload),
   payload: () => requiresRefresh.value,
   draft: {

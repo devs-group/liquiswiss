@@ -47,7 +47,7 @@
 
     <div class="flex justify-end gap-2 col-span-full">
       <Button
-        :disabled="!meta.dirty || !meta.valid || isLoading"
+        :disabled="!isDirty || !meta.valid || isLoading"
         :loading="isLoading"
         label="Einladen"
         icon="pi pi-send"
@@ -96,9 +96,11 @@ const { defineField, errors, handleSubmit, meta, values: formValues, setValues }
   } as CreateInvitationFormData,
 })
 
+const isDirty = useTrimmedDirty(meta, formValues)
+
 // Escape/X close with dirty-confirm; unsaved entries survive reloads
 const { requestClose, close } = useDialogGuard({
-  dirty: () => meta.value.dirty,
+  dirty: () => isDirty.value,
   close: payload => dialogRef.value.close(payload),
   draft: {
     key: 'invitation:new',

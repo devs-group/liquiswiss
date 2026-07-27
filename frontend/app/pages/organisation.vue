@@ -109,7 +109,7 @@
               label="Speichern"
               type="submit"
               :loading="isSubmitting"
-              :disabled="!meta.valid || (meta.valid && !meta.dirty) || isSubmitting"
+              :disabled="!meta.valid || !isDirty || isSubmitting"
               data-testid="organisation-save-button"
               @click="onSubmit"
             />
@@ -265,7 +265,7 @@
               label="MwSt.-Einstellungen speichern"
               type="submit"
               :loading="isVatSubmitting"
-              :disabled="!vatMeta.valid || (vatMeta.valid && !vatMeta.dirty) || isVatSubmitting"
+              :disabled="!vatMeta.valid || !isVatDirty || isVatSubmitting"
               @click="onVatSubmit"
             />
           </div>
@@ -598,7 +598,7 @@ useHead({
 })
 
 // Form setup
-const { defineField, errors, handleSubmit, meta, resetForm, isFieldDirty } = useForm({
+const { defineField, errors, handleSubmit, meta, resetForm, isFieldDirty, values: orgFormValues } = useForm({
   validationSchema: yup.object({
     name: yup.string().trim().required('Name wird benötigt'),
     currencyID: yup.number().required('Währung wird benötigt').typeError('Bitte gültige Währung eingeben'),
@@ -609,6 +609,8 @@ const { defineField, errors, handleSubmit, meta, resetForm, isFieldDirty } = use
     currencyID: getOrganisationCurrencyID.value,
   } as OrganisationFormData,
 })
+
+const isDirty = useTrimmedDirty(meta, orgFormValues)
 
 const [name, nameProps] = defineField('name')
 const [currencyID, currencyIDProps] = defineField('currencyID')
@@ -643,7 +645,7 @@ const transactionMonthOffsetOptions = [
   { label: '12 Monate später', value: 12 },
 ]
 
-const { defineField: defineVatField, errors: vatErrors, handleSubmit: handleVatSubmit, meta: vatMeta, resetForm: resetVatForm } = useForm({
+const { defineField: defineVatField, errors: vatErrors, handleSubmit: handleVatSubmit, meta: vatMeta, resetForm: resetVatForm, values: vatFormValues } = useForm({
   validationSchema: yup.object({
     vatEnabled: yup.boolean().required(),
     vatBillingDate: yup.date().when('vatEnabled', {
@@ -669,6 +671,8 @@ const { defineField: defineVatField, errors: vatErrors, handleSubmit: handleVatS
     vatInterval: existingVatSetting?.interval ?? 'quarterly',
   } as { vatEnabled: boolean, vatBillingDate: Date | null, vatTransactionMonthOffset: number, vatInterval: string },
 })
+
+const isVatDirty = useTrimmedDirty(vatMeta, vatFormValues)
 
 const [vatEnabled, vatEnabledProps] = defineVatField('vatEnabled')
 const [vatBillingDate, vatBillingDateProps] = defineVatField('vatBillingDate')

@@ -85,7 +85,7 @@
         class="flex justify-end gap-2 col-span-full"
       >
         <Button
-          :disabled="!meta.valid || (meta.valid && !meta.dirty) || isSubmitting"
+          :disabled="!meta.valid || !isDirty || isSubmitting"
           :loading="isSubmitting"
           label="Speichern"
           icon="pi pi-save"
@@ -267,7 +267,7 @@ useHead({
   title: `${employee.value?.name ?? ''} Mitarbeitende`.trim(),
 })
 
-const { defineField, errors, handleSubmit, meta, resetForm } = useForm({
+const { defineField, errors, handleSubmit, meta, resetForm, values: formValues } = useForm({
   validationSchema: yup.object({
     name: yup.string().trim().required('Name wird benötigt'),
   }),
@@ -276,6 +276,8 @@ const { defineField, errors, handleSubmit, meta, resetForm } = useForm({
     name: employee.value?.name ?? '',
   } as EmployeeFormData,
 })
+
+const isDirty = useTrimmedDirty(meta, formValues)
 
 const [name, nameProps] = defineField('name')
 

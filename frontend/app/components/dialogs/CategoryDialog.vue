@@ -55,7 +55,7 @@
 
     <div class="flex justify-end gap-2 col-span-full">
       <Button
-        :disabled="!meta.dirty || !meta.valid || isLoading"
+        :disabled="!isDirty || !meta.valid || isLoading"
         :loading="isLoading"
         label="Speichern"
         icon="pi pi-save"
@@ -99,9 +99,11 @@ const { defineField, errors, handleSubmit, meta, resetForm, values, setValues } 
   },
 })
 
+const isDirty = useTrimmedDirty(meta, values)
+
 // Escape/X close with dirty-confirm; unsaved entries survive reloads
 const { requestClose, close } = useDialogGuard({
-  dirty: () => meta.value.dirty,
+  dirty: () => isDirty.value,
   close: payload => dialogRef.value.close(payload),
   draft: {
     key: `category:${category.value?.id ?? 'new'}`,
