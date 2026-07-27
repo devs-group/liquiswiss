@@ -630,6 +630,7 @@ const onCreateEmployeeCostLabel = () => {
     props: {
       header: 'Neues Kostenlabel anlegen',
       ...ModalConfig,
+      pt: { root: { class: 'dialog-compact' } },
     },
     onClose: (options) => {
       setLabelQuery(null)
@@ -656,6 +657,7 @@ const onEditEmployeeCostLabel = (employeeCostLabelToEdit: SalaryCostLabelRespons
     props: {
       header: 'Kostenlabel bearbeiten',
       ...ModalConfig,
+      pt: { root: { class: 'dialog-compact' } },
     },
     data: {
       employeeCostLabelToEdit: employeeCostLabelToEdit,

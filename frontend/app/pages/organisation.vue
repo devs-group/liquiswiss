@@ -838,6 +838,7 @@ const onOpenCategoryDialog = (category?: CategoryResponse) => {
     props: {
       header: category ? 'Kategorie bearbeiten' : 'Neue Kategorie',
       ...ModalConfig,
+      pt: { root: { class: 'dialog-compact' } },
     },
     data: {
       categoryToEdit: category,
@@ -927,6 +928,7 @@ const onOpenInviteDialog = () => {
     props: {
       header: 'Mitglied einladen',
       ...ModalConfig,
+      pt: { root: { class: 'dialog-compact' } },
     },
     data: {
       organisationId: organisation.value?.id,

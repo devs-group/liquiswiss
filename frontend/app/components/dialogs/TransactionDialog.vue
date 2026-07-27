@@ -716,6 +716,7 @@ const onCreateVat = () => {
     props: {
       header: 'Neue Mehrwertsteuer anlegen',
       ...ModalConfig,
+      pt: { root: { class: 'dialog-compact' } },
     },
     onClose: (options) => {
       setVatQuery(null)
@@ -732,6 +733,7 @@ const onEditVat = (vatToEdit: VatResponse) => {
     props: {
       header: 'Mehrwertsteuer bearbeiten',
       ...ModalConfig,
+      pt: { root: { class: 'dialog-compact' } },
     },
     data: {
       vatToEdit,
@@ -778,6 +780,7 @@ const onCreateCategory = () => {
     props: {
       header: 'Neue Kategorie',
       ...ModalConfig,
+      pt: { root: { class: 'dialog-compact' } },
     },
     onClose: (options) => {
       setCategoryQuery(null)
@@ -794,6 +797,7 @@ const onEditCategory = (categoryToEdit: CategoryResponse) => {
     props: {
       header: 'Kategorie bearbeiten',
       ...ModalConfig,
+      pt: { root: { class: 'dialog-compact' } },
     },
     data: {
       categoryToEdit,
