@@ -25,3 +25,6 @@ _deployment/.credentials
 # Claude Code conversation exports
 claude_chat_history.txt
 .playwright-mcp/
+
+# local-only sync target (public repo: never commit host/path)
+_deployment/.sync.env
