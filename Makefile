@@ -1,4 +1,4 @@
-.PHONY: up down restart logs ps build dc migrate
+.PHONY: up down restart logs ps build dc migrate urls
 
 # Optional: pull access token from macOS keychain. If absent, compose runs with
 # its in-file defaults (external integrations like email and currency disabled).
@@ -15,12 +15,16 @@ endif
 
 # Generic compose passthrough: `make dc CMD="logs -f backend"`
 dc:      ; @$(RUN) $(CMD)
-up:      ; @$(RUN) up -d
+up:      ; @$(RUN) up -d && $(MAKE) --no-print-directory urls
 down:    ; @$(RUN) down
-restart: ; @$(RUN) restart
+restart: ; @$(RUN) restart && $(MAKE) --no-print-directory urls
 logs:    ; @$(RUN) logs -f
 ps:      ; @$(RUN) ps
-build:   ; @$(RUN) up -d --build
+build:   ; @$(RUN) up -d --build && $(MAKE) --no-print-directory urls
+
+# Print the endpoints worth opening in a browser after the stack is up.
+urls:
+	@printf '\n  Frontend  http://localhost:3007\n  Mailpit   http://localhost:8025\n\n'
 
 # Apply pending static schema migrations against the compose database.
 migrate: ; @$(MAKE) -C backend goose-static-up
