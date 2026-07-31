@@ -66,7 +66,10 @@ export const DateToApiFormat = (date: string | Date) => {
 
 export const NumberToFormattedCurrency = (amount: number, locale: string) => {
   const fmt = Intl.NumberFormat(locale, { maximumFractionDigits: 2, minimumFractionDigits: 2 })
-  return fmt.format(amount)
+  // de-CH grouping differs by ICU version: recent CLDR (Node) emits U+2019 while
+  // Chromium still emits U+0027. Left alone, SSR and client disagree on every
+  // amount and Vue reports a hydration text mismatch. Pin it to U+0027.
+  return fmt.format(amount).replace(/\u2019/g, '\u0027')
 }
 
 export const NormalizeUrl = (url: string): string => {
