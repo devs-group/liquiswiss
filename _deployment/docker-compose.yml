@@ -132,7 +132,8 @@ services:
     image: mariadb:10.6.16
     restart: always
     ports:
-      - "3306"
+      # Loopback-only: reachable via SSH tunnel, never from the public internet
+      - "127.0.0.1:3309:3306"
     networks:
       - default
       - traefik
