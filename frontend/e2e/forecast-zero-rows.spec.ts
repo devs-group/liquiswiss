@@ -1,8 +1,8 @@
 import { test, expect, type APIRequestContext, type Page } from '@playwright/test'
 import { LoginPage } from './pages/login.page'
 
-// Backend of the local stack, see docker-compose.yml
-const API_HOST = process.env.E2E_API_HOST || 'http://localhost:8087'
+// API requests use relative paths so they go through the Nuxt proxy and follow the
+// configured baseURL, which differs between the local docker stack and CI.
 
 // Names are prefixed so they sort to the end and cannot collide with real data
 const PAID_EMPLOYEE = 'ZZZ E2E Paid'
@@ -28,7 +28,7 @@ async function loginAsTestUser(page: Page) {
 }
 
 async function createEmployee(request: APIRequestContext, name: string): Promise<number> {
-  const response = await request.post(`${API_HOST}/api/employees`, { data: { name } })
+  const response = await request.post(`/api/employees`, { data: { name } })
   expect(response.ok(), `creating employee ${name}: ${response.status()}`).toBeTruthy()
   return (await response.json()).id
 }
@@ -45,7 +45,7 @@ async function createSalary(
   fromDate: string,
   isTermination = false,
 ) {
-  const response = await request.post(`${API_HOST}/api/employees/${employeeID}/salary`, {
+  const response = await request.post(`/api/employees/${employeeID}/salary`, {
     data: {
       hoursPerMonth: isTermination ? 0 : 160,
       amount,
@@ -61,12 +61,12 @@ async function createSalary(
 }
 
 async function calculateForecast(request: APIRequestContext) {
-  const response = await request.get(`${API_HOST}/api/forecasts/calculate`)
+  const response = await request.get(`/api/forecasts/calculate`)
   expect(response.ok(), `calculating forecast: ${response.status()}`).toBeTruthy()
 }
 
 async function deleteEmployee(request: APIRequestContext, employeeID: number) {
-  await request.delete(`${API_HOST}/api/employees/${employeeID}`)
+  await request.delete(`/api/employees/${employeeID}`)
 }
 
 async function gotoForecast(page: Page) {
@@ -113,7 +113,7 @@ async function toggleZeroRows(page: Page, currentLabel: string, targetLabel: str
  * previous run left behind.
  */
 async function expandSalaryRows(request: APIRequestContext, showZeroRows = false) {
-  const response = await request.patch(`${API_HOST}/api/user-organisation-settings`, {
+  const response = await request.patch(`/api/user-organisation-settings`, {
     data: {
       forecastExpenseDetails: true,
       forecastChildDetails: [SALARY_CATEGORY],
