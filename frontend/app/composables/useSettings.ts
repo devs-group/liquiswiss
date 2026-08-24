@@ -25,6 +25,7 @@ export default function useSettings() {
   const forecastShowRevenueDetails = useState('forecastShowRevenueDetails', () => false)
   const forecastShowExpenseDetails = useState('forecastShowExpenseDetails', () => false)
   const forecastShowChildDetails = useState<string[]>('forecastShowChildDetails', () => [])
+  const forecastShowZeroRows = useState('forecastShowZeroRows', () => false)
   const forecastPerformance = useState('forecastPerformance', () => 100)
   const forecastMonths = useState('forecastMonths', () => 13)
 
@@ -279,6 +280,7 @@ export default function useSettings() {
     forecastShowRevenueDetails.value = setting.forecastRevenueDetails
     forecastShowExpenseDetails.value = setting.forecastExpenseDetails
     forecastShowChildDetails.value = setting.forecastChildDetails || []
+    forecastShowZeroRows.value = setting.forecastShowZeroRows ?? false
 
     if (DisplayTypeOptions.includes(setting.employeeDisplay)) {
       employeeDisplay.value = setting.employeeDisplay
@@ -471,6 +473,13 @@ export default function useSettings() {
     }
   }
 
+  const toggleForecastShowZeroRows = () => {
+    forecastShowZeroRows.value = !forecastShowZeroRows.value
+    if (organisationSettingsLoaded.value) {
+      saveOrganisationSettingNow({ forecastShowZeroRows: forecastShowZeroRows.value })
+    }
+  }
+
   const setForecastShowChildDetails = (value: string[]) => {
     forecastShowChildDetails.value = value
     if (organisationSettingsLoaded.value) {
@@ -497,6 +506,7 @@ export default function useSettings() {
     forecastShowRevenueDetails,
     forecastShowExpenseDetails,
     forecastShowChildDetails,
+    forecastShowZeroRows,
     forecastPerformance,
     forecastMonths,
     employeeDisplay,
@@ -532,6 +542,7 @@ export default function useSettings() {
     toggleTransactionHideExpired,
     toggleEmployeeHideTerminated,
     toggleBankAccountDisplayType,
+    toggleForecastShowZeroRows,
     // Deprecated (kept for backward compatibility)
     toggleCostOverviewDisplayType,
     costOverviewDisplay,

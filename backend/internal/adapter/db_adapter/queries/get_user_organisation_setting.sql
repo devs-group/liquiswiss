@@ -7,6 +7,7 @@ SELECT
     uos.forecast_revenue_details,
     uos.forecast_expense_details,
     uos.forecast_child_details,
+    uos.forecast_show_zero_rows,
     uos.employee_display,
     uos.employee_sort_by,
     uos.employee_sort_order,

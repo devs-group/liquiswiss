@@ -14,6 +14,7 @@ type UserOrganisationSetting struct {
 	ForecastRevenueDetails  bool            `db:"forecast_revenue_details" json:"forecastRevenueDetails"`
 	ForecastExpenseDetails  bool            `db:"forecast_expense_details" json:"forecastExpenseDetails"`
 	ForecastChildDetails    json.RawMessage `db:"forecast_child_details" json:"forecastChildDetails"`
+	ForecastShowZeroRows    bool            `db:"forecast_show_zero_rows" json:"forecastShowZeroRows"`
 	EmployeeDisplay         string          `db:"employee_display" json:"employeeDisplay"`
 	EmployeeSortBy          string          `db:"employee_sort_by" json:"employeeSortBy"`
 	EmployeeSortOrder       string          `db:"employee_sort_order" json:"employeeSortOrder"`
@@ -36,6 +37,7 @@ type UpdateUserOrganisationSetting struct {
 	ForecastRevenueDetails  *bool            `json:"forecastRevenueDetails" validate:"omitempty"`
 	ForecastExpenseDetails  *bool            `json:"forecastExpenseDetails" validate:"omitempty"`
 	ForecastChildDetails    *json.RawMessage `json:"forecastChildDetails" validate:"omitempty"`
+	ForecastShowZeroRows    *bool            `json:"forecastShowZeroRows" validate:"omitempty"`
 	EmployeeDisplay         *string          `json:"employeeDisplay" validate:"omitempty,oneof=grid list"`
 	EmployeeSortBy          *string          `json:"employeeSortBy" validate:"omitempty"`
 	EmployeeSortOrder       *string          `json:"employeeSortOrder" validate:"omitempty,oneof=ASC DESC"`

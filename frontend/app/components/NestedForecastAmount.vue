@@ -123,33 +123,7 @@ const getExclusionTooltip = computed(() => {
 const categoryAmount = computed((): number => {
   const data: ForecastDetailRevenueExpenseResponse[] = props.forecastDetail[props.forecastType]
 
-  const findAmountRecursively = (
-    items: ForecastDetailRevenueExpenseResponse[],
-    targetName: string,
-  ): number => {
-    for (const item of items) {
-      if (item.name === targetName) {
-        const childrenAmount = item.children
-          ? item.children.reduce(
-              (sum, child) => sum + findAmountRecursively([child], child.name),
-              0,
-            )
-          : 0
-        return (item.amount ?? 0) + childrenAmount
-      }
-
-      if (item.children) {
-        const childAmount = findAmountRecursively(item.children, targetName)
-        if (childAmount !== 0) {
-          return childAmount
-        }
-      }
-    }
-
-    return 0
-  }
-
-  return AmountToFloat(findAmountRecursively(data, props.category.name))
+  return AmountToFloat(FindForecastAmount(data, props.category.name))
 })
 
 const isVATCategory = computed(() => {
