@@ -54,7 +54,7 @@
 <script setup lang="ts">
 import type { ForecastDetailResponse, ForecastDetailRevenueExpenseResponse } from '~/models/forecast'
 
-const { forecastShowChildDetails, setForecastShowChildDetails } = useSettings()
+const { forecastShowChildDetails, setForecastShowChildDetails, forecastShowZeroRows } = useSettings()
 
 const props = defineProps({
   category: {
@@ -99,7 +99,8 @@ const onToggleChildren = (categoryName: string) => {
 }
 
 const hasChildren = computed(() => {
-  return !isAutoCategory.value && props.category.children && props.category.children.length > 0
+  // Children that are hidden as permanent zero rows must not offer a toggle either
+  return !isAutoCategory.value && childCategories.value.length > 0
 })
 
 const childCategories = computed(() => {
@@ -113,7 +114,10 @@ const childCategories = computed(() => {
         categories.push(e.name)
       }
     })
-  return categories.sort((a, b) => a.localeCompare(b))
+  return categories
+    .filter(name => forecastShowZeroRows.value
+      || !IsForecastCategoryAlwaysZero(props.forecastDetails, name, props.forecastType))
+    .sort((a, b) => a.localeCompare(b))
 })
 
 const getColumnColor = computed(() => {

@@ -96,6 +96,7 @@ func TestGetUserOrganisationSetting_AutoCreation(t *testing.T) {
 	require.Equal(t, 100, setting.ForecastPerformance)
 	require.False(t, setting.ForecastRevenueDetails)
 	require.False(t, setting.ForecastExpenseDetails)
+	require.False(t, setting.ForecastShowZeroRows)
 	require.Equal(t, "grid", setting.EmployeeDisplay)
 	require.Equal(t, "name", setting.EmployeeSortBy)
 	require.Equal(t, "ASC", setting.EmployeeSortOrder)
@@ -193,6 +194,7 @@ func TestUpdateUserOrganisationSetting_AllFields(t *testing.T) {
 	baDisplay := "list"
 	baSortBy := "balance"
 	baSortOrder := "DESC"
+	showZeroRows := true
 
 	_, err = env.APIService.UpdateUserOrganisationSetting(context.Background(), models.UpdateUserOrganisationSetting{
 		ForecastMonths:          &months,
@@ -200,6 +202,7 @@ func TestUpdateUserOrganisationSetting_AllFields(t *testing.T) {
 		ForecastRevenueDetails:  &revenueDetails,
 		ForecastExpenseDetails:  &expenseDetails,
 		ForecastChildDetails:    &childDetails,
+		ForecastShowZeroRows:    &showZeroRows,
 		EmployeeDisplay:         &empDisplay,
 		EmployeeSortBy:          &empSortBy,
 		EmployeeSortOrder:       &empSortOrder,
@@ -222,6 +225,7 @@ func TestUpdateUserOrganisationSetting_AllFields(t *testing.T) {
 	require.True(t, setting.ForecastRevenueDetails)
 	require.True(t, setting.ForecastExpenseDetails)
 	require.JSONEq(t, `["detail1"]`, string(setting.ForecastChildDetails))
+	require.True(t, setting.ForecastShowZeroRows)
 	require.Equal(t, "list", setting.EmployeeDisplay)
 	require.Equal(t, "email", setting.EmployeeSortBy)
 	require.Equal(t, "DESC", setting.EmployeeSortOrder)

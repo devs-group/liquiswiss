@@ -10,6 +10,7 @@ export interface UserOrganisationSettingResponse {
   forecastRevenueDetails: boolean
   forecastExpenseDetails: boolean
   forecastChildDetails: string[]
+  forecastShowZeroRows: boolean
   employeeDisplay: DisplayType
   employeeSortBy: string
   employeeSortOrder: SortOrderType
@@ -32,6 +33,7 @@ export interface UpdateUserOrganisationSetting {
   forecastRevenueDetails?: boolean
   forecastExpenseDetails?: boolean
   forecastChildDetails?: string[]
+  forecastShowZeroRows?: boolean
   employeeDisplay?: DisplayType
   employeeSortBy?: string
   employeeSortOrder?: SortOrderType

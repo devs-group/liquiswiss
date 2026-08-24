@@ -23,6 +23,7 @@ func (d *DatabaseAdapter) GetUserOrganisationSetting(userID int64) (*models.User
 		&setting.ForecastRevenueDetails,
 		&setting.ForecastExpenseDetails,
 		&setting.ForecastChildDetails,
+		&setting.ForecastShowZeroRows,
 		&setting.EmployeeDisplay,
 		&setting.EmployeeSortBy,
 		&setting.EmployeeSortOrder,
@@ -99,6 +100,11 @@ func (d *DatabaseAdapter) UpdateUserOrganisationSetting(payload models.UpdateUse
 	if payload.ForecastChildDetails != nil {
 		queryBuild = append(queryBuild, "forecast_child_details = ?")
 		args = append(args, *payload.ForecastChildDetails)
+	}
+
+	if payload.ForecastShowZeroRows != nil {
+		queryBuild = append(queryBuild, "forecast_show_zero_rows = ?")
+		args = append(args, *payload.ForecastShowZeroRows)
 	}
 
 	if payload.EmployeeDisplay != nil {

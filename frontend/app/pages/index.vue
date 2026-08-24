@@ -75,6 +75,16 @@
               @update:model-value="setForecastPerformance"
             />
           </div>
+          <div class="flex items-center gap-2 sm:justify-end">
+            <Button
+              v-tooltip.bottom="forecastShowZeroRows ? 'Zeilen ohne Beträge ausblenden' : 'Zeilen ohne Beträge anzeigen'"
+              :icon="forecastShowZeroRows ? 'pi pi-eye' : 'pi pi-eye-slash'"
+              :severity="forecastShowZeroRows ? 'contrast' : 'secondary'"
+              size="small"
+              :label="forecastShowZeroRows ? 'Nullzeilen sichtbar' : 'Nullzeilen ausgeblendet'"
+              @click="toggleForecastShowZeroRows"
+            />
+          </div>
         </div>
 
         <div class="flex flex-col items-end gap-1">
@@ -307,7 +317,7 @@ const {
   clearForecastExclusionChanges,
 } = useForecasts()
 const { useFetchListBankAccounts, totalBankSaldoInCHF } = useBankAccounts()
-const { forecastPerformance, forecastMonths, forecastShowRevenueDetails, forecastShowExpenseDetails, setForecastShowRevenueDetails, setForecastShowExpenseDetails, setForecastPerformance, setForecastMonths } = useSettings()
+const { forecastPerformance, forecastMonths, forecastShowRevenueDetails, forecastShowExpenseDetails, forecastShowZeroRows, setForecastShowRevenueDetails, setForecastShowExpenseDetails, setForecastPerformance, setForecastMonths, toggleForecastShowZeroRows } = useSettings()
 const { setChartData, getChartOptions } = useCharts()
 const toast = useToast()
 
@@ -469,7 +479,10 @@ const revenueCategories = computed(() => {
     })
   })
 
-  return categories.sort((a, b) => a.name.localeCompare(b.name))
+  return categories
+    .filter(c => forecastShowZeroRows.value
+      || !IsForecastCategoryAlwaysZero(forecastDetails.value, c.name, 'revenue'))
+    .sort((a, b) => a.name.localeCompare(b.name))
 })
 const expenseCategories = computed(() => {
   const categories: ForecastDetailRevenueExpenseResponse[] = []
@@ -482,7 +495,10 @@ const expenseCategories = computed(() => {
     })
   })
 
-  return categories.sort((a, b) => a.name.localeCompare(b.name))
+  return categories
+    .filter(c => forecastShowZeroRows.value
+      || !IsForecastCategoryAlwaysZero(forecastDetails.value, c.name, 'expense'))
+    .sort((a, b) => a.name.localeCompare(b.name))
 })
 const revenues = computed(() => forecasts.value.map((f) => {
   const revenue = f.data.revenue * (forecastPerformance.value / 100)
