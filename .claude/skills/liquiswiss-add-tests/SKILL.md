@@ -1,15 +1,7 @@
 ---
 name: liquiswiss-add-tests
 description: Decide whether the work done in this session needs Go integration tests, propose what to add, then add them. Audits existing coverage first and suggests gaps before writing code. Triggers on "add tests", "write tests", "test coverage", "integration test this", "do we have tests for this".
-user_invocable: true
-auto_trigger:
-  - add tests
-  - write tests
-  - test coverage
-  - integration test this
-  - do we have tests for this
-  - are there tests
-  - cover this with tests
+user-invocable: true
 ---
 
 # Add Tests

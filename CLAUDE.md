@@ -19,19 +19,14 @@ This enables pre-commit hooks that run `npm run lint:fix` and `go test ./...` be
 ## Quick Commands
 
 ### Frontend (`frontend/`)
-```bash
-nvm use              # Use correct Node version (required first)
-npm install          # Install dependencies
-npm run dev          # Dev server at http://localhost:3000
-npm run build        # Production build
-```
 
-Note: `npm run lint:fix` runs automatically via pre-commit hook.
+The dev server runs in the container (`make up`), not natively. `npm run lint:fix`
+runs automatically via the pre-commit hook, which needs a host-side `nvm use`.
 
 ### Backend (`backend/`)
+
+Also container-only. These run on the host for tests and codegen:
 ```bash
-go mod tidy          # Install dependencies
-go run .             # Run dev server (or use `air` for hot-reloading)
 go test -count=1 ./...  # Run all tests (requires docker compose up)
 go test -count=1 ./internal/api/handlers -run TestName  # Run specific test
 go vet ./...         # Static analysis
@@ -68,6 +63,8 @@ make restart
 make logs            # follow all logs
 make ps
 make build           # up -d --build
+make migrate         # apply pending static migrations (air runs with --no-migrate)
+make urls            # print the local service URLs
 make dc CMD="logs -f backend"   # any compose passthrough
 ```
 
@@ -121,8 +118,7 @@ make dc CMD="logs -f backend nuxt"
 - **Root `docker-compose.yml`**: local dev (nuxt, backend, database, database-testing, mailpit, phpmyadmin). Backend uses `target: dev` with `air` hot-reload. Nuxt runs `npm run dev-host`.
 - Local ports: nuxt `3007`, backend `8087`, database `3317`, database-testing `3318`, mailpit SMTP `1025`, mailpit UI `8025`, phpmyadmin `8097`.
 - Inside compose network, services reach each other by service name (e.g. `backend:8080`, `database:3306`).
-- **`_deployment/docker-compose.yml`**: mirrors prod (nuxt, backend, landing/wordpress, database-app, database-wordpress, phpmyadmin) with Traefik labels and resource limits. Use for prod-parity local testing: `docker compose -f _deployment/docker-compose.yml --env-file .env up`.
-- **Single `.env` at root** (transitional): flat namespace (`APP_DB_*`, `WP_DB_*`, etc.) mirrors future Bitwarden Secrets Manager injection. Both compose files load from it. Once BWSM wired: `bws run -- docker compose up` replaces `.env`.
+- **`_deployment/docker-compose.yml`**: mirrors prod (nuxt, backend, landing/wordpress, database-app, database-wordpress, phpmyadmin) with Traefik labels and resource limits. Every secret there is declared required (`${X:?}`), so it only starts under `bws run` on the production host, not locally.
 - **Native run is deprecated**: `backend/.env` and `frontend/.env*` removed. `backend/.env.local.testing` + `backend/.env.github.testing` retained only for `go test` (not picked up by compose).
 - **Named volumes** (`nuxt_node_modules`, `backend_go_cache`, `backend_build_cache`): cache for fast rebuilds. `nuxt_node_modules` is critical on macOS/Docker Desktop — bind-mounting node_modules across VM boundary is slow. Tradeoff: host IDE won't see container's node_modules. After changing `package.json`, run `docker compose build nuxt` or `docker compose run --rm nuxt npm install`.
 
@@ -136,6 +132,29 @@ Detailed documentation is in [docs/ai/](docs/ai/):
 - [Database & Migrations](docs/ai/database.md) - Two-tier migration system
 - [Business Logic](docs/ai/business-logic.md) - Salary costs, forecasts, VAT calculations
 - [Authentication](docs/ai/authentication.md) - JWT dual-token flow
+
+## Releases and Deployment
+
+**A push to `main` deploys nothing.** It runs tests only. A release is a tag:
+
+```bash
+git tag vX.Y.Z && git push origin vX.Y.Z
+```
+
+That builds both images (`backend`, `nuxt`, each tagged `:latest`, `:<sha>` and the
+version) and deploys them, per service, with a health check and an automatic image
+rollback. Use the **`/liquiswiss-release`** skill, it covers the full procedure
+including the DB dump before a migrating release and the prod verification.
+
+- What is running in production: `curl https://api.liquiswiss.ch/api/config` returns
+  `sha`, `version` and `appVersion`. The frontend shows the version bottom left in the
+  sidebar. The identifiers are stamped into the binary via ldflags into
+  `backend/pkg/buildinfo`, and `liquiswiss healthcheck` is the container health probe.
+- Deploy secrets live in the `production` GitHub Environment (`DEPLOY_URL`,
+  `DEPLOY_SECRET`). Repository-level deploy secrets are gone on purpose.
+- Changes under `_deployment/` do not ride along with a release. Ship them with
+  `_deployment/sync.sh` (preview with `--check` first).
+- Full details: [_deployment/README.md](_deployment/README.md).
 
 ## Git Commits
 
@@ -167,7 +186,8 @@ All environment variables and their local dev defaults are declared inline in `d
 
 ## Context from Previous Sessions
 
-- Check for `claude_chat_history.txt` in root for context from the previous session
+- `claude_chat_history.txt` in the root, if present, holds context from a previous
+  session. It is gitignored and only exists after `/export-root`, so its absence is normal.
 
 ## General Guidelines
 

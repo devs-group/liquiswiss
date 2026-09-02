@@ -23,6 +23,17 @@ LiquiSwiss uses a unique migration approach with Goose:
 - **Behavior**: Dropped and recreated on every app startup (unversioned)
 - **Rule**: Safe to edit directly; changes apply on next restart
 
+### Testing Fixtures
+- **Location**: `backend/internal/db/migrations/testing/`
+- **Purpose**: E2E accounts with well-known credentials
+- **Behavior**: Unversioned like dynamic, but only applied when `TESTING_ENVIRONMENT` is
+  set, so they can never reach a real environment
+- **Note**: `backend/internal/db/migrations/excluded/` holds migrations kept out of the
+  embed on purpose
+
+Pending static migrations are logged on startup (air runs with `--no-migrate`); apply
+them with `make migrate` from the repo root.
+
 ## When to Use Which
 
 | Change Type | Migration Type |

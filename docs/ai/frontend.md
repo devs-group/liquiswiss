@@ -6,7 +6,7 @@
 - PrimeVue components
 - Tailwind CSS
 - VeeValidate + Yup for forms
-- Node version managed via `.nvmrc` - always run `nvm use` before npm commands
+- Node version managed via `.nvmrc`. The app itself runs in the container (`make up`); `nvm use` is only needed for host-side npm commands, such as the pre-commit lint.
 
 ## Key Files to Understand
 
@@ -111,9 +111,13 @@ npm run test:e2e:debug     # Debug mode
 
 ### E2E Test User
 
-A test user is automatically seeded via dynamic migration:
+A test user is seeded, but ONLY when `TESTING_ENVIRONMENT` is set (CI sets it, the local
+stack and prod do not):
 - **Email**: `e2e@test.liquiswiss.ch`
 - **Password**: `Test123!`
-- **Migration**: `backend/internal/db/migrations/dynamic/10001_apply_e2e_test_fixtures.sql`
+- **Migration**: `backend/internal/db/migrations/testing/10001_apply_e2e_test_fixtures.sql`
+
+The suite only passes against a production preview build (`npm run build` + preview),
+not against the dev server.
 
 Override credentials with environment variables: `E2E_TEST_EMAIL`, `E2E_TEST_PASSWORD`

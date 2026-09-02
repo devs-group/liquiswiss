@@ -6,7 +6,7 @@ LiquiSwiss uses two JWT tokens stored in HTTP-only cookies:
 
 | Token | Lifetime | Purpose |
 |-------|----------|---------|
-| Access Token | 15 minutes | API authentication |
+| Access Token | 20 minutes | API authentication (`utils.AccessTokenValidity`) |
 | Refresh Token | 3 months | Session persistence, tracked in database for revocation |
 
 ## Flow
@@ -25,6 +25,17 @@ LiquiSwiss uses two JWT tokens stored in HTTP-only cookies:
 | Auth handlers | [backend/internal/api/handlers/auth.go](../../backend/internal/api/handlers/auth.go) |
 | Frontend auth composable | [frontend/app/composables/useAuth.ts](../../frontend/app/composables/useAuth.ts) |
 | Frontend auth middleware | [frontend/app/middleware/auth.global.ts](../../frontend/app/middleware/auth.global.ts) |
+
+## Second path: OAuth 2.1 for MCP
+
+Cookies cover the web app. MCP clients authenticate through the embedded OAuth 2.1
+authorization server instead (`internal/oauth/oauth.go`, discovery at
+`/.well-known/oauth-protected-resource` and `/.well-known/oauth-authorization-server`).
+
+Those access tokens carry `aud: liquiswiss-mcp`. The two middlewares are deliberately
+exclusive: `AuthMiddleware` rejects audience tokens, `OAuthBearerMiddleware` requires
+them and re-checks on every request that the connection is still active, so revoking
+takes effect immediately.
 
 ## Debugging Auth Issues
 

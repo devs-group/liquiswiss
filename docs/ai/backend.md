@@ -17,6 +17,11 @@
 | JWT handling | [pkg/auth/auth.go](../../backend/pkg/auth/auth.go) |
 | Auth middleware | [internal/middleware/auth.go](../../backend/internal/middleware/auth.go) |
 | Environment config | [config/config.go](../../backend/config/config.go) |
+| MCP server and tools | [internal/mcp/server.go](../../backend/internal/mcp/server.go) |
+| OAuth 2.1 authorization server | [internal/oauth/oauth.go](../../backend/internal/oauth/oauth.go) |
+| SSE event hub (`/api/events`) | [internal/events/](../../backend/internal/events/) |
+| Build identifiers behind `/api/config` | [pkg/buildinfo/](../../backend/pkg/buildinfo/) |
+| `healthcheck` subcommand | [healthcheck.go](../../backend/healthcheck.go) |
 
 ## Environment Modes
 
@@ -27,7 +32,7 @@ The backend has two modes controlled by `GIN_MODE`:
 | Development | (unset or `debug`) | Loads `.env` file via godotenv, verbose logging |
 | Production | `release` | Expects env vars from environment, minimal logging |
 
-**Important for CI/Docker**: Set `GIN_MODE=release` to skip `.env` file loading. Without this, the backend will crash if no `.env` file exists.
+**Important for CI/Docker**: Set `GIN_MODE=release` to skip `.env` file loading. A missing `.env` is fine either way, only a malformed one aborts startup.
 
 ## Patterns
 

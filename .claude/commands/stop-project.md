@@ -1,2 +1,2 @@
-1. Check if docker compose services run via "docker compose ps". IF yes, stop them with "docker compose down"
-2. Stop the backend and frontend running background tasks
+1. Check whether the stack runs via `make ps`. If it does, stop it with `make down`
+2. Kill any background tasks this session started (Playwright runs, log follows, watchers)
