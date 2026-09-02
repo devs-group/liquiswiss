@@ -25,7 +25,14 @@
     </template>
 
     <template #end>
-      <div class="flex justify-end p-3 mt-auto">
+      <div class="flex items-center justify-between p-3 mt-auto">
+        <span
+          v-if="appVersion"
+          v-tooltip.top="`Commit: ${appConfig?.sha?.slice(0, 7) ?? 'unbekannt'}`"
+          class="text-xs text-surface-500 dark:text-surface-400 pl-1 select-none"
+          data-testid="app-version"
+        >{{ appVersion }}</span>
+        <span v-else />
         <Button
           v-tooltip.top="`Farbmodus: ${currentDarkModeOption.title} (klicken zum Wechseln)`"
           :icon="currentDarkModeOption.icon"
@@ -109,6 +116,19 @@ const darkModeMeta: Record<DarkModeType, { icon: string, title: string }> = {
 const currentDarkModeOption = computed(() => {
   const pref = (colorMode.preference as DarkModeType) ?? 'system'
   return darkModeMeta[pref] ?? darkModeMeta.system
+})
+
+// Build identifiers of the running backend (GET /api/config). Client-only:
+// the value is cosmetic and fetching it during SSR would only delay the page.
+const { data: appConfig } = useFetch<{ sha: string, version: string, appVersion: string }>('/api/config', {
+  lazy: true,
+  server: false,
+})
+
+// "dev" is what an unstamped local build reports; showing it adds nothing.
+const appVersion = computed(() => {
+  const version = appConfig.value?.version
+  return !version || version === 'dev' ? '' : version
 })
 
 const cycleColorMode = () => {

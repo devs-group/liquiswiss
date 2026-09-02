@@ -229,8 +229,15 @@ jobs:
         run: |
           # Fingerprint only what ends up in the running app, so deploys that
           # touched nothing app-relevant are recognisable as such.
-          APP_SHA=$(git ls-files -s -- . ':!.github' ':!_deployment' ':!docs' ':!.claude' \
+          # `:(exclude)` spelled out, not `:!`: git reads the character after
+          # `!` as pathspec magic, so ':!_deployment' aborts the whole listing
+          # and the fingerprint silently becomes the hash of an empty input.
+          APP_SHA=$(git ls-files -s -- . \
+            ':(exclude).github' ':(exclude)_deployment' ':(exclude)docs' ':(exclude).claude' \
             | sha256sum | cut -c1-12)
+          if [ -z "$APP_SHA" ] || [ "$APP_SHA" = "e3b0c44298fc" ]; then
+            echo "APP_SHA fingerprint is empty, the pathspec matched nothing"; exit 1
+          fi
           echo "app_sha=$APP_SHA" >> "$GITHUB_OUTPUT"
           if [ "${GITHUB_REF_TYPE}" = "tag" ]; then
             echo "version=${GITHUB_REF_NAME}" >> "$GITHUB_OUTPUT"
