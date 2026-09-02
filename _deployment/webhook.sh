@@ -140,20 +140,29 @@ dc pull "$SERVICE"
 echo "Recreating $SERVICE container"
 dc up -d --no-deps "$SERVICE"
 
+# Read the container's own healthcheck result rather than exec'ing a probe:
+# `bws run` joins its arguments and hands them to `sh -c`, so anything with
+# shell metacharacters (the nuxt probe's parentheses) dies with a syntax error
+# before it ever reaches the container. Both services declare a healthcheck in
+# the compose file, so docker has the answer already.
 echo "Waiting for $SERVICE to be healthy..."
+CID="$(dc ps -q "$SERVICE")"
+if [ -z "$CID" ]; then
+  echo "ERROR: no container id for $SERVICE"
+  rollback
+  notify_slack "deploy ${SERVICE}@${IMAGE_TAG}: no container after up, rolled back to ${PREV_TAG}"
+  exit 1
+fi
 MAX_ATTEMPTS=30
 ATTEMPT=0
 HEALTHY=0
 while [ $ATTEMPT -lt $MAX_ATTEMPTS ]; do
-  case "$SERVICE" in
-    backend)
-      dc exec -T backend /bin/liquiswiss healthcheck >/dev/null 2>&1 && HEALTHY=1
-      ;;
-    nuxt)
-      dc exec -T nuxt node -e \
-        "fetch('http://127.0.0.1:3000/').then(r=>process.exit(r.ok?0:1)).catch(()=>process.exit(1))" \
-        >/dev/null 2>&1 && HEALTHY=1
-      ;;
+  STATE="$(docker inspect --format '{{if .State.Health}}{{.State.Health.Status}}{{else}}none{{end}}' "$CID" 2>/dev/null || echo unknown)"
+  case "$STATE" in
+    healthy) HEALTHY=1 ;;
+    # An image without its own HEALTHCHECK and no compose override cannot be
+    # waited on; treat a running container as good rather than rolling back.
+    none) docker inspect --format '{{.State.Status}}' "$CID" 2>/dev/null | grep -q '^running$' && HEALTHY=1 ;;
   esac
   [ "$HEALTHY" -eq 1 ] && { echo "$SERVICE is healthy"; break; }
   ATTEMPT=$((ATTEMPT + 1))
