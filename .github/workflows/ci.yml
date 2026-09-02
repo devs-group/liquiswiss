@@ -1,5 +1,7 @@
 name: CI/CD Pipeline
 
+# Releases are tag-driven: a push to main runs tests only, pushing a `v*` tag
+# builds both images (version baked in from the tag) and deploys them.
 on:
   pull_request:
     paths:
@@ -9,29 +11,39 @@ on:
   push:
     branches:
       - main
+    tags:
+      - 'v*'
   workflow_dispatch:
 
 env:
-  NUXT_IMAGE: ghcr.io/${{ github.repository }}/nuxt:latest
-  BACKEND_IMAGE: ghcr.io/${{ github.repository }}/backend:latest
+  NUXT_IMAGE: ghcr.io/${{ github.repository }}/nuxt
+  BACKEND_IMAGE: ghcr.io/${{ github.repository }}/backend
 
 jobs:
   changes:
     name: Detect Changes
     runs-on: ubuntu-latest
     outputs:
-      frontend: ${{ steps.filter.outputs.frontend }}
-      backend: ${{ steps.filter.outputs.backend }}
-      workflow: ${{ steps.filter.outputs.workflow }}
-      e2e: ${{ steps.filter.outputs.e2e }}
+      frontend: ${{ steps.filter.outputs.frontend || steps.all.outputs.all }}
+      backend: ${{ steps.filter.outputs.backend || steps.all.outputs.all }}
+      workflow: ${{ steps.filter.outputs.workflow || steps.all.outputs.all }}
+      e2e: ${{ steps.filter.outputs.e2e || steps.all.outputs.all }}
     steps:
       - name: Checkout code
         uses: actions/checkout@v7
         with:
           fetch-depth: 0
 
+      # A release tag must run the full suite: there is no meaningful "before"
+      # to diff against, so every filter is forced true.
+      - name: Force full run on tags
+        id: all
+        if: ${{ github.ref_type == 'tag' }}
+        run: echo "all=true" >> "$GITHUB_OUTPUT"
+
       - name: Check changed paths
         id: filter
+        if: ${{ github.ref_type != 'tag' }}
         uses: dorny/paths-filter@v3
         with:
           base: ${{ github.event.before }}
@@ -51,7 +63,6 @@ jobs:
     runs-on: ubuntu-latest
     needs: [ changes ]
     if: ${{ github.event_name == 'workflow_dispatch' || needs.changes.outputs.frontend == 'true' || needs.changes.outputs.workflow == 'true' }}
-    #    if: github.ref != 'refs/heads/main'
     container:
       image: node:22.19.0
     steps:
@@ -84,7 +95,6 @@ jobs:
           MARIADB_PASSWORD: "test"
           MARIADB_DATABASE: "test"
           MARIADB_ROOT_PASSWORD: "test"
-    #    if: github.ref != 'refs/heads/main'
     container:
       image: golang:1.26.2-alpine
     env:
@@ -202,14 +212,45 @@ jobs:
           path: frontend/test-results/
           retention-days: 1
 
+  # Resolve the identifiers baked into both images, so a running container can
+  # answer what it is (GET /api/config) and CI can diff prod against the release.
+  version:
+    name: Resolve Version
+    runs-on: ubuntu-latest
+    if: ${{ github.ref_type == 'tag' || (github.event_name == 'workflow_dispatch' && github.ref == 'refs/heads/main') }}
+    outputs:
+      version: ${{ steps.ver.outputs.version }}
+      app_sha: ${{ steps.ver.outputs.app_sha }}
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          fetch-depth: 0
+      - id: ver
+        run: |
+          # Fingerprint only what ends up in the running app, so deploys that
+          # touched nothing app-relevant are recognisable as such.
+          APP_SHA=$(git ls-files -s -- . ':!.github' ':!_deployment' ':!docs' ':!.claude' \
+            | sha256sum | cut -c1-12)
+          echo "app_sha=$APP_SHA" >> "$GITHUB_OUTPUT"
+          if [ "${GITHUB_REF_TYPE}" = "tag" ]; then
+            echo "version=${GITHUB_REF_NAME}" >> "$GITHUB_OUTPUT"
+          else
+            echo "version=$(git describe --tags --abbrev=0 2>/dev/null || echo dev)" >> "$GITHUB_OUTPUT"
+          fi
+
   build_nuxt:
     name: Build Nuxt
     runs-on: ubuntu-latest
-    needs: [ changes, lint_nuxt, e2e_tests ]
-    if: ${{ github.ref == 'refs/heads/main'
-      && (github.event_name == 'workflow_dispatch' || needs.changes.outputs.frontend == 'true' || needs.changes.outputs.workflow == 'true')
+    needs: [ version, lint_nuxt, e2e_tests ]
+    # Explicit result checks: the default success() also skips when an ancestor
+    # job was skipped, even though the jobs that matter succeeded.
+    if: ${{ !cancelled()
+      && needs.version.result == 'success'
       && needs.lint_nuxt.result == 'success'
       && needs.e2e_tests.result == 'success' }}
+    permissions:
+      contents: read
+      packages: write
     steps:
       - name: Checkout code
         uses: actions/checkout@v7
@@ -223,24 +264,46 @@ jobs:
           registry: ghcr.io
           username: ${{ github.actor }}
           password: ${{ secrets.GITHUB_TOKEN }}
+
+      # Built as a list here rather than inline: an empty line in `tags:` on a
+      # non-tag build is an error, not a no-op.
+      - name: Resolve image tags
+        id: tags
+        run: |
+          {
+            echo "tags<<EOF"
+            echo "${NUXT_IMAGE}:latest"
+            echo "${NUXT_IMAGE}:${GITHUB_SHA}"
+            # `|| true`: the step shell runs with -e, so a false test would abort it
+            [ "${GITHUB_REF_TYPE}" = "tag" ] && echo "${NUXT_IMAGE}:${GITHUB_REF_NAME}" || true
+            echo "EOF"
+          } >> "$GITHUB_OUTPUT"
 
       - name: Build and Push Docker Image
         uses: docker/build-push-action@v7
         with:
           context: .
           file: ./_deployment/nuxt/Dockerfile
-          tags: ${{ env.NUXT_IMAGE }}
+          target: deploy
           push: true
+          build-args: |
+            GIT_SHA=${{ github.sha }}
+            VERSION=${{ needs.version.outputs.version }}
+            APP_SHA=${{ needs.version.outputs.app_sha }}
+          tags: ${{ steps.tags.outputs.tags }}
           cache-from: type=gha,scope=nuxt
           cache-to: type=gha,scope=nuxt,mode=max
 
   build_backend:
     name: Build Backend
     runs-on: ubuntu-latest
-    needs: [ changes, test_backend ]
-    if: ${{ github.ref == 'refs/heads/main'
-      && (github.event_name == 'workflow_dispatch' || needs.changes.outputs.backend == 'true' || needs.changes.outputs.workflow == 'true')
+    needs: [ version, test_backend ]
+    if: ${{ !cancelled()
+      && needs.version.result == 'success'
       && needs.test_backend.result == 'success' }}
+    permissions:
+      contents: read
+      packages: write
     steps:
       - name: Checkout code
         uses: actions/checkout@v7
@@ -255,39 +318,78 @@ jobs:
           username: ${{ github.actor }}
           password: ${{ secrets.GITHUB_TOKEN }}
 
+      - name: Resolve image tags
+        id: tags
+        run: |
+          {
+            echo "tags<<EOF"
+            echo "${BACKEND_IMAGE}:latest"
+            echo "${BACKEND_IMAGE}:${GITHUB_SHA}"
+            [ "${GITHUB_REF_TYPE}" = "tag" ] && echo "${BACKEND_IMAGE}:${GITHUB_REF_NAME}" || true
+            echo "EOF"
+          } >> "$GITHUB_OUTPUT"
+
       - name: Build and Push Docker Image
         uses: docker/build-push-action@v7
         with:
           context: .
           file: ./_deployment/backend/Dockerfile
-          tags: ${{ env.BACKEND_IMAGE }}
+          target: prod
           push: true
+          build-args: |
+            GIT_SHA=${{ github.sha }}
+            VERSION=${{ needs.version.outputs.version }}
+            APP_SHA=${{ needs.version.outputs.app_sha }}
+          tags: ${{ steps.tags.outputs.tags }}
           cache-from: type=gha,scope=backend
           cache-to: type=gha,scope=backend,mode=max
 
   deploy:
     name: Deploy to Production
     runs-on: ubuntu-latest
-    needs: [ build_nuxt, build_backend, lint_nuxt, test_backend, e2e_tests ]
-    if: ${{ always()
-      && github.ref == 'refs/heads/main'
-      && (needs.build_nuxt.result == 'success' || needs.build_backend.result == 'success')
-      && needs.build_nuxt.result != 'failure'
-      && needs.build_backend.result != 'failure'
-      && needs.lint_nuxt.result != 'failure'
-      && needs.test_backend.result != 'failure'
-      && needs.e2e_tests.result != 'failure' }}
+    needs: [ build_nuxt, build_backend ]
+    if: ${{ !cancelled()
+      && needs.build_backend.result == 'success'
+      && needs.build_nuxt.result == 'success' }}
+    environment: production
     env:
       DEPLOY_URL: ${{ secrets.DEPLOY_URL }}
-      DEPLOY_TOKEN: ${{ secrets.DEPLOY_TOKEN }}
-    container:
-      image: alpine:latest
+      DEPLOY_SECRET: ${{ secrets.DEPLOY_SECRET }}
     steps:
       - name: Checkout code
         uses: actions/checkout@v7
+        with:
+          fetch-depth: 0
 
-      - name: Install curl
-        run: apk add --no-cache curl
+      - name: Deploy backend and nuxt
+        run: |
+          # What does this release actually change? Diff the sha running in
+          # production against the one being deployed and classify the paths.
+          PREV=$(curl -sf https://api.liquiswiss.ch/api/config \
+            | python3 -c 'import sys,json;print(json.load(sys.stdin).get("sha",""))' 2>/dev/null || true)
+          PARTS=""
+          if [ -n "$PREV" ] && git cat-file -e "$PREV" 2>/dev/null; then
+            FE=false; BE=false
+            for f in $(git diff --name-only "$PREV" "$GITHUB_SHA"); do
+              case "$f" in
+                frontend/*) FE=true ;;
+                backend/*)  BE=true ;;
+                *) ;;
+              esac
+            done
+            if $BE && $FE; then PARTS="backend+nuxt"
+            elif $FE; then PARTS="nuxt"
+            elif $BE; then PARTS="backend"
+            fi
+          fi
+          if [ "${GITHUB_REF_TYPE}" = "tag" ]; then
+            SCOPE="release ${GITHUB_REF_NAME} ${PARTS}"
+          else
+            SCOPE="manual ${PARTS}"
+          fi
+          echo "scope: '${SCOPE}' (prev: ${PREV:-unknown})"
 
-      - name: Deploy Application
-        run: sh ./_deployment/deploy.sh
+          # One service at a time: the webhook health-checks and rolls back per
+          # service, so a broken backend never takes the frontend with it.
+          ./_deployment/deploy.sh "${GITHUB_SHA}" backend "$SCOPE"
+          ./_deployment/deploy.sh "${GITHUB_SHA}" nuxt "$SCOPE"

@@ -10,6 +10,7 @@ import (
 	"liquiswiss/internal/middleware"
 	"liquiswiss/internal/oauth"
 	"liquiswiss/internal/service/api_service"
+	"liquiswiss/pkg/buildinfo"
 )
 
 type API struct {
@@ -65,6 +66,17 @@ func (api *API) setupRouter() {
 		// Health check endpoint for monitoring and CI
 		group.GET("/health", func(ctx *gin.Context) {
 			ctx.JSON(200, gin.H{"status": "ok"})
+		})
+
+		// Build identifiers of the running binary. Public on purpose: CI reads
+		// it to work out what a deploy actually changes, and it answers
+		// "what is running in production" with a single curl.
+		group.GET("/config", func(ctx *gin.Context) {
+			ctx.JSON(200, gin.H{
+				"sha":        buildinfo.GitSHA,
+				"version":    buildinfo.Version,
+				"appVersion": buildinfo.AppSHA,
+			})
 		})
 
 		public := group.Group("/auth")

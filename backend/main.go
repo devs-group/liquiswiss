@@ -41,6 +41,13 @@ var dynamicMigrations embed.FS
 var testingFixtures embed.FS
 
 func main() {
+	// `liquiswiss healthcheck` probes the running server and exits: used by the
+	// container healthcheck and the deploy webhook. Handled before flag parsing
+	// because it is a subcommand, not a flag.
+	if len(os.Args) > 1 && os.Args[1] == "healthcheck" {
+		os.Exit(runHealthcheck())
+	}
+
 	flag.Parse()
 
 	// Init global logger

@@ -7,7 +7,9 @@ networks:
 
 services:
   nuxt:
-    image: ghcr.io/devs-group/liquiswiss/nuxt:latest
+    # Tag var name is derived by webhook.sh from the service name
+    # (nuxt -> NUXT_TAG) and persisted to .env after a successful deploy.
+    image: ghcr.io/devs-group/liquiswiss/nuxt:${NUXT_TAG:-latest}
     restart: always
     ports:
       - "3000"
@@ -23,6 +25,18 @@ services:
       NUXT_API_HOST: ${NUXT_API_HOST:-https://api.liquiswiss.ch}
       NODE_ENV: ${NODE_ENV:-production}
       TZ: ${TZ:-Europe/Zurich}
+    healthcheck:
+      test:
+        [
+          "CMD",
+          "node",
+          "-e",
+          "fetch('http://127.0.0.1:3000/').then(r=>process.exit(r.ok?0:1)).catch(()=>process.exit(1))",
+        ]
+      interval: 10s
+      timeout: 5s
+      start_period: 30s
+      retries: 5
     depends_on:
       database-app:
         condition: service_healthy
@@ -40,7 +54,8 @@ services:
       - "traefik.http.routers.liquiswiss-nuxt-www.middlewares=redirect-to-nonwww@file"
 
   backend:
-    image: ghcr.io/devs-group/liquiswiss/backend:latest
+    # backend -> BACKEND_TAG, see the nuxt service above.
+    image: ghcr.io/devs-group/liquiswiss/backend:${BACKEND_TAG:-latest}
     restart: always
     ports:
       - "8080"
@@ -75,6 +90,12 @@ services:
       INVITATION_RESEND_DELAY_MINUTES: ${INVITATION_RESEND_DELAY_MINUTES:-10}
       INVITATION_VALIDITY_MINUTES: ${INVITATION_VALIDITY_MINUTES:-10080}
       JWT_KEY: ${JWT_KEY:?BWSM secret JWT_KEY required}
+    healthcheck:
+      test: ["CMD", "/bin/liquiswiss", "healthcheck"]
+      interval: 10s
+      timeout: 5s
+      start_period: 30s
+      retries: 5
     depends_on:
       database-app:
         condition: service_healthy

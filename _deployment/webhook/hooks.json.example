@@ -4,15 +4,22 @@
     "execute-command": "<deploy-dir>/webhook.sh",
     "command-working-directory": "<deploy-dir>",
     "response-message": "OK",
+    "pass-arguments-to-command": [
+      { "source": "payload", "name": "tag" },
+      { "source": "payload", "name": "service" },
+      { "source": "payload", "name": "scope" }
+    ],
     "trigger-rule": {
       "match": {
         "type": "value",
-        "value": "<replace-with-deploy-token>",
+        "value": "<replace-with-deploy-secret>",
         "parameter": {
           "source": "header",
           "name": "X-Access-Token"
         }
       }
-    }
+    },
+    "include-command-output-in-response": true,
+    "include-command-output-in-response-on-error": true
   }
 ]

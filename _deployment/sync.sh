@@ -31,7 +31,9 @@ if [ -z "$LS_HOST" ] || [ -z "$LS_DEST" ]; then
   echo "ERROR: LS_HOST and LS_DEST must be set (see _deployment/.sync.env or the header of this script)" >&2
   exit 2
 fi
-FILES=(docker-compose.yml webhook.sh rotate-db.sh Makefile)
+# .env.example rides along so the server copy can never drift from the switches
+# the deployment understands. The real .env and .credentials stay server-only.
+FILES=(docker-compose.yml webhook.sh rotate-db.sh Makefile .env.example)
 
 APPLY_PROMPT=1
 DO_APPLY=1

@@ -1,11 +1,20 @@
-#!/bin/sh
-set -x
+#!/bin/bash
+# CI-side trigger for the production deploy webhook.
+# Usage: deploy.sh <image-tag> <service> [scope]
+set -euo pipefail
 
-SUCCEEDED=$(curl -X GET "${DEPLOY_URL}" -H "X-Access-Token: ${DEPLOY_TOKEN}" | grep "OK" | wc -l)
+IMAGE_TAG="${1:-latest}"
+SERVICE="${2:-backend}"
+# What this deploy carries, for the Slack message: "release vX.Y.Z <parts>"
+# or "manual" (workflow_dispatch).
+SCOPE="${3:-}"
 
-if [ "${SUCCEEDED}" != 1 ] ; then
-  echo "Deployment failed!"
-  exit 1
-fi
+# -f: the webhook answers non-2xx on a failed deploy, which must fail the job.
+curl -fsS --show-error -X POST \
+  -H "X-Access-Token: ${DEPLOY_SECRET}" \
+  -H "Content-Type: application/json" \
+  --data "{\"tag\": \"${IMAGE_TAG}\", \"service\": \"${SERVICE}\", \"scope\": \"${SCOPE}\"}" \
+  "${DEPLOY_URL}"
 
-echo "Deployment succeeded"
+echo
+echo "Deployment succeeded for ${SERVICE} (${IMAGE_TAG}) scope=${SCOPE:-unspecified}"
