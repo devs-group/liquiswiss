@@ -28,8 +28,7 @@
       <div class="flex items-center justify-between p-3 mt-auto">
         <span
           v-if="appVersion"
-          v-tooltip.top="`Commit: ${appConfig?.sha?.slice(0, 7) ?? 'unbekannt'}`"
-          class="text-xs text-surface-500 dark:text-surface-400 pl-1 select-none"
+          class="text-[10px] leading-none tracking-wide text-surface-400/70 dark:text-surface-500/70 pl-2 select-none"
           data-testid="app-version"
         >{{ appVersion }}</span>
         <span v-else />
@@ -118,18 +117,12 @@ const currentDarkModeOption = computed(() => {
   return darkModeMeta[pref] ?? darkModeMeta.system
 })
 
-// Build identifiers of the running backend (GET /api/config). Client-only:
-// the value is cosmetic and fetching it during SSR would only delay the page.
-const { data: appConfig } = useFetch<{ sha: string, version: string, appVersion: string }>('/api/config', {
-  lazy: true,
-  server: false,
-})
+// Build identifiers of the running backend (GET /api/config). Fetched during
+// SSR so the version is in the markup rather than appearing a moment later.
+const { data: appConfig } = await useFetch<{ sha: string, version: string, appVersion: string }>('/api/config')
 
-// "dev" is what an unstamped local build reports; showing it adds nothing.
-const appVersion = computed(() => {
-  const version = appConfig.value?.version
-  return !version || version === 'dev' ? '' : version
-})
+// Local, unstamped builds report "dev", which is worth showing as such.
+const appVersion = computed(() => appConfig.value?.version ?? '')
 
 const cycleColorMode = () => {
   const order: DarkModeType[] = ['system', 'dark', 'light']
