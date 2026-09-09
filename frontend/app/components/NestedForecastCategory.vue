@@ -129,7 +129,9 @@ const childCategories = computed(() => {
 
 const getColumnColor = computed(() => {
   if (isAutoCategory.value) {
-    return 'bg-amber-50 dark:bg-amber-900/40'
+    // Opaque on purpose: this colour also paints the pinned label column, and a
+    // translucent one lets the scrolling month cells show through it
+    return 'bg-amber-50 dark:bg-amber-950'
   }
   switch (props.depth) {
     case 2:
