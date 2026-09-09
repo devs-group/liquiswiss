@@ -39,9 +39,11 @@
       class="flex flex-col gap-4"
     >
       <div class="flex flex-col gap-4">
-        <div class="grid grid-cols-1 sm:grid-cols-3 gap-2">
-          <div class="flex items-center gap-2">
-            <p class="text-sm">
+        <!-- Wrapping row instead of a 3 column grid: the three controls need
+             far more than the sm breakpoint offers and used to overlap -->
+        <div class="flex flex-wrap items-center gap-x-6 gap-y-2">
+          <div class="flex shrink-0 items-center gap-2">
+            <p class="text-sm whitespace-nowrap">
               Zeitraum:
             </p>
             <InputNumber
@@ -53,6 +55,7 @@
               :allow-empty="false"
               size="small"
               mode="decimal"
+              input-class="w-24"
               :suffix="forecastMonths == 1 ? ' Monat' : ' Monate'"
               :max="36"
               @update:model-value="setForecastMonths"
@@ -65,17 +68,17 @@
               </template>
             </InputNumber>
           </div>
-          <div class="flex items-center gap-2">
-            <p class="text-sm">
+          <div class="flex shrink-0 items-center gap-2">
+            <p class="text-sm whitespace-nowrap">
               Performance ({{ forecastPerformance }}%):
             </p>
             <Slider
               :model-value="forecastPerformance"
-              class="w-56"
+              class="w-40 xl:w-56"
               @update:model-value="setForecastPerformance"
             />
           </div>
-          <div class="flex items-center gap-2 sm:justify-end">
+          <div class="flex shrink-0 items-center gap-2 sm:ml-auto">
             <Button
               v-tooltip.bottom="forecastShowZeroRows ? 'Zeilen ohne Beträge ausblenden' : 'Zeilen ohne Beträge anzeigen'"
               :icon="forecastShowZeroRows ? 'pi pi-eye' : 'pi pi-eye-slash'"
@@ -111,10 +114,21 @@
           </div>
         </ClientOnly>
 
-        <div class="relative flex flex-col overflow-x-auto pb-2">
-          <div class="grid grid-cols-12 items-center">
+        <div
+          ref="forecastScroll"
+          data-testid="forecast-scroll"
+          class="relative flex flex-col overflow-x-auto pb-2"
+          @scroll.passive="onForecastScroll"
+        >
+          <!-- min-w-max lets the grid grow past the scroll container so the
+               sticky label column stays pinned across the whole scroll range,
+               while still stretching to full width for few months -->
+          <div class="grid grid-cols-12 items-center min-w-max">
             <div class="flex items-center col-span-full">
-              <div class="border-t border-b border-l border-zinc-600 dark:border-zinc-400 bg-zinc-300 dark:bg-zinc-700 p-2 min-w-28">
+              <div
+                class="sticky left-0 z-10 shrink-0 w-28 border-t border-b border-l border-zinc-600 dark:border-zinc-400 bg-zinc-300 dark:bg-zinc-700 p-2"
+                :class="stickyDividerClass"
+              >
                 <p class="text-xs">
                   &nbsp;
                 </p>
@@ -132,7 +146,8 @@
 
             <div class="flex items-center col-span-full">
               <div
-                class="group flex gap-1 cursor-pointer border-b border-l border-zinc-600 dark:border-zinc-400 bg-zinc-400 dark:bg-zinc-600 p-2 min-w-28"
+                class="group sticky left-0 z-10 shrink-0 w-28 flex gap-1 cursor-pointer border-b border-l border-zinc-600 dark:border-zinc-400 bg-zinc-400 dark:bg-zinc-600 p-2"
+                :class="stickyDividerClass"
                 @click="onToggleRevenueDetails"
               >
                 <p class="text-xs font-bold">
@@ -163,12 +178,14 @@
                 :forecast-details="forecastDetails"
                 :currency-code="getOrganisationCurrencyCode"
                 :performance-factor="forecastPerformance / 100"
+                :sticky-divider-class="stickyDividerClass"
               />
             </template>
 
             <div class="flex items-center col-span-full">
               <div
-                class="group flex gap-1 cursor-pointer border-b border-l border-zinc-600 dark:border-zinc-400 bg-zinc-400 dark:bg-zinc-600 p-2 min-w-28"
+                class="group sticky left-0 z-10 shrink-0 w-28 flex gap-1 cursor-pointer border-b border-l border-zinc-600 dark:border-zinc-400 bg-zinc-400 dark:bg-zinc-600 p-2"
+                :class="stickyDividerClass"
                 @click="onToggleExpenseDetails"
               >
                 <p class="text-xs font-bold">
@@ -199,11 +216,15 @@
                 :forecast-details="forecastDetails"
                 :currency-code="getOrganisationCurrencyCode"
                 :performance-factor="forecastPerformance / 100"
+                :sticky-divider-class="stickyDividerClass"
               />
             </template>
 
             <div class="flex items-center col-span-full">
-              <div class="cursor-default border-b border-l border-zinc-600 dark:border-zinc-400 bg-zinc-300 dark:bg-zinc-700 p-2 min-w-28">
+              <div
+                class="sticky left-0 z-10 shrink-0 w-28 cursor-default border-b border-l border-zinc-600 dark:border-zinc-400 bg-zinc-300 dark:bg-zinc-700 p-2"
+                :class="stickyDividerClass"
+              >
                 <p class="text-xs">
                   Cashflow
                 </p>
@@ -221,7 +242,10 @@
             </div>
 
             <div class="flex items-center col-span-full">
-              <div class="cursor-default border-b border-l border-zinc-600 dark:border-zinc-400 bg-zinc-300 dark:bg-zinc-700 p-2 min-w-28">
+              <div
+                class="sticky left-0 z-10 shrink-0 w-28 cursor-default border-b border-l border-zinc-600 dark:border-zinc-400 bg-zinc-300 dark:bg-zinc-700 p-2"
+                :class="stickyDividerClass"
+              >
                 <p class="text-xs">
                   Endsaldo
                 </p>
@@ -298,6 +322,19 @@ import { Config } from '~/config/config'
 useHead({
   title: 'Prognose',
 })
+
+// The sticky label column only gets its separating shadow once the table is
+// actually scrolled sideways, so it stays flat while everything is visible
+const forecastScroll = ref<HTMLElement | null>(null)
+const isForecastScrolled = ref(false)
+const onForecastScroll = () => {
+  isForecastScrolled.value = (forecastScroll.value?.scrollLeft ?? 0) > 0
+}
+// Divider that separates the pinned label column from the months scrolling
+// underneath it. Passed down into the nested category rows as a prop.
+const stickyDividerClass = computed(() => isForecastScrolled.value
+  ? 'border-r shadow-[4px_0_6px_-2px_rgba(0,0,0,0.25)] dark:shadow-[4px_0_6px_-2px_rgba(0,0,0,0.6)]'
+  : '')
 
 const utcFormatter = new Intl.DateTimeFormat(Constants.BASE_LOCALE_CODE, { month: 'long', year: 'numeric', timeZone: 'UTC' })
 const localFormatter = new Intl.DateTimeFormat(Constants.BASE_LOCALE_CODE, { month: 'long', year: 'numeric' })

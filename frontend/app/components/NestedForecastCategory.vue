@@ -4,13 +4,14 @@
   >
     <div
       v-tooltip="isAutoCategory ? 'MwSt. ist eine automatisch berechnete Ausgabe basierend auf den MwSt.-Einstellungen.' : undefined"
-      class="group flex gap-1 border-b border-l border-zinc-600 dark:border-zinc-400 p-1 min-w-28"
-      :class="[getColumnColor, { 'cursor-pointer': hasChildren && !isAutoCategory, 'cursor-default': isAutoCategory }]"
+      class="group sticky left-0 z-10 shrink-0 w-28 flex gap-1 border-b border-l border-zinc-600 dark:border-zinc-400 p-1"
+      :class="[getColumnColor, stickyDividerClass, { 'cursor-pointer': hasChildren && !isAutoCategory, 'cursor-default': isAutoCategory }]"
       @click="onToggleChildren(category.name)"
     >
       <p
         class="w-full truncate"
         :class="[getColumnTextAlignment, getColumnTextSize]"
+        :title="category.name"
       >
         {{ isAutoCategory.value ? `${category.name} (auto)` : category.name }}
       </p>
@@ -45,6 +46,7 @@
       :forecast-details="forecastDetails"
       :currency-code="currencyCode"
       :performance-factor="performanceFactor"
+      :sticky-divider-class="stickyDividerClass"
       :depth="depth+1"
       :visited="[...visited, category.name]"
     />
@@ -76,6 +78,11 @@ const props = defineProps({
   performanceFactor: {
     type: Number,
     default: 1,
+  },
+  // Divider shown on the pinned label column while the table is scrolled
+  stickyDividerClass: {
+    type: String,
+    default: '',
   },
   depth: {
     type: Number,
