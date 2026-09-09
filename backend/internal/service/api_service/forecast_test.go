@@ -585,3 +585,205 @@ func TestUpdateForecastExclusions_PropagatesError(t *testing.T) {
 	err := service.UpdateForecastExclusions(context.Background(), payload, userID)
 	require.ErrorIs(t, err, expectedErr)
 }
+
+// runForecastForTransactions drives CalculateForecast for the given transactions
+// and returns the forecast detail that was persisted for their month.
+func runForecastForTransactions(
+	t *testing.T,
+	transactions []models.Transaction,
+	exclusions map[int64]map[string]bool,
+) models.CreateForecastDetail {
+	t.Helper()
+	utils.InitValidator()
+
+	userID := int64(99)
+	fixedToday := time.Date(2024, time.January, 1, 0, 0, 0, 0, time.UTC)
+	originalClock := utils.DefaultClock
+	utils.DefaultClock = &stubClock{fixed: fixedToday}
+	t.Cleanup(func() {
+		utils.DefaultClock = originalClock
+	})
+
+	ctrl := gomock.NewController(t)
+	t.Cleanup(ctrl.Finish)
+
+	mockDB := mocks.NewMockIDatabaseAdapter(ctrl)
+	service := api_service.NewAPIService(mockDB, nil)
+
+	baseCode := "CHF"
+	localeCode := "de-CH"
+	orgCurrency := models.Currency{
+		Code:       &baseCode,
+		LocaleCode: &localeCode,
+	}
+	user := models.User{
+		ID:                    userID,
+		Name:                  "Test User",
+		Email:                 "test@example.com",
+		CurrentOrganisationID: 500,
+		Currency:              orgCurrency,
+	}
+	organisation := models.Organisation{
+		ID:       user.CurrentOrganisationID,
+		Name:     "Org",
+		Currency: orgCurrency,
+	}
+
+	mockDB.EXPECT().
+		GetProfile(userID).
+		Return(&user, nil)
+	mockDB.EXPECT().
+		GetOrganisation(userID, user.CurrentOrganisationID).
+		Return(&organisation, nil)
+	mockDB.EXPECT().
+		ListTransactions(userID, int64(1), int64(100000), "name", "ASC", "", true, false).
+		Return(transactions, int64(len(transactions)), nil)
+	mockDB.EXPECT().
+		ListFiatRates(baseCode).
+		Return([]models.FiatRate{}, nil)
+	for _, transaction := range transactions {
+		mockDB.EXPECT().
+			ListForecastExclusions(userID, transaction.ID, utils.TransactionsTableName).
+			Return(exclusions[transaction.ID], nil)
+	}
+	mockDB.EXPECT().
+		ListEmployees(userID, int64(1), int64(100000), "name", "ASC", "", false).
+		Return([]models.Employee{}, int64(0), nil)
+	mockDB.EXPECT().
+		GetVatSetting(userID).
+		Return(nil, nil)
+	mockDB.EXPECT().
+		ClearForecasts(userID).
+		Return(int64(0), nil)
+
+	var capturedForecast models.CreateForecast
+	mockDB.EXPECT().
+		UpsertForecast(gomock.Any(), userID).
+		DoAndReturn(func(payload models.CreateForecast, _ int64) (int64, error) {
+			capturedForecast = payload
+			return 1, nil
+		})
+
+	var capturedDetail models.CreateForecastDetail
+	mockDB.EXPECT().
+		UpsertForecastDetail(gomock.Any(), userID, int64(1)).
+		DoAndReturn(func(payload models.CreateForecastDetail, _ int64, _ int64) (int64, error) {
+			capturedDetail = payload
+			return 0, nil
+		})
+
+	mockDB.EXPECT().
+		ListForecasts(userID, int64(utils.GetTotalMonthsForMaxForecastYears())).
+		DoAndReturn(func(_ int64, _ int64) ([]models.Forecast, error) {
+			return []models.Forecast{
+				{
+					Data: models.ForecastData{
+						Month:    capturedForecast.Month,
+						Revenue:  capturedForecast.Revenue,
+						Expense:  capturedForecast.Expense,
+						Cashflow: capturedForecast.Cashflow,
+					},
+				},
+			}, nil
+		})
+
+	_, err := service.CalculateForecast(context.Background(), userID)
+	require.NoError(t, err)
+
+	return capturedDetail
+}
+
+// sameNameTransactions returns two transactions that share a category and a name,
+// which is what makes them collapse into a single forecast detail row.
+func sameNameTransactions(orgCurrency models.Currency, startDate types.AsDate) []models.Transaction {
+	return []models.Transaction{
+		{
+			ID:          1,
+			Name:        "Beratung",
+			Amount:      100_00,
+			VatIncluded: true,
+			Type:        "single",
+			StartDate:   startDate,
+			Category:    models.Category{Name: "Sales"},
+			Currency:    orgCurrency,
+		},
+		{
+			ID:          2,
+			Name:        "Beratung",
+			Amount:      50_00,
+			VatIncluded: true,
+			Type:        "single",
+			StartDate:   startDate,
+			Category:    models.Category{Name: "Sales"},
+			Currency:    orgCurrency,
+		},
+	}
+}
+
+func findDetailChild(t *testing.T, nodes []models.ForecastDetailRevenueExpense, category, name string) models.ForecastDetailRevenueExpense {
+	t.Helper()
+	for _, node := range nodes {
+		if node.Name != category {
+			continue
+		}
+		for _, child := range node.Children {
+			if child.Name == name {
+				return child
+			}
+		}
+	}
+	require.FailNowf(t, "detail not found", "no %q under %q", name, category)
+	return models.ForecastDetailRevenueExpense{}
+}
+
+// Two transactions with the same name inside the same category are shown as one
+// summed row, so that row has to reference both of them. Before this, only the
+// first id survived and excluding the row silently skipped the second one.
+func TestCalculateForecast_MergedDetailKeepsEveryRelatedID(t *testing.T) {
+	baseCode := "CHF"
+	localeCode := "de-CH"
+	orgCurrency := models.Currency{Code: &baseCode, LocaleCode: &localeCode}
+	startDate := types.AsDate(time.Date(2024, time.February, 1, 0, 0, 0, 0, time.UTC))
+
+	detail := runForecastForTransactions(
+		t,
+		sameNameTransactions(orgCurrency, startDate),
+		map[int64]map[string]bool{},
+	)
+
+	child := findDetailChild(t, detail.Revenue, "Sales", "Beratung")
+	require.Equal(t, []int64{1, 2}, child.RelatedIDs)
+	require.EqualValues(t, 1, child.RelatedID, "the legacy field stays the first id")
+	require.EqualValues(t, 150_00, child.Amount, "both amounts are summed into the row")
+	require.False(t, child.IsExcluded)
+}
+
+// A merged row only counts as excluded once every entity behind it is excluded,
+// otherwise the row still contributes the amount of the remaining ones.
+func TestCalculateForecast_MergedDetailIsExcludedOnlyWhenAllAre(t *testing.T) {
+	baseCode := "CHF"
+	localeCode := "de-CH"
+	orgCurrency := models.Currency{Code: &baseCode, LocaleCode: &localeCode}
+	startDate := types.AsDate(time.Date(2024, time.February, 1, 0, 0, 0, 0, time.UTC))
+	month := "2024-02"
+
+	partial := runForecastForTransactions(
+		t,
+		sameNameTransactions(orgCurrency, startDate),
+		map[int64]map[string]bool{2: {month: true}},
+	)
+	partialChild := findDetailChild(t, partial.Revenue, "Sales", "Beratung")
+	require.Equal(t, []int64{1, 2}, partialChild.RelatedIDs)
+	require.False(t, partialChild.IsExcluded, "one of two excluded is not an excluded row")
+	require.EqualValues(t, 100_00, partialChild.Amount, "the excluded transaction contributes nothing")
+
+	all := runForecastForTransactions(
+		t,
+		sameNameTransactions(orgCurrency, startDate),
+		map[int64]map[string]bool{1: {month: true}, 2: {month: true}},
+	)
+	allChild := findDetailChild(t, all.Revenue, "Sales", "Beratung")
+	require.Equal(t, []int64{1, 2}, allChild.RelatedIDs)
+	require.True(t, allChild.IsExcluded)
+	require.EqualValues(t, 0, allChild.Amount)
+}

@@ -17,19 +17,25 @@ type Forecast struct {
 type ForecastDetailRevenueExpense struct {
 	Name string `json:"name"`
 	// Only set those for leaf nodes
-	Amount       int64  `json:"amount"`
-	RelatedID    int64  `json:"relatedID"`
-	RelatedTable string `json:"relatedTable"`
-	IsExcluded   bool   `json:"isExcluded"`
+	Amount int64 `json:"amount"`
+	// RelatedID is the first of RelatedIDs and only kept so forecast details
+	// that were persisted before RelatedIDs existed stay readable
+	RelatedID int64 `json:"relatedID"`
+	// RelatedIDs holds every entity merged into this row, see addForecastDetail
+	RelatedIDs   []int64 `json:"relatedIDs,omitempty"`
+	RelatedTable string  `json:"relatedTable"`
+	// IsExcluded is only true when every entity of the row is excluded
+	IsExcluded bool `json:"isExcluded"`
 	// Recursive
 	Children []ForecastDetailRevenueExpense `json:"children,omitempty"`
 }
 
 type ForecastDetail struct {
-	Amount       int64  `json:"amount"`
-	RelatedID    int64  `json:"relatedID"`
-	RelatedTable string `json:"relatedTable"`
-	IsExcluded   bool   `json:"isExcluded"`
+	Amount       int64   `json:"amount"`
+	RelatedID    int64   `json:"relatedID"`
+	RelatedIDs   []int64 `json:"relatedIDs,omitempty"`
+	RelatedTable string  `json:"relatedTable"`
+	IsExcluded   bool    `json:"isExcluded"`
 }
 
 type ForecastDetails struct {

@@ -7,7 +7,7 @@
       {{ amountFormatted(displayedCategoryAmount) }} {{ currencyCode }}
     </p>
     <i
-      v-if="relatedID && canEdit"
+      v-if="relatedIDs.length && canEdit"
       class="pi !text-2xs cursor-pointer hover:scale-125 transition-transform"
       :class="[getExclusionIcon]"
       :title="getExclusionTooltip"
@@ -50,69 +50,81 @@ const props = defineProps({
   },
 })
 
+const findNodeByName = (
+  items: ForecastDetailRevenueExpenseResponse[],
+  targetName: string,
+): ForecastDetailRevenueExpenseResponse | undefined => {
+  for (const item of items) {
+    if (item.name === targetName) {
+      return item
+    }
+
+    if (item.children) {
+      const child = findNodeByName(item.children, targetName)
+      if (child) {
+        return child
+      }
+    }
+  }
+
+  return undefined
+}
+
+const detailNode = computed(() => {
+  return findNodeByName(props.forecastDetail[props.forecastType] ?? [], props.category.name)
+})
+
+const relatedTable = computed(() => detailNode.value?.relatedTable ?? '')
+
+// A row can stand for more than one entity, e.g. two transactions with the same
+// name in one category or a salary cost label shared by several employees. Older
+// forecast details only carry the single relatedID, hence the fallback.
+const relatedIDs = computed(() => {
+  const node = detailNode.value
+  if (!node) {
+    return []
+  }
+  if (node.relatedIDs?.length) {
+    return node.relatedIDs
+  }
+  return node.relatedID ? [node.relatedID] : []
+})
+
+const originalIsExcluded = computed(() => Boolean(detailNode.value?.isExcluded))
+
+const draftFor = (relatedID: number) => {
+  return getForecastExclusionChange(props.forecastDetail.month, relatedID, relatedTable.value)
+}
+
+// The backend only reports whether the whole row is excluded, so a row that is
+// only partly excluded reads as included until it gets toggled once
+const isRelatedExcluded = (relatedID: number) => {
+  const draft = draftFor(relatedID)
+  return draft ? draft.isExcluded : originalIsExcluded.value
+}
+
+const effectiveIsExcluded = computed(() => {
+  return relatedIDs.value.length > 0 && relatedIDs.value.every(isRelatedExcluded)
+})
+
 const onExcludeForecast = () => {
-  if (relatedID.value && relatedTable.value) {
+  if (!relatedIDs.value.length || !relatedTable.value) {
+    return
+  }
+  // Toggling the row has to move every entity behind it to the same state
+  const shouldExclude = !effectiveIsExcluded.value
+  for (const relatedID of relatedIDs.value) {
+    if (isRelatedExcluded(relatedID) === shouldExclude) {
+      continue
+    }
     toggleForecastExclusionChange({
       month: props.forecastDetail.month,
-      relatedID: Number(relatedID.value),
-      relatedTable: relatedTable.value as string,
-      originalIsExcluded: Boolean(originalIsExcluded.value),
+      relatedID,
+      relatedTable: relatedTable.value,
+      originalIsExcluded: originalIsExcluded.value,
     })
   }
 }
-
-const getCategoryRelatedValue = (
-  response: ForecastDetailResponse,
-  categoryName: string,
-  type: 'revenue' | 'expense',
-  value: 'relatedID' | 'relatedTable' | 'isExcluded',
-): string | number | boolean | null => {
-  const data: ForecastDetailRevenueExpenseResponse[] = response[type]
-
-  const findValueRecursively = (
-    items: ForecastDetailRevenueExpenseResponse[],
-    targetName: string,
-  ): string | number | boolean | null => {
-    for (const item of items) {
-      if (item.name === targetName) {
-        return item[value] ?? null
-      }
-
-      if (item.children) {
-        const childValue = findValueRecursively(item.children, targetName)
-        if (childValue) {
-          return childValue
-        }
-      }
-    }
-
-    return null
-  }
-
-  return findValueRecursively(data, categoryName)
-}
-
-const originalIsExcluded = computed(() => {
-  return getCategoryRelatedValue(props.forecastDetail, props.category.name, props.forecastType, 'isExcluded')
-})
-const relatedID = computed(() => {
-  return getCategoryRelatedValue(props.forecastDetail, props.category.name, props.forecastType, 'relatedID')
-})
-const relatedTable = computed(() => {
-  return getCategoryRelatedValue(props.forecastDetail, props.category.name, props.forecastType, 'relatedTable')
-})
-const draftChange = computed(() => {
-  if (!relatedID.value || !relatedTable.value) {
-    return undefined
-  }
-  return getForecastExclusionChange(props.forecastDetail.month, Number(relatedID.value), relatedTable.value as string)
-})
-const effectiveIsExcluded = computed(() => {
-  if (draftChange.value) {
-    return draftChange.value.isExcluded
-  }
-  return Boolean(originalIsExcluded.value)
-})
 const getExclusionIcon = computed(() => {
   return effectiveIsExcluded.value ? 'pi-history text-liqui-blue' : 'pi-check-square text-liqui-green'
 })

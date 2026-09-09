@@ -6,6 +6,7 @@ import (
 	"liquiswiss/pkg/logger"
 	"liquiswiss/pkg/models"
 	"liquiswiss/pkg/utils"
+	"slices"
 	"sort"
 	"time"
 )
@@ -878,19 +879,27 @@ func addForecastDetail(detailMap map[string]*models.ForecastDetails, monthKey st
 	// Traverse through the categories to create or navigate nested maps
 	for i, category := range categories {
 		if i == len(categories)-1 {
-			// If this is the last category, add the amount
-			if _, exists := currentMap[category]; !exists {
-				currentMap[category] = models.ForecastDetail{
-					Amount:       0,
+			// If this is the last category, add the amount.
+			// Several entities can end up under the same name within the same
+			// category: two transactions both called "Miete", or one salary
+			// cost label shared by all employees. They are shown as a single
+			// summed row, so the row has to carry every id. Keeping only the
+			// first one meant excluding the row silently skipped the rest.
+			detail, exists := currentMap[category].(models.ForecastDetail)
+			if !exists {
+				detail = models.ForecastDetail{
 					RelatedID:    relatedID,
+					RelatedIDs:   []int64{relatedID},
 					RelatedTable: relatedTable,
 					IsExcluded:   isExcluded,
 				}
+			} else if !slices.Contains(detail.RelatedIDs, relatedID) {
+				detail.RelatedIDs = append(detail.RelatedIDs, relatedID)
+				// A merged row only counts as excluded once every entity in it is
+				detail.IsExcluded = detail.IsExcluded && isExcluded
 			}
-			existingDetail := currentMap[category].(models.ForecastDetail)
-			existingDetail.Amount += amount
-			existingDetail.IsExcluded = isExcluded
-			currentMap[category] = existingDetail
+			detail.Amount += amount
+			currentMap[category] = detail
 		} else {
 			// Otherwise, ensure the nested map exists and navigate deeper
 			if _, exists := currentMap[category]; !exists {
@@ -917,6 +926,7 @@ func iterateForecastDetails(data map[string]any, result *[]models.ForecastDetail
 				Name:         key,
 				Amount:       v.Amount,
 				RelatedID:    v.RelatedID,
+				RelatedIDs:   v.RelatedIDs,
 				RelatedTable: v.RelatedTable,
 				IsExcluded:   v.IsExcluded,
 			})
