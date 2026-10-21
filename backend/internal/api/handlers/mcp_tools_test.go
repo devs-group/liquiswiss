@@ -8,6 +8,7 @@ import (
 	"net/url"
 	"strings"
 	"testing"
+	"time"
 
 	"github.com/stretchr/testify/require"
 
@@ -307,55 +308,61 @@ func TestMCPSalaryTimelineSemantics(t *testing.T) {
 		require.False(t, result.IsError, result.Text)
 		return result.Structured
 	}
+	// Dates start next year: willBeTerminated only counts terminations after
+	// CURDATE(), so fixed dates turn this test red once they pass.
+	base := time.Now().Year() + 1
+	date := func(yearOffset int, monthDay string) string {
+		return fmt.Sprintf("%d-%s", base+yearOffset, monthDay)
+	}
 
 	// January open-ended
-	january := createSalary("2026-01-01", 800000, false)
+	january := createSalary(date(0, "01-01"), 800000, false)
 	require.False(t, january.IsError, january.Text)
 	januaryID := int64(january.Structured["id"].(float64))
 	require.Nil(t, january.Structured["toDate"])
 
 	// August insertion caps January automatically
-	august := createSalary("2026-08-01", 900000, false)
+	august := createSalary(date(0, "08-01"), 900000, false)
 	require.False(t, august.IsError, august.Text)
 	augustID := int64(august.Structured["id"].(float64))
-	require.Equal(t, "2026-07-01", salaryByID(januaryID)["toDate"])
+	require.Equal(t, date(0, "07-01"), salaryByID(januaryID)["toDate"])
 
 	// April insertion re-caps January and gets capped itself by August
-	april := createSalary("2026-04-01", 850000, false)
+	april := createSalary(date(0, "04-01"), 850000, false)
 	require.False(t, april.IsError, april.Text)
 	aprilID := int64(april.Structured["id"].(float64))
-	require.Equal(t, "2026-07-01", april.Structured["toDate"])
-	require.Equal(t, "2026-03-01", salaryByID(januaryID)["toDate"])
+	require.Equal(t, date(0, "07-01"), april.Structured["toDate"])
+	require.Equal(t, date(0, "03-01"), salaryByID(januaryID)["toDate"])
 
 	// Deleting April re-expands January up to August
 	deleted := env.mcpCall(t, token, "delete_salary", fmt.Sprintf(`{"id":%d}`, aprilID))
 	require.False(t, deleted.IsError, deleted.Text)
-	require.Equal(t, "2026-07-01", salaryByID(januaryID)["toDate"])
+	require.Equal(t, date(0, "07-01"), salaryByID(januaryID)["toDate"])
 
 	// Termination caps the previous salary and flags the employee
-	termination := createSalary("2026-10-01", 0, true)
+	termination := createSalary(date(0, "10-01"), 0, true)
 	require.False(t, termination.IsError, termination.Text)
 	terminationID := int64(termination.Structured["id"].(float64))
-	require.Equal(t, "2026-09-01", salaryByID(augustID)["toDate"])
+	require.Equal(t, date(0, "09-01"), salaryByID(augustID)["toDate"])
 
 	employeeState := env.mcpCall(t, token, "get_employee", fmt.Sprintf(`{"id":%d}`, employeeID))
 	require.False(t, employeeState.IsError, employeeState.Text)
 	require.Equal(t, true, employeeState.Structured["willBeTerminated"])
 
 	// Rehire after termination caps the termination entry (multiple exits supported)
-	rehire := createSalary("2027-01-01", 950000, false)
+	rehire := createSalary(date(1, "01-01"), 950000, false)
 	require.False(t, rehire.IsError, rehire.Text)
 	rehireID := int64(rehire.Structured["id"].(float64))
-	require.Equal(t, "2026-12-01", salaryByID(terminationID)["toDate"])
+	require.Equal(t, date(0, "12-01"), salaryByID(terminationID)["toDate"])
 
-	secondExit := createSalary("2027-04-01", 0, true)
+	secondExit := createSalary(date(1, "04-01"), 0, true)
 	require.False(t, secondExit.IsError, secondExit.Text)
-	require.Equal(t, "2027-03-01", salaryByID(rehireID)["toDate"])
+	require.Equal(t, date(1, "03-01"), salaryByID(rehireID)["toDate"])
 
 	// Same fromDate is rejected (unique per employee), for salaries and exits alike
-	duplicate := createSalary("2026-08-01", 777000, false)
+	duplicate := createSalary(date(0, "08-01"), 777000, false)
 	require.True(t, duplicate.IsError)
-	duplicateExit := createSalary("2027-04-01", 0, true)
+	duplicateExit := createSalary(date(1, "04-01"), 0, true)
 	require.True(t, duplicateExit.IsError)
 
 	// Deleting the employee cascades all salaries
