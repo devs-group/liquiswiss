@@ -11,8 +11,10 @@ services:
     # (nuxt -> NUXT_TAG) and persisted to .env after a successful deploy.
     image: ghcr.io/devs-group/liquiswiss/nuxt:${NUXT_TAG:-latest}
     restart: always
-    ports:
-      - "3000"
+    # No `ports:` here or on the other web services: Traefik reaches them over
+    # the traefik network. A bare "3000" publishes a random host port on
+    # 0.0.0.0, past the firewall and past Traefik's middlewares (found 2026-10-21:
+    # phpMyAdmin and the WordPress DB were reachable from the internet).
     networks:
       - default
       - traefik
@@ -57,8 +59,6 @@ services:
     # backend -> BACKEND_TAG, see the nuxt service above.
     image: ghcr.io/devs-group/liquiswiss/backend:${BACKEND_TAG:-latest}
     restart: always
-    ports:
-      - "8080"
     networks:
       - default
       - traefik
@@ -115,8 +115,6 @@ services:
   landing:
     image: wordpress:php8.3-apache
     restart: always
-    ports:
-      - "80"
     networks:
       - default
       - traefik
@@ -190,8 +188,6 @@ services:
   database-wordpress:
     image: mariadb:10.6.16
     restart: always
-    ports:
-      - "3306"
     networks:
       - default
       - traefik
@@ -219,39 +215,6 @@ services:
       interval: 1s
       retries: 30
 
-  phpmyadmin:
-    image: phpmyadmin:5.2.1-apache
-    restart: always
-    ports:
-      - '80'
-    networks:
-      - default
-      - traefik
-    deploy:
-      resources:
-        limits:
-          cpus: "1"
-          memory: 1G
-    environment:
-      PMA_ARBITRARY: ${PMA_ARBITRARY:-0}
-      PMA_HOST: ${PMA_HOST:-database-app}
-      PMA_PORT: ${PMA_PORT:-3306}
-      PMA_PMADB: ${PMA_PMADB:-phpmyadmin}
-    depends_on:
-      database-app:
-        condition: service_healthy
-      database-wordpress:
-        condition: service_healthy
-    labels:
-      - "traefik.enable=true"
-      - "traefik.http.routers.liquiswiss-phpmyadmin.rule=Host(`config.liquiswiss.ch`)"
-      - "traefik.http.routers.liquiswiss-phpmyadmin.entrypoints=https"
-      - "traefik.http.routers.liquiswiss-phpmyadmin.tls=true"
-      - "traefik.http.routers.liquiswiss-phpmyadmin.tls.certresolver=le"
-      - "traefik.http.routers.liquiswiss-phpmyadmin.middlewares=ip-allowlist-admin@file,rate-limit-admin@file,auth-admin@file"
-      - "traefik.http.services.liquiswiss-phpmyadmin.loadbalancer.server.port=80"
-      - "traefik.http.routers.liquiswiss-phpmyadmin-www.rule=Host(`www.config.liquiswiss.ch`)"
-      - "traefik.http.routers.liquiswiss-phpmyadmin-www.entrypoints=https"
-      - "traefik.http.routers.liquiswiss-phpmyadmin-www.tls.certresolver=le"
-      - "traefik.http.routers.liquiswiss-phpmyadmin-www.service=noop@internal"
-      - "traefik.http.routers.liquiswiss-phpmyadmin-www.middlewares=redirect-to-nonwww@file"
+  # No phpMyAdmin in production (removed 2026-10-21): it was the only web UI
+  # with direct access to the app database. Use an SSH tunnel to
+  # 127.0.0.1:3309 (database-app) with any DB client instead.
