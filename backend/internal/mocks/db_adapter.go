@@ -1543,6 +1543,51 @@ func (mr *MockIDatabaseAdapterMockRecorder) ListSalaryCosts(userID, salaryID, pa
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ListSalaryCosts", reflect.TypeOf((*MockIDatabaseAdapter)(nil).ListSalaryCosts), userID, salaryID, page, limit)
 }
 
+// ListScenarioBankAccounts mocks base method.
+func (m *MockIDatabaseAdapter) ListScenarioBankAccounts(userID, scenarioID int64) ([]models.BankAccount, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "ListScenarioBankAccounts", userID, scenarioID)
+	ret0, _ := ret[0].([]models.BankAccount)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// ListScenarioBankAccounts indicates an expected call of ListScenarioBankAccounts.
+func (mr *MockIDatabaseAdapterMockRecorder) ListScenarioBankAccounts(userID, scenarioID any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ListScenarioBankAccounts", reflect.TypeOf((*MockIDatabaseAdapter)(nil).ListScenarioBankAccounts), userID, scenarioID)
+}
+
+// ListScenarioForecastDetails mocks base method.
+func (m *MockIDatabaseAdapter) ListScenarioForecastDetails(userID, scenarioID, limit int64) ([]models.ForecastDatabaseDetails, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "ListScenarioForecastDetails", userID, scenarioID, limit)
+	ret0, _ := ret[0].([]models.ForecastDatabaseDetails)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// ListScenarioForecastDetails indicates an expected call of ListScenarioForecastDetails.
+func (mr *MockIDatabaseAdapterMockRecorder) ListScenarioForecastDetails(userID, scenarioID, limit any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ListScenarioForecastDetails", reflect.TypeOf((*MockIDatabaseAdapter)(nil).ListScenarioForecastDetails), userID, scenarioID, limit)
+}
+
+// ListScenarioForecasts mocks base method.
+func (m *MockIDatabaseAdapter) ListScenarioForecasts(userID, scenarioID, limit int64) ([]models.Forecast, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "ListScenarioForecasts", userID, scenarioID, limit)
+	ret0, _ := ret[0].([]models.Forecast)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// ListScenarioForecasts indicates an expected call of ListScenarioForecasts.
+func (mr *MockIDatabaseAdapterMockRecorder) ListScenarioForecasts(userID, scenarioID, limit any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ListScenarioForecasts", reflect.TypeOf((*MockIDatabaseAdapter)(nil).ListScenarioForecasts), userID, scenarioID, limit)
+}
+
 // ListScenarios mocks base method.
 func (m *MockIDatabaseAdapter) ListScenarios(userID int64) ([]models.Scenario, error) {
 	m.ctrl.T.Helper()

@@ -342,6 +342,9 @@ func (api *API) setupRouter() {
 			protected.GET("/scenarios/:scenarioID", func(ctx *gin.Context) {
 				handlers.GetScenario(api.APIService, ctx)
 			})
+			protected.GET("/scenarios/:scenarioID/forecast", func(ctx *gin.Context) {
+				handlers.GetScenarioForecast(api.APIService, ctx)
+			})
 			protected.POST("/scenarios/:scenarioID/switch", func(ctx *gin.Context) {
 				handlers.SwitchScenario(api.APIService, ctx)
 			})

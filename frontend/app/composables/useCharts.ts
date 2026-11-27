@@ -5,19 +5,27 @@ import tailwindConfig from '~~/tailwind.config'
 export default function useCharts() {
   const colorMode = useColorMode()
 
-  const setChartData = (months: string[], saldos: number[]) => {
-    return {
-      labels: months,
-      datasets: [
-        {
-          label: 'Saldo',
-          data: saldos,
-          fill: true,
-          borderColor: '#10b981',
-          tension: 0.2,
-        },
-      ],
-    } as ChartData
+  const setChartData = (months: string[], saldos: number[], compare?: { label: string, saldos: (number | null)[] }) => {
+    const datasets: ChartData['datasets'] = [
+      {
+        label: compare ? 'Saldo (aktuell)' : 'Saldo',
+        data: saldos,
+        fill: true,
+        borderColor: '#10b981',
+        tension: 0.2,
+      },
+    ]
+    if (compare) {
+      datasets.push({
+        label: `Saldo (${compare.label})`,
+        data: compare.saldos,
+        fill: false,
+        borderColor: '#f59e0b',
+        borderDash: [6, 4],
+        tension: 0.2,
+      })
+    }
+    return { labels: months, datasets } as ChartData
   }
 
   const getChartOptions = () => {

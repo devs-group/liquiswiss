@@ -141,6 +141,7 @@ type IAPIService interface {
 	UpdateScenario(ctx context.Context, payload models.UpdateScenario, userID int64, scenarioID int64) (*models.Scenario, error)
 	DeleteScenario(ctx context.Context, userID int64, scenarioID int64) error
 	SwitchScenario(ctx context.Context, userID int64, scenarioID int64) (*models.Scenario, error)
+	GetScenarioForecast(ctx context.Context, userID int64, scenarioID int64, limit int64) (*models.ScenarioForecast, error)
 
 	SetEventHub(hub *events.Hub)
 }

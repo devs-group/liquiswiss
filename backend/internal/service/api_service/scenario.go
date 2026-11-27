@@ -129,6 +129,36 @@ func (a *APIService) SwitchScenario(ctx context.Context, userID int64, scenarioI
 	return scenario, nil
 }
 
+// GetScenarioForecast returns another scenario's stored forecast without switching or recalculating it
+func (a *APIService) GetScenarioForecast(ctx context.Context, userID int64, scenarioID int64, limit int64) (*models.ScenarioForecast, error) {
+	scenario, err := a.dbService.GetScenario(userID, scenarioID)
+	if err != nil {
+		logger.Logger.Error(err)
+		return nil, err
+	}
+	forecasts, err := a.dbService.ListScenarioForecasts(userID, scenarioID, limit)
+	if err != nil {
+		logger.Logger.Error(err)
+		return nil, err
+	}
+	details, err := a.dbService.ListScenarioForecastDetails(userID, scenarioID, limit)
+	if err != nil {
+		logger.Logger.Error(err)
+		return nil, err
+	}
+	bankAccounts, err := a.dbService.ListScenarioBankAccounts(userID, scenarioID)
+	if err != nil {
+		logger.Logger.Error(err)
+		return nil, err
+	}
+	return &models.ScenarioForecast{
+		Scenario:        *scenario,
+		Forecasts:       forecasts,
+		ForecastDetails: details,
+		BankAccounts:    bankAccounts,
+	}, nil
+}
+
 // notifyScenarioSwitch tells every open tab of this user to follow the switch (MCP or another tab)
 func (a *APIService) notifyScenarioSwitch(ctx context.Context, userID int64, scenarioID int64) {
 	if a.eventHub == nil {

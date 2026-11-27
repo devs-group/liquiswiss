@@ -68,6 +68,32 @@ func GetScenario(apiService api_service.IAPIService, c *gin.Context) {
 	c.JSON(http.StatusOK, scenario)
 }
 
+// GetScenarioForecast returns another scenario's stored forecast for side-by-side comparison
+func GetScenarioForecast(apiService api_service.IAPIService, c *gin.Context) {
+	userID := c.GetInt64("userID")
+	if userID == 0 {
+		c.Status(http.StatusUnauthorized)
+		return
+	}
+	scenarioID, ok := scenarioIDParam(c)
+	if !ok {
+		return
+	}
+	limit, err := strconv.ParseInt(c.Query("limit"), 10, 64)
+	if err != nil || limit < 1 {
+		c.Status(http.StatusBadRequest)
+		return
+	}
+
+	forecast, err := apiService.GetScenarioForecast(c.Request.Context(), userID, scenarioID, limit)
+	if err != nil {
+		scenarioError(c, err)
+		return
+	}
+
+	c.JSON(http.StatusOK, forecast)
+}
+
 func CreateScenario(apiService api_service.IAPIService, c *gin.Context) {
 	userID := c.GetInt64("userID")
 	if userID == 0 {

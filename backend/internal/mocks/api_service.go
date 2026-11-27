@@ -830,6 +830,21 @@ func (mr *MockIAPIServiceMockRecorder) GetScenario(ctx, userID, scenarioID any) 
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetScenario", reflect.TypeOf((*MockIAPIService)(nil).GetScenario), ctx, userID, scenarioID)
 }
 
+// GetScenarioForecast mocks base method.
+func (m *MockIAPIService) GetScenarioForecast(ctx context.Context, userID, scenarioID, limit int64) (*models.ScenarioForecast, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "GetScenarioForecast", ctx, userID, scenarioID, limit)
+	ret0, _ := ret[0].(*models.ScenarioForecast)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// GetScenarioForecast indicates an expected call of GetScenarioForecast.
+func (mr *MockIAPIServiceMockRecorder) GetScenarioForecast(ctx, userID, scenarioID, limit any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetScenarioForecast", reflect.TypeOf((*MockIAPIService)(nil).GetScenarioForecast), ctx, userID, scenarioID, limit)
+}
+
 // GetTransaction mocks base method.
 func (m *MockIAPIService) GetTransaction(ctx context.Context, userID, transactionID int64) (*models.Transaction, error) {
 	m.ctrl.T.Helper()

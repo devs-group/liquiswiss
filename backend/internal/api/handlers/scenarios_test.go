@@ -3,6 +3,7 @@ package handlers_test
 import (
 	"context"
 	"testing"
+	"time"
 
 	"github.com/stretchr/testify/require"
 
@@ -214,6 +215,55 @@ func TestScenario_UsersSwitchIndependently(t *testing.T) {
 	_, err = env.APIService.SwitchScenario(ctx, memberID, copied.ID)
 	require.NoError(t, err)
 	require.Equal(t, copied.ID, currentScenario(t, env, memberID).ID)
+}
+
+func TestScenario_ForecastOfAnotherScenario(t *testing.T) {
+	env := SetupCrossOrgTestEnvironment(t)
+	defer env.Conn.Close()
+	ctx := context.Background()
+	user := env.UserA.ID
+	base := currentScenario(t, env, user)
+
+	category, err := env.APIService.CreateCategory(ctx, models.CreateCategory{Name: "Projekte"}, &user)
+	require.NoError(t, err)
+	inTwoMonths := time.Now().AddDate(0, 2, 0).Format("2006-01-02")
+
+	// The copy gets an extra revenue and its own bank account
+	copied, err := env.APIService.CreateScenario(ctx, models.CreateScenario{Name: "Mehr Umsatz"}, user)
+	require.NoError(t, err)
+	_, err = env.APIService.CreateTransaction(ctx, models.CreateTransaction{
+		Name: "Zusatzauftrag", Amount: 5000_00, Type: "single", StartDate: inTwoMonths,
+		Category: category.ID, Currency: *env.Currency.ID,
+	}, user)
+	require.NoError(t, err)
+	_, err = env.APIService.CreateBankAccount(ctx, models.CreateBankAccount{Name: "Konto Kopie", Amount: 100_00, Currency: *env.Currency.ID}, user)
+	require.NoError(t, err)
+
+	// Back in the base, the copy can be read without switching to it
+	_, err = env.APIService.SwitchScenario(ctx, user, base.ID)
+	require.NoError(t, err)
+	compared, err := env.APIService.GetScenarioForecast(ctx, user, copied.ID, 4)
+	require.NoError(t, err)
+	require.Equal(t, copied.ID, compared.Scenario.ID)
+	require.Len(t, compared.Forecasts, 4)
+	require.Len(t, compared.ForecastDetails, 4)
+	require.Len(t, compared.BankAccounts, 1)
+	revenue := int64(0)
+	for _, f := range compared.Forecasts {
+		revenue += f.Data.Revenue
+	}
+	require.Equal(t, int64(5000_00), revenue)
+	require.Equal(t, base.ID, currentScenario(t, env, user).ID, "reading a scenario must not switch to it")
+
+	own, err := env.APIService.ListForecasts(ctx, user, 4)
+	require.NoError(t, err)
+	for _, f := range own {
+		require.Equal(t, int64(0), f.Data.Revenue)
+	}
+
+	// Another organisation cannot read it
+	_, err = env.APIService.GetScenarioForecast(ctx, env.UserB.ID, copied.ID, 4)
+	require.Error(t, err)
 }
 
 func TestScenario_CrossOrgIsolation(t *testing.T) {

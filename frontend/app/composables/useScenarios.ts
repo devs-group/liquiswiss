@@ -1,4 +1,4 @@
-import type { ScenarioFormData, ScenarioResponse } from '~/models/scenario'
+import type { ScenarioForecastResponse, ScenarioFormData, ScenarioResponse } from '~/models/scenario'
 import ScenarioDialog from '~/components/dialogs/ScenarioDialog.vue'
 import { ModalConfig } from '~/config/dialog-props'
 
@@ -31,6 +31,19 @@ export default function useScenarios() {
     }
     catch {
       return Promise.reject('Szenario konnte nicht geladen werden')
+    }
+  }
+
+  // Another scenario's stored forecast, without switching to it
+  const getScenarioForecast = async (scenarioID: number, months: number) => {
+    try {
+      return await $fetch<ScenarioForecastResponse>(`/api/scenarios/${scenarioID}/forecast`, {
+        method: 'GET',
+        query: { limit: months },
+      })
+    }
+    catch {
+      return Promise.reject('Prognose des Vergleichsszenarios konnte nicht geladen werden')
     }
   }
 
@@ -142,6 +155,7 @@ export default function useScenarios() {
     useFetchListScenarios,
     listScenarios,
     getScenario,
+    getScenarioForecast,
     createScenario,
     updateScenario,
     deleteScenario,

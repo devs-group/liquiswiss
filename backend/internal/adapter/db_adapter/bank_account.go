@@ -67,6 +67,35 @@ func (d *DatabaseAdapter) ListBankAccounts(userID int64, page int64, limit int64
 	return bankAccounts, totalCount, nil
 }
 
+// ListScenarioBankAccounts lists the bank accounts of any scenario of the user's current organisation
+func (d *DatabaseAdapter) ListScenarioBankAccounts(userID int64, scenarioID int64) ([]models.BankAccount, error) {
+	bankAccounts := make([]models.BankAccount, 0)
+
+	query, err := sqlQueries.ReadFile("queries/list_scenario_bank_accounts.sql")
+	if err != nil {
+		return nil, err
+	}
+	rows, err := d.db.Query(string(query), scenarioID, userID)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+
+	for rows.Next() {
+		var bankAccount models.BankAccount
+		err := rows.Scan(
+			&bankAccount.ID, &bankAccount.Name, &bankAccount.Amount,
+			&bankAccount.Currency.ID, &bankAccount.Currency.Code, &bankAccount.Currency.Description, &bankAccount.Currency.LocaleCode,
+		)
+		if err != nil {
+			return nil, err
+		}
+		bankAccounts = append(bankAccounts, bankAccount)
+	}
+
+	return bankAccounts, rows.Err()
+}
+
 func (d *DatabaseAdapter) GetBankAccount(userID int64, bankAccountID int64) (*models.BankAccount, error) {
 	var bankAccount models.BankAccount
 

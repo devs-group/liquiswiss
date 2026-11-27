@@ -81,6 +81,9 @@ type IDatabaseAdapter interface {
 
 	ListForecasts(userID int64, limit int64) ([]models.Forecast, error)
 	ListForecastDetails(userID int64, limit int64) ([]models.ForecastDatabaseDetails, error)
+	ListScenarioForecasts(userID int64, scenarioID int64, limit int64) ([]models.Forecast, error)
+	ListScenarioForecastDetails(userID int64, scenarioID int64, limit int64) ([]models.ForecastDatabaseDetails, error)
+	ListScenarioBankAccounts(userID int64, scenarioID int64) ([]models.BankAccount, error)
 	UpsertForecast(payload models.CreateForecast, userID int64) (int64, error)
 	UpsertForecastDetail(payload models.CreateForecastDetail, userID, forecastID int64) (int64, error)
 	ListForecastExclusions(userID, relatedID int64, relatedTable string) (map[string]bool, error)

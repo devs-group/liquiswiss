@@ -1,6 +1,7 @@
 package db_adapter
 
 import (
+	"database/sql"
 	"encoding/json"
 	"fmt"
 	"liquiswiss/pkg/models"
@@ -21,6 +22,24 @@ func (d *DatabaseAdapter) ListForecasts(userID int64, limit int64) ([]models.For
 	if err != nil {
 		return nil, err
 	}
+	return scanForecasts(rows, forecasts)
+}
+
+// ListScenarioForecasts reads the stored forecast of any scenario of the user's current organisation
+func (d *DatabaseAdapter) ListScenarioForecasts(userID int64, scenarioID int64, limit int64) ([]models.Forecast, error) {
+	query, err := sqlQueries.ReadFile("queries/list_scenario_forecasts.sql")
+	if err != nil {
+		return nil, err
+	}
+	today := utils.GetTodayAsUTC().Format(utils.InternalDateFormat)
+	rows, err := d.db.Query(string(query), today, today, limit, scenarioID, userID)
+	if err != nil {
+		return nil, err
+	}
+	return scanForecasts(rows, make([]models.Forecast, 0))
+}
+
+func scanForecasts(rows *sql.Rows, forecasts []models.Forecast) ([]models.Forecast, error) {
 	defer rows.Close()
 
 	for rows.Next() {
@@ -53,6 +72,24 @@ func (d *DatabaseAdapter) ListForecastDetails(userID int64, limit int64) ([]mode
 	if err != nil {
 		return nil, err
 	}
+	return scanForecastDetails(rows, forecastDetails)
+}
+
+// ListScenarioForecastDetails reads the stored forecast details of any scenario of the user's current organisation
+func (d *DatabaseAdapter) ListScenarioForecastDetails(userID int64, scenarioID int64, limit int64) ([]models.ForecastDatabaseDetails, error) {
+	query, err := sqlQueries.ReadFile("queries/list_scenario_forecast_details.sql")
+	if err != nil {
+		return nil, err
+	}
+	today := utils.GetTodayAsUTC().Format(utils.InternalDateFormat)
+	rows, err := d.db.Query(string(query), today, today, limit, scenarioID, userID)
+	if err != nil {
+		return nil, err
+	}
+	return scanForecastDetails(rows, make([]models.ForecastDatabaseDetails, 0))
+}
+
+func scanForecastDetails(rows *sql.Rows, forecastDetails []models.ForecastDatabaseDetails) ([]models.ForecastDatabaseDetails, error) {
 	defer rows.Close()
 
 	for rows.Next() {

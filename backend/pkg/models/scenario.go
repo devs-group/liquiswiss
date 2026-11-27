@@ -17,6 +17,14 @@ type CreateScenario struct {
 	SourceScenarioID *int64 `json:"sourceScenarioId" validate:"omitempty"`
 }
 
+// ScenarioForecast is the stored forecast of another scenario, read-only for side-by-side comparison
+type ScenarioForecast struct {
+	Scenario        Scenario                  `json:"scenario"`
+	Forecasts       []Forecast                `json:"forecasts"`
+	ForecastDetails []ForecastDatabaseDetails `json:"forecastDetails"`
+	BankAccounts    []BankAccount             `json:"bankAccounts"`
+}
+
 type UpdateScenario struct {
 	Name *string `json:"name" validate:"omitempty,max=100"`
 }
