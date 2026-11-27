@@ -52,8 +52,14 @@ goose-down-to-and-up:
 		$(WRAP) run --rm backend goose --dir internal/db/migrations mysql "$(DB_DSN)" up; \
 	fi
 
+# Dumps the running app DB with the container's own MARIADB_* credentials into dumps/
+# Plain docker exec on purpose: bws run re-parses the command and breaks the quoted sh -c
 dump-db:
-	@$(WRAP) run --rm database-app sh -c 'mysqldump -h database-app -u $$APP_DB_USER -p$$APP_DB_PASSWORD $$APP_DB_NAME' > dumpfile.sql
+	@mkdir -p dumps
+	@f=dumps/liquiswiss-$$(date +%Y%m%d-%H%M%S).sql; \
+	docker exec $$(docker ps -qf label=com.docker.compose.service=database-app) sh -c 'mariadb-dump -u"$$MARIADB_USER" -p"$$MARIADB_PASSWORD" --single-transaction --routines --triggers "$$MARIADB_DATABASE"' > $$f \
+		&& echo "Dump written to $$f ($$(du -h $$f | cut -f1))" \
+		|| { rm -f $$f; echo "Dump failed" >&2; exit 1; }
 
 # Interactive password rotation. Prompts hide input. Pipes SQL via stdin to avoid
 # quoting issues through bws run / docker compose exec.

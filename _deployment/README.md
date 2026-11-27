@@ -90,6 +90,9 @@ rolled-back image can be just as unable to start as the new one.
 ssh <host> "cd <deploy-dir> && make dump-db"
 ```
 
+It writes `dumps/liquiswiss-<timestamp>.sql` in the deploy dir and fails loudly
+(no empty file) when the dump does not succeed.
+
 ## Deviations from the standard
 
 - **Secrets come from Bitwarden Secrets Manager, not the server `.env`.** Every
