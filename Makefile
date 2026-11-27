@@ -1,4 +1,4 @@
-.PHONY: up down restart logs ps build dc migrate urls
+.PHONY: up down restart logs ps build dc migrate urls db-pull-prod
 
 # Optional: pull access token from macOS keychain. If absent, compose runs with
 # its in-file defaults (external integrations like email and currency disabled).
@@ -28,3 +28,6 @@ urls:
 
 # Apply pending static schema migrations against the compose database.
 migrate: ; @$(MAKE) -C backend goose-static-up
+
+# Replace the local database with production data, local login and MCP tokens survive.
+db-pull-prod: ; @./scripts/db-pull-prod.sh

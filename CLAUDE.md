@@ -50,6 +50,7 @@ make modernize       # Apply Go modernize suggestions
 docker compose up    # Start MariaDB
 make goose-static-create <name>   # Create schema migration (from backend/)
 make goose-dynamic-create <name>  # Create function/view migration (from backend/)
+make db-pull-prod    # Replace local DB with prod data (from root), keeps local login + MCP tokens
 ```
 
 ### Running Both Servers (Docker Compose via Make)
