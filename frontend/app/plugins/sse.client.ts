@@ -222,6 +222,9 @@ export default defineNuxtPlugin((nuxtApp) => {
     }, notifyDelay)
   }
 
+  let reconnectTimer: ReturnType<typeof setTimeout> | null = null
+  let reconnectDelay = 0
+
   const connect = () => {
     if (source) return
     // The client id lets the backend compute own=true for events this exact
@@ -235,14 +238,29 @@ export default defineNuxtPlugin((nuxtApp) => {
         console.error('SSE: Ungültiges Event', error)
       }
     })
-    // EventSource reconnects automatically; reconnects re-run the full auth
-    // middleware on the backend. Nothing to do on error while authenticated.
+    source.onopen = () => {
+      reconnectDelay = 0
+    }
+    // EventSource retries network drops itself but gives up for good on an HTTP error
+    // (e.g. 502 while the backend restarts or deploys), so reconnect manually then
     source.onerror = () => {
-      if (!isAuthenticated.value) disconnect()
+      if (!isAuthenticated.value) {
+        disconnect()
+        return
+      }
+      if (source?.readyState !== EventSource.CLOSED) return
+      disconnect()
+      reconnectDelay = Math.min(reconnectDelay ? reconnectDelay * 2 : 2000, 30000)
+      reconnectTimer = setTimeout(() => {
+        reconnectTimer = null
+        if (isAuthenticated.value) connect()
+      }, reconnectDelay)
     }
   }
 
   const disconnect = () => {
+    if (reconnectTimer) clearTimeout(reconnectTimer)
+    reconnectTimer = null
     source?.close()
     source = null
     timers.forEach(timer => clearTimeout(timer))
