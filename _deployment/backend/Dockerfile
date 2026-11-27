@@ -1,4 +1,4 @@
-FROM golang:1.26.2-alpine AS dev
+FROM golang:1.26.10-alpine AS dev
 
 RUN apk add --no-cache git curl lsof
 RUN go install github.com/air-verse/air@latest
@@ -8,7 +8,7 @@ WORKDIR /app
 
 CMD ["air"]
 
-FROM golang:1.26.2-alpine AS build
+FROM golang:1.26.10-alpine AS build
 
 # Build identifiers stamped into the binary and served by GET /api/config.
 ARG GIT_SHA=dev
@@ -27,7 +27,7 @@ RUN CGO_ENABLED=0 go build \
 
 CMD ["./liquiswiss"]
 
-FROM golang:1.26.2-alpine AS prod
+FROM golang:1.26.10-alpine AS prod
 
 RUN go install github.com/pressly/goose/v3/cmd/goose@v3.18.0
 COPY --from=build /app/liquiswiss /bin/liquiswiss
