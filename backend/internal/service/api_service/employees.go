@@ -96,6 +96,12 @@ func (a *APIService) DeleteEmployee(ctx context.Context, userID int64, employeeI
 		logger.Logger.Error(err)
 		return err
 	}
+	// The employee's salaries and salary costs are gone, so the forecast must drop them too
+	_, err = a.CalculateForecast(ctx, userID)
+	if err != nil {
+		logger.Logger.Error(err)
+		return err
+	}
 	a.notifyChange(ctx, userID, "employee", events.ActionDeleted, existingEmployee.ID)
 	return nil
 }
