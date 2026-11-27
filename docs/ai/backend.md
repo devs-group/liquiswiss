@@ -101,6 +101,13 @@ if payload.Employee != nil {
 - Return generic "not found" errors - never reveal that an entity exists in another organisation
 - Apply validation in both Create and Update functions
 
+### Scenario Scoping
+
+Employees (with salaries and costs), transactions, bank accounts, exclusions and forecasts belong to
+the user's active scenario, not just the organisation. See [Database & Migrations](database.md#scenarios).
+SSE events of these entities carry a `ScenarioID` and only reach users viewing that scenario
+(`scenarioScopedEntities` in `api_service/scenario.go`). Tests live in `handlers/scenarios_test.go`.
+
 ### Isolation Tests
 
 All new endpoints and entity relationships **MUST** have cross-organisation isolation tests. These tests verify that:

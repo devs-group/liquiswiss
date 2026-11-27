@@ -19,4 +19,4 @@ JOIN salaries s ON s.id = sc.salary_id
 JOIN employees e ON e.id = s.employee_id
 LEFT JOIN salary_cost_labels scl ON scl.id = sc.label_id
 WHERE sc.id = ?
-  AND e.organisation_id = get_current_user_organisation_id(?)
+  AND e.scenario_id = get_current_user_scenario_id(?)

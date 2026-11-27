@@ -120,6 +120,7 @@ func newServer(apiService api_service.IAPIService, dbService db_adapter.IDatabas
 	deps := &toolDeps{apiService: apiService, dbService: dbService}
 
 	registerOrganisationTools(server, deps)
+	registerScenarioTools(server, deps)
 	registerBankAccountTools(server, deps)
 	registerTransactionTools(server, deps)
 	registerEmployeeTools(server, deps)

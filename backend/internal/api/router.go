@@ -335,6 +335,26 @@ func (api *API) setupRouter() {
 				handlers.DeleteBankAccount(api.APIService, ctx)
 			})
 
+			// Scenarios: switching only changes the own view, so every member may do it
+			protected.GET("/scenarios", func(ctx *gin.Context) {
+				handlers.ListScenarios(api.APIService, ctx)
+			})
+			protected.GET("/scenarios/:scenarioID", func(ctx *gin.Context) {
+				handlers.GetScenario(api.APIService, ctx)
+			})
+			protected.POST("/scenarios/:scenarioID/switch", func(ctx *gin.Context) {
+				handlers.SwitchScenario(api.APIService, ctx)
+			})
+			editorRoutes.POST("/scenarios", func(ctx *gin.Context) {
+				handlers.CreateScenario(api.APIService, ctx)
+			})
+			editorRoutes.PATCH("/scenarios/:scenarioID", func(ctx *gin.Context) {
+				handlers.UpdateScenario(api.APIService, ctx)
+			})
+			editorRoutes.DELETE("/scenarios/:scenarioID", func(ctx *gin.Context) {
+				handlers.DeleteScenario(api.APIService, ctx)
+			})
+
 			// Vats
 			protected.GET("/vats", func(ctx *gin.Context) {
 				handlers.ListVats(api.APIService, ctx)

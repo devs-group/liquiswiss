@@ -1,4 +1,4 @@
 DELETE FROM transactions
 WHERE
     id = ?
-    AND organisation_id = get_current_user_organisation_id(?)
+    AND scenario_id = get_current_user_scenario_id(?)

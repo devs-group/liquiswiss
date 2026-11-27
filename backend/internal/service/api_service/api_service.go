@@ -134,6 +134,14 @@ type IAPIService interface {
 	UpdateOrganisationMember(ctx context.Context, payload models.UpdateMember, userID int64, organisationID int64, memberUserID int64) error
 	RemoveOrganisationMember(ctx context.Context, userID int64, organisationID int64, memberUserID int64) error
 
+	GetCurrentScenarioID(ctx context.Context, userID int64) (int64, error)
+	ListScenarios(ctx context.Context, userID int64) ([]models.Scenario, error)
+	GetScenario(ctx context.Context, userID int64, scenarioID int64) (*models.Scenario, error)
+	CreateScenario(ctx context.Context, payload models.CreateScenario, userID int64) (*models.Scenario, error)
+	UpdateScenario(ctx context.Context, payload models.UpdateScenario, userID int64, scenarioID int64) (*models.Scenario, error)
+	DeleteScenario(ctx context.Context, userID int64, scenarioID int64) error
+	SwitchScenario(ctx context.Context, userID int64, scenarioID int64) (*models.Scenario, error)
+
 	SetEventHub(hub *events.Hub)
 }
 
@@ -173,12 +181,21 @@ func (a *APIService) notifyChangeWithParent(ctx context.Context, userID int64, e
 		logger.Logger.Warnf("events: could not resolve organisation for user %d: %v", userID, err)
 		return
 	}
+	var scenarioID int64
+	if scenarioScopedEntities[entity] {
+		scenarioID, err = a.dbService.GetCurrentScenarioID(userID)
+		if err != nil {
+			logger.Logger.Warnf("events: could not resolve scenario for user %d: %v", userID, err)
+			return
+		}
+	}
 	a.eventHub.Publish(events.Event{
 		Entity:         entity,
 		Action:         action,
 		ID:             id,
 		ParentID:       parentID,
 		OrganisationID: user.CurrentOrganisationID,
+		ScenarioID:     scenarioID,
 		OriginUserID:   userID,
 		OriginClientID: reqctx.ClientID(ctx),
 	})

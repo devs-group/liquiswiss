@@ -179,14 +179,14 @@ func (d *DatabaseAdapter) CreateTransaction(payload models.CreateTransaction, us
 
 	res, err := stmt.Exec(
 		payload.Name, payload.Link, payload.Amount, payload.Cycle, payload.Type, payload.StartDate, payload.EndDate,
-		payload.Category, payload.Currency, payload.Employee, userID, payload.Vat, payload.VatIncluded,
+		payload.Category, payload.Currency, payload.Employee, payload.Vat, payload.VatIncluded, userID,
 	)
 	if err != nil {
 		return 0, err
 	}
 
 	// Get the ID of the newly inserted transaction
-	id, err := res.LastInsertId()
+	id, err := scenarioInsertID(res)
 	if err != nil {
 		return 0, err
 	}
@@ -275,7 +275,7 @@ func (d *DatabaseAdapter) UpdateTransaction(payload models.UpdateTransaction, us
 
 	// Add WHERE clause
 	query += strings.Join(queryBuild, ", ")
-	query += " WHERE id = ? AND organisation_id = get_current_user_organisation_id(?)"
+	query += " WHERE id = ? AND scenario_id = get_current_user_scenario_id(?)"
 	args = append(args, transactionID)
 	args = append(args, userID)
 

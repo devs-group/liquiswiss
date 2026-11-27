@@ -163,7 +163,7 @@ func (d *DatabaseAdapter) CreateEmployee(payload models.CreateEmployee, userID i
 	}
 
 	// Get the ID of the newly inserted employee
-	id, err := res.LastInsertId()
+	id, err := scenarioInsertID(res)
 	if err != nil {
 		return 0, err
 	}
@@ -185,7 +185,7 @@ func (d *DatabaseAdapter) UpdateEmployee(payload models.UpdateEmployee, userID i
 
 	// Add WHERE clause
 	query += strings.Join(queryBuild, ", ")
-	query += " WHERE id = ? AND organisation_id = get_current_user_organisation_id(?)"
+	query += " WHERE id = ? AND scenario_id = get_current_user_scenario_id(?)"
 	args = append(args, employeeID, userID)
 
 	stmt, err := d.db.Prepare(query)

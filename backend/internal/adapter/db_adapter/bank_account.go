@@ -106,7 +106,7 @@ func (d *DatabaseAdapter) CreateBankAccount(payload models.CreateBankAccount, us
 	}
 
 	// Get the ID of the newly inserted bank account
-	id, err := res.LastInsertId()
+	id, err := scenarioInsertID(res)
 	if err != nil {
 		return 0, err
 	}
@@ -136,7 +136,7 @@ func (d *DatabaseAdapter) UpdateBankAccount(payload models.UpdateBankAccount, us
 
 	// Add WHERE clause
 	query += strings.Join(queryBuild, ", ")
-	query += " WHERE id = ? AND organisation_id = get_current_user_organisation_id(?)"
+	query += " WHERE id = ? AND scenario_id = get_current_user_scenario_id(?)"
 	args = append(args, bankAccountID, userID)
 
 	stmt, err := d.db.Prepare(query)

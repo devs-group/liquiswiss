@@ -95,8 +95,7 @@ func (d *DatabaseAdapter) UpsertForecast(payload models.CreateForecast, userID i
 		return 0, err
 	}
 
-	// Get the ID of the newly inserted employee
-	id, err := res.LastInsertId()
+	id, err := scenarioInsertID(res)
 	if err != nil {
 		return 0, err
 	}
@@ -133,8 +132,7 @@ func (d *DatabaseAdapter) UpsertForecastDetail(payload models.CreateForecastDeta
 		return 0, err
 	}
 
-	// Get the ID of the newly inserted employee
-	id, err := res.LastInsertId()
+	id, err := scenarioInsertID(res)
 	if err != nil {
 		return 0, err
 	}

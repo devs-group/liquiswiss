@@ -60,19 +60,24 @@ func StreamEvents(hub *events.Hub, apiService api_service.IAPIService, c *gin.Co
 
 	// Organisation is resolved at delivery time (with a short cache) so an org
 	// switch or membership removal never leaks events across organisations
-	var cachedOrgID int64
+	var cachedOrgID, cachedScenarioID int64
 	var cachedOrgAt time.Time
-	currentOrgID := func() (int64, bool) {
+	currentOrgAndScenario := func() (int64, int64, bool) {
 		if time.Since(cachedOrgAt) < orgCacheTTL && cachedOrgID != 0 {
-			return cachedOrgID, true
+			return cachedOrgID, cachedScenarioID, true
 		}
 		organisation, err := apiService.GetCurrentOrganisation(c.Request.Context(), userID)
 		if err != nil {
-			return 0, false
+			return 0, 0, false
+		}
+		scenarioID, err := apiService.GetCurrentScenarioID(c.Request.Context(), userID)
+		if err != nil {
+			return 0, 0, false
 		}
 		cachedOrgID = organisation.ID
+		cachedScenarioID = scenarioID
 		cachedOrgAt = time.Now()
-		return cachedOrgID, true
+		return cachedOrgID, cachedScenarioID, true
 	}
 
 	heartbeat := time.NewTicker(heartbeatInterval)
@@ -94,8 +99,18 @@ func StreamEvents(hub *events.Hub, apiService api_service.IAPIService, c *gin.Co
 			_, _ = io.WriteString(c.Writer, ": ping\n\n")
 			c.Writer.Flush()
 		case event := <-sub.Events:
-			orgID, ok := currentOrgID()
+			if event.OnlyUserID != 0 && event.OnlyUserID != userID {
+				continue
+			}
+			// A switch changes this user's scenario, so the cached one is stale
+			if event.Entity == "scenario" && event.Action == events.ActionSwitched {
+				cachedOrgAt = time.Time{}
+			}
+			orgID, scenarioID, ok := currentOrgAndScenario()
 			if !ok || orgID != event.OrganisationID {
+				continue
+			}
+			if event.ScenarioID != 0 && event.ScenarioID != scenarioID {
 				continue
 			}
 			// Own is per connection: only the exact tab (user + client id)

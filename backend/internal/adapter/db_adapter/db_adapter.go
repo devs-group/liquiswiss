@@ -95,6 +95,14 @@ type IDatabaseAdapter interface {
 	UpdateBankAccount(payload models.UpdateBankAccount, userID int64, bankAccountID int64) error
 	DeleteBankAccount(userID int64, bankAccountID int64) error
 
+	GetCurrentScenarioID(userID int64) (int64, error)
+	ListScenarios(userID int64) ([]models.Scenario, error)
+	GetScenario(userID int64, scenarioID int64) (*models.Scenario, error)
+	CreateScenario(userID int64, name string, sourceScenarioID int64) (int64, error)
+	UpdateScenario(payload models.UpdateScenario, userID int64, scenarioID int64) error
+	DeleteScenario(userID int64, scenarioID int64) error
+	SetUserCurrentScenario(userID int64, scenarioID int64) error
+
 	ListVats(userID int64) ([]models.Vat, error)
 	GetVat(userID int64, vatID int64) (*models.Vat, error)
 	CreateVat(payload models.CreateVat, userID int64) (int64, error)

@@ -16,11 +16,73 @@
           :options="organisations"
           option-label="name"
           option-value="id"
+          size="small"
           class="w-56 max-w-56"
           empty-message="Keine Organisationen gefunden"
           @click.stop
           @change="onChangeOrganisation"
         />
+        <div
+          v-if="user && scenarios.length"
+          class="flex flex-col gap-1 w-56 max-w-56"
+        >
+          <div class="flex items-center justify-between pl-1">
+            <span class="text-xs font-bold text-surface-500">Szenario</span>
+            <Button
+              v-if="canEdit"
+              v-tooltip.top="'Neues Szenario'"
+              icon="pi pi-plus"
+              severity="secondary"
+              size="small"
+              text
+              rounded
+              aria-label="Neues Szenario"
+              data-testid="scenario-create"
+              @click.stop.prevent="openCreateScenarioDialog()"
+              @mousedown.stop
+            />
+          </div>
+          <Select
+            v-model="selectedScenarioID"
+            :options="scenarios"
+            option-label="name"
+            option-value="id"
+            size="small"
+            class="w-full"
+            :class="{ '!border-amber-500': currentScenario && !currentScenario.isBase }"
+            aria-label="Szenario"
+            data-testid="scenario-select"
+            @click.stop
+            @change="onChangeScenario"
+          >
+            <template #value="{ value }">
+              <span class="flex items-center justify-between gap-2 w-full min-w-0">
+                <span class="truncate">{{ scenarios.find(s => s.id === value)?.name ?? 'Szenario' }}</span>
+                <!-- Stops the click so the pencil opens the edit dialog instead of the list -->
+                <i
+                  v-if="canEdit && currentScenario"
+                  v-tooltip.top="'Szenario bearbeiten'"
+                  class="pi pi-pencil text-xs text-surface-500 hover:text-surface-900 dark:hover:text-surface-0 p-1 -m-1 cursor-pointer"
+                  role="button"
+                  aria-label="Szenario bearbeiten"
+                  data-testid="scenario-edit"
+                  @click.stop.prevent="openEditScenarioDialog(currentScenario)"
+                  @mousedown.stop
+                />
+              </span>
+            </template>
+            <template #option="{ option }">
+              <span class="flex items-center gap-2 text-sm">
+                <span>{{ option.name }}</span>
+                <Tag
+                  v-if="option.isBase"
+                  value="Basis"
+                  severity="secondary"
+                />
+              </span>
+            </template>
+          </Select>
+        </div>
       </div>
     </template>
 
@@ -98,7 +160,8 @@ import useAuth from '~/composables/useAuth'
 import { Config } from '~/config/config'
 
 const { logout, user, updateCurrentOrganisation } = useAuth()
-const { organisations } = useOrganisations()
+const { organisations, canEdit } = useOrganisations()
+const { scenarios, currentScenario, switchScenario, openCreateScenarioDialog, openEditScenarioDialog } = useScenarios()
 const { showGlobalLoadingSpinner } = useGlobalData()
 const { skipOrganisationSwitchQuestion } = useSettings()
 const { myPendingInvitations } = useInvitations()
@@ -188,6 +251,32 @@ const onChangeOrganisation = (event: SelectChangeEvent) => {
       },
     })
   }
+}
+
+const selectedScenarioID = ref<number | null>(currentScenario.value?.id ?? null)
+watch(currentScenario, (scenario) => {
+  selectedScenarioID.value = scenario?.id ?? null
+})
+
+// Switching only changes the own view, every page reloads its data afterwards
+const onChangeScenario = () => {
+  const newID = selectedScenarioID.value
+  if (newID == null || newID === currentScenario.value?.id) return
+  showGlobalLoadingSpinner.value = true
+  switchScenario(newID)
+    .then(() => {
+      reloadNuxtApp({ force: true })
+    })
+    .catch(() => {
+      showGlobalLoadingSpinner.value = false
+      selectedScenarioID.value = currentScenario.value?.id ?? null
+      toast.add({
+        summary: 'Fehler',
+        detail: 'Das Szenario konnte nicht gewechselt werden',
+        severity: 'error',
+        life: Config.TOAST_LIFE_TIME,
+      })
+    })
 }
 
 const updateOrganisation = (newSelectedOrganisationID: number) => {

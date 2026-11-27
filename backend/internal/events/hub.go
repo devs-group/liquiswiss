@@ -9,6 +9,8 @@ const (
 	ActionCreated = "created"
 	ActionUpdated = "updated"
 	ActionDeleted = "deleted"
+	// ActionSwitched is only sent to the user who switched (all their tabs and MCP sessions)
+	ActionSwitched = "switched"
 )
 
 // Event is a minimal change notification. Clients refetch data through the
@@ -22,6 +24,10 @@ type Event struct {
 	ParentID int64 `json:"parentId,omitempty"`
 	// OrganisationID is used server-side for delivery filtering and is not serialized
 	OrganisationID int64 `json:"-"`
+	// ScenarioID limits delivery to users viewing that scenario, 0 means all scenarios of the organisation
+	ScenarioID int64 `json:"-"`
+	// OnlyUserID limits delivery to one user's streams (e.g. their own scenario switch), 0 means everyone
+	OnlyUserID int64 `json:"-"`
 	// Origin identifies who caused the change (user + browser tab). Used
 	// server-side to compute Own per connection; never serialized to clients.
 	OriginUserID   int64  `json:"-"`

@@ -19,5 +19,5 @@ JOIN employees e ON e.id = s.employee_id
 JOIN currencies c ON s.currency_id = c.id
 LEFT JOIN salary_costs sc ON sc.salary_id = s.id
 WHERE s.id = ?
-  AND e.organisation_id = get_current_user_organisation_id(?)
+  AND e.scenario_id = get_current_user_scenario_id(?)
 LIMIT 1;

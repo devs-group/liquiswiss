@@ -345,6 +345,21 @@ func (mr *MockIAPIServiceMockRecorder) CreateSalaryCostLabel(ctx, payload, userI
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CreateSalaryCostLabel", reflect.TypeOf((*MockIAPIService)(nil).CreateSalaryCostLabel), ctx, payload, userID)
 }
 
+// CreateScenario mocks base method.
+func (m *MockIAPIService) CreateScenario(ctx context.Context, payload models.CreateScenario, userID int64) (*models.Scenario, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "CreateScenario", ctx, payload, userID)
+	ret0, _ := ret[0].(*models.Scenario)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// CreateScenario indicates an expected call of CreateScenario.
+func (mr *MockIAPIServiceMockRecorder) CreateScenario(ctx, payload, userID any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CreateScenario", reflect.TypeOf((*MockIAPIService)(nil).CreateScenario), ctx, payload, userID)
+}
+
 // CreateTransaction mocks base method.
 func (m *MockIAPIService) CreateTransaction(ctx context.Context, payload models.CreateTransaction, userID int64) (*models.Transaction, error) {
 	m.ctrl.T.Helper()
@@ -531,6 +546,20 @@ func (mr *MockIAPIServiceMockRecorder) DeleteSalaryCostLabel(ctx, userID, salary
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "DeleteSalaryCostLabel", reflect.TypeOf((*MockIAPIService)(nil).DeleteSalaryCostLabel), ctx, userID, salaryCostLabelID)
 }
 
+// DeleteScenario mocks base method.
+func (m *MockIAPIService) DeleteScenario(ctx context.Context, userID, scenarioID int64) error {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "DeleteScenario", ctx, userID, scenarioID)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// DeleteScenario indicates an expected call of DeleteScenario.
+func (mr *MockIAPIServiceMockRecorder) DeleteScenario(ctx, userID, scenarioID any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "DeleteScenario", reflect.TypeOf((*MockIAPIService)(nil).DeleteScenario), ctx, userID, scenarioID)
+}
+
 // DeleteTransaction mocks base method.
 func (m *MockIAPIService) DeleteTransaction(ctx context.Context, userID, transactionID int64) error {
 	m.ctrl.T.Helper()
@@ -666,6 +695,21 @@ func (mr *MockIAPIServiceMockRecorder) GetCurrentOrganisation(ctx, userID any) *
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetCurrentOrganisation", reflect.TypeOf((*MockIAPIService)(nil).GetCurrentOrganisation), ctx, userID)
 }
 
+// GetCurrentScenarioID mocks base method.
+func (m *MockIAPIService) GetCurrentScenarioID(ctx context.Context, userID int64) (int64, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "GetCurrentScenarioID", ctx, userID)
+	ret0, _ := ret[0].(int64)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// GetCurrentScenarioID indicates an expected call of GetCurrentScenarioID.
+func (mr *MockIAPIServiceMockRecorder) GetCurrentScenarioID(ctx, userID any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetCurrentScenarioID", reflect.TypeOf((*MockIAPIService)(nil).GetCurrentScenarioID), ctx, userID)
+}
+
 // GetEmployee mocks base method.
 func (m *MockIAPIService) GetEmployee(ctx context.Context, userID, employeeID int64) (*models.Employee, error) {
 	m.ctrl.T.Helper()
@@ -769,6 +813,21 @@ func (m *MockIAPIService) GetSalaryCostLabel(ctx context.Context, userID, salary
 func (mr *MockIAPIServiceMockRecorder) GetSalaryCostLabel(ctx, userID, salaryCostLabelID any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetSalaryCostLabel", reflect.TypeOf((*MockIAPIService)(nil).GetSalaryCostLabel), ctx, userID, salaryCostLabelID)
+}
+
+// GetScenario mocks base method.
+func (m *MockIAPIService) GetScenario(ctx context.Context, userID, scenarioID int64) (*models.Scenario, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "GetScenario", ctx, userID, scenarioID)
+	ret0, _ := ret[0].(*models.Scenario)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// GetScenario indicates an expected call of GetScenario.
+func (mr *MockIAPIServiceMockRecorder) GetScenario(ctx, userID, scenarioID any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetScenario", reflect.TypeOf((*MockIAPIService)(nil).GetScenario), ctx, userID, scenarioID)
 }
 
 // GetTransaction mocks base method.
@@ -1093,6 +1152,21 @@ func (mr *MockIAPIServiceMockRecorder) ListSalaryCosts(ctx, userID, salaryID, pa
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ListSalaryCosts", reflect.TypeOf((*MockIAPIService)(nil).ListSalaryCosts), ctx, userID, salaryID, page, limit, skipPrevious)
 }
 
+// ListScenarios mocks base method.
+func (m *MockIAPIService) ListScenarios(ctx context.Context, userID int64) ([]models.Scenario, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "ListScenarios", ctx, userID)
+	ret0, _ := ret[0].([]models.Scenario)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// ListScenarios indicates an expected call of ListScenarios.
+func (mr *MockIAPIServiceMockRecorder) ListScenarios(ctx, userID any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ListScenarios", reflect.TypeOf((*MockIAPIService)(nil).ListScenarios), ctx, userID)
+}
+
 // ListTransactions mocks base method.
 func (m *MockIAPIService) ListTransactions(ctx context.Context, userID, page, limit int64, sortBy, sortOrder, search string, hideDisabled, hideExpired bool) ([]models.Transaction, int64, error) {
 	m.ctrl.T.Helper()
@@ -1236,6 +1310,21 @@ func (m *MockIAPIService) SetUserCurrentOrganisation(ctx context.Context, payloa
 func (mr *MockIAPIServiceMockRecorder) SetUserCurrentOrganisation(ctx, payload, userID any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "SetUserCurrentOrganisation", reflect.TypeOf((*MockIAPIService)(nil).SetUserCurrentOrganisation), ctx, payload, userID)
+}
+
+// SwitchScenario mocks base method.
+func (m *MockIAPIService) SwitchScenario(ctx context.Context, userID, scenarioID int64) (*models.Scenario, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "SwitchScenario", ctx, userID, scenarioID)
+	ret0, _ := ret[0].(*models.Scenario)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// SwitchScenario indicates an expected call of SwitchScenario.
+func (mr *MockIAPIServiceMockRecorder) SwitchScenario(ctx, userID, scenarioID any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "SwitchScenario", reflect.TypeOf((*MockIAPIService)(nil).SwitchScenario), ctx, userID, scenarioID)
 }
 
 // UpdateBankAccount mocks base method.
@@ -1413,6 +1502,21 @@ func (m *MockIAPIService) UpdateSalaryCostLabel(ctx context.Context, payload mod
 func (mr *MockIAPIServiceMockRecorder) UpdateSalaryCostLabel(ctx, payload, userID, salaryCostLabelID any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "UpdateSalaryCostLabel", reflect.TypeOf((*MockIAPIService)(nil).UpdateSalaryCostLabel), ctx, payload, userID, salaryCostLabelID)
+}
+
+// UpdateScenario mocks base method.
+func (m *MockIAPIService) UpdateScenario(ctx context.Context, payload models.UpdateScenario, userID, scenarioID int64) (*models.Scenario, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "UpdateScenario", ctx, payload, userID, scenarioID)
+	ret0, _ := ret[0].(*models.Scenario)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// UpdateScenario indicates an expected call of UpdateScenario.
+func (mr *MockIAPIServiceMockRecorder) UpdateScenario(ctx, payload, userID, scenarioID any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "UpdateScenario", reflect.TypeOf((*MockIAPIService)(nil).UpdateScenario), ctx, payload, userID, scenarioID)
 }
 
 // UpdateTransaction mocks base method.

@@ -21,4 +21,4 @@ FROM salary_costs as hc
 JOIN salaries AS h ON h.id = hc.salary_id
 JOIN employees AS e ON e.id = h.employee_id
 WHERE hc.id = ?
-  AND e.organisation_id = get_current_user_organisation_id(?)
+  AND e.scenario_id = get_current_user_scenario_id(?)

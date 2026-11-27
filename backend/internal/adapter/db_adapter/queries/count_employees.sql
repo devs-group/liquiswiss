@@ -3,6 +3,6 @@ SELECT
 FROM
     employees AS e
 WHERE
-    e.organisation_id = get_current_user_organisation_id(?)
+    e.scenario_id = get_current_user_scenario_id(?)
 LIMIT ?
 OFFSET ?

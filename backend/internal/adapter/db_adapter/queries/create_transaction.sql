@@ -11,7 +11,10 @@ INSERT INTO transactions
      currency_id,
      employee_id,
      organisation_id,
+     scenario_id,
      vat_id,
      vat_included
     )
-VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, get_current_user_organisation_id(?), ?, ?)
+SELECT ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, s.organisation_id, s.id, ?, ?
+FROM scenarios s
+WHERE s.id = get_current_user_scenario_id(?)

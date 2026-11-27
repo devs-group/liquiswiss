@@ -4,6 +4,17 @@ import type { BankAccountResponse } from '~/models/bank-account'
 import type { VatResponse } from '~/models/vat'
 import type { OrganisationResponse } from '~/models/organisation'
 import type { CategoryResponse } from '~/models/category'
+import type { ScenarioResponse } from '~/models/scenario'
+
+export interface IScenarioFormDialog {
+  close: () => object
+  value: {
+    close: (payload?: unknown) => void
+    data: {
+      scenario?: ScenarioResponse
+    }
+  }
+}
 
 export interface IEmployeeFormDialog {
   close: () => object

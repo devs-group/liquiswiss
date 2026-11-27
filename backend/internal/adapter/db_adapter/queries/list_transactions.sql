@@ -8,7 +8,7 @@ FROM
     LEFT JOIN vats v ON r.vat_id = v.id
     LEFT JOIN employees emp ON r.employee_id = emp.id
 WHERE
-    r.organisation_id = get_current_user_organisation_id(?)
+    r.scenario_id = get_current_user_scenario_id(?)
     {{if .hasSearch}}AND LOWER(r.name) LIKE LOWER(?){{end}}
     {{if .hideDisabled}}AND r.is_disabled = false{{end}}
     {{if .hideExpired}}AND (

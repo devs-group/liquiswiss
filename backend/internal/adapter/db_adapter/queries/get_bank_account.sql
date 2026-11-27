@@ -11,4 +11,4 @@ FROM
 INNER JOIN currencies cur ON ba.currency_id = cur.id
 WHERE
     ba.id = ?
-    AND ba.organisation_id = get_current_user_organisation_id(?)
+    AND ba.scenario_id = get_current_user_scenario_id(?)

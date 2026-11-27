@@ -63,6 +63,8 @@ const { isAuthenticated, getAccessToken, getOrganisationCurrencyCode, sessionExp
 const sessionExpiredDialogCookie = useCookie<boolean | null>(Constants.SESSION_EXPIRED_DIALOG_COOKIE, RedirectCookieProps)
 const { useFetchListCurrencies, useFetchListCategories, useFetchListFiatRates, useFetchGetServerTime, serverDate, showGlobalLoadingSpinner } = useGlobalData()
 const { useFetchListOrganisations } = useOrganisations()
+const { useFetchListScenarios, listScenarios, currentScenario, restoreScenarioDialog } = useScenarios()
+const { onEntityChange } = useRealtimeChanges()
 const toast = useToast()
 const confirm = useConfirm()
 const { hook } = useNuxtApp()
@@ -94,7 +96,36 @@ if (isAuthenticated.value) {
         life: Config.TOAST_LIFE_TIME,
       })
     })
+  await useFetchListScenarios()
+    .catch(() => {
+      hasInitialLoadError.value = true
+    })
 }
+
+// Scenario list lives here once, the navigation is rendered twice (mobile + desktop)
+onEntityChange('scenario', async (change) => {
+  // Switched elsewhere (MCP or another tab): every page must show the new scenario's data
+  if (change.action === 'switched') {
+    if (!change.own && change.id !== currentScenario.value?.id) reloadNuxtApp({ force: true })
+    return
+  }
+  const wasCurrent = change.id === currentScenario.value?.id
+  await listScenarios().catch(() => {})
+  // Someone else deleted the scenario this user is looking at: the backend already fell back to the base
+  if (!change.own && change.action === 'deleted' && wasCurrent) {
+    toast.add({
+      summary: 'Szenario gelöscht',
+      detail: 'Das aktive Szenario wurde gelöscht. Die Seite lädt gleich das Grundszenario.',
+      severity: 'warn',
+      life: Config.TOAST_LIFE_TIME,
+    })
+    setTimeout(() => reloadNuxtApp({ force: true }), 3000)
+  }
+})
+
+onNuxtReady(() => {
+  if (isAuthenticated.value) restoreScenarioDialog()
+})
 
 // Watch for session expiry and show dialog before reload (triggered by fetchInterceptor)
 watch(sessionExpired, (expired) => {

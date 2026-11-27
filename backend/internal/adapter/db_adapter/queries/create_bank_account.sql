@@ -1,2 +1,4 @@
-INSERT INTO bank_accounts (name, amount, currency_id, organisation_id)
-SELECT ?, ?, ?, get_current_user_organisation_id(?)
+INSERT INTO bank_accounts (name, amount, currency_id, organisation_id, scenario_id)
+SELECT ?, ?, ?, s.organisation_id, s.id
+FROM scenarios s
+WHERE s.id = get_current_user_scenario_id(?)

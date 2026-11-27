@@ -20,7 +20,7 @@ FROM employees e
 LEFT JOIN ranked_salaries rs ON e.id = rs.employee_id AND rs.rn = 1
 LEFT JOIN currencies c ON rs.currency_id = c.id
 LEFT JOIN salaries s ON s.employee_id = e.id AND s.from_date > CURDATE() AND s.is_termination = 1
-WHERE e.organisation_id = get_current_user_organisation_id(?)
+WHERE e.scenario_id = get_current_user_scenario_id(?)
     {{if .hasSearch}}AND LOWER(e.name) LIKE LOWER(?){{end}}
     {{if .hideTerminated}}AND COALESCE(rs.is_termination, false) = false{{end}}
 GROUP BY
