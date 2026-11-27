@@ -84,6 +84,10 @@
     .p-tooltip.p-component {
         @apply sm:!max-w-xl;
     }
+    /* Subtle tooltips: small text, tight padding, light shadow */
+    .p-tooltip .p-tooltip-text {
+        @apply !text-xs !leading-snug !px-2 !py-1 !rounded-md !shadow-sm;
+    }
 }
 
 /* Real-time refresh indicator: elements tagged with data-realtime get this

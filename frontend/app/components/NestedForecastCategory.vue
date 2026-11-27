@@ -3,20 +3,20 @@
     class="w-full flex items-center col-span-full"
   >
     <div
-      v-tooltip="isAutoCategory ? 'MwSt. ist eine automatisch berechnete Ausgabe basierend auf den MwSt.-Einstellungen.' : undefined"
-      class="group sticky left-0 z-10 shrink-0 w-28 flex gap-1 border-b border-l border-zinc-600 dark:border-zinc-400 p-1"
-      :class="[getColumnColor, stickyDividerClass, { 'cursor-pointer': hasChildren && !isAutoCategory, 'cursor-default': isAutoCategory }]"
+      v-tooltip.right="labelTooltip"
+      class="group sticky left-0 z-10 shrink-0 w-28 flex gap-1 border-b border-l border-zinc-600 dark:border-zinc-400 p-1 cursor-default"
+      :class="[getColumnColor, stickyDividerClass]"
       @click="onToggleChildren(category.name)"
     >
       <p
+        ref="labelRef"
         class="w-full truncate"
         :class="[getColumnTextAlignment, getColumnTextSize]"
-        :title="category.name"
       >
-        {{ isAutoCategory.value ? `${category.name} (auto)` : category.name }}
+        {{ isAutoCategory ? `${category.name} (auto)` : category.name }}
       </p>
       <i
-        v-if="hasChildren && !isAutoCategory.value"
+        v-if="hasChildren && !isAutoCategory"
         class="pi opacity-0 group-hover:opacity-100 transition-opacity"
         :class="{ 'pi-sort-down': forecastShowChildDetails.includes(category.name), 'pi-sort-up': !forecastShowChildDetails.includes(category.name) }"
       />
@@ -164,4 +164,27 @@ const getColumnTextSize = computed(() => {
 })
 
 const isAutoCategory = computed(() => props.category.name === 'Mwst.')
+
+// The full label only shows as tooltip when the pinned column cuts it off
+const labelRef = ref<HTMLElement | null>(null)
+const isLabelTruncated = ref(false)
+const measureLabel = () => {
+  const el = labelRef.value
+  isLabelTruncated.value = !!el && el.scrollWidth > el.clientWidth
+}
+let labelObserver: ResizeObserver | null = null
+onMounted(() => {
+  measureLabel()
+  if (labelRef.value) {
+    labelObserver = new ResizeObserver(measureLabel)
+    labelObserver.observe(labelRef.value)
+  }
+})
+watch(() => props.category.name, () => nextTick(measureLabel))
+
+// Whole label cell: MwSt. explains itself, other rows show their name only when cut off
+const labelTooltip = computed(() => isAutoCategory.value
+  ? { value: 'MwSt. ist eine automatisch berechnete Ausgabe basierend auf den MwSt.-Einstellungen.' }
+  : { value: props.category.name, disabled: !isLabelTruncated.value })
+onBeforeUnmount(() => labelObserver?.disconnect())
 </script>
