@@ -10,6 +10,7 @@ import (
 	"liquiswiss/internal/middleware"
 	"liquiswiss/internal/oauth"
 	"liquiswiss/internal/service/api_service"
+	"liquiswiss/internal/status"
 	"liquiswiss/pkg/buildinfo"
 )
 
@@ -20,6 +21,8 @@ type API struct {
 	EmailService email_adapter.IEmailAdapter
 	// EventHub powers the /api/events SSE stream; nil (e.g. in tests) disables it
 	EventHub *events.Hub
+	// StatusMonitor backs /api/status; nil reports degraded
+	StatusMonitor *status.Monitor
 }
 
 func NewAPI(
@@ -66,6 +69,20 @@ func (api *API) setupRouter() {
 		// Health check endpoint for monitoring and CI
 		group.GET("/health", func(ctx *gin.Context) {
 			ctx.JSON(200, gin.H{"status": "ok"})
+		})
+
+		// Dependency status from the last background check, for external monitoring
+		group.GET("/status", func(ctx *gin.Context) {
+			if api.StatusMonitor == nil {
+				ctx.JSON(503, gin.H{"status": status.StatusDegraded})
+				return
+			}
+			report := api.StatusMonitor.Report()
+			code := 200
+			if report.Status != status.StatusOK {
+				code = 503
+			}
+			ctx.JSON(code, report)
 		})
 
 		// Build identifiers of the running binary. Public on purpose: CI reads

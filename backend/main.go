@@ -3,6 +3,7 @@ package main
 // LiquiSwiss backend application entry point
 
 import (
+	"context"
 	"embed"
 	"flag"
 	"github.com/joho/godotenv"
@@ -18,7 +19,9 @@ import (
 	"liquiswiss/internal/middleware"
 	"liquiswiss/internal/service/api_service"
 	"liquiswiss/internal/service/fixer_io_service"
+	"liquiswiss/internal/status"
 	"liquiswiss/pkg/logger"
+	"liquiswiss/pkg/models"
 	"liquiswiss/pkg/utils"
 	"net/http"
 	"os"
@@ -119,6 +122,12 @@ func runApp() {
 	eventHub := events.NewHub()
 	apiService.SetEventHub(eventHub)
 	apiHandler.EventHub = eventHub
+
+	statusMonitor := status.NewMonitor(conn, func(ctx context.Context) ([]models.FiatRate, error) {
+		return apiService.ListFiatRates(ctx, "CHF")
+	}, cfg.FixerIOKey != "")
+	statusMonitor.Start(context.Background())
+	apiHandler.StatusMonitor = statusMonitor
 
 	// Cronjob
 	c := cron.New()
