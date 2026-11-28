@@ -1,11 +1,26 @@
 package fixer_io_service
 
 import (
+	"liquiswiss/pkg/models"
 	"net/url"
 	"testing"
+	"time"
 
 	"github.com/stretchr/testify/require"
 )
+
+func TestRatesAreStale(t *testing.T) {
+	now := time.Date(2026, 11, 28, 12, 0, 0, 0, time.UTC)
+	fresh := []models.FiatRate{
+		{UpdatedAt: now.Add(-30 * time.Hour)},
+		{UpdatedAt: now.Add(-2 * time.Hour)},
+	}
+	stale := []models.FiatRate{{UpdatedAt: now.Add(-13 * time.Hour)}}
+
+	require.False(t, ratesAreStale(fresh, now))
+	require.True(t, ratesAreStale(stale, now))
+	require.True(t, ratesAreStale(nil, now))
+}
 
 func TestBuildLatestURL(t *testing.T) {
 	symbols := []string{"CHF", "EUR", "USD"}

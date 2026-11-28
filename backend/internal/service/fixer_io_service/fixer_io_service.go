@@ -12,6 +12,7 @@ import (
 	"net/http"
 	"net/url"
 	"strings"
+	"time"
 )
 
 type IFixerIOService interface {
@@ -38,7 +39,25 @@ func (f *FixerIOService) RequiresInitialFetch() (bool, error) {
 	if err != nil {
 		return false, err
 	}
-	return totalCurrenciesInRates < totalCurrencies, nil
+	if totalCurrenciesInRates < totalCurrencies {
+		return true, nil
+	}
+	// Every deploy restarts the 12h cron, so stale rates are fetched on start as well
+	rates, err := f.apiService.ListFiatRates(context.Background(), "CHF")
+	if err != nil {
+		return false, err
+	}
+	return ratesAreStale(rates, time.Now()), nil
+}
+
+func ratesAreStale(rates []models.FiatRate, now time.Time) bool {
+	var newest time.Time
+	for _, rate := range rates {
+		if rate.UpdatedAt.After(newest) {
+			newest = rate.UpdatedAt
+		}
+	}
+	return now.Sub(newest) > 12*time.Hour
 }
 
 func (f *FixerIOService) fetchFromFallback() {
