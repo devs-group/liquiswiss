@@ -4,13 +4,13 @@ package fixer_io_service
 import (
 	"context"
 	"encoding/json"
-	"fmt"
 	"liquiswiss/config"
 	"liquiswiss/internal/service/api_service"
 	"liquiswiss/pkg/logger"
 	"liquiswiss/pkg/models"
 	"liquiswiss/pkg/utils"
 	"net/http"
+	"net/url"
 	"strings"
 )
 
@@ -69,6 +69,16 @@ func (f *FixerIOService) fetchFromFallback() {
 	logger.Logger.Infof("Loaded %d fallback fiat rates (snapshot %s)", len(data.Rates), data.SnapshotDate)
 }
 
+// buildLatestURL accepts the API root or the full latest endpoint, FIXER_IO_URL has been set both ways
+func buildLatestURL(baseURL, accessKey, base string, symbols []string) string {
+	endpoint := strings.TrimSuffix(strings.TrimRight(baseURL, "/"), "/latest") + "/latest"
+	query := url.Values{}
+	query.Set("access_key", accessKey)
+	query.Set("base", base)
+	query.Set("symbols", strings.Join(symbols, ","))
+	return endpoint + "?" + query.Encode()
+}
+
 func (f *FixerIOService) FetchFiatRates() {
 	cfg := config.GetConfig()
 	if cfg.FixerIOKey == "" {
@@ -100,9 +110,10 @@ func (f *FixerIOService) FetchFiatRates() {
 	for _, currency := range currencies {
 		baseCurrency := *currency.Code
 
-		url := fmt.Sprintf("%s/latest?access_key=%s&base=%s&symbols=%s", cfg.FixerIOURl, cfg.FixerIOKey, baseCurrency, strings.Join(symbols, ","))
-		logger.Logger.Infof("Sending request to %s", url)
-		response, err := http.Get(url)
+		requestURL := buildLatestURL(cfg.FixerIOURl, cfg.FixerIOKey, baseCurrency, symbols)
+		// Never log the URL itself, it carries the access key
+		logger.Logger.Infof("Requesting Fixer.io rates for base %s", baseCurrency)
+		response, err := http.Get(requestURL)
 		if err != nil {
 			logger.Logger.Errorf("Failed to fetch fiat rates: %v", err)
 			return
