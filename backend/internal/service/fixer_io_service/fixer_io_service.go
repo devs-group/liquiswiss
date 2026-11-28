@@ -126,49 +126,68 @@ func (f *FixerIOService) FetchFiatRates() {
 		symbols = append(symbols, *currency.Code)
 	}
 
-	for _, currency := range currencies {
-		baseCurrency := *currency.Code
+	// One request with base EUR, every other pair is crossed locally to save Fixer.io quota
+	requestURL := buildLatestURL(cfg.FixerIOURl, cfg.FixerIOKey, crossBase, symbols)
+	// Never log the URL itself, it carries the access key
+	logger.Logger.Infof("Requesting Fixer.io rates for base %s", crossBase)
+	response, err := http.Get(requestURL)
+	if err != nil {
+		logger.Logger.Errorf("Failed to fetch fiat rates: %v", err)
+		return
+	}
+	defer func() {
+		if err := response.Body.Close(); err != nil {
+			logger.Logger.Errorf("Error closing response body: %v", err)
+		}
+	}()
+	if response.StatusCode != http.StatusOK {
+		logger.Logger.Errorf("Non-OK HTTP status: %d", response.StatusCode)
+		return
+	}
+	var exchangeData models.FixerIOResponse
+	if err := json.NewDecoder(response.Body).Decode(&exchangeData); err != nil {
+		logger.Logger.Errorf("Failed to decode JSON: %v", err)
+		return
+	}
+	if !exchangeData.Success || exchangeData.Rates == nil {
+		logger.Logger.Errorf("Request failed: %v", exchangeData.Error)
+		return
+	}
 
-		requestURL := buildLatestURL(cfg.FixerIOURl, cfg.FixerIOKey, baseCurrency, symbols)
-		// Never log the URL itself, it carries the access key
-		logger.Logger.Infof("Requesting Fixer.io rates for base %s", baseCurrency)
-		response, err := http.Get(requestURL)
-		if err != nil {
-			logger.Logger.Errorf("Failed to fetch fiat rates: %v", err)
-			return
+	updated := 0
+	for _, rate := range crossRates(*exchangeData.Rates, symbols) {
+		if err := f.apiService.UpsertFiatRate(context.Background(), rate); err != nil {
+			logger.Logger.Errorf("Failed to insert fiat rate for base %s to target %s: %v", rate.Base, rate.Target, err)
+			continue
 		}
-		defer func() {
-			err := response.Body.Close()
-			if err != nil {
-				logger.Logger.Errorf("Error closing response body: %v", err)
-			}
-		}()
-		if response.StatusCode != http.StatusOK {
-			logger.Logger.Errorf("Non-OK HTTP status: %d", response.StatusCode)
-			return
-		}
-		var exchangeData models.FixerIOResponse
-		if err := json.NewDecoder(response.Body).Decode(&exchangeData); err != nil {
-			logger.Logger.Errorf("Failed to decode JSON: %v", err)
-			return
-		}
+		updated++
+	}
+	logger.Logger.Infof("Updated %d fiat rates from one Fixer.io request", updated)
+}
 
-		if !exchangeData.Success {
-			logger.Logger.Errorf("Request failed: %v", exchangeData.Error)
-			return
-		}
+const crossBase = "EUR"
 
-		for targetCurrency, rate := range *exchangeData.Rates {
-			err = f.apiService.UpsertFiatRate(context.Background(), models.CreateFiatRate{
-				Base:   baseCurrency,
-				Target: targetCurrency,
-				Rate:   rate,
-			})
-			if err != nil {
-				logger.Logger.Errorf("Failed to insert fiat rate for base %s to target %s: %v", baseCurrency, targetCurrency, err)
+// crossRates turns EUR based rates into every pair: A to B is EUR to B divided by EUR to A
+func crossRates(eurRates map[string]float64, codes []string) []models.CreateFiatRate {
+	rateFromEUR := func(code string) float64 {
+		if code == crossBase {
+			return 1
+		}
+		return eurRates[code]
+	}
+	rates := make([]models.CreateFiatRate, 0, len(codes)*len(codes))
+	for _, base := range codes {
+		baseRate := rateFromEUR(base)
+		if baseRate <= 0 {
+			continue
+		}
+		for _, target := range codes {
+			targetRate := rateFromEUR(target)
+			if targetRate <= 0 {
 				continue
 			}
-			logger.Logger.Infof("Successfully updated fiat rate for base %s to target %s with %f", baseCurrency, targetCurrency, rate)
+			rates = append(rates, models.CreateFiatRate{Base: base, Target: target, Rate: targetRate / baseRate})
 		}
 	}
+	return rates
 }
